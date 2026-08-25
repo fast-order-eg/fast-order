@@ -28,3 +28,4 @@ backup store/
 backup_extracted/
 *.zip
 *.sql
+FAST_ORDER_SERVER_AND_DEPLOYMENT.md

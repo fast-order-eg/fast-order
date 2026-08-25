@@ -8,6 +8,7 @@ export default function SettingsIndex({ settings }) {
     const initialTab = queryParams ? (queryParams.get('tab') || 'general') : 'general';
     const [activeTab, setActiveTab] = useState(initialTab);
     const [logoPreview, setLogoPreview] = useState(settings.logo_url);
+    const [showSuccessToast, setShowSuccessToast] = useState(false);
 
     // Form data setup
     const { data, setData, post, processing, errors } = useForm({
@@ -27,6 +28,24 @@ export default function SettingsIndex({ settings }) {
         logo: null,
         main_categories: settings.main_categories || [],
     });
+
+    const tabHasErrors = (tabKey) => {
+        if (!errors || Object.keys(errors).length === 0) return false;
+        switch (tabKey) {
+            case 'general':
+                return !!(errors.store_name || errors.phone || errors.whatsapp);
+            case 'integrations':
+                return !!(errors.facebook_pixel_id || errors.tiktok_pixel_id || errors.snapchat_pixel_id || errors.google_analytics_id);
+            case 'social':
+                return !!(errors.facebook_page || errors.instagram_page || errors.tiktok_page || errors.google_maps_url || errors.address);
+            case 'logo':
+                return !!errors.logo;
+            case 'categories':
+                return Object.keys(errors).some(k => k.startsWith('main_categories'));
+            default:
+                return false;
+        }
+    };
 
     const handleLogoChange = (e) => {
         const file = e.target.files[0];
@@ -87,11 +106,51 @@ export default function SettingsIndex({ settings }) {
         setData('tiktok_pixel_id', text);
     };
 
+    const handleSnapchatPixelChange = (val) => {
+        let text = val;
+        if (text && (text.includes('snaptr') || text.includes('script') || text.includes('sc-static.net'))) {
+            const found = [];
+            const initMatches = [...text.matchAll(/snaptr\s*\(\s*['"]init['"]\s*,\s*['"]([a-zA-Z0-9_-]+)['"]/gi)];
+            initMatches.forEach(m => { if (m[1]) found.push(m[1]); });
+
+            const unique = [...new Set(found)];
+            if (unique.length > 0) {
+                text = unique.join('\n');
+            }
+        }
+        setData('snapchat_pixel_id', text);
+    };
+
+    const handleGAPixelChange = (val) => {
+        let text = val;
+        if (text && (text.includes('gtag') || text.includes('script') || text.includes('googletagmanager.com'))) {
+            const matches = text.match(/['"]?(G-[a-zA-Z0-9]+|UA-\d+-\d+)['"]?/i);
+            if (matches && matches[1]) {
+                text = matches[1];
+            }
+        }
+        setData('google_analytics_id', text);
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         post('/admin/settings', {
             forceFormData: true,
             preserveScroll: true,
+            onSuccess: () => {
+                setShowSuccessToast(true);
+                setTimeout(() => setShowSuccessToast(false), 5000);
+            },
+            onError: (errs) => {
+                // Auto switch to tab containing errors if current tab has no errors
+                if (!tabHasErrors(activeTab)) {
+                    if (errs.store_name || errs.phone || errs.whatsapp) setActiveTab('general');
+                    else if (errs.facebook_pixel_id || errs.tiktok_pixel_id || errs.snapchat_pixel_id || errs.google_analytics_id) setActiveTab('integrations');
+                    else if (errs.facebook_page || errs.instagram_page || errs.tiktok_page || errs.google_maps_url || errs.address) setActiveTab('social');
+                    else if (errs.logo) setActiveTab('logo');
+                    else if (Object.keys(errs).some(k => k.startsWith('main_categories'))) setActiveTab('categories');
+                }
+            },
         });
     };
 
@@ -138,17 +197,41 @@ export default function SettingsIndex({ settings }) {
                     </p>
                 </div>
 
-                {/* Flash Messages */}
+                {/* Flash Messages & Toasts */}
+                {showSuccessToast && (
+                    <div className="fixed bottom-5 left-5 z-50 p-4 bg-emerald-600 text-white font-bold rounded-2xl shadow-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-5 duration-300">
+                        <span className="text-xl">✅</span>
+                        <span>تم حفظ الإعدادات والبيكسلات بنجاح!</span>
+                    </div>
+                )}
+
                 {flash?.success && (
                     <div className="p-4 bg-emerald-50 border-r-4 border-emerald-500 rounded-xl text-emerald-800 text-sm font-medium flex items-center gap-3 shadow-sm animate-in fade-in slide-in-from-top-4 duration-200">
                         <span className="flex items-center justify-center w-5 h-5 bg-emerald-100 rounded-full text-emerald-600 text-xs">✓</span>
                         {flash.success}
                     </div>
                 )}
+
                 {flash?.error && (
                     <div className="p-4 bg-red-50 border-r-4 border-red-500 rounded-xl text-red-800 text-sm font-medium flex items-center gap-3 shadow-sm animate-in fade-in slide-in-from-top-4 duration-200">
                         <span className="flex items-center justify-center w-5 h-5 bg-red-100 rounded-full text-red-600 text-xs">⚠️</span>
                         {flash.error}
+                    </div>
+                )}
+
+                {errors && Object.keys(errors).length > 0 && (
+                    <div className="p-4 bg-red-50 border-2 border-red-200 rounded-2xl text-red-800 text-sm shadow-sm space-y-2">
+                        <div className="flex items-center gap-2 font-extrabold text-red-900">
+                            <span className="text-base">⚠️</span>
+                            <span>توجد أخطاء في البيانات المدخلة تمنع الحفظ:</span>
+                        </div>
+                        <ul className="list-disc list-inside text-xs text-red-700 space-y-1 mr-2">
+                            {Object.entries(errors).map(([field, msg]) => (
+                                <li key={field}>
+                                    <span className="font-bold">{field}:</span> {msg}
+                                </li>
+                            ))}
+                        </ul>
                     </div>
                 )}
 
@@ -160,40 +243,55 @@ export default function SettingsIndex({ settings }) {
                             <button
                                 type="button"
                                 onClick={() => setActiveTab('general')}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all text-right w-full cursor-pointer ${
+                                className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all text-right w-full cursor-pointer ${
                                     activeTab === 'general'
                                         ? 'bg-orange-50 text-orange-600 shadow-sm'
                                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                 }`}
                             >
-                                <span>⚙️</span>
-                                الإعدادات العامة
+                                <span className="flex items-center gap-3">
+                                    <span>⚙️</span>
+                                    الإعدادات العامة
+                                </span>
+                                {tabHasErrors('general') && (
+                                    <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" title="يوجد أخطاء في هذا التبويب"></span>
+                                )}
                             </button>
 
                             <button
                                 type="button"
                                 onClick={() => setActiveTab('integrations')}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all text-right w-full cursor-pointer ${
+                                className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all text-right w-full cursor-pointer ${
                                     activeTab === 'integrations'
                                         ? 'bg-orange-50 text-orange-600 shadow-sm'
                                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                 }`}
                             >
-                                <span>🎯</span>
-                                ربط البيكسل
+                                <span className="flex items-center gap-3">
+                                    <span>🎯</span>
+                                    ربط البيكسل
+                                </span>
+                                {tabHasErrors('integrations') && (
+                                    <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" title="يوجد أخطاء في هذا التبويب"></span>
+                                )}
                             </button>
 
                             <button
                                 type="button"
                                 onClick={() => setActiveTab('social')}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all text-right w-full cursor-pointer ${
+                                className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all text-right w-full cursor-pointer ${
                                     activeTab === 'social'
                                         ? 'bg-orange-50 text-orange-600 shadow-sm'
                                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                 }`}
                             >
-                                <span>🌐</span>
-                                روابط التواصل والوسائط
+                                <span className="flex items-center gap-3">
+                                    <span>🌐</span>
+                                    روابط التواصل والوسائط
+                                </span>
+                                {tabHasErrors('social') && (
+                                    <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" title="يوجد أخطاء في هذا التبويب"></span>
+                                )}
                             </button>
 
                             <Link
@@ -215,27 +313,37 @@ export default function SettingsIndex({ settings }) {
                             <button
                                 type="button"
                                 onClick={() => setActiveTab('logo')}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all text-right w-full cursor-pointer ${
+                                className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all text-right w-full cursor-pointer ${
                                     activeTab === 'logo'
                                         ? 'bg-orange-50 text-orange-600 shadow-sm'
                                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                 }`}
                             >
-                                <span>🎨</span>
-                                شعار المتجر
+                                <span className="flex items-center gap-3">
+                                    <span>🎨</span>
+                                    شعار المتجر
+                                </span>
+                                {tabHasErrors('logo') && (
+                                    <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" title="يوجد أخطاء في هذا التبويب"></span>
+                                )}
                             </button>
 
                             <button
                                 type="button"
                                 onClick={() => setActiveTab('categories')}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all text-right w-full cursor-pointer ${
+                                className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all text-right w-full cursor-pointer ${
                                     activeTab === 'categories'
                                         ? 'bg-orange-50 text-orange-600 shadow-sm'
                                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                 }`}
                             >
-                                <span>🗂️</span>
-                                أقسام المنصة
+                                <span className="flex items-center gap-3">
+                                    <span>🗂️</span>
+                                    أقسام المنصة
+                                </span>
+                                {tabHasErrors('categories') && (
+                                    <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" title="يوجد أخطاء في هذا التبويب"></span>
+                                )}
                             </button>
                         </nav>
                     </div>
@@ -385,18 +493,21 @@ export default function SettingsIndex({ settings }) {
 
                                     {/* Snapchat Pixel */}
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-1.5">معرف سناب شات بكسل (Snapchat Pixel ID)</label>
-                                        <input
-                                            type="text"
+                                        <div className="flex items-center justify-between mb-1.5">
+                                            <label className="block text-sm font-bold text-gray-700">معرف سناب شات بكسل (Snapchat Pixel ID)</label>
+                                            <span className="text-xs text-indigo-600 font-semibold bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">تستطيع إضافة أكثر من بيكسل</span>
+                                        </div>
+                                        <textarea
+                                            rows={2}
                                             value={data.snapchat_pixel_id}
-                                            onChange={(e) => setData('snapchat_pixel_id', e.target.value)}
-                                            placeholder="مثال: 9a8b7c6d-5e4f-3a2b..."
+                                            onChange={(e) => handleSnapchatPixelChange(e.target.value)}
+                                            placeholder="ضع الـ ID أو لزق كود سناب شات هنا وسيتم استخراج المعرف أوتوماتيكياً&#10;مثال: 9a8b7c6d-5e4f-3a2b..."
                                             className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-right font-mono dir-rtl placeholder:text-right ${
                                                 errors.snapchat_pixel_id ? 'border-red-400 bg-red-50/50 text-red-900' : 'border-gray-300'
                                             }`}
                                             dir="rtl"
                                         />
-                                        <p className="text-xs text-gray-500 mt-1 text-right">أدخل معرف Snapchat Pixel لتتبع الإعلانات على سناب شات.</p>
+                                        <p className="text-xs text-gray-500 mt-1 text-right">أدخل معرف Snapchat Pixel أو الصق الكود الكامل لتتبع الإعلانات على سناب شات.</p>
                                         {errors.snapchat_pixel_id && <p className="text-xs text-red-600 mt-1 text-right">{errors.snapchat_pixel_id}</p>}
                                     </div>
 
@@ -405,14 +516,14 @@ export default function SettingsIndex({ settings }) {
                                         <input
                                             type="text"
                                             value={data.google_analytics_id}
-                                            onChange={(e) => setData('google_analytics_id', e.target.value)}
+                                            onChange={(e) => handleGAPixelChange(e.target.value)}
                                             placeholder="مثال: G-XXXXXXXXXX"
                                             className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-right font-mono dir-rtl placeholder:text-right ${
                                                 errors.google_analytics_id ? 'border-red-400 bg-red-50/50 text-red-900' : 'border-gray-300'
                                             }`}
                                             dir="rtl"
                                         />
-                                        <p className="text-xs text-gray-400 mt-1 text-right">أدخل معرف التتبع لجوجل مثل G-XXXXXXXXXX.</p>
+                                        <p className="text-xs text-gray-400 mt-1 text-right">أدخل معرف التتبع لجوجل مثل G-XXXXXXXXXX أو الصق كود التتبع.</p>
                                         {errors.google_analytics_id && <p className="text-xs text-red-600 mt-1 text-right">{errors.google_analytics_id}</p>}
                                     </div>
                                 </div>
