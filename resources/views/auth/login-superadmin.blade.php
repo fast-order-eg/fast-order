@@ -296,8 +296,8 @@
 
         <div class="row">
             <label class="remember">
-                <input type="checkbox" name="remember">
-                <span>تذكرني</span>
+                <input type="checkbox" name="remember" checked>
+                <span>تذكرني (جلسة مستمرة 60 يوماً)</span>
             </label>
             @if(Route::has('password.request'))
             <a href="{{ route('password.request') }}" class="forgot">نسيت كلمة المرور؟</a>

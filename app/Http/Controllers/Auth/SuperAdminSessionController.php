@@ -49,6 +49,8 @@ class SuperAdminSessionController extends Controller
 
             // 1. إذا كان سوبر أدمن
             if ($user->isSuperAdmin()) {
+                // تمديد وتثبيت الجلسة للسوبر أدمن (Remember Me تلقائي + جلسة 60 يوم)
+                Auth::login($user, true);
                 return redirect('/dashboard');
             }
 
