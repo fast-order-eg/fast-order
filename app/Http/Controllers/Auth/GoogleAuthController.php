@@ -263,12 +263,25 @@ class GoogleAuthController extends Controller
         $googleUser = session('google_user');
 
         $user = DB::transaction(function () use ($request, $googleUser) {
+            $trialDays = 7;
+            $freePlan = SubscriptionPlan::where('slug', 'free')->first()
+                ?? SubscriptionPlan::where('is_active', true)->first()
+                ?? SubscriptionPlan::first();
+
             // 1. Create Tenant (Store)
             $tenant = Tenant::create([
                 'uuid' => (string) \Illuminate\Support\Str::uuid(),
                 'name' => $request->store_name,
                 'slug' => strtolower($request->subdomain),
+                'email' => $googleUser['email'],
+                'subscription_status' => 'trial',
+                'trial_ends_at' => now()->addDays($trialDays),
+                'subscription_ends_at' => now()->addDays($trialDays),
+                'wallet_balance' => 0.00,
                 'is_active' => true,
+                'settings' => [
+                    'activity' => 'تجارة عامة',
+                ],
             ]);
 
             // 2. Create User
@@ -289,6 +302,20 @@ class GoogleAuthController extends Controller
                 'role' => 'owner',
                 'permissions' => json_encode(['*']),
             ]);
+
+            // 5. Activate 7-Day Free Trial Subscription
+            if ($freePlan) {
+                Subscription::create([
+                    'tenant_id'     => $tenant->id,
+                    'plan_id'       => $freePlan->id,
+                    'status'        => 'trial',
+                    'billing_cycle' => 'monthly',
+                    'price'         => 0,
+                    'starts_at'     => now(),
+                    'trial_ends_at' => now()->addDays($trialDays),
+                    'ends_at'       => now()->addDays($trialDays),
+                ]);
+            }
 
             return $user;
         });
