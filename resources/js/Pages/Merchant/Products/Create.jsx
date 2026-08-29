@@ -69,7 +69,19 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
 
     // Extra Features States
     const [priceTiers, setPriceTiers] = useState(parseJSON(duplicateFrom?.price_tiers));
-    const [variantsStock, setVariantsStock] = useState(parseJSON(duplicateFrom?.variants_stock));
+    const initialVariants = () => {
+        const parsed = parseJSON(duplicateFrom?.variants_stock);
+        const defaultPrice = duplicateFrom?.price_after ? Math.round(Number(duplicateFrom.price_after)) : '';
+        if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed.map(v => ({
+                ...v,
+                price: (v.price !== undefined && v.price !== null && v.price !== '') ? v.price : defaultPrice,
+                qty: (v.qty !== undefined && v.qty !== null && v.qty !== '') ? v.qty : 100,
+            }));
+        }
+        return [];
+    };
+    const [variantsStock, setVariantsStock] = useState(initialVariants);
     const [galleryPreviews, setGalleryPreviews] = useState(initialGalleryPreviews);
     const [showVariantsStockSection, setShowVariantsStockSection] = useState(false);
 
@@ -259,7 +271,7 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
 
     const combinations = generateCombinations();
 
-    // Sync variantsStock with combinations, defaulting to 100
+    // Sync variantsStock with combinations, defaulting to 100 and product default price
     useEffect(() => {
         if (!hasVariants) {
             if (variantsStock.length > 0) {
@@ -271,13 +283,28 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
 
         let updated = [];
         let changed = false;
+        const defaultPrice = data.price_after ? Math.round(Number(data.price_after)) : '';
 
         combinations.forEach(combo => {
             const found = variantsStock.find(v => isComboEqual(v, combo));
             if (found) {
+                if (found.qty === null || found.qty === undefined || found.qty === '') {
+                    found.qty = 100;
+                    changed = true;
+                }
+                if (found.price === null || found.price === undefined || (found.price === '' && !found._userEdited)) {
+                    found.price = defaultPrice;
+                    changed = true;
+                }
                 updated.push(found);
             } else {
-                updated.push({ size: combo.size, color: combo.color, options: combo.options, price: '', qty: 100 });
+                updated.push({
+                    size: combo.size,
+                    color: combo.color,
+                    options: combo.options,
+                    price: defaultPrice,
+                    qty: 100
+                });
                 changed = true;
             }
         });
@@ -308,8 +335,9 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
         const idx = updated.findIndex(v => isComboEqual(v, combo));
         if (idx > -1) {
             updated[idx].price = value;
+            updated[idx]._userEdited = true;
         } else {
-            updated.push({ ...combo, price: value, qty: 100 });
+            updated.push({ ...combo, price: value, qty: 100, _userEdited: true });
         }
         setVariantsStock(updated);
         setData('variants_stock', JSON.stringify(updated));
@@ -332,7 +360,7 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
         if (found && found.price !== undefined && found.price !== null) {
             return found.price;
         }
-        return '';
+        return data.price_after ? Math.round(Number(data.price_after)) : '';
     };
 
     const getVariantStockValue = (combo) => {
@@ -342,6 +370,15 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        const cleaned = variantsStock.map(v => {
+            const { _userEdited, ...rest } = v;
+            return {
+                ...rest,
+                price: (v.price !== undefined && v.price !== null && v.price !== '') ? Number(v.price) : (data.price_after ? Number(data.price_after) : 0),
+                qty: (v.qty !== undefined && v.qty !== null && v.qty !== '') ? parseInt(v.qty) : 100,
+            };
+        });
+        setData('variants_stock', JSON.stringify(cleaned));
         post('/admin/products', {
             forceFormData: true,
         });
@@ -870,10 +907,10 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
                                                                 type="number"
                                                                 step="0.01"
                                                                 min="0"
-                                                                placeholder={data.price_after ? `مثال: ${data.price_after}` : 'السعر الأصلي'}
+                                                                placeholder={data.price_after ? `${Math.round(Number(data.price_after))}` : 'السعر'}
                                                                 value={getVariantPriceValue(combo)}
                                                                 onChange={(e) => handleVariantPriceChange(combo, e.target.value)}
-                                                                className="w-full min-w-[70px] sm:max-w-[130px] px-1.5 py-1 sm:px-2.5 sm:py-1.5 border border-gray-300 rounded-lg text-xs sm:text-sm focus:ring-1 focus:ring-purple-400 focus:border-transparent bg-white text-center"
+                                                                className="w-full min-w-[70px] sm:max-w-[130px] px-1.5 py-1 sm:px-2.5 sm:py-1.5 border border-gray-300 rounded-lg text-xs sm:text-sm focus:ring-1 focus:ring-purple-400 focus:border-transparent bg-white text-center font-medium text-gray-800"
                                                             />
                                                         </td>
                                                         <td className="px-1 sm:px-4 py-2 sm:py-3 text-center">
