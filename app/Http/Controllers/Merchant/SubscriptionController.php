@@ -140,6 +140,11 @@ class SubscriptionController extends Controller
 
         $tenant = app(Tenant::class);
 
+        $targetPlan = SubscriptionPlan::findOrFail($request->plan_id);
+        if ($targetPlan->slug === 'free' || ($targetPlan->price_monthly == 0 && $targetPlan->price_yearly == 0 && $targetPlan->slug !== 'commission')) {
+            return redirect()->back()->with('error', 'الباقة المجانية مخصصة للتجربة لمرة واحدة فقط عند إنشاء المتجر ولا يمكن إعادة الاشتراك بها.');
+        }
+
         // Upload receipt image
         if ($request->hasFile('receipt')) {
             $path = $request->file('receipt')->store('receipts', 'public');

@@ -114,8 +114,18 @@ export default function SubscriptionIndex({ subscription, plans, receipts, usage
     };
 
     const isCommissionSub = subscription?.plan?.slug === 'commission' || subscription?.plan?.name?.includes('عمولة');
+    const hasPaidPlan = subscription?.plan && subscription.plan.slug !== 'free' && (isCommissionSub || subscription.plan.slug === 'monthly' || subscription.plan.slug === 'yearly' || subscription.plan.price_monthly > 0 || subscription.plan.price_yearly > 0);
     const subEndsAtDate = tenant?.subscription_ends_at || subscription?.ends_at;
     const isExpiredSub = !isCommissionSub && ((tenant?.subscription_status === 'expired') || (subEndsAtDate && new Date(subEndsAtDate) < new Date()));
+
+    // Filter plans: If user is on a paid plan (commission, monthly, yearly), hide the free plan completely
+    const displayedPlans = plans.filter(plan => {
+        const isFreePlan = plan.slug === 'free' || plan.name?.includes('مجانية');
+        if (isFreePlan && hasPaidPlan) {
+            return false;
+        }
+        return true;
+    });
 
     return (
         <MerchantLayout title="الاشتراك والفوترة">
@@ -192,7 +202,7 @@ export default function SubscriptionIndex({ subscription, plans, receipts, usage
 
                     {/* Pricing Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {plans.map((plan) => {
+                        {displayedPlans.map((plan) => {
                             const isCommissionPlan = plan.slug === 'commission' || plan.name?.includes('عمولة') || plan.name?.includes('محفظة');
                             const isFreePlan = plan.slug === 'free' || plan.name?.includes('مجانية');
                             const isMonthlyPlan = plan.slug === 'monthly' || plan.name?.includes('شهرية');
@@ -222,8 +232,12 @@ export default function SubscriptionIndex({ subscription, plans, receipts, usage
                                         <div className="flex items-center justify-between mb-2">
                                             <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
                                             {isCurrent && (
-                                                <span className="bg-emerald-600 text-white text-xs px-2.5 py-1 rounded-full font-bold">
-                                                    باقتك الحالية
+                                                <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${
+                                                    isFreePlan && isExpiredSub
+                                                        ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                                                        : 'bg-emerald-600 text-white'
+                                                }`}>
+                                                    {isFreePlan && isExpiredSub ? 'باقة منتهية' : 'باقتك الحالية'}
                                                 </span>
                                             )}
                                         </div>
@@ -327,13 +341,31 @@ export default function SubscriptionIndex({ subscription, plans, receipts, usage
                                         </ul>
                                     </div>
 
-                                    {isCommissionPlan && !isCurrent ? (
-                                        <Link
-                                            href={route('merchant.wallet.index')}
-                                            className="w-full py-3 rounded-2xl font-extrabold text-center transition-all bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg hover:shadow-emerald-200 block"
+                                    {isFreePlan ? (
+                                        <button
+                                            type="button"
+                                            disabled
+                                            className="w-full py-3 rounded-2xl font-bold text-center bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
                                         >
-                                            اشحن المحفظة 💳
-                                        </Link>
+                                            {isExpiredSub ? 'باقة تجريبية منتهية' : 'باقتك الحالية (تجريبية)'}
+                                        </button>
+                                    ) : isCommissionPlan ? (
+                                        isCurrent ? (
+                                            <button
+                                                type="button"
+                                                disabled
+                                                className="w-full py-3 rounded-2xl font-bold text-center bg-emerald-50 text-emerald-700 cursor-not-allowed border border-emerald-200"
+                                            >
+                                                باقتك الحالية (نشطة)
+                                            </button>
+                                        ) : (
+                                            <Link
+                                                href={route('merchant.wallet.index')}
+                                                className="w-full py-3 rounded-2xl font-extrabold text-center transition-all bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg hover:shadow-emerald-200 block"
+                                            >
+                                                اشحن المحفظة 💳
+                                            </Link>
+                                        )
                                     ) : (
                                         <button
                                             type="button"
@@ -342,7 +374,7 @@ export default function SubscriptionIndex({ subscription, plans, receipts, usage
                                             className={`w-full py-3 rounded-2xl font-bold text-center transition-all ${
                                                 isCurrent
                                                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-                                                    : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-indigo-200'
+                                                    : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-indigo-200 cursor-pointer'
                                             }`}
                                         >
                                             {isCurrent ? 'باقتك الحالية' : 'اشترك الآن'}
