@@ -585,6 +585,61 @@ s0.parentNode.insertBefore(s1,s0);
     color: var(--primary-color) !important;
   }
 
+  /* Discount & Shipping Badges on Product Card */
+  .discount-badge, .badge-discount {
+    position: absolute !important;
+    top: 8px !important;
+    left: 8px !important;
+    right: auto !important;
+    background: #ef4444 !important;
+    color: #ffffff !important;
+    padding: 2px 7px !important;
+    border-radius: 5px !important;
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    z-index: 5 !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+    white-space: nowrap !important;
+    pointer-events: none !important;
+    border: none !important;
+  }
+
+  .free-shipping-badge {
+    position: absolute !important;
+    top: 8px !important;
+    right: 8px !important;
+    left: auto !important;
+    background: #16a34a !important;
+    color: #ffffff !important;
+    padding: 2px 7px !important;
+    border-radius: 5px !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    z-index: 5 !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+    white-space: nowrap !important;
+    pointer-events: none !important;
+  }
+
+  @media (max-width: 640px) {
+    .discount-badge, .badge-discount {
+      top: 6px !important;
+      left: 6px !important;
+      padding: 2px 5px !important;
+      font-size: 0.68rem !important;
+      border-radius: 4px !important;
+    }
+    .free-shipping-badge {
+      top: 6px !important;
+      right: 6px !important;
+      padding: 2px 5px !important;
+      font-size: 0.68rem !important;
+      border-radius: 4px !important;
+    }
+  }
+
   /* Nav Links & Header Icons */
   .nav a.active, .nav a:hover {
     background: var(--primary-light) !important;

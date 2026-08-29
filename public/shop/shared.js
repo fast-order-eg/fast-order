@@ -340,11 +340,10 @@ function formatPrice(after, before){
   const priceNow = formatEGP(now);
   const beforeVal = (before!=null)? Math.round(Number(before)) : null;
   const hasDiscount = beforeVal && beforeVal>now;
-  const pct = hasDiscount ? Math.round(((beforeVal-now)/beforeVal)*100) : 0;
   
   if (hasDiscount) {
     return `<div class='price-block'>
-      <div class='price-now'>${priceNow} <span class='badge-discount'>-${pct}%</span></div>
+      <div class='price-now'>${priceNow}</div>
       <div class='price-row'><span class='old'>${formatEGP(beforeVal)}</span></div>
     </div>`;
   } else {
@@ -359,24 +358,23 @@ function productCard(p){
   const link = createEl('a'); link.href = `/shop/product.html?id=${p.id}`; link.style.textDecoration='none'; link.style.color='inherit';
   const img = createEl('img'); img.src = p.image_url || 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image'; img.alt=p.name||''; link.appendChild(img);
   
+  // بادج الخصم في أعلى يسار الصورة ببادينج وحجم متناسق وأنيق
+  const nowVal = Math.round(Number(p.price_after ?? 0));
+  const beforeVal = p.price_before != null ? Math.round(Number(p.price_before)) : null;
+  if (beforeVal && beforeVal > nowVal) {
+    const pct = Math.round(((beforeVal - nowVal) / beforeVal) * 100);
+    if (pct > 0) {
+      const discountBadge = createEl('div', 'discount-badge');
+      discountBadge.textContent = `-${pct}%`;
+      card.appendChild(discountBadge);
+    }
+  }
+
   // إضافة بادج الشحن المجاني
   if (p.shipping_type === 'free') {
     const freeShippingBadge = createEl('div', 'free-shipping-badge');
     const currentLang = getStorefrontLang();
     freeShippingBadge.textContent = currentLang === 'en' ? 'Free Shipping' : 'شحن مجاناً';
-    freeShippingBadge.style.cssText = `
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: #16a34a;
-      color: white;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      z-index: 2;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    `;
     card.appendChild(freeShippingBadge);
   }
   
