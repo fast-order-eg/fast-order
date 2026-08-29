@@ -103,7 +103,18 @@
           </div>
         </div>
         
-        <input type="hidden" name="pay" value="cod">
+        <!-- Dynamic Payment Gateways in Product Form -->
+        <div id="quickPaymentGatewaysContainer" style="display: none; margin-top: 10px; margin-bottom: 8px;">
+          <div style="font-size: 0.9rem; font-weight: 700; color: #334155; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+            <svg style="width: 16px; height: 16px; color: #4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            طريقة الدفع
+          </div>
+          <div id="quickPaymentMethodsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+
+        <input type="hidden" id="quickPayInput" name="pay" value="cod">
         <button type="submit" id="quickSubmitBtn" style="width: 100%; padding: 14px; font-size: 1.1rem; font-weight: bold; background: #000; color: white; border: none; border-radius: 25px; cursor: pointer; margin-top: 6px;">
           إتمام الطلب
         </button>
@@ -1239,61 +1250,8 @@
       }
 
       // Update real-time price & stock indicator
-      updateStockIndicator();
-
-      const bundleInput = document.querySelector('input[name="bundle_tier"]:checked');
-      const finalQty = bundleInput ? parseInt(bundleInput.value) : 1;
-      
-      if (finalQty === 1) {
-        let customVariantsData = [];
-        if (p.custom_variants) {
-          try { customVariantsData = typeof p.custom_variants === 'string' ? JSON.parse(p.custom_variants) : p.custom_variants; } catch(e){}
-        }
-        const hasCustomVariantsData = Array.isArray(customVariantsData) && customVariantsData.length > 0;
-
-        const sizeVal = hasSizes ? (document.querySelector(`input[name="product_size_0"]:checked`) ? document.querySelector(`input[name="product_size_0"]:checked`).value : null) : null;
-        const colorVal = hasColors ? (document.querySelector(`input[name="product_color_0"]:checked`) ? document.querySelector(`input[name="product_color_0"]:checked`).value : null) : null;
-        
-        let selectedCvOptions = {};
-        if (hasCustomVariantsData) {
-          customVariantsData.forEach((cv, cvIdx) => {
-            const input = document.querySelector(`input[name="product_cv_${cvIdx}_0"]:checked`);
-            if (input) selectedCvOptions[cv.name] = input.value;
-          });
-        }
-
-        const isCvMatch = (v) => {
-          if (!hasCustomVariantsData) return true;
-          const vOpt = v.options || {};
-          return customVariantsData.every(cv => {
-            if (!selectedCvOptions[cv.name]) return true;
-            return vOpt[cv.name] === selectedCvOptions[cv.name];
-          });
-        };
-
-        const match = stock.find(v => 
-          (!hasSizes || !sizeVal || v.size === sizeVal) && 
-          (!hasColors || !colorVal || v.color === colorVal) &&
-          isCvMatch(v)
-        );
-        
-        if (match && match.price && Number(match.price) > 0) {
-          const priceNowEl = document.getElementById('mainPriceNow');
-          if (priceNowEl) {
-            priceNowEl.textContent = BirdCart.formatEGP(match.price);
-          }
-          document.querySelectorAll('.p-btn-add, .p-btn-buy-now').forEach(btn => {
-            btn.dataset.price = match.price;
-          });
-        } else {
-          const priceNowEl = document.getElementById('mainPriceNow');
-          if (priceNowEl) {
-            priceNowEl.textContent = BirdCart.formatEGP(p.price_after || p.price || 0);
-          }
-          document.querySelectorAll('.p-btn-add, .p-btn-buy-now').forEach(btn => {
-            btn.dataset.price = p.price_after || p.price || 0;
-          });
-        }
+      if (typeof window.updateStockIndicator === 'function') {
+        window.updateStockIndicator();
       }
     };
 
@@ -1336,125 +1294,46 @@
       });
     };
 
-    window.updateStockIndicator = function() {
-      const p = window.currentProductData;
-      if (!p) return;
-
-      const bundleInput = document.querySelector('input[name="bundle_tier"]:checked');
-      const finalQty = bundleInput ? parseInt(bundleInput.value) : 1;
-      const hasSizes = p.sizes && p.sizes.length > 0;
-      const hasColors = p.colors && p.colors.length > 0;
-
-      let customVariantsData = p.custom_variants || [];
-      if (typeof customVariantsData === 'string') { try { customVariantsData = JSON.parse(customVariantsData); } catch(e) { customVariantsData = []; } }
-      const hasCustomVariants = Array.isArray(customVariantsData) && customVariantsData.length > 0;
-
-      const indicator = document.getElementById('stockIndicator');
-      if (!indicator) return;
-
-      if (!hasSizes && !hasColors && !hasCustomVariants) {
-        const stock = p.stock || 0;
-        if (stock > 10) {
-          indicator.innerHTML = '';
-        } else if (stock > 0) {
-          indicator.innerHTML = `<span class="badge-stock badge-stock-warning"><i class="fa fa-fire"></i> متبقي ${stock} قطعة فقط!</span>`;
-        } else {
-          indicator.innerHTML = `<span class="badge-stock badge-stock-out"><i class="fa fa-times-circle"></i> غير متوفر في المخزون</span>`;
-        }
-        return;
-      }
-
-      let allSelectionsValid = true;
-      let outOfStockCount = 0;
-      let warningCount = 0;
-      let piecesStocks = [];
-
-      for (let i = 0; i < finalQty; i++) {
-        let sizeSelected = !hasSizes || document.querySelector(`input[name="product_size_${i}"]:checked`);
-        let colorSelected = !hasColors || document.querySelector(`input[name="product_color_${i}"]:checked`);
-
-        if (sizeSelected && colorSelected) {
-          const match = findVariantMatch(p, i);
-          let qty = 100;
-          if (match) {
-            qty = (match.qty === null || match.qty === undefined || match.qty === '') ? 100 : Number(match.qty);
-          } else if (p.stock !== undefined && p.stock !== null) {
-            qty = Number(p.stock);
-          }
-          piecesStocks.push(qty);
-          if (qty <= 0) {
-            outOfStockCount++;
-          } else if (qty <= 10) {
-            warningCount++;
-          }
-        } else {
-          allSelectionsValid = false;
-        }
-      }
-
-      if (!allSelectionsValid) {
-        indicator.innerHTML = '';
-      } else if (outOfStockCount > 0) {
-        indicator.innerHTML = `<span class="badge-stock badge-stock-out"><i class="fa fa-times-circle"></i> غير متوفر في المخزون</span>`;
-      } else if (warningCount > 0) {
-        const minStock = Math.min(...piecesStocks);
-        indicator.innerHTML = `<span class="badge-stock badge-stock-warning"><i class="fa fa-fire"></i> متبقي ${minStock} قطعة فقط!</span>`;
-      } else {
-        indicator.innerHTML = '';
-      }
-
-      // ── رسالة low-stock تحت أزرار المتغير المختار ──
-      for (let i = 0; i < finalQty; i++) {
-        const matchI = findVariantMatch(p, i);
-        const vQty = matchI 
-          ? (matchI.qty === null || matchI.qty === undefined || matchI.qty === '' ? 999 : Number(matchI.qty)) 
-          : (p.stock !== undefined ? Number(p.stock) : 999);
-
-        let lowStockEl = document.getElementById(`variantLowStockNotice_${i}`);
-        if (!lowStockEl && i === 0) {
-          lowStockEl = document.getElementById('variantLowStockMsg');
-          if (!lowStockEl) {
-            lowStockEl = document.createElement('div');
-            lowStockEl.id = 'variantLowStockMsg';
-            const variantsContainer = document.getElementById('variantsContainer');
-            if (variantsContainer) variantsContainer.insertAdjacentElement('afterend', lowStockEl);
-          }
-        }
-        if (lowStockEl) {
-          if (vQty > 0 && vQty <= 10) {
-            lowStockEl.innerHTML = `<div style="margin-top: 6px; font-size: 0.85rem; font-weight: 700; color: #dc2626; display: flex; align-items: center; gap: 5px;"><i class="fa fa-fire" style="color:#ef4444;"></i> متبقي ${vQty} قطعة فقط</div>`;
-          } else {
-            lowStockEl.innerHTML = '';
-          }
-        }
-      }
-
-      if (window.updateQuickCheckoutSummary) {
-        window.updateQuickCheckoutSummary();
-      }
-    };
-
     window.calculateTotalPiecesPrice = function(p, finalQty) {
       if (!p) return 0;
       const bundleInput = document.querySelector('input[name="bundle_tier"]:checked');
-      if (bundleInput && bundleInput.dataset.price) {
-        return Number(bundleInput.dataset.price);
-      }
-
       const baseUnitPrice = (p.price_after !== undefined && p.price_after !== null && p.price_after !== '') 
         ? Number(p.price_after) 
         : Number(p.price || 0);
 
-      let total = 0;
+      let variantSum = 0;
+      let variantDiffSum = 0;
+      let hasCustomVariantPrice = false;
+
       for (let i = 0; i < finalQty; i++) {
-        const match = findVariantMatch(p, i);
+        const match = typeof window.findVariantMatch === 'function' ? window.findVariantMatch(p, i) : null;
         if (match && match.price && Number(match.price) > 0) {
-          total += Number(match.price);
+          hasCustomVariantPrice = true;
+          variantSum += Number(match.price);
+          variantDiffSum += (Number(match.price) - baseUnitPrice);
         } else {
-          total += baseUnitPrice;
+          variantSum += baseUnitPrice;
         }
       }
-      return total;
+
+      if (bundleInput && bundleInput.dataset.price) {
+        const tierQty = parseInt(bundleInput.value) || 1;
+        const tierPrice = Number(bundleInput.dataset.price);
+
+        if (tierQty === 1) {
+          if (hasCustomVariantPrice) {
+            return variantSum;
+          }
+          return tierPrice;
+        } else {
+          if (hasCustomVariantPrice) {
+            return Math.max(0, tierPrice + variantDiffSum);
+          }
+          return tierPrice;
+        }
+      }
+
+      return variantSum;
     };
 
     window.updateQuickCheckoutSummary = function() {
@@ -1471,6 +1350,10 @@
       if (priceNowEl) {
         priceNowEl.textContent = BirdCart.formatEGP(productTotal);
       }
+
+      document.querySelectorAll('.p-btn-add, .p-btn-buy-now').forEach(btn => {
+        btn.dataset.price = (finalQty > 0) ? (productTotal / finalQty) : productTotal;
+      });
 
       let shippingCost = 0;
       const shippingEl = document.getElementById('qcShippingCost');
@@ -1506,6 +1389,108 @@
       const totalEl = document.getElementById('qcTotalAmount');
       if (totalEl) {
         totalEl.textContent = new Intl.NumberFormat('en-EG').format(grandTotal) + ' ج.م';
+      }
+    };
+
+    window.updateStockIndicator = function() {
+      const p = window.currentProductData;
+      if (!p) return;
+
+      const bundleInput = document.querySelector('input[name="bundle_tier"]:checked');
+      const finalQty = bundleInput ? parseInt(bundleInput.value) : 1;
+      const hasSizes = p.sizes && p.sizes.length > 0;
+      const hasColors = p.colors && p.colors.length > 0;
+
+      let customVariantsData = p.custom_variants || [];
+      if (typeof customVariantsData === 'string') { try { customVariantsData = JSON.parse(customVariantsData); } catch(e) { customVariantsData = []; } }
+      const hasCustomVariants = Array.isArray(customVariantsData) && customVariantsData.length > 0;
+
+      const indicator = document.getElementById('stockIndicator');
+
+      if (!hasSizes && !hasColors && !hasCustomVariants) {
+        if (indicator) {
+          const stock = p.stock || 0;
+          if (stock > 10) {
+            indicator.innerHTML = '';
+          } else if (stock > 0) {
+            indicator.innerHTML = `<span class="badge-stock badge-stock-warning"><i class="fa fa-fire"></i> متبقي ${stock} قطعة فقط!</span>`;
+          } else {
+            indicator.innerHTML = `<span class="badge-stock badge-stock-out"><i class="fa fa-times-circle"></i> غير متوفر في المخزون</span>`;
+          }
+        }
+        if (window.updateQuickCheckoutSummary) window.updateQuickCheckoutSummary();
+        return;
+      }
+
+      let allSelectionsValid = true;
+      let outOfStockCount = 0;
+      let warningCount = 0;
+      let piecesStocks = [];
+
+      for (let i = 0; i < finalQty; i++) {
+        let sizeSelected = !hasSizes || document.querySelector(`input[name="product_size_${i}"]:checked`);
+        let colorSelected = !hasColors || document.querySelector(`input[name="product_color_${i}"]:checked`);
+
+        if (sizeSelected && colorSelected) {
+          const match = window.findVariantMatch(p, i);
+          let qty = 100;
+          if (match) {
+            qty = (match.qty === null || match.qty === undefined || match.qty === '') ? 100 : Number(match.qty);
+          } else if (p.stock !== undefined && p.stock !== null) {
+            qty = Number(p.stock);
+          }
+          piecesStocks.push(qty);
+          if (qty <= 0) {
+            outOfStockCount++;
+          } else if (qty <= 10) {
+            warningCount++;
+          }
+        } else {
+          allSelectionsValid = false;
+        }
+      }
+
+      if (indicator) {
+        if (!allSelectionsValid) {
+          indicator.innerHTML = '';
+        } else if (outOfStockCount > 0) {
+          indicator.innerHTML = `<span class="badge-stock badge-stock-out"><i class="fa fa-times-circle"></i> غير متوفر في المخزون</span>`;
+        } else if (warningCount > 0) {
+          const minStock = Math.min(...piecesStocks);
+          indicator.innerHTML = `<span class="badge-stock badge-stock-warning"><i class="fa fa-fire"></i> متبقي ${minStock} قطعة فقط!</span>`;
+        } else {
+          indicator.innerHTML = '';
+        }
+      }
+
+      // ── رسالة low-stock تحت أزرار المتغير المختار ──
+      for (let i = 0; i < finalQty; i++) {
+        const matchI = window.findVariantMatch(p, i);
+        const vQty = matchI 
+          ? (matchI.qty === null || matchI.qty === undefined || matchI.qty === '' ? 999 : Number(matchI.qty)) 
+          : (p.stock !== undefined ? Number(p.stock) : 999);
+
+        let lowStockEl = document.getElementById(`variantLowStockNotice_${i}`);
+        if (!lowStockEl && i === 0) {
+          lowStockEl = document.getElementById('variantLowStockMsg');
+          if (!lowStockEl) {
+            lowStockEl = document.createElement('div');
+            lowStockEl.id = 'variantLowStockMsg';
+            const variantsContainer = document.getElementById('variantsContainer');
+            if (variantsContainer) variantsContainer.insertAdjacentElement('afterend', lowStockEl);
+          }
+        }
+        if (lowStockEl) {
+          if (vQty > 0 && vQty <= 10) {
+            lowStockEl.innerHTML = `<div style="margin-top: 6px; font-size: 0.85rem; font-weight: 700; color: #dc2626; display: flex; align-items: center; gap: 5px;"><i class="fa fa-fire" style="color:#ef4444;"></i> متبقي ${vQty} قطعة فقط</div>`;
+          } else {
+            lowStockEl.innerHTML = '';
+          }
+        }
+      }
+
+      if (window.updateQuickCheckoutSummary) {
+        window.updateQuickCheckoutSummary();
       }
     };
 
@@ -1626,6 +1611,60 @@
           if (window.updateQuickCheckoutSummary) window.updateQuickCheckoutSummary();
         });
     }
+
+    // Load active payment gateways for quick checkout
+    fetch('/public-api/payment-gateways')
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        var gateways = res.data || [];
+        var container = document.getElementById('quickPaymentGatewaysContainer');
+        var list = document.getElementById('quickPaymentMethodsList');
+        var hiddenInput = document.getElementById('quickPayInput');
+        if (!container || !list || !hiddenInput) return;
+
+        var hasOnline = gateways.some(function(g) { return g.provider !== 'cod'; });
+        if (hasOnline) {
+          container.style.display = 'block';
+          list.innerHTML = '';
+
+          gateways.forEach(function(gw, idx) {
+            var isSelected = idx === 0 || gw.provider === 'cod';
+            if (isSelected) hiddenInput.value = gw.provider;
+
+            var item = document.createElement('div');
+            item.className = 'quick-pay-option ' + (isSelected ? 'selected' : '');
+            item.style.cssText = 'border: 2px solid ' + (isSelected ? '#4f46e5' : '#e2e8f0') + '; background: ' + (isSelected ? '#f5f3ff' : '#ffffff') + '; border-radius: 12px; padding: 10px 14px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease;';
+
+            var isCod = gw.provider === 'cod';
+            var iconHtml = isCod
+              ? '<span style="font-size: 1.25rem;">💵</span>'
+              : '<div style="display: flex; align-items: center; gap: 4px;"><img src="/images/payments/cards_meeza_badge.svg" style="height: 18px;" alt="Cards" /><img src="/images/payments/wallets_badge.svg" style="height: 18px;" alt="Wallets" /></div>';
+
+            item.innerHTML = '<div style="display: flex; align-items: center; gap: 10px;">' +
+              '<input type="radio" name="_pay_choice" value="' + gw.provider + '" ' + (isSelected ? 'checked' : '') + ' style="accent-color: #4f46e5; width: 18px; height: 18px; cursor: pointer;" />' +
+              '<div><div style="font-weight: 700; font-size: 0.95rem; color: #1e293b;">' + gw.display_name + '</div>' +
+              (gw.display_description ? '<div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">' + gw.display_description + '</div>' : '') +
+              '</div></div>' + iconHtml;
+
+            item.onclick = function() {
+              document.querySelectorAll('.quick-pay-option').forEach(function(el) {
+                el.style.border = '2px solid #e2e8f0';
+                el.style.background = '#ffffff';
+                var r = el.querySelector('input[type="radio"]');
+                if (r) r.checked = false;
+              });
+              item.style.border = '2px solid #4f46e5';
+              item.style.background = '#f5f3ff';
+              var radio = item.querySelector('input[type="radio"]');
+              if (radio) radio.checked = true;
+              hiddenInput.value = gw.provider;
+            };
+
+            list.appendChild(item);
+          });
+        }
+      })
+      .catch(function(e) {});
 
     var quickForm = document.getElementById('quickCheckoutForm');
     window.validateQuickForm = function(form) {
@@ -1848,7 +1887,8 @@
                 }
             }
             await new Promise(function(r) { setTimeout(r, 250); });
-            window.location.href = '/shop/order-success.html?ref=' + data.data.reference_number;
+            var targetUrl = data.redirect_url || (data.data && data.data.redirect_url) || ('/shop/order-success.html?ref=' + data.data.reference_number);
+            window.location.href = targetUrl;
           } else {
             var errorDetails = '';
             if (data.errors) {

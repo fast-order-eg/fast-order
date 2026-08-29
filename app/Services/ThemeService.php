@@ -254,7 +254,7 @@ class ThemeService
     {
         $activeTheme = $this->getActiveTheme($tenantId);
 
-        if ($activeTheme !== 'default') {
+        if (!empty($activeTheme)) {
             $customPath = resource_path("views/shop/themes/{$activeTheme}/{$page}");
             if (File::exists($customPath)) {
                 return $customPath;
