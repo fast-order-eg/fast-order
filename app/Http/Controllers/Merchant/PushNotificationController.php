@@ -42,7 +42,7 @@ class PushNotificationController extends Controller
     public function subscribe(Request $request)
     {
         $validated = $request->validate([
-            'endpoint'          => 'required|string|url',
+            'endpoint'          => 'required|string',
             'keys.p256dh'       => 'required|string',
             'keys.auth'         => 'required|string',
             'content_encoding'  => 'nullable|string',
@@ -52,12 +52,16 @@ class PushNotificationController extends Controller
         $tenant   = $request->attributes->get('tenant');
         $tenantId = $tenant->id;
         $userId   = auth()->id();
+        $endpointHash = hash('sha256', $validated['endpoint']);
 
         PushSubscription::updateOrCreate(
-            ['endpoint' => $validated['endpoint']],
             [
-                'tenant_id'        => $tenantId,
+                'tenant_id'     => $tenantId,
+                'endpoint_hash' => $endpointHash,
+            ],
+            [
                 'user_id'          => $userId,
+                'endpoint'         => $validated['endpoint'],
                 'public_key'       => $validated['keys']['p256dh'],
                 'auth_token'       => $validated['keys']['auth'],
                 'content_encoding' => $validated['content_encoding'] ?? 'aesgcm',
@@ -66,7 +70,10 @@ class PushNotificationController extends Controller
             ]
         );
 
-        return response()->json(['success' => true, 'message' => 'تم تفعيل الاشعارات بنجاح!']);
+        return response()->json([
+            'success' => true,
+            'message' => 'تم تفعيل الإشعارات بنجاح على هذا الجهاز!',
+        ]);
     }
 
     /**
@@ -78,13 +85,17 @@ class PushNotificationController extends Controller
             'endpoint' => 'required|string',
         ]);
 
-        $tenant = $request->attributes->get('tenant');
+        $tenant       = $request->attributes->get('tenant');
+        $endpointHash = hash('sha256', $validated['endpoint']);
 
         PushSubscription::where('tenant_id', $tenant->id)
-            ->where('endpoint', $validated['endpoint'])
+            ->where('endpoint_hash', $endpointHash)
             ->delete();
 
-        return response()->json(['success' => true, 'message' => 'تم الغاء الاشعارات.']);
+        return response()->json([
+            'success' => true,
+            'message' => 'تم إلغاء تفعيل الإشعارات لهذا الجهاز.',
+        ]);
     }
 
     /**

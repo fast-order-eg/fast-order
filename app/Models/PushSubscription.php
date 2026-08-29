@@ -25,6 +25,15 @@ class PushSubscription extends Model
         'is_active' => 'boolean',
     ];
 
+    protected static function booted()
+    {
+        static::saving(function ($subscription) {
+            if (!empty($subscription->endpoint) && empty($subscription->endpoint_hash)) {
+                $subscription->endpoint_hash = hash('sha256', $subscription->endpoint);
+            }
+        });
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

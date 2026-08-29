@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
 import MerchantLayout from '@/Layouts/MerchantLayout';
+import axios from 'axios';
 
 export default function PushNotifications({ vapidPublicKey, deviceCount, settings }) {
     const [permission, setPermission] = useState('default');
@@ -9,8 +10,6 @@ export default function PushNotifications({ vapidPublicKey, deviceCount, setting
     const [loading, setLoading] = useState(false);
     const [testLoading, setTestLoading] = useState(false);
     const [message, setMessage] = useState(null);
-    const [enabled, setEnabled] = useState(settings?.enabled ?? true);
-    const [newOrders, setNewOrders] = useState(settings?.new_orders ?? true);
     const [supported, setSupported] = useState(true);
 
     useEffect(() => {
@@ -42,12 +41,12 @@ export default function PushNotifications({ vapidPublicKey, deviceCount, setting
             await navigator.serviceWorker.ready;
             return reg;
         } catch (e) {
-            throw new Error('فشل تسجيل Service Worker: ' + e.message);
+            throw new Error('فشل تسجيل ملف الخدمة Service Worker: ' + e.message);
         }
     };
 
     const urlBase64ToUint8Array = (base64String) => {
-        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
         const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
         const rawData = window.atob(base64);
         const outputArray = new Uint8Array(rawData.length);
@@ -55,133 +54,136 @@ export default function PushNotifications({ vapidPublicKey, deviceCount, setting
         return outputArray;
     };
 
-    const handleSubscribe = async () => {
-        if (!vapidPublicKey) {
-            showMessage('error', 'مفاتيح VAPID غير مضبوطة على السيرفر. تواصل مع الدعم الفني.');
-            return;
-        }
-        setLoading(true);
-        try {
-            const perm = await Notification.requestPermission();
-            setPermission(perm);
-            if (perm !== 'granted') {
-                showMessage('error', 'لم يتم السماح بالاشعارات. غيّر الاعداد من المتصفح وحاول مجدداً.');
+    const handleToggleSubscription = async () => {
+        if (loading) return;
+
+        if (isSubscribed) {
+            // Unsubscribe
+            setLoading(true);
+            try {
+                const reg = await navigator.serviceWorker.getRegistration('/sw.js');
+                if (reg) {
+                    const sub = await reg.pushManager.getSubscription();
+                    if (sub) {
+                        await sub.unsubscribe();
+                        await axios.post('/admin/push-notifications/unsubscribe', {
+                            endpoint: sub.endpoint,
+                        });
+                    }
+                }
+                setIsSubscribed(false);
+                setCurrentEndpoint(null);
+                showMessage('success', 'تم إلغاء تفعيل الإشعارات لهذا الجهاز');
+                router.reload({ only: ['deviceCount'] });
+            } catch (e) {
+                showMessage('error', 'حدث خطأ أثناء إلغاء التفعيل: ' + (e.response?.data?.message || e.message));
+            } finally {
+                setLoading(false);
+            }
+        } else {
+            // Subscribe
+            if (!vapidPublicKey) {
+                showMessage('error', 'مفاتيح VAPID غير مضبوطة على السيرفر.');
                 return;
             }
-            const reg = await registerServiceWorker();
-            const sub = await reg.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-            });
-            const subJson = sub.toJSON();
-            const deviceName = getDeviceName();
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-            const res = await fetch(window.location.pathname.replace('/push-notifications', '') + '/push-notifications/subscribe', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-                body: JSON.stringify({ ...subJson, device_name: deviceName }),
-            });
-            const data = await res.json();
-            if (data.success) {
-                setIsSubscribed(true);
-                setCurrentEndpoint(sub.endpoint);
-                showMessage('success', data.message);
-                router.reload({ only: ['deviceCount'] });
-            } else {
-                showMessage('error', data.message);
-            }
-        } catch (e) {
-            showMessage('error', 'حدث خطأ: ' + e.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleUnsubscribe = async () => {
-        setLoading(true);
-        try {
-            const reg = await navigator.serviceWorker.getRegistration('/sw.js');
-            if (reg) {
-                const sub = await reg.pushManager.getSubscription();
-                if (sub) {
-                    await sub.unsubscribe();
-                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-                    await fetch(window.location.pathname.replace('/push-notifications', '') + '/push-notifications/unsubscribe', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-                        body: JSON.stringify({ endpoint: sub.endpoint }),
-                    });
+            setLoading(true);
+            try {
+                const perm = await Notification.requestPermission();
+                setPermission(perm);
+                if (perm !== 'granted') {
+                    showMessage('error', 'لم يتم السماح بالإشعارات من المتصفح.');
+                    return;
                 }
+                const reg = await registerServiceWorker();
+                const sub = await reg.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+                });
+                const subJson = sub.toJSON();
+                const deviceName = getDeviceName();
+
+                const res = await axios.post('/admin/push-notifications/subscribe', {
+                    ...subJson,
+                    device_name: deviceName,
+                });
+
+                if (res.data.success) {
+                    setIsSubscribed(true);
+                    setCurrentEndpoint(sub.endpoint);
+                    showMessage('success', res.data.message || 'تم تفعيل الإشعارات بنجاح!');
+                    router.reload({ only: ['deviceCount'] });
+                } else {
+                    showMessage('error', res.data.message || 'فشل التفعيل');
+                }
+            } catch (e) {
+                showMessage('error', 'حدث خطأ: ' + (e.response?.data?.message || e.message));
+            } finally {
+                setLoading(false);
             }
-            setIsSubscribed(false);
-            setCurrentEndpoint(null);
-            showMessage('success', 'تم الغاء الاشتراك في الاشعارات لهذا الجهاز.');
-            router.reload({ only: ['deviceCount'] });
-        } catch (e) {
-            showMessage('error', 'حدث خطأ: ' + e.message);
-        } finally {
-            setLoading(false);
         }
     };
 
     const handleSendTest = async () => {
         setTestLoading(true);
         try {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-            const res = await fetch(window.location.pathname.replace('/push-notifications', '') + '/push-notifications/test', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-            });
-            const data = await res.json();
-            showMessage(data.success ? 'success' : 'error', data.message);
+            const res = await axios.post('/admin/push-notifications/test');
+            showMessage(res.data.success ? 'success' : 'error', res.data.message);
         } catch (e) {
-            showMessage('error', 'فشل الارسال: ' + e.message);
+            showMessage('error', 'فشل الإرسال: ' + (e.response?.data?.message || e.message));
         } finally {
             setTestLoading(false);
         }
     };
 
-    const handleSaveSettings = async () => {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-        const res = await fetch(window.location.pathname.replace('/push-notifications', '') + '/push-notifications/settings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-            body: JSON.stringify({ enabled, new_orders: newOrders }),
-        });
-        const data = await res.json();
-        showMessage(data.success ? 'success' : 'error', data.message);
-    };
-
     const showMessage = (type, text) => {
         setMessage({ type, text });
-        setTimeout(() => setMessage(null), 4000);
+        setTimeout(() => setMessage(null), 5000);
     };
 
     const getDeviceName = () => {
         const ua = navigator.userAgent;
-        if (/iPhone/.test(ua)) return 'iPhone';
-        if (/Android/.test(ua)) return 'Android';
+        if (/iPhone/.test(ua)) return 'iPhone (Safari)';
+        if (/Android/.test(ua)) return 'Android (Chrome)';
         if (/iPad/.test(ua)) return 'iPad';
         if (/Windows/.test(ua)) return 'Windows PC';
         if (/Mac/.test(ua)) return 'Mac';
-        return 'Unknown Device';
+        return 'متصفح ويب';
     };
 
     const getPermissionInfo = () => {
-        if (permission === 'granted') return { color: 'text-green-600 bg-green-50', icon: '✅', text: 'مسموح بالاشعارات' };
-        if (permission === 'denied') return { color: 'text-red-600 bg-red-50', icon: '🚫', text: 'محظور - غيّر الاعدادات يدوياً من المتصفح' };
-        return { color: 'text-yellow-600 bg-yellow-50', icon: '⚠️', text: 'لم يتم الطلب بعد' };
+        if (permission === 'granted') {
+            return {
+                badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                dotBg: 'bg-emerald-500',
+                text: 'مسموح بالإشعارات في المتصفح',
+                desc: 'متصفحك جاهز لاستقبال التنبيهات الفورية',
+            };
+        }
+        if (permission === 'denied') {
+            return {
+                badgeBg: 'bg-rose-50 text-rose-700 border-rose-200',
+                dotBg: 'bg-rose-500',
+                text: 'الإشعارات محظورة في هذا المتصفح',
+                desc: 'اضغط على علامة القفل 🔒 بجانب الرابط وفعل إذن الإشعارات',
+            };
+        }
+        return {
+            badgeBg: 'bg-amber-50 text-amber-700 border-amber-200',
+            dotBg: 'bg-amber-500',
+            text: 'بانتظار طلب الإذن',
+            desc: 'سيطلب المتصفح موافقتك عند تشغيل الإشعارات بالأسفل',
+        };
     };
 
     if (!supported) {
         return (
             <MerchantLayout>
-                <Head title="اشعارات الطلبات" />
-                <div className="p-6 max-w-2xl mx-auto">
-                    <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-red-700 text-center">
-                        <div className="text-4xl mb-3">😞</div>
-                        <h3 className="font-bold text-lg">متصفحك لا يدعم الاشعارات</h3>
-                        <p className="text-sm mt-1">جرّب Chrome او Edge او Safari 16.4+</p>
+                <Head title="إشعارات الطلبات" />
+                <div className="p-6 max-w-xl mx-auto" dir="rtl">
+                    <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 text-rose-700 text-center shadow-sm">
+                        <div className="text-4xl mb-3">⚠️</div>
+                        <h3 className="font-bold text-lg mb-1">متصفحك لا يدعم الإشعارات الفورية</h3>
+                        <p className="text-sm text-rose-600">يرجى فتح لوحة التحكم من متصفح حديث مثل Google Chrome أو Microsoft Edge أو Safari 16.4+.</p>
                     </div>
                 </div>
             </MerchantLayout>
@@ -192,137 +194,124 @@ export default function PushNotifications({ vapidPublicKey, deviceCount, setting
 
     return (
         <MerchantLayout>
-            <Head title="اشعارات الطلبات" />
-            <div className="p-4 md:p-6 max-w-2xl mx-auto space-y-5" dir="rtl">
-                <div className="flex items-center gap-3 mb-2">
-                    <div className="text-3xl">🔔</div>
+            <Head title="إشعارات الطلبات" />
+            <div className="p-4 md:p-6 max-w-xl mx-auto space-y-5" dir="rtl">
+                {/* رأس الصفحة */}
+                <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-2xl shadow-sm">
+                        🔔
+                    </div>
                     <div>
-                        <h1 className="text-xl font-bold text-gray-800">اشعارات الطلبات الفورية</h1>
-                        <p className="text-sm text-gray-500">استقبل اشعاراً فورياً على جهازك لحظة وصول اي طلب جديد</p>
+                        <h1 className="text-lg md:text-xl font-bold text-gray-900">إشعارات الطلبات الفورية</h1>
+                        <p className="text-xs md:text-sm text-gray-500 mt-0.5">تنبيهات صوتية فورية على جهازك لحظة وصول أي طلب جديد</p>
                     </div>
                 </div>
 
+                {/* رسالة التنبيهات */}
                 {message && (
-                    <div className={`rounded-xl p-4 text-sm font-medium flex items-center gap-2 ${
-                        message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
+                    <div className={`rounded-xl p-4 text-sm font-medium flex items-center gap-3 border transition-all ${
+                        message.type === 'success'
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200 shadow-sm'
+                            : 'bg-rose-50 text-rose-800 border-rose-200 shadow-sm'
                     }`}>
-                        <span>{message.type === 'success' ? '✅' : '❌'}</span>
-                        {message.text}
+                        <span className="text-lg">{message.type === 'success' ? '✅' : '❌'}</span>
+                        <span className="flex-1">{message.text}</span>
                     </div>
                 )}
 
-                {/* حالة الاذن */}
-                <div className={`rounded-xl p-4 flex items-center gap-3 ${permInfo.color} border`}>
-                    <span className="text-xl">{permInfo.icon}</span>
-                    <div>
-                        <div className="font-semibold text-sm">حالة الاشعارات في هذا المتصفح</div>
-                        <div className="text-xs mt-0.5">{permInfo.text}</div>
+                {/* فحص حالة إذن المتصفح */}
+                <div className={`rounded-2xl p-4 border flex items-center justify-between gap-3 ${permInfo.badgeBg} shadow-sm`}>
+                    <div className="flex items-center gap-3">
+                        <div className="relative flex h-3 w-3">
+                            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${permInfo.dotBg}`}></span>
+                            <span className={`relative inline-flex rounded-full h-3 w-3 ${permInfo.dotBg}`}></span>
+                        </div>
+                        <div>
+                            <div className="font-bold text-sm">{permInfo.text}</div>
+                            <div className="text-xs opacity-80 mt-0.5">{permInfo.desc}</div>
+                        </div>
                     </div>
                 </div>
 
-                {/* تفعيل/الغاء الجهاز */}
-                <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                    <h2 className="font-semibold text-gray-700 mb-1">هذا الجهاز</h2>
-                    <p className="text-xs text-gray-400 mb-4">
-                        {isSubscribed ? `✅ مفعّل — سيصلك إشعار فوري على هذا الجهاز` : 'غير مفعّل على هذا الجهاز بعد'}
-                    </p>
-                    <div className="flex flex-wrap gap-3">
-                        {!isSubscribed ? (
-                            <button
-                                onClick={handleSubscribe}
-                                disabled={loading || permission === 'denied'}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50"
+                {/* بطاقة السويتش ON/OFF للجهاز الحالي */}
+                <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                                <span className="font-bold text-base text-gray-900">إشعارات هذا الجهاز</span>
+                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">
+                                    {getDeviceName()}
+                                </span>
+                            </div>
+                            <p className="text-xs text-gray-500">
+                                {isSubscribed
+                                    ? 'الإشعارات مفعلة حالياً — ستصلك فوراً عند وصول أي طلب'
+                                    : 'الإشعارات متوقفة على هذا الجهاز'}
+                            </p>
+                        </div>
+
+                        {/* Switch ON/OFF */}
+                        <button
+                            type="button"
+                            role="switch"
+                            aria-checked={isSubscribed}
+                            disabled={loading || permission === 'denied'}
+                            onClick={handleToggleSubscription}
+                            className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
+                                isSubscribed ? 'bg-indigo-600' : 'bg-gray-200'
+                            }`}
+                        >
+                            <span className="sr-only">تفعيل الإشعارات</span>
+                            <span
+                                className={`pointer-events-none inline-block h-7 w-7 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out flex items-center justify-center ${
+                                    isSubscribed ? '-translate-x-6' : 'translate-x-0'
+                                }`}
                             >
-                                {loading ? <span className="animate-spin">⟳</span> : '🔔'}
-                                {loading ? 'جاري التفعيل...' : 'فعّل الاشعارات على هذا الجهاز'}
-                            </button>
-                        ) : (
+                                {loading ? (
+                                    <svg className="animate-spin h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                ) : isSubscribed ? (
+                                    <span className="text-[10px] text-indigo-600 font-bold">ON</span>
+                                ) : (
+                                    <span className="text-[10px] text-gray-400 font-bold">OFF</span>
+                                )}
+                            </span>
+                        </button>
+                    </div>
+
+                    {/* زر إرسال إشعار تجريبي يظهر فقط إذا كان مفعل */}
+                    {isSubscribed && (
+                        <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+                            <span className="text-xs text-gray-500">جرب وصول الإشعار والصوت الآن:</span>
                             <button
-                                onClick={handleUnsubscribe}
-                                disabled={loading}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition disabled:opacity-50"
-                            >
-                                {loading ? <span className="animate-spin">⟳</span> : '🔕'}
-                                {loading ? 'جاري الالغاء...' : 'الغاء الاشعارات لهذا الجهاز'}
-                            </button>
-                        )}
-                        {isSubscribed && (
-                            <button
+                                type="button"
                                 onClick={handleSendTest}
                                 disabled={testLoading}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50"
+                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl text-xs font-semibold transition shadow-sm disabled:opacity-50"
                             >
-                                {testLoading ? <span className="animate-spin">⟳</span> : '🧪'}
-                                {testLoading ? 'جاري الارسال...' : 'ارسال اشعار تجريبي'}
+                                {testLoading ? (
+                                    <span className="animate-spin">⟳</span>
+                                ) : (
+                                    <span>🧪</span>
+                                )}
+                                <span>إرسال إشعار تجريبي</span>
                             </button>
-                        )}
-                    </div>
-                    {permission === 'denied' && (
-                        <div className="mt-3 p-3 bg-red-50 rounded-lg text-xs text-red-600">
-                            <strong>كيف تفتح الاشعارات يدوياً:</strong><br />
-                            Chrome: اضغط على أيقونة القفل 🔒 قدام رابط الصفحة &rarr; الاشعارات &rarr; سماح<br />
-                            Mobile: الاعدادات &rarr; تطبيقات &rarr; Chrome &rarr; الاشعارات &rarr; تفعيل
                         </div>
                     )}
                 </div>
 
-                {/* احصائيات */}
-                <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                    <h2 className="font-semibold text-gray-700 mb-3">الاجهزة المشتركة</h2>
-                    <div className="flex items-center gap-3">
-                        <div className="text-3xl font-bold text-indigo-600">{deviceCount}</div>
-                        <div className="text-sm text-gray-500">جهاز مفعّل حالياً<br /><span className="text-xs">(موبايل + كمبيوتر + تابلت)</span></div>
+                {/* كارت الأجهزة المشتركة */}
+                <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm flex items-center justify-between">
+                    <div>
+                        <div className="text-xs text-gray-500 font-medium">الأجهزة المفعلة بالمتجر</div>
+                        <div className="text-xs text-gray-400 mt-0.5">تصل الإشعارات لجميع أجهزتك المفتوحة تلقائياً</div>
                     </div>
-                    <p className="text-xs text-gray-400 mt-2">كل جهاز تسجّل فيه سيستقبل الاشعار بشكل مستقل</p>
-                </div>
-
-                {/* اعدادات الاشعارات */}
-                <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                    <h2 className="font-semibold text-gray-700 mb-4">اعدادات الاشعارات</h2>
-                    <div className="space-y-3">
-                        <label className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
-                            <div>
-                                <div className="font-medium text-sm text-gray-700">تفعيل الاشعارات</div>
-                                <div className="text-xs text-gray-400">تفعيل او تعطيل كل الاشعارات</div>
-                            </div>
-                            <input
-                                type="checkbox"
-                                checked={enabled}
-                                onChange={e => setEnabled(e.target.checked)}
-                                className="w-5 h-5 accent-indigo-600"
-                            />
-                        </label>
-                        <label className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer">
-                            <div>
-                                <div className="font-medium text-sm text-gray-700">🛍️ الطلبات الجديدة</div>
-                                <div className="text-xs text-gray-400">اشعار فوري عند كل طلب جديد</div>
-                            </div>
-                            <input
-                                type="checkbox"
-                                checked={newOrders}
-                                onChange={e => setNewOrders(e.target.checked)}
-                                className="w-5 h-5 accent-indigo-600"
-                            />
-                        </label>
+                    <div className="flex items-baseline gap-1.5 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-xl">
+                        <span className="text-xl font-extrabold text-indigo-600">{deviceCount}</span>
+                        <span className="text-xs text-indigo-700 font-medium">أجهزة</span>
                     </div>
-                    <button
-                        onClick={handleSaveSettings}
-                        className="mt-4 px-5 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-xl text-sm font-semibold transition"
-                    >
-                        حفظ الاعدادات
-                    </button>
-                </div>
-
-                {/* دعم الاجهزة */}
-                <div className="bg-gray-50 rounded-xl border border-gray-200 p-4">
-                    <h3 className="font-semibold text-gray-600 text-sm mb-2">الاجهزة المدعومة</h3>
-                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
-                        <div>✅ Android Chrome/Firefox</div>
-                        <div>✅ Windows Chrome/Edge/Firefox</div>
-                        <div>✅ Mac Safari/Chrome</div>
-                        <div>✅ iPhone iOS 16.4+ Safari</div>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-2">* على الايفون يجب اضافة الموقع للهوم سكرين اولاً</p>
                 </div>
             </div>
         </MerchantLayout>
