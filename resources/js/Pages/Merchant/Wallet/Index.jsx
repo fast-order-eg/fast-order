@@ -6,7 +6,7 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
     const { flash } = usePage().props;
 
     const [activeTab, setActiveTab] = useState('deposit'); // deposit, history
-    const [chargeMode, setChargeMode] = useState('instant'); // 'instant' (Paymob) or 'manual' (Cash/InstaPay)
+    const [chargeMode, setChargeMode] = useState('manual'); // 'manual' (Cash/InstaPay) default
 
     // Manual Form State
     const [manualQuickAmount, setManualQuickAmount] = useState(300);
@@ -146,7 +146,7 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
                                 👛 محفظة المتجر
                             </span>
                             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">إدارة المحفظة والرصيد</h1>
-                            <p className="text-xs text-indigo-200/80">شحن الرصيد فورياً واستعراض سجل المعاملات المالية والخصومات</p>
+                            <p className="text-xs text-indigo-200/80">شحن الرصيد واستعراض السجل والخصومات</p>
                         </div>
                         <div className="bg-white/10 backdrop-blur-md border border-white/15 p-5 rounded-2xl flex flex-col items-start sm:items-end min-w-[220px]">
                             <span className="text-xs text-indigo-200 font-semibold mb-1">الرصيد الحالي بالمحفظة</span>
@@ -207,275 +207,17 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
                         }`}
                     >
                         <span>📋</span>
-                        <span>سجل عمليات الشحن والمعاملات ({depositRequests.length})</span>
+                        <span>السجل ({depositRequests.length})</span>
                     </button>
                 </div>
 
-                {/* Tab 1: Charge Wallet (Instant vs Manual) */}
+                {/* Tab 1: Charge Wallet (Manual) */}
                 {activeTab === 'deposit' && (
                     <div className="space-y-6">
-                        {/* Charge Mode Selector: Instant vs Manual */}
-                        <div className="bg-gradient-to-r from-slate-50 to-indigo-50/40 p-2 rounded-2xl border border-indigo-100 flex flex-col sm:flex-row gap-2">
-                            <button
-                                type="button"
-                                onClick={() => setChargeMode('instant')}
-                                className={`flex-1 py-3.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-2.5 cursor-pointer ${
-                                    chargeMode === 'instant'
-                                        ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-lg shadow-emerald-600/20 scale-[1.01]'
-                                        : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-100'
-                                }`}
-                            >
-                                <span className="text-base">⚡</span>
-                                <span>شحن لحظي (دفع فوري بالفيزا والمحافظ الإلكترونية)</span>
-                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                                    chargeMode === 'instant' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
-                                }`}>
-                                    فوري ⚡
-                                </span>
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => setChargeMode('manual')}
-                                className={`flex-1 py-3.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-2.5 cursor-pointer ${
-                                    chargeMode === 'manual'
-                                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 scale-[1.01]'
-                                        : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-100'
-                                }`}
-                            >
-                                <span className="text-base">📝</span>
-                                <span>شحن يدوي (تحويل كاش / إنستاباي وإرفاق إشعار)</span>
-                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                                    chargeMode === 'manual' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-700'
-                                }`}>
-                                    مراجعة يدوية
-                                </span>
-                            </button>
-                        </div>
-
-                        {/* MODE A: INSTANT TOP-UP (PAYMOB) */}
-                        {chargeMode === 'instant' && (
-                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                                {/* Left 7/12: Instant Deposit Form */}
-                                <div className="lg:col-span-7 bg-white rounded-3xl border border-emerald-200/80 shadow-sm p-6 sm:p-7 space-y-6">
-                                    <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <span className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">⚡</span>
-                                            <div>
-                                                <h3 className="font-bold text-gray-900 text-sm sm:text-base">شحن رصيد فوري ولحظي</h3>
-                                                <p className="text-[11px] text-gray-400">يضاف الرصيد إلى محفظتك في نفس الثانية فور إتمام الدفع</p>
-                                            </div>
-                                        </div>
-                                        <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                                            الحد الأدنى: 300 ج.م
-                                        </span>
-                                    </div>
-
-                                    <form onSubmit={handleInstantSubmit} className="space-y-5">
-                                        {/* Quick Amount Selector */}
-                                        <div className="space-y-2">
-                                            <label className="block text-xs font-bold text-gray-700">اختر المبلغ المراد شحنه:</label>
-                                            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                                                {[300, 600, 1000, 2000].map((amt) => (
-                                                    <button
-                                                        key={amt}
-                                                        type="button"
-                                                        onClick={() => handleInstantQuickAmount(amt)}
-                                                        className={`py-2.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                                                            instantQuickAmount === amt
-                                                                ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm scale-[1.02]'
-                                                                : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
-                                                        }`}
-                                                    >
-                                                        {amt} ج.م
-                                                    </button>
-                                                ))}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleInstantQuickAmount('custom')}
-                                                    className={`py-2.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                                                        instantQuickAmount === 'custom'
-                                                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm scale-[1.02]'
-                                                            : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
-                                                        }`}
-                                                    >
-                                                    مبلغ آخر ✏️
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {/* Amount input */}
-                                        <div>
-                                            <label className="block text-xs font-bold text-gray-700 mb-1">
-                                                مبلغ الشحن (جنيه مصري):
-                                            </label>
-                                            <input
-                                                type="number"
-                                                min="300"
-                                                step="1"
-                                                required
-                                                value={instantForm.data.amount}
-                                                onChange={(e) => {
-                                                    instantForm.setData('amount', e.target.value);
-                                                    setInstantQuickAmount(Number(e.target.value) || 'custom');
-                                                }}
-                                                placeholder="أدخل المبلغ (300 كحد أدنى)"
-                                                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                                            />
-                                            {instantForm.errors.amount && (
-                                                <span className="text-xs text-rose-600 mt-1 block font-medium">{instantForm.errors.amount}</span>
-                                            )}
-                                        </div>
-
-                                        {/* Payment Method Selector */}
-                                        <div className="space-y-2">
-                                            <label className="block text-xs font-bold text-gray-700">طريقة الدفع الإلكتروني:</label>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                {/* Option 1: Card */}
-                                                <label
-                                                    className={`flex items-start gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                                                        instantForm.data.method_type === 'card'
-                                                            ? 'border-indigo-600 bg-indigo-50/50 shadow-sm'
-                                                            : 'border-gray-200 hover:bg-gray-50'
-                                                    }`}
-                                                >
-                                                    <input
-                                                        type="radio"
-                                                        name="instant_method"
-                                                        value="card"
-                                                        checked={instantForm.data.method_type === 'card'}
-                                                        onChange={() => instantForm.setData('method_type', 'card')}
-                                                        className="mt-1 text-indigo-600 focus:ring-indigo-500"
-                                                    />
-                                                    <div className="space-y-0.5">
-                                                        <div className="text-xs font-extrabold text-gray-900 flex items-center gap-1.5">
-                                                            <span>💳</span>
-                                                            <span>فيزا / ماستركارد / ميزة</span>
-                                                        </div>
-                                                        <p className="text-[11px] text-gray-500">كروت بنكية محلية ودولية (خصم مباشر / ائتمان)</p>
-                                                    </div>
-                                                </label>
-
-                                                {/* Option 2: Mobile Wallet */}
-                                                <label
-                                                    className={`flex items-start gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
-                                                        instantForm.data.method_type === 'wallet'
-                                                            ? 'border-emerald-600 bg-emerald-50/50 shadow-sm'
-                                                            : 'border-gray-200 hover:bg-gray-50'
-                                                    }`}
-                                                >
-                                                    <input
-                                                        type="radio"
-                                                        name="instant_method"
-                                                        value="wallet"
-                                                        checked={instantForm.data.method_type === 'wallet'}
-                                                        onChange={() => instantForm.setData('method_type', 'wallet')}
-                                                        className="mt-1 text-emerald-600 focus:ring-emerald-500"
-                                                    />
-                                                    <div className="space-y-0.5">
-                                                        <div className="text-xs font-extrabold text-gray-900 flex items-center gap-1.5">
-                                                            <span>📱</span>
-                                                            <span>المحافظ الإلكترونية</span>
-                                                        </div>
-                                                        <p className="text-[11px] text-gray-500">فودافون كاش، إتصالات، أورانج، وي، ميزة</p>
-                                                    </div>
-                                                </label>
-                                            </div>
-                                        </div>
-
-                                        {/* Mobile Wallet Phone (if wallet selected) */}
-                                        {instantForm.data.method_type === 'wallet' && (
-                                            <div className="p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2 animate-fade-in">
-                                                <label className="block text-xs font-bold text-emerald-950">
-                                                    رقم المحفظة الإلكترونية التي ستدفع منها:
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    inputMode="numeric"
-                                                    pattern="[0-9]*"
-                                                    required
-                                                    value={instantForm.data.wallet_phone}
-                                                    onChange={(e) => {
-                                                        const cleanDigits = e.target.value.replace(/\D/g, '').slice(0, 11);
-                                                        instantForm.setData('wallet_phone', cleanDigits);
-                                                    }}
-                                                    placeholder="01xxxxxxxxx"
-                                                    className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-sm font-mono font-bold focus:outline-none transition-all ${
-                                                        instantForm.data.wallet_phone.length > 0 && (instantForm.data.wallet_phone.length !== 11 || !instantForm.data.wallet_phone.startsWith('01'))
-                                                            ? 'border-rose-400 focus:ring-2 focus:ring-rose-400 text-rose-700'
-                                                            : 'border-emerald-300 focus:ring-2 focus:ring-emerald-500 text-gray-900'
-                                                    }`}
-                                                    dir="ltr"
-                                                />
-
-                                                {/* Show error explanation ONLY if user entered an invalid phone */}
-                                                {instantForm.data.wallet_phone.length > 0 && (!instantForm.data.wallet_phone.startsWith('01') || (instantForm.data.wallet_phone.length > 0 && instantForm.data.wallet_phone.length < 11)) && (
-                                                    <p className="text-[11px] text-rose-600 font-bold flex items-center gap-1 mt-1">
-                                                        <span>⚠️</span>
-                                                        <span>يرجى إدخال رقم هاتف محفظة مصري صحيح مكون من 11 رقماً ويبدأ بـ 01 (مثال: 01012345678).</span>
-                                                    </p>
-                                                )}
-
-                                                {instantForm.errors.wallet_phone && (
-                                                    <p className="text-[11px] text-rose-600 font-bold flex items-center gap-1 mt-1">
-                                                        <span>⚠️</span>
-                                                        <span>{instantForm.errors.wallet_phone}</span>
-                                                    </p>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        {/* Submit Button */}
-                                        <button
-                                            type="submit"
-                                            disabled={
-                                                instantForm.processing ||
-                                                (instantForm.data.method_type === 'wallet' && (instantForm.data.wallet_phone.length !== 11 || !instantForm.data.wallet_phone.startsWith('01')))
-                                            }
-                                            className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-extrabold text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                                        >
-                                            <span>⚡</span>
-                                            <span>{instantForm.processing ? 'جاري تجهيز بوابة الدفع...' : `دفع (${instantForm.data.amount || 0} ج.م) وشحن الرصيد فوراً`}</span>
-                                        </button>
-                                    </form>
-                                </div>
-
-                                {/* Right 5/12: Instant Info Card */}
-                                <div className="lg:col-span-5 space-y-4">
-                                    <div className="bg-gradient-to-br from-emerald-900 to-teal-950 text-white rounded-3xl p-6 shadow-md space-y-4">
-                                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/15 rounded-full text-xs font-bold text-emerald-200">
-                                            <span>🔒</span>
-                                            <span>بوابة دفع مؤمنة بالكامل</span>
-                                        </div>
-
-                                        <h4 className="text-base font-black leading-snug">
-                                            كيف يعمل الشحن اللحظي الفوري؟
-                                        </h4>
-
-                                        <ul className="space-y-3 text-xs text-emerald-100/90 leading-relaxed">
-                                            <li className="flex items-start gap-2">
-                                                <span className="text-emerald-400 font-bold">1.</span>
-                                                <span>يتم تحويلك إلى صفحة الدفع الرسمية والمشفرة من <strong>Paymob</strong>.</span>
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <span className="text-emerald-400 font-bold">2.</span>
-                                                <span>أدخل بيانات الكارت أو وافق على طلب الخصم من محفظتك.</span>
-                                            </li>
-                                            <li className="flex items-start gap-2">
-                                                <span className="text-emerald-400 font-bold">3.</span>
-                                                <span><strong>في نفس ثانية نجاح الدفع</strong>، يضاف الرصيد فورياً إلى محفظتك ويوثق في سجل المعاملات دون انتظار أي موافقة يدوية!</span>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* MODE B: MANUAL TOP-UP (VODAFONE CASH / INSTAPAY) */}
-                        {chargeMode === 'manual' && (
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                {/* Left Column: Transfer Payment Accounts & Info */}
-                                <div className="lg:col-span-1 space-y-6">
+                        {/* MANUAL TOP-UP (VODAFONE CASH / INSTAPAY) */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {/* Left Column: Transfer Payment Accounts & Info */}
+                            <div className="lg:col-span-1 space-y-6">
                                     <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 space-y-5">
                                         <h3 className="font-bold text-gray-900 text-base border-b border-gray-100 pb-3 flex items-center gap-2">
                                             <span>📲</span>
@@ -702,12 +444,11 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
                                             disabled={manualForm.processing}
                                             className="w-full py-3.5 bg-indigo-600 text-white font-extrabold text-sm rounded-2xl hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                                         >
-                                            {manualForm.processing ? 'جاري إرسال الطلب...' : 'إرسال طلب الشحن اليدوي 🚀'}
+                                            {manualForm.processing ? 'جاري إرسال الطلب...' : 'إرسال طلب الشحن 🚀'}
                                         </button>
                                     </form>
                                 </div>
                             </div>
-                        )}
                     </div>
                 )}
 
@@ -719,7 +460,7 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
                             <h3 className="font-bold text-gray-900 text-base border-b border-gray-100 pb-3 flex items-center justify-between">
                                 <span className="flex items-center gap-2">
                                     <span>📋</span>
-                                    <span>طلبات الشحن المقدمة</span>
+                                    <span>طلبات الشحن</span>
                                 </span>
                                 <span className="text-xs font-normal text-gray-500">إجمالي الطلبات: {depositRequests.length}</span>
                             </h3>
@@ -826,7 +567,7 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
                             <h3 className="font-bold text-gray-900 text-base border-b border-gray-100 pb-3 flex items-center justify-between">
                                 <span className="flex items-center gap-2">
                                     <span>📊</span>
-                                    <span>سجل حركات المحفظة المؤكدة</span>
+                                    <span>السجل</span>
                                 </span>
                                 <span className="text-xs font-normal text-gray-500">إجمالي المعاملات: {transactions.length}</span>
                             </h3>
