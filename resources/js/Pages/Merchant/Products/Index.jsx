@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import MerchantLayout from '@/Layouts/MerchantLayout';
+import Pagination from '@/Components/Pagination';
 
 export default function ProductsIndex({ products, categories, filters }) {
     const { flash } = usePage().props;
@@ -265,33 +266,7 @@ export default function ProductsIndex({ products, categories, filters }) {
                     )}
 
                     {/* Pagination */}
-                    {products.links && products.links.length > 3 && (
-                        <div className="p-4 bg-gray-50 border-t border-gray-250 flex items-center justify-center gap-1.5">
-                            {products.links.map((link, idx) => {
-                                let label = link.label || '';
-                                if (label.includes('Previous') || label.includes('&laquo;') || label.includes('«')) {
-                                    label = 'السابق';
-                                } else if (label.includes('Next') || label.includes('&raquo;') || label.includes('»')) {
-                                    label = 'التالي';
-                                }
-                                return (
-                                    <button
-                                        key={idx}
-                                        onClick={() => link.url && router.get(link.url, { q: search, category_id: categoryId }, { preserveState: true })}
-                                        disabled={!link.url || link.active}
-                                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                                            link.active
-                                                ? 'bg-orange-600 text-white border-orange-600'
-                                                : link.url
-                                                    ? 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                                                    : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                                        }`}
-                                        dangerouslySetInnerHTML={{ __html: label }}
-                                    />
-                                );
-                            })}
-                        </div>
-                    )}
+                    <Pagination links={products.links} />
                 </div>
             </div>
         </MerchantLayout>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
 import MerchantLayout from '@/Layouts/MerchantLayout';
+import Pagination from '@/Components/Pagination';
 import axios from 'axios';
 
 export default function CustomersIndex({ customers, filters }) {
@@ -162,23 +163,7 @@ export default function CustomersIndex({ customers, filters }) {
                     </div>
 
                     {/* Pagination */}
-                    {customers.links && customers.links.length > 3 && (
-                        <div className="bg-white border-t border-gray-100 px-6 py-4 flex justify-center gap-1.5">
-                            {customers.links.map((link, idx) => (
-                                <button
-                                    key={idx}
-                                    disabled={!link.url || link.active}
-                                    onClick={() => router.get(link.url)}
-                                    className={`px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                                        link.active
-                                            ? 'bg-orange-600 border-orange-600 text-white shadow-sm'
-                                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                                    } disabled:opacity-50 cursor-pointer`}
-                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                />
-                            ))}
-                        </div>
-                    )}
+                    <Pagination links={customers.links} />
                 </div>
 
                 {/* Details Modal */}

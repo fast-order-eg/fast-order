@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import MerchantLayout from '@/Layouts/MerchantLayout';
+import Pagination from '@/Components/Pagination';
 
 export default function OrdersIndex({ orders, totalAmount, statusCounts, productsList, wallet_balance, isSubscriptionExpired, filters }) {
     const { flash } = usePage().props;
@@ -482,31 +483,7 @@ export default function OrdersIndex({ orders, totalAmount, statusCounts, product
                     </div>
 
                     {/* Pagination */}
-                    {orders.links && orders.links.length > 3 && (
-                        <div className="bg-white border-t border-gray-100 px-6 py-4 flex justify-center gap-1.5">
-                            {orders.links.map((link, idx) => {
-                                let label = link.label || '';
-                                if (label.includes('Previous') || label.includes('&laquo;') || label.includes('«')) {
-                                    label = 'السابق';
-                                } else if (label.includes('Next') || label.includes('&raquo;') || label.includes('»')) {
-                                    label = 'التالي';
-                                }
-                                return (
-                                    <button
-                                        key={idx}
-                                        disabled={!link.url || link.active}
-                                        onClick={() => router.get(link.url)}
-                                        className={`px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                                            link.active
-                                                ? 'bg-orange-600 border-orange-600 text-white shadow-sm'
-                                                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                                        } disabled:opacity-50`}
-                                        dangerouslySetInnerHTML={{ __html: label }}
-                                    />
-                                );
-                            })}
-                        </div>
-                    )}
+                    <Pagination links={orders.links} />
                 </div>
             </div>
 
