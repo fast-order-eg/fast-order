@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { router } from '@inertiajs/react';
 
 export default function Pagination({ links, className = '' }) {
@@ -12,7 +12,7 @@ export default function Pagination({ links, className = '' }) {
     const activeIndex = pageLinks.findIndex((l) => l.active);
 
     return (
-        <div className={g-white border-t border-gray-100 px-3 sm:px-6 py-4 flex items-center justify-center gap-1 sm:gap-1.5 select-none }>
+        <div className={`bg-white border-t border-gray-100 px-3 sm:px-6 py-4 flex items-center justify-center gap-1 sm:gap-1.5 select-none ${className}`}>
             {/* زر السابق */}
             <button
                 type="button"
@@ -48,7 +48,13 @@ export default function Pagination({ links, className = '' }) {
                         key={idx}
                         disabled={!link.url || link.active}
                         onClick={() => link.url && router.get(link.url)}
-                        className={min-w-[32px] sm:min-w-[36px] h-8 sm:h-9 px-2 rounded-xl text-xs font-extrabold border transition-all flex items-center justify-center   disabled:cursor-default}
+                        className={`min-w-[32px] sm:min-w-[36px] h-8 sm:h-9 px-2 rounded-xl text-xs font-extrabold border transition-all flex items-center justify-center ${
+                            isFarFromActive ? 'hidden sm:inline-flex' : 'inline-flex'
+                        } ${
+                            link.active
+                                ? 'bg-orange-600 border-orange-600 text-white shadow-md shadow-orange-100 scale-105'
+                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+                        } disabled:cursor-default`}
                     >
                         {link.label}
                     </button>
