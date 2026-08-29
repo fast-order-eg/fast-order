@@ -287,7 +287,7 @@ export default function Edit({ product, categories, allProducts = [] }) {
         combinations.forEach(combo => {
             const found = variantsStock.find(v => isComboEqual(v, combo));
             if (found) {
-                if (found.qty === null || found.qty === undefined || found.qty === '') {
+                if (found.qty === null || found.qty === undefined || (found.qty === '' && !found._userEditedQty)) {
                     found.qty = 100;
                     changed = true;
                 }
@@ -346,9 +346,10 @@ export default function Edit({ product, categories, allProducts = [] }) {
         let updated = [...variantsStock];
         const idx = updated.findIndex(v => isComboEqual(v, combo));
         if (idx > -1) {
-            updated[idx].qty = value === '' ? '' : (parseInt(value) || 0);
+            updated[idx].qty = value;
+            updated[idx]._userEditedQty = true;
         } else {
-            updated.push({ ...combo, price: '', qty: value === '' ? '' : (parseInt(value) || 0) });
+            updated.push({ ...combo, price: data.price_after || '', qty: value, _userEditedQty: true });
         }
         setVariantsStock(updated);
         setData('variants_stock', JSON.stringify(updated));
@@ -364,13 +365,16 @@ export default function Edit({ product, categories, allProducts = [] }) {
 
     const getVariantStockValue = (combo) => {
         const found = variantsStock.find(v => isComboEqual(v, combo));
-        return found ? found.qty : 100;
+        if (found && found.qty !== undefined && found.qty !== null) {
+            return found.qty;
+        }
+        return 100;
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         const cleaned = variantsStock.map(v => {
-            const { _userEdited, ...rest } = v;
+            const { _userEdited, _userEditedQty, ...rest } = v;
             return {
                 ...rest,
                 price: (v.price !== undefined && v.price !== null && v.price !== '') ? Number(v.price) : (data.price_after ? Number(data.price_after) : 0),
@@ -917,10 +921,10 @@ export default function Edit({ product, categories, allProducts = [] }) {
                                                             <input
                                                                 type="number"
                                                                 min="0"
-                                                                placeholder="غير محدود"
+                                                                placeholder="100"
                                                                 value={getVariantStockValue(combo)}
                                                                 onChange={(e) => handleVariantStockChange(combo, e.target.value)}
-                                                                className="w-full min-w-[65px] sm:max-w-[110px] px-1.5 py-1 sm:px-2.5 sm:py-1.5 border border-gray-300 rounded-lg text-xs sm:text-sm focus:ring-1 focus:ring-purple-400 focus:border-transparent bg-white text-center"
+                                                                className="w-full min-w-[65px] sm:max-w-[110px] px-1.5 py-1 sm:px-2.5 sm:py-1.5 border border-gray-300 rounded-lg text-xs sm:text-sm focus:ring-1 focus:ring-purple-400 focus:border-transparent bg-white text-center font-medium text-gray-800"
                                                             />
                                                         </td>
                                                     </tr>
