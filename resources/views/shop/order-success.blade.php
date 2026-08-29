@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>تم الطلب بنجاح - {{ $tenant->name ?? 'المتجر' }}</title>
     <link rel="stylesheet" href="/shop/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
@@ -347,94 +348,104 @@
                 const stars = container.querySelectorAll('.rating-star');
                 const category = container.getAttribute('data-category');
                 const input = document.getElementById(`rating_${category}_val`);
+
+                function updateStars(val) {
+                    stars.forEach(s => {
+                        const sVal = parseInt(s.getAttribute('data-value'));
+                        if (sVal <= val) {
+                            s.classList.remove('far');
+                            s.classList.add('fas');
+                        } else {
+                            s.classList.remove('fas');
+                            s.classList.add('far');
+                        }
+                    });
+                }
                 
                 stars.forEach(star => {
                     star.addEventListener('mouseenter', () => {
                         const val = parseInt(star.getAttribute('data-value'));
-                        stars.forEach(s => {
-                            const sVal = parseInt(s.getAttribute('data-value'));
-                            if (sVal <= val) {
-                                s.classList.remove('far');
-                                s.classList.add('fas');
-                            } else {
-                                s.classList.remove('fas');
-                                s.classList.add('far');
-                            }
-                        });
+                        updateStars(val);
                     });
                     
                     container.addEventListener('mouseleave', () => {
                         const currentVal = parseInt(input.value || 0);
-                        stars.forEach(s => {
-                            const sVal = parseInt(s.getAttribute('data-value'));
-                            if (sVal <= currentVal) {
-                                s.classList.remove('far');
-                                s.classList.add('fas');
-                            } else {
-                                s.classList.remove('fas');
-                                s.classList.add('far');
-                            }
-                        });
+                        updateStars(currentVal);
                     });
                     
-                    star.addEventListener('click', () => {
+                    star.addEventListener('click', (e) => {
+                        e.preventDefault();
                         const val = star.getAttribute('data-value');
                         input.value = val;
-                        stars.forEach(s => {
-                            const sVal = parseInt(s.getAttribute('data-value'));
-                            if (sVal <= val) {
-                                s.classList.remove('far');
-                                s.classList.add('fas');
-                            } else {
-                                s.classList.remove('fas');
-                                s.classList.add('far');
-                            }
-                        });
+                        updateStars(parseInt(val));
                     });
                 });
             });
 
-            document.getElementById('store-rating-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const products = document.getElementById('rating_products_val').value;
-                const shipping = document.getElementById('rating_shipping_val').value;
-                const service = document.getElementById('rating_service_val').value;
-                
-                if (!products || !shipping || !service) {
-                    alert('من فضلك حدد تقييمك لجميع المعايير بالنجوم.');
-                    return;
-                }
-                
-                const formData = new FormData(this);
-                const data = {};
-                formData.forEach((value, key) => data[key] = value);
-                
-                fetch('/shop/store-rating', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                })
-                .then(response => response.json())
-                .then(res => {
-                    if (res.success) {
-                        document.getElementById('store-rating-form').style.display = 'none';
-                        const msgEl = document.getElementById('rating-success-message');
-                        msgEl.textContent = res.message;
-                        msgEl.style.display = 'block';
-                    } else {
-                        alert(res.message || 'حدث خطأ ما أثناء حفظ التقييم.');
+            const ratingForm = document.getElementById('store-rating-form');
+            if (ratingForm) {
+                ratingForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const products = document.getElementById('rating_products_val').value;
+                    const shipping = document.getElementById('rating_shipping_val').value;
+                    const service = document.getElementById('rating_service_val').value;
+                    
+                    if (!products || !shipping || !service) {
+                        alert('من فضلك حدد تقييمك لجميع المعايير بالنجوم (جودة المنتجات، سرعة الشحن، وخدمة العملاء).');
+                        return;
                     }
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert('حدث خطأ بالاتصال بالخادم.');
+                    
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const origBtnText = submitBtn ? submitBtn.innerHTML : '';
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري إرسال التقييم...';
+                        submitBtn.disabled = true;
+                    }
+
+                    const csrfToken = document.querySelector('input[name="_token"]')?.value 
+                        || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') 
+                        || '';
+                    
+                    const formData = new FormData(this);
+                    const data = {};
+                    formData.forEach((value, key) => data[key] = value);
+                    
+                    fetch('/shop/store-rating', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => response.json())
+                    .then(res => {
+                        if (res.success) {
+                            ratingForm.style.display = 'none';
+                            const msgEl = document.getElementById('rating-success-message');
+                            msgEl.textContent = res.message || 'شكراً لك! تم استلام تقييمك بنجاح.';
+                            msgEl.style.display = 'block';
+                        } else {
+                            alert(res.message || 'حدث خطأ ما أثناء حفظ التقييم.');
+                            if (submitBtn) {
+                                submitBtn.innerHTML = origBtnText;
+                                submitBtn.disabled = false;
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert('حدث خطأ بالاتصال بالخادم. يرجى المحاولة مرة أخرى.');
+                        if (submitBtn) {
+                            submitBtn.innerHTML = origBtnText;
+                            submitBtn.disabled = false;
+                        }
+                    });
                 });
-            });
+            }
         });
         </script>
 
