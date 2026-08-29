@@ -299,10 +299,10 @@ export default function MerchantLayout({ children, title }) {
     const userEmail = auth?.user?.email || '';
     const initials = userName.substring(0, 2).toUpperCase();
 
-    const NavItem = ({ link }) => {
+    const renderNavItem = (link) => {
         const active = isActive(link);
         return (
-            <li>
+            <li key={link.href}>
                 <Link
                     href={link.href}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
@@ -333,14 +333,19 @@ export default function MerchantLayout({ children, title }) {
         );
     };
 
-    const AdvancedDropdown = () => {
+    const renderAdvancedDropdown = () => {
         const anyActive = isAdvancedActive();
         return (
-            <li>
+            <li key="advanced-dropdown">
                 {/* زر الإعدادات المتقدمة */}
                 <button
-                    onClick={() => setAdvancedOpen(prev => !prev)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
+                    type="button"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setAdvancedOpen(prev => !prev);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group cursor-pointer ${
                         anyActive
                             ? 'bg-white/15 text-white shadow-sm'
                             : 'text-indigo-200 hover:bg-white/10 hover:text-white'
@@ -422,7 +427,7 @@ export default function MerchantLayout({ children, title }) {
         );
     };
 
-    const SidebarInner = ({ showToggle = true }) => (
+    const renderSidebarContent = (showToggle = true) => (
         <div className="flex flex-col h-full">
             <div className={`flex items-center h-16 border-b border-indigo-800 px-4 ${sidebarOpen ? 'justify-between' : 'justify-center'}`}>
                 {sidebarOpen && (
@@ -442,8 +447,9 @@ export default function MerchantLayout({ children, title }) {
                 )}
                 {showToggle && (
                     <button
+                        type="button"
                         onClick={() => setSidebarOpen(!sidebarOpen)}
-                        className="text-indigo-200 hover:text-white hover:bg-indigo-700 rounded-lg p-1.5 transition-colors flex-shrink-0"
+                        className="text-indigo-200 hover:text-white hover:bg-indigo-700 rounded-lg p-1.5 transition-colors flex-shrink-0 cursor-pointer"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -501,11 +507,9 @@ export default function MerchantLayout({ children, title }) {
 
             <nav className="flex-1 py-4 overflow-y-auto">
                 <ul className="space-y-1 px-2">
-                    {navLinks.map((link) => (
-                        <NavItem key={link.href} link={link} />
-                    ))}
+                    {navLinks.map((link) => renderNavItem(link))}
                     {/* الإعدادات المتقدمة */}
-                    <AdvancedDropdown />
+                    {renderAdvancedDropdown()}
                 </ul>
             </nav>
         </div>
@@ -525,7 +529,7 @@ export default function MerchantLayout({ children, title }) {
                     mobileOpen ? 'translate-x-0' : 'translate-x-full'
                 }`}
             >
-                <SidebarInner showToggle={false} />
+                {renderSidebarContent(false)}
             </aside>
 
             <aside
@@ -533,7 +537,7 @@ export default function MerchantLayout({ children, title }) {
                     sidebarOpen ? 'w-64' : 'w-20'
                 }`}
             >
-                <SidebarInner showToggle={true} />
+                {renderSidebarContent(true)}
             </aside>
 
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
