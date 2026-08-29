@@ -422,6 +422,7 @@ Route::prefix('admin')->group(function () {
             ->name('storefront.checkout.store')
             ->middleware(\App\Http\Middleware\GhostOrderBlockerMiddleware::class);
         Route::get('/order-success/{referenceNumber}', [CheckoutController::class, 'success'])->name('storefront.order.success');
+        Route::get('/orders/success/{referenceNumber}', [CheckoutController::class, 'success'])->name('orders.success');
         Route::post('/orders', [OrderController::class, 'store'])->name('orders.store'); // legacy HTML form
 
         // Cart recovery routes (Phase 85)
