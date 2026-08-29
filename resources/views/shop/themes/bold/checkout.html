@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 
 <head>
@@ -8,7 +8,7 @@
   <title>إتمام الشراء - Store</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/shop/styles.css?v=202604021">
   <link rel="stylesheet" href="/shop/themes/default/style.css?v=1.0.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -25,8 +25,16 @@
       gap: 24px;
       margin-bottom: 32px;
     }
-    @media (max-width: 900px) {
+    .checkout-name-phone-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 768px) {
       .checkout-container {
+        grid-template-columns: 1fr !important;
+      }
+      .checkout-name-phone-row {
         grid-template-columns: 1fr !important;
       }
     }
@@ -63,21 +71,12 @@
     <div class="checkout-container">
       <!-- Right Column: Order Form -->
       <div class="card" style="padding: 24px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e5e7eb; background: #fff;">
-        <!-- Guest Checkout Banner -->
-        <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #bfdbfe; border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
-          <i class="fa fa-user-shield" style="color: #3b82f6; font-size: 20px;"></i>
-          <div>
-            <span style="font-weight: 700; color: #1e3a8a; display: block; font-size: 14px;">الطلب السريع كزائر (Guest Checkout)</span>
-            <span style="color: #3b82f6; font-size: 12px;">يمكنك إتمام الطلب مباشرة دون الحاجة لإنشاء حساب أو تسجيل الدخول.</span>
-          </div>
-        </div>
-
         <h2 style="color: #111827; font-size: 18px; font-weight: 700; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #f3f4f6;">
           بيانات الطلب
         </h2>
 
         <form id="checkoutForm" style="display: grid; gap: 20px;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="checkout-name-phone-row">
             <div>
               <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">الاسم الكامل <span style="color:#ef4444">*</span></label>
               <input required name="name" id="nameInput" type="text"
@@ -124,21 +123,6 @@
               style="width: 100%; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; font-family: Cairo, sans-serif; resize: vertical; transition: all 0.3s ease;"
               onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e5e7eb'"
               placeholder="أي ملاحظات خاصة بالطلب"></textarea>
-          </div>
-
-          <!-- طريقة الشحن -->
-          <div style="border-top: 2px solid #f3f4f6; padding-top: 16px;">
-            <label style="display: block; margin-bottom: 12px; font-weight: 700; color: #111827; font-size: 15px;"><i class="fa fa-shipping-fast" style="color: #4f46e5; margin-left: 8px;"></i>طريقة الشحن</label>
-            <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <span style="font-size: 24px;">🚚</span>
-                <div>
-                  <div style="font-weight: 700; color: #1e293b; font-size: 14px;">توصيل سريع للمنزل</div>
-                  <div style="font-size: 12px; color: #64748b;">يتم التوصيل حسب المحافظة المختارة</div>
-                </div>
-              </div>
-              <span id="shippingMethodBadge" style="background: #e0e7ff; color: #4338ca; padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 700;">حسب المحافظة</span>
-            </div>
           </div>
 
           <!-- طريقة الدفع (تظهر فقط إذا كانت هناك بوابات دفع إلكتروني مفعلة) -->
@@ -197,9 +181,10 @@
     </div>
   </main>
 
-  <footer class="container footer">
-    <div style="text-align: center; padding: 20px; color: #6b7280; font-size: 14px;">
-      © <span id="year">2026</span> Store. جميع الحقوق محفوظة.
+  <footer class="container footer" style="text-align: center; padding: 24px 16px; color: #64748b; font-size: 14px; border-top: 1px solid #f1f5f9; margin-top: 40px; margin-bottom: 20px;">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500;">
+      <span>Powered by</span>
+      <a href="https://fast-order-eg.tech" target="_blank" rel="noopener noreferrer" style="font-weight: 800; color: #4f46e5; text-decoration: none; transition: color 0.2s;">Fastorder</a>
     </div>
   </footer>
 
@@ -211,8 +196,6 @@
     let appliedCouponCode = null;
 
     document.addEventListener('DOMContentLoaded', function () {
-      const yearElement = document.getElementById('year');
-      if (yearElement) yearElement.textContent = new Date().getFullYear();
       if (typeof BirdCart !== 'undefined') BirdCart.updateCartCount();
       initializePage();
     });
