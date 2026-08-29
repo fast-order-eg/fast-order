@@ -508,32 +508,6 @@ export default function MerchantLayout({ children, title }) {
                     <AdvancedDropdown />
                 </ul>
             </nav>
-
-            <div className={`border-t border-indigo-800/80 p-3 ${!sidebarOpen ? 'flex justify-center' : ''}`}>
-                {sidebarOpen ? (
-                    <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 hover:text-rose-100 border border-rose-500/20 transition-all font-semibold text-sm group"
-                    >
-                        <svg className="w-5 h-5 text-rose-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                                d="M17 16l4-4m0 0l4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                        <span>تسجيل الخروج</span>
-                    </button>
-                ) : (
-                    <button
-                        onClick={handleLogout}
-                        title="تسجيل الخروج"
-                        className="w-10 h-10 mx-auto rounded-xl bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 flex items-center justify-center transition-all"
-                    >
-                        <svg className="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                                d="M17 16l4-4m0 0l4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                    </button>
-                )}
-            </div>
         </div>
     );
 
