@@ -318,6 +318,25 @@ class CheckoutController extends Controller
                 // لا نوقف الطلب بسبب فشل الـ webhook
             }
 
+            // Web Push Notification للتاجر
+            try {
+                $pushSettings = \App\Models\Setting::get('push_notifications', null);
+                $isPushEnabled = is_array($pushSettings) ? ($pushSettings['enabled'] ?? true) : true;
+                $isNewOrderEnabled = is_array($pushSettings) ? ($pushSettings['new_orders'] ?? true) : true;
+
+                if ($isPushEnabled && $isNewOrderEnabled) {
+                    $pushService = new \App\Services\PushNotificationService();
+                    $pushService->notifyNewOrder($order->tenant_id, [
+                        'id'               => $order->id,
+                        'reference_number' => $order->reference_number,
+                        'total'            => $order->total,
+                        'customer_name'    => $order->customer_name ?? ($order->customer->name ?? 'عميل'),
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                \Log::warning('Push notification on new order failed: ' . $e->getMessage());
+            }
+
             $redirectUrl = '/order-success/' . $order->reference_number . '?clear_cart=1';
 
             // إذا اختار العميل بوابة دفع إلكترونية

@@ -359,6 +359,16 @@ Route::prefix('admin')->group(function () {
                 Route::get('/export', [\App\Http\Controllers\Merchant\ImportExportController::class, 'export'])->name('export');
                 Route::get('/template', [\App\Http\Controllers\Merchant\ImportExportController::class, 'downloadTemplate'])->name('template');
             });
+
+            // Push Notifications (Web Push VAPID) routes
+            Route::prefix('push-notifications')->name('merchant.push-notifications.')->group(function () {
+                Route::get('/', [\App\Http\Controllers\Merchant\PushNotificationController::class, 'index'])->name('index');
+                Route::post('/subscribe', [\App\Http\Controllers\Merchant\PushNotificationController::class, 'subscribe'])->name('subscribe');
+                Route::post('/unsubscribe', [\App\Http\Controllers\Merchant\PushNotificationController::class, 'unsubscribe'])->name('unsubscribe');
+                Route::post('/test', [\App\Http\Controllers\Merchant\PushNotificationController::class, 'sendTest'])->name('test');
+                Route::post('/settings', [\App\Http\Controllers\Merchant\PushNotificationController::class, 'updateSettings'])->name('settings');
+                Route::get('/vapid-public-key', [\App\Http\Controllers\Merchant\PushNotificationController::class, 'vapidPublicKey'])->name('vapid-public-key');
+            });
         });
     });
 
