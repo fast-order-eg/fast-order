@@ -365,7 +365,8 @@ function productCard(p){
     const pct = Math.round(((beforeVal - nowVal) / beforeVal) * 100);
     if (pct > 0) {
       const discountBadge = createEl('div', 'discount-badge');
-      discountBadge.textContent = `-${pct}%`;
+      const currentLang = getStorefrontLang();
+      discountBadge.textContent = currentLang === 'en' ? `${pct}% OFF` : `خصم ${pct}%`;
       card.appendChild(discountBadge);
     }
   }

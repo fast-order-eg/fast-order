@@ -196,9 +196,36 @@ class DomainController extends Controller
         $tenant->slug = $newSlug;
         $tenant->save();
 
-        return redirect()->route('merchant.domain.edit')->with(
+        $host = $request->getHost();
+        $scheme = $request->getScheme();
+        $port = $request->getPort();
+        $portSuffix = ($port && !in_array($port, [80, 443])) ? ":{$port}" : '';
+
+        // Extract base domain cleanly
+        $cleanHost = str_starts_with($host, 'app.') ? substr($host, 4) : $host;
+        $parts = explode('.', $cleanHost);
+        if (count($parts) >= 2) {
+            array_shift($parts); // remove old subdomain
+            $baseDomain = implode('.', $parts);
+        } else {
+            $baseDomain = $cleanHost;
+        }
+
+        if (empty($baseDomain) || $baseDomain === 'localhost' || $baseDomain === '127.0.0.1') {
+            $baseDomain = 'fastorder.localhost';
+        }
+
+        $newAdminUrl = "{$scheme}://{$newSlug}.{$baseDomain}{$portSuffix}/admin/domain";
+
+        session()->flash(
             'success',
-            "تم تغيير رابط المتجر بنجاح من ({$oldSlug}) إلى ({$newSlug}). تم تحديث رابط متجر العملاء وتفعيل الرابط الجديد فوراً!"
+            "تم تغيير رابط المتجر بنجاح من ({$oldSlug}) إلى ({$newSlug}). تم تفعيل الرابط الجديد وتحديث لوحة التحكم فوراً!"
         );
+
+        if ($request->header('X-Inertia')) {
+            return Inertia::location($newAdminUrl);
+        }
+
+        return redirect()->away($newAdminUrl);
     }
 }

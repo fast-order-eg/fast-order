@@ -14,6 +14,8 @@ export default function DomainEdit({ currentSlug, baseDomain, currentUrl, scheme
     // Default protocol to https for display if preferred, or matching scheme
     const displayScheme = scheme === 'https' ? 'https' : 'https';
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const { data, setData, put, processing, errors, clearErrors } = useForm({
         slug: currentSlug || '',
     });
@@ -82,8 +84,12 @@ export default function DomainEdit({ currentSlug, baseDomain, currentUrl, scheme
 
     const confirmDomainChange = () => {
         setShowConfirmModal(false);
+        setIsSubmitting(true);
         put('/admin/domain', {
             preserveScroll: true,
+            onError: () => {
+                setIsSubmitting(false);
+            }
         });
     };
 
@@ -327,7 +333,7 @@ export default function DomainEdit({ currentSlug, baseDomain, currentUrl, scheme
                             <button
                                 type="button"
                                 onClick={confirmDomainChange}
-                                disabled={processing}
+                                disabled={processing || isSubmitting}
                                 className="flex-1 py-3 px-4 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl transition-all shadow-md"
                             >
                                 نعم، غيّر الرابط الآن 🚀
@@ -341,6 +347,15 @@ export default function DomainEdit({ currentSlug, baseDomain, currentUrl, scheme
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* ====== Fullscreen Redirect Loading Indicator ====== */}
+            {isSubmitting && (
+                <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center p-6 bg-slate-900/85 backdrop-blur-md text-white text-center">
+                    <div className="w-16 h-16 border-4 border-indigo-400 border-t-white rounded-full animate-spin mb-5 shadow-lg"></div>
+                    <h3 className="text-xl font-extrabold mb-2">جاري تفعيل الرابط الجديد وتحديث لوحة التحكم... 🚀</h3>
+                    <p className="text-sm text-slate-300 max-w-md">يتم الآن نقلك تلقائياً إلى رابط متجرك ولوحة التحكم الجديدة في ثوانٍ معدودة، برجاء الانتظار...</p>
                 </div>
             )}
         </MerchantLayout>
