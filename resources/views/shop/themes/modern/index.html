@@ -30,25 +30,27 @@
 </head>
 
 <body>
-  <header class="container header">
-    <a href="/shop/index.html" class="brand" style="text-decoration:none;color:inherit">
-      <img id="siteLogo" src="/images/logo.png?v=202604031" alt="Store"
-        onerror="this.src='https://dummyimage.com/48x48/111827/ffffff&text=SM'" />
-      <span id="siteName">Store</span>
-    </a>
-    <button class="menu-toggle" aria-label="القائمة"><span></span><span></span><span></span></button>
-    <div class="icons">
-      <a href="#" class="icon-round search-trigger" title="بحث" aria-label="بحث"><i class="fa fa-search"></i></a>
-      <a id="cartIcon" class="icon-round" href="/shop/cart.html" title="السلة" aria-label="السلة"><i
-          class="fa fa-shopping-cart"></i><span id="cartCount"></span></a>
+  <header class="header">
+    <div class="container header-inner">
+      <a href="/shop/index.html" class="brand" style="text-decoration:none;color:inherit">
+        <img id="siteLogo" src="/images/logo.png?v=202604031" alt="Store"
+          onerror="this.src='https://dummyimage.com/48x48/111827/ffffff&text=SM'" />
+        <span id="siteName">Store</span>
+      </a>
+      <nav class="nav">
+        <a href="/shop/index.html" class="active">الرئيسية</a>
+        <a href="/shop/categories.html">الأقسام</a>
+        <a href="/shop/products.html">المنتجات</a>
+        <a style="display:none !important;" href="/shop/contact.html">اتصل بنا</a>
+        <a id="callBtn" href="tel:01146520922" class="call-now" style="display:none !important;">اتصل الآن</a>
+      </nav>
+      <div class="icons">
+        <a href="#" class="icon-round search-trigger" title="بحث" aria-label="بحث"><i class="fa fa-search"></i></a>
+        <a id="cartIcon" class="icon-round" href="/shop/cart.html" title="السلة" aria-label="السلة"><i
+            class="fa fa-shopping-cart"></i><span id="cartCount"></span></a>
+        <button class="menu-toggle" aria-label="القائمة"><span></span><span></span><span></span></button>
+      </div>
     </div>
-    <nav class="nav">
-      <a href="/shop/index.html" class="active">الرئيسية</a>
-      <a href="/shop/categories.html">الأقسام</a>
-      <a href="/shop/products.html">المنتجات</a>
-      <a style="display:none !important;" href="/shop/contact.html">اتصل بنا</a>
-      <a id="callBtn" href="tel:01146520922" class="call-now" style="display:none !important;">اتصل الآن</a>
-    </nav>
   </header>
 
   <!-- Homepage Dynamic Sections Wrapper -->
