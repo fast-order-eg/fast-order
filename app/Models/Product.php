@@ -184,4 +184,45 @@ class Product extends Model
         $this->variants_stock = $variantsStock;
         $this->save();
     }
+
+    /**
+     * الحصول على سعر المتغير المخصص إن وُجد، أو السعر الأساسي للمنتج
+     */
+    public function getVariantPrice(?string $size = null, ?string $color = null, array $options = []): float
+    {
+        $basePrice = (float) ($this->price_after ?? $this->price ?? 0);
+
+        $variantsStock = $this->variants_stock;
+        if (!is_array($variantsStock) || empty($variantsStock)) {
+            return $basePrice;
+        }
+
+        $hasSize  = !empty($size);
+        $hasColor = !empty($color);
+        $hasOpts  = !empty($options);
+
+        if (!$hasSize && !$hasColor && !$hasOpts) {
+            return $basePrice;
+        }
+
+        foreach ($variantsStock as $row) {
+            $matchSize  = !$hasSize  || (($row['size']  ?? null) === $size);
+            $matchColor = !$hasColor || (($row['color'] ?? null) === $color);
+            $matchOpts  = true;
+            if ($hasOpts) {
+                $rowOpts = $row['options'] ?? [];
+                foreach ($options as $k => $v) {
+                    if (($rowOpts[$k] ?? null) !== $v) { $matchOpts = false; break; }
+                }
+            }
+            if ($matchSize && $matchColor && $matchOpts) {
+                if (isset($row['price']) && is_numeric($row['price']) && (float)$row['price'] > 0) {
+                    return (float) $row['price'];
+                }
+                break;
+            }
+        }
+
+        return $basePrice;
+    }
 }

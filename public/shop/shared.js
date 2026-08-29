@@ -1267,11 +1267,21 @@ window.submitQmAddToCart = function() {
 
   if (!isValid) return;
 
+  let variantPrice = Number(p.price_after || p.price || 0);
+  let variants = p.variants_stock || [];
+  if (typeof variants === 'string') { try { variants = JSON.parse(variants); } catch(e) { variants = []; } }
+  if (Array.isArray(variants) && variants.length > 0) {
+    const match = variants.find(v => (!hasSizes || v.size === selectedSize) && (!hasColors || v.color === selectedColor));
+    if (match && match.price && Number(match.price) > 0) {
+      variantPrice = Number(match.price);
+    }
+  }
+
   if (typeof BirdCart !== 'undefined' && BirdCart.addToCart) {
     window.BirdCart.addToCart({
       id: p.id,
       name: p.name,
-      price: p.price_after || p.price,
+      price: variantPrice,
       image: p.image_url || null,
       shipping_type: p.shipping_type || 'free',
       price_before: p.price_before || 0,

@@ -233,6 +233,13 @@ class StorefrontCartController extends Controller
             } elseif (isset($lItem['color']) && $lItem['color']) {
                 $options['color'] = $lItem['color'];
             }
+            if (isset($lItem['options']) && is_array($lItem['options'])) {
+                foreach ($lItem['options'] as $ok => $ov) {
+                    if (!isset($options[$ok])) {
+                        $options[$ok] = $ov;
+                    }
+                }
+            }
 
             if ($prodId > 0 && $qty > 0) {
                 try {

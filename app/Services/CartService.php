@@ -36,7 +36,12 @@ class CartService
     public function addItem(Cart $cart, int $productId, int $quantity = 1, ?int $variantId = null, array $options = []): CartItem
     {
         $product = \App\Models\Product::findOrFail($productId);
-        $price   = (float) ($product->price_after ?? $product->price);
+        
+        $size = $options['size'] ?? null;
+        $color = $options['color'] ?? null;
+        $customOpts = array_filter($options, fn($k) => !in_array($k, ['size', 'color']), ARRAY_FILTER_USE_KEY);
+
+        $price = $product->getVariantPrice($size, $color, $customOpts);
 
         $existingItem = $cart->items()
             ->where('product_id', $productId)
@@ -53,6 +58,7 @@ class CartService
 
         if ($existingItem) {
             $existingItem->increment('quantity', $quantity);
+            $existingItem->update(['price' => $price]);
             return $existingItem->fresh();
         }
 
@@ -63,7 +69,6 @@ class CartService
             'price'              => $price,
             'options'            => $options ?: null,
         ]);
-
     }
 
     public function updateItem(CartItem $item, int $quantity): CartItem
