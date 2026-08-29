@@ -87,21 +87,25 @@
             <div>
               <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">رقم الهاتف <span style="color:#ef4444">*</span></label>
               <input required name="phone" id="phoneInput" type="tel" inputmode="tel" maxlength="11"
-                placeholder="رقم الهاتف (مثل: 01012345678)"
-                style="width: 100%; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; font-family: Cairo, sans-serif; transition: all 0.3s ease;"
+                placeholder="رقم الهاتف - مثال 01012345678"
+                style="width: 100%; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; font-family: Cairo, sans-serif; transition: all 0.3s ease; text-align: right; direction: rtl;"
                 onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e5e7eb'">
               <div id="phoneErrorMsg" style="color: #ef4444; font-size: 0.8rem; margin-top: 6px; display: none; font-weight: 600;">يجب أن يكون رقم الهاتف 11 رقماً ويبدأ بـ 01 (مثل: 01012345678)</div>
             </div>
           </div>
 
           <div>
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">المحافظة <span style="color:#ef4444">*</span></label>
+            <label style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-weight: 600; color: #374151;">
+              <i class="fa fa-map-marker-alt" style="color: #4f46e5;"></i>
+              <span>المحافظة</span>
+              <span style="color:#ef4444">*</span>
+            </label>
             <div style="position: relative;">
               <select required name="governorate" id="governorateSelect"
-                style="width: 100%; padding: 12px 40px 12px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; font-family: Cairo, sans-serif; background: #fff; cursor: pointer; appearance: none; -webkit-appearance: none; transition: all 0.3s ease;"
+                style="width: 100%; padding: 12px 40px 12px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; font-family: Cairo, sans-serif; background: #fff; cursor: pointer; appearance: none; -webkit-appearance: none; transition: all 0.3s ease; text-align: right; direction: rtl;"
                 onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e5e7eb'"
                 onchange="updateShippingCost()">
-                <option value="">جاري تحميل المحافظات...</option>
+                <option value="">اختر المحافظة</option>
               </select>
               <div style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); pointer-events: none;">
                 <i class="fa fa-chevron-down" style="color: #64748b; font-size: 12px;"></i>
@@ -181,8 +185,8 @@
     </div>
   </main>
 
-  <footer class="container footer" style="text-align: center; padding: 24px 16px; color: #64748b; font-size: 14px; border-top: 1px solid #f1f5f9; margin-top: 40px; margin-bottom: 20px;">
-    <div style="display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500;">
+    <footer class="container footer" style="text-align: center; padding: 24px 16px; color: #64748b; font-size: 14px; border-top: 1px solid #f1f5f9; margin-top: 40px; margin-bottom: 20px;">
+    <div dir="ltr" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500; direction: ltr;">
       <span>Powered by</span>
       <a href="https://fast-order-eg.tech" target="_blank" rel="noopener noreferrer" style="font-weight: 800; color: #4f46e5; text-decoration: none; transition: color 0.2s;">Fastorder</a>
     </div>
@@ -417,8 +421,13 @@
           }
         }
 
+        const itemImg = item.image 
+          ? `<img src="${item.image}" alt="${item.name || ''}" style="width: 52px; height: 52px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb; flex-shrink: 0;">`
+          : `<div style="width: 52px; height: 52px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 18px; flex-shrink: 0;"><i class="fa fa-image"></i></div>`;
+
         return `
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
+            ${itemImg}
             <div style="flex: 1;">
               <div style="font-weight: 600; color: #111827; margin-bottom: 4px; font-size: 14px;">
                 ${item.name || 'منتج'}
@@ -426,7 +435,7 @@
               </div>
               <div style="font-size: 13px; color: #64748b;">الكمية: ${itemQty} × ${new Intl.NumberFormat('en-EG').format(itemPrice)} جنيه</div>
             </div>
-            <div style="font-weight: 700; color: #4f46e5; font-size: 14px;">${new Intl.NumberFormat('en-EG').format(itemTotal)} جنيه</div>
+            <div style="font-weight: 700; color: #4f46e5; font-size: 14px; white-space: nowrap;">${new Intl.NumberFormat('en-EG').format(itemTotal)} جنيه</div>
           </div>
         `;
       }).join('');

@@ -66,14 +66,9 @@ class StorefrontController extends Controller
         $html = file_get_contents($filePath);
 
         // Adjust HTML lang and dir dynamically based on store locale (default to Arabic RTL)
-        $locale = session()->get('locale') ?? Setting::get('store_language', 'ar');
-        if (empty($locale)) {
-            $locale = 'ar';
-        }
+        $locale = Setting::get('store_language', 'ar') ?: 'ar';
         $dir = ($locale === 'en') ? 'ltr' : 'rtl';
-        $html = str_ireplace('<html lang="ar" dir="rtl">', '<html lang="' . $locale . '" dir="' . $dir . '">', $html);
-        $html = str_ireplace('<html lang="ar">', '<html lang="' . $locale . '" dir="' . $dir . '">', $html);
-        $html = str_ireplace('<html>', '<html lang="' . $locale . '" dir="' . $dir . '">', $html);
+        $html = preg_replace('/<html[^>]*>/i', '<html lang="' . $locale . '" dir="' . $dir . '">', $html, 1);
 
         // Fetch settings for the current tenant
         $storeName = Setting::get('store_name', 'Store');
