@@ -103,7 +103,18 @@
           </div>
         </div>
         
-        <input type="hidden" name="pay" value="cod">
+        <!-- Dynamic Payment Gateways in Product Form -->
+        <div id="quickPaymentGatewaysContainer" style="display: none; margin-top: 10px; margin-bottom: 8px;">
+          <div style="font-size: 0.9rem; font-weight: 700; color: #334155; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+            <svg style="width: 16px; height: 16px; color: #4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            طريقة الدفع
+          </div>
+          <div id="quickPaymentMethodsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+
+        <input type="hidden" id="quickPayInput" name="pay" value="cod">
         <button type="submit" id="quickSubmitBtn" style="width: 100%; padding: 14px; font-size: 1.1rem; font-weight: bold; background: #000; color: white; border: none; border-radius: 25px; cursor: pointer; margin-top: 6px;">
           إتمام الطلب
         </button>
@@ -1627,6 +1638,60 @@
         });
     }
 
+    // Load active payment gateways for quick checkout
+    fetch('/public-api/payment-gateways')
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        var gateways = res.data || [];
+        var container = document.getElementById('quickPaymentGatewaysContainer');
+        var list = document.getElementById('quickPaymentMethodsList');
+        var hiddenInput = document.getElementById('quickPayInput');
+        if (!container || !list || !hiddenInput) return;
+
+        var hasOnline = gateways.some(function(g) { return g.provider !== 'cod'; });
+        if (hasOnline) {
+          container.style.display = 'block';
+          list.innerHTML = '';
+
+          gateways.forEach(function(gw, idx) {
+            var isSelected = idx === 0 || gw.provider === 'cod';
+            if (isSelected) hiddenInput.value = gw.provider;
+
+            var item = document.createElement('div');
+            item.className = 'quick-pay-option ' + (isSelected ? 'selected' : '');
+            item.style.cssText = 'border: 2px solid ' + (isSelected ? '#4f46e5' : '#e2e8f0') + '; background: ' + (isSelected ? '#f5f3ff' : '#ffffff') + '; border-radius: 12px; padding: 10px 14px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease;';
+
+            var isCod = gw.provider === 'cod';
+            var iconHtml = isCod
+              ? '<span style="font-size: 1.25rem;">💵</span>'
+              : '<div style="display: flex; align-items: center; gap: 4px;"><img src="/images/payments/cards_meeza_badge.svg" style="height: 18px;" alt="Cards" /><img src="/images/payments/wallets_badge.svg" style="height: 18px;" alt="Wallets" /></div>';
+
+            item.innerHTML = '<div style="display: flex; align-items: center; gap: 10px;">' +
+              '<input type="radio" name="_pay_choice" value="' + gw.provider + '" ' + (isSelected ? 'checked' : '') + ' style="accent-color: #4f46e5; width: 18px; height: 18px; cursor: pointer;" />' +
+              '<div><div style="font-weight: 700; font-size: 0.95rem; color: #1e293b;">' + gw.display_name + '</div>' +
+              (gw.display_description ? '<div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">' + gw.display_description + '</div>' : '') +
+              '</div></div>' + iconHtml;
+
+            item.onclick = function() {
+              document.querySelectorAll('.quick-pay-option').forEach(function(el) {
+                el.style.border = '2px solid #e2e8f0';
+                el.style.background = '#ffffff';
+                var r = el.querySelector('input[type="radio"]');
+                if (r) r.checked = false;
+              });
+              item.style.border = '2px solid #4f46e5';
+              item.style.background = '#f5f3ff';
+              var radio = item.querySelector('input[type="radio"]');
+              if (radio) radio.checked = true;
+              hiddenInput.value = gw.provider;
+            };
+
+            list.appendChild(item);
+          });
+        }
+      })
+      .catch(function(e) {});
+
     var quickForm = document.getElementById('quickCheckoutForm');
     window.validateQuickForm = function(form) {
       var isValid = true;
@@ -1848,7 +1913,8 @@
                 }
             }
             await new Promise(function(r) { setTimeout(r, 250); });
-            window.location.href = '/shop/order-success.html?ref=' + data.data.reference_number;
+            var targetUrl = data.redirect_url || (data.data && data.data.redirect_url) || ('/shop/order-success.html?ref=' + data.data.reference_number);
+            window.location.href = targetUrl;
           } else {
             var errorDetails = '';
             if (data.errors) {

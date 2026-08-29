@@ -120,7 +120,7 @@ class OrderController extends Controller
                 'customer_phone'   => 'required|string|max:20',
                 'customer_address' => 'required|string|max:1000',
                 'governorate_id'   => 'required|exists:shipping_governorates,id',
-                'payment_method'   => 'nullable|in:cod,visa',
+                'payment_method'   => 'nullable|string',
                 'coupon_code'      => 'nullable|string',
                 'items'            => 'required|array|min:1',
                 'items.*.id'       => 'required|integer',
@@ -190,6 +190,10 @@ class OrderController extends Controller
             $shippingCost = $hasNonFreeShipping ? $governorate->price : 0;
             $total = max(0, $subtotal - $discount + $shippingCost);
 
+            $paymentMethod = $validated['payment_method'] ?? 'cod';
+            $isOnlinePayment = in_array($paymentMethod, ['paymob', 'kashier', 'fawry', 'card', 'wallet']);
+            $paymentStatus = $isOnlinePayment ? 'pending_payment' : 'pending_cash';
+
             DB::beginTransaction();
 
             $order = Order::createWithReference([
@@ -198,7 +202,8 @@ class OrderController extends Controller
                 'customer_phone'   => $validated['customer_phone'],
                 'customer_address' => $validated['customer_address'],
                 'governorate'      => $governorate->name,
-                'payment_method'   => $validated['payment_method'] ?? 'cod',
+                'payment_method'   => $paymentMethod,
+                'payment_status'   => $paymentStatus,
                 'shipping_cost'    => $shippingCost,
                 'coupon_code'      => $couponCode,
                 'discount'         => $discount,
@@ -263,18 +268,60 @@ class OrderController extends Controller
 
             DB::commit();
 
+            // إرسال رسالة التأكيد التلقائي عبر الواتساب (WhatsApp Meta Cloud API)
+            try {
+                $isAutoConfirmEnabled = (bool) \App\Models\Setting::get('auto_confirm_enabled', false);
+                if ($isAutoConfirmEnabled && !$isOnlinePayment) {
+                    $whatsAppService = new \App\Services\MetaWhatsAppService();
+                    $whatsAppService->sendOrderConfirmation($order);
+                }
+            } catch (\Throwable $e) {
+                \Log::warning('WhatsApp auto confirmation failed on storeApi: ' . $e->getMessage());
+            }
+
             // Trigger Webhook order.created
             try {
                 \App\Services\WebhookSender::trigger('order.created', $order->toArray(), $order->tenant_id);
             } catch (\Throwable $e) {}
 
+            $redirectUrl = route('orders.success', $order->reference_number) . '?clear_cart=1';
+
+            if ($isOnlinePayment) {
+                if ($paymentMethod === 'paymob' || $paymentMethod === 'card' || $paymentMethod === 'wallet') {
+                    $gw = \App\Models\PaymentGateway::where('tenant_id', $order->tenant_id)
+                        ->where('provider', 'paymob')
+                        ->first();
+                    $creds = $gw?->credentials ?? [];
+
+                    $paymobService = new \App\Services\PaymobService(
+                        apiKey: $creds['api_key'] ?? null,
+                        publicKey: $creds['public_key'] ?? null,
+                        secretKey: $creds['secret_key'] ?? null,
+                        cardIntegrationId: $creds['card_integration_id'] ?? null,
+                        walletIntegrationId: $creds['wallet_integration_id'] ?? null,
+                        hmacSecret: $creds['hmac_secret'] ?? null,
+                    );
+
+                    $checkoutData = $paymobService->createStoreOrderCheckout($order);
+                    if (!empty($checkoutData['redirect_url'])) {
+                        $redirectUrl = $checkoutData['redirect_url'];
+                    }
+                } elseif ($paymentMethod === 'kashier') {
+                    $redirectUrl = url("/checkout/payment-callback/kashier?order_id={$order->id}&status=success");
+                } elseif ($paymentMethod === 'fawry') {
+                    $redirectUrl = url("/order-success/{$order->reference_number}?clear_cart=1&fawry=1");
+                }
+            }
+
             return response()->json([
-                'success' => true,
-                'message' => 'تم إنشاء الطلب بنجاح',
-                'data'    => [
+                'success'      => true,
+                'message'      => 'تم إنشاء الطلب بنجاح',
+                'redirect_url' => $redirectUrl,
+                'data'         => [
                     'reference_number' => $order->reference_number,
                     'total'            => $order->total,
-                    'order_id'         => $order->id
+                    'order_id'         => $order->id,
+                    'redirect_url'     => $redirectUrl,
                 ]
             ]);
 

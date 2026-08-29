@@ -681,6 +681,37 @@ Route::prefix('admin')->group(function () {
             return response()->json(['data' => $data])->header('Access-Control-Allow-Origin', '*');
         });
 
+        Route::get('/public-api/payment-gateways', function (\Illuminate\Http\Request $request) {
+            $tenantId = optional($request->attributes->get('tenant'))->id;
+            $gateways = \App\Models\PaymentGateway::where('tenant_id', $tenantId)
+                ->where('is_active', true)
+                ->orderBy('sort_order', 'asc')
+                ->get()
+                ->map(function ($gw) {
+                    return [
+                        'id'                  => $gw->id,
+                        'provider'            => $gw->provider,
+                        'display_name'        => $gw->display_name ?: ($gw->provider === 'cod' ? 'الدفع عند الاستلام' : 'دفع إلكتروني (بطاقة بنكية / محفظة)'),
+                        'display_description' => $gw->display_description,
+                        'settings'            => $gw->settings ?: [],
+                    ];
+                });
+
+            if ($gateways->isEmpty()) {
+                $gateways = collect([
+                    [
+                        'id'                  => 0,
+                        'provider'            => 'cod',
+                        'display_name'        => 'الدفع عند الاستلام',
+                        'display_description' => 'ادفع نقداً عند استلام شحنتك من مندوب التوصيل',
+                        'settings'            => [],
+                    ]
+                ]);
+            }
+
+            return response()->json(['data' => $gateways])->header('Access-Control-Allow-Origin', '*');
+        });
+
         Route::get('/public-api/settings', function () {
             $storedCats = \App\Models\Setting::get('main_categories');
             $mainCategories = $storedCats
