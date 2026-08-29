@@ -522,8 +522,23 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const toggle = document.querySelector('.menu-toggle');
   const nav = document.querySelector('.nav');
   if(toggle && nav){
-    toggle.addEventListener('click', ()=>{ nav.classList.toggle('open'); });
-    nav.querySelectorAll('a').forEach(a=> a.addEventListener('click', ()=> nav.classList.remove('open')));
+    toggle.addEventListener('click', (e)=>{ 
+      e.stopPropagation();
+      const isOpen = nav.classList.toggle('open'); 
+      toggle.classList.toggle('open', isOpen);
+    });
+    nav.querySelectorAll('a').forEach(a=> a.addEventListener('click', ()=> {
+      nav.classList.remove('open');
+      toggle.classList.remove('open');
+    }));
+    document.addEventListener('click', (e)=>{
+      if (nav.classList.contains('open')) {
+        if (!nav.contains(e.target) && !toggle.contains(e.target)) {
+          nav.classList.remove('open');
+          toggle.classList.remove('open');
+        }
+      }
+    });
   }
   
   // Inject switcher and translate DOM

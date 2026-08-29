@@ -94,30 +94,17 @@
         }
       });
 
-      // ألوان متدرجة للأقسام الرئيسية
-      const categoryColors = [
-        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-        'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-        'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-        'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-        'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
-        'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
-        'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)',
-      ];
-
       let html = '';
 
       // نجيب الأقسام الرئيسية من settings API أو نستخدم الموجود في البيانات
       function buildHTML(mainCategoryOrder) {
         // عرض الأقسام اللي جات من الـ settings بالترتيب
-        mainCategoryOrder.forEach((mainCategoryName, index) => {
+        mainCategoryOrder.forEach((mainCategoryName) => {
           const subcategories = categoriesByMainCategory[mainCategoryName];
           if (subcategories && subcategories.length > 0) {
-            const color = categoryColors[index % categoryColors.length];
-            html += '<div class="category-section" style="margin-bottom: 3rem;">';
-            html += '<div class="main-category-header" style="text-align: center; margin-bottom: 2rem; background: ' + color + '; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);">';
-            html += '<h2 style="color: white; font-size: 1.5rem; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3); font-weight: 700; padding: 1rem;">' + mainCategoryName + '</h2>';
+            html += '<div class="category-section" style="margin-bottom: 2.5rem;">';
+            html += '<div class="main-category-header" style="text-align: center; margin-bottom: 1.5rem; background: #0f172a; border-radius: 12px; box-shadow: 0 4px 18px rgba(0,0,0,0.15);">';
+            html += '<h2 style="color: #ffffff; font-size: 1.35rem; margin: 0; font-weight: 800; padding: 0.85rem 1.25rem;">' + mainCategoryName + '</h2>';
             html += '</div>';
             html += '<div class="subcategories-grid grid">';
 
@@ -136,13 +123,12 @@
         });
 
         // عرض أي أقسام عندها main_category مش موجود في الـ order
-        Object.keys(categoriesByMainCategory).forEach((mainCategoryName, idx) => {
+        Object.keys(categoriesByMainCategory).forEach((mainCategoryName) => {
           if (!mainCategoryOrder.includes(mainCategoryName)) {
             const subcategories = categoriesByMainCategory[mainCategoryName];
-            const color = categoryColors[(mainCategoryOrder.length + idx) % categoryColors.length];
-            html += '<div class="category-section" style="margin-bottom: 3rem;">';
-            html += '<div class="main-category-header" style="text-align: center; margin-bottom: 2rem; background: ' + color + '; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);">';
-            html += '<h2 style="color: white; font-size: 1.5rem; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3); font-weight: 700; padding: 1rem;">' + mainCategoryName + '</h2>';
+            html += '<div class="category-section" style="margin-bottom: 2.5rem;">';
+            html += '<div class="main-category-header" style="text-align: center; margin-bottom: 1.5rem; background: #0f172a; border-radius: 12px; box-shadow: 0 4px 18px rgba(0,0,0,0.15);">';
+            html += '<h2 style="color: #ffffff; font-size: 1.35rem; margin: 0; font-weight: 800; padding: 0.85rem 1.25rem;">' + mainCategoryName + '</h2>';
             html += '</div>';
             html += '<div class="subcategories-grid grid">';
             subcategories.forEach(sub => {
@@ -157,9 +143,9 @@
 
         // عرض الأقسام بدون main_category
         if (categoriesWithoutMainCategory.length > 0) {
-          html += '<div class="category-section" style="margin-bottom: 3rem;">';
-          html += '<div class="main-category-header" style="text-align: center; margin-bottom: 2rem; background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);">';
-          html += '<h2 style="color: #8b4513; font-size: 1.5rem; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.1); font-weight: 700; padding: 1rem;">أقسام أخرى</h2>';
+          html += '<div class="category-section" style="margin-bottom: 2.5rem;">';
+          html += '<div class="main-category-header" style="text-align: center; margin-bottom: 1.5rem; background: #0f172a; border-radius: 12px; box-shadow: 0 4px 18px rgba(0,0,0,0.15);">';
+          html += '<h2 style="color: #ffffff; font-size: 1.35rem; margin: 0; font-weight: 800; padding: 0.85rem 1.25rem;">أقسام أخرى</h2>';
           html += '</div><div class="subcategories-grid grid">';
           categoriesWithoutMainCategory.forEach(cat => {
             html += '<div class="card category-card" style="cursor: pointer;" onclick="location.href=\'/shop/category-products.html?id=' + cat.id + '&name=' + encodeURIComponent(cat.name) + '\'">';

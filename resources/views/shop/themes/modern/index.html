@@ -64,18 +64,7 @@
             <img src="/shop/assets/slider/2.jpg?v=202604031" alt="منتجات جديدة">
           </div>
         </div>
-
-        <!-- Navigation arrows -->
-        <button class="slider-btn prev" onclick="changeSlide(-1)">
-          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <button class="slider-btn next" onclick="changeSlide(1)">
-          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+        <div class="slider-dots" id="sliderDots"></div>
       </div>
     </section>
 
@@ -155,9 +144,34 @@
     let currentSlideIndex = 0;
     let slides, totalSlides;
 
+    function renderSliderDots() {
+      const dotsContainer = document.getElementById('sliderDots');
+      if (!dotsContainer) return;
+      dotsContainer.innerHTML = '';
+      if (!totalSlides || totalSlides <= 1) {
+        dotsContainer.style.display = 'none';
+        return;
+      }
+      dotsContainer.style.display = '';
+      for (let i = 0; i < totalSlides; i++) {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'slider-dot' + (i === currentSlideIndex ? ' active' : '');
+        dot.setAttribute('aria-label', 'عرض الشريحة ' + (i + 1));
+        dot.addEventListener('click', (e) => {
+          e.stopPropagation();
+          stopAutoSlide();
+          showSlide(i);
+          startAutoSlide();
+        });
+        dotsContainer.appendChild(dot);
+      }
+    }
+
     function initSlider() {
       slides = document.querySelectorAll('.slide');
       totalSlides = slides.length;
+      renderSliderDots();
 
       if (totalSlides > 0) {
         // Ensure all images are loaded before starting
@@ -243,6 +257,12 @@
       if (slides[currentSlideIndex]) {
         slides[currentSlideIndex].classList.add('active');
       }
+
+      // Update dots active state
+      const dots = document.querySelectorAll('.slider-dot');
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentSlideIndex);
+      });
 
       // Move slides container
       const slidesContainer = document.querySelector('.slides');

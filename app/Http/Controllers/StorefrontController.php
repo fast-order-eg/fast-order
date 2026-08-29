@@ -336,6 +336,109 @@ s0.parentNode.insertBefore(s1,s0);
     color: #1f2937 !important;
   }
 
+  /* Mobile Menu Toggle Animation (Hamburger to X) */
+  .menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 6px;
+    width: 38px;
+    height: 38px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.25s ease;
+  }
+  .menu-toggle span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: #111827;
+    border-radius: 2px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+  }
+  .menu-toggle.open span:nth-child(1) {
+    transform: translateY(6px) rotate(45deg) !important;
+  }
+  .menu-toggle.open span:nth-child(2) {
+    opacity: 0 !important;
+    transform: scale(0) !important;
+  }
+  .menu-toggle.open span:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg) !important;
+  }
+  @media (max-width: 768px) {
+    .menu-toggle {
+      display: flex !important;
+    }
+  }
+
+  /* Main Category Header Luxury Black Styling */
+  .main-category-header {
+    background: #0f172a !important;
+    border-radius: var(--border-radius) !important;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.15) !important;
+    text-align: center !important;
+    margin-bottom: 1.5rem !important;
+    overflow: hidden !important;
+  }
+  .main-category-header h2 {
+    color: #ffffff !important;
+    font-size: 1.35rem !important;
+    margin: 0 !important;
+    font-weight: 800 !important;
+    padding: 0.85rem 1.25rem !important;
+    text-shadow: none !important;
+  }
+
+  /* Slider Arrows & Dots */
+  .slider-btn, .slider-btn.prev, .slider-btn.next {
+    display: none !important;
+  }
+  .slider-dots {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 20;
+    padding: 6px 14px;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(4px);
+    border-radius: 999px;
+  }
+  .slider-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.45);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+    display: block;
+  }
+  .slider-dot:hover {
+    background: rgba(255, 255, 255, 0.8);
+  }
+  .slider-dot.active {
+    background: #ffffff;
+    width: 22px;
+    border-radius: 6px;
+  }
+  @media (max-width: 768px) {
+    .slider-dots {
+      display: none !important;
+    }
+  }
+
   /* Global Border Radius Customization Across Storefront */
   .card, .category-card, .product-card-skeleton, .product-card,
   .hero-slider .slider-container, .hero-slider .slide,
