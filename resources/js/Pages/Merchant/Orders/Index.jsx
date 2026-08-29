@@ -66,6 +66,42 @@ export default function OrdersIndex({ orders, totalAmount, statusCounts, product
         );
     };
 
+    const getPaymentBadge = (order) => {
+        const method = order.payment_method || 'cod';
+        const isPaid = order.payment_status === 'paid';
+
+        if (isPaid) {
+            return (
+                <span
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200"
+                    title={order.transaction_id ? `رقم المعاملة: ${order.transaction_id}` : 'مدفوع إلكترونياً'}
+                >
+                    <span>💳</span>
+                    <span>
+                        {method === 'paymob' ? 'مدفوع Paymob' : (method === 'kashier' ? 'مدفوع Kashier' : (method === 'fawry' ? 'مدفوع Fawry' : 'مدفوع أونلاين'))}
+                    </span>
+                    <span className="text-[9px] bg-emerald-600 text-white px-1 rounded">✓</span>
+                </span>
+            );
+        }
+
+        if (method === 'paymob' || method === 'kashier' || method === 'fawry') {
+            return (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                    <span>💳</span>
+                    <span>بانتظار السداد ({method})</span>
+                </span>
+            );
+        }
+
+        return (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-gray-100 text-gray-700">
+                <span>💵</span>
+                <span>عند الاستلام</span>
+            </span>
+        );
+    };
+
     const formatCurrency = (amount) => {
         return Math.round(Number(amount)).toLocaleString('en-US') + ' ج.م';
     };
@@ -289,8 +325,30 @@ export default function OrdersIndex({ orders, totalAmount, statusCounts, product
                                             <td className="px-6 py-4 text-gray-600 font-medium">
                                                 {order.governorate}
                                             </td>
-                                            <td className="px-6 py-4">
-                                                {getStatusBadge(order.status)}
+                                            <td className="px-6 py-4 space-y-1">
+                                                <div>{getStatusBadge(order.status)}</div>
+                                                <div>{getPaymentBadge(order)}</div>
+                                                {order.whatsapp_status && order.whatsapp_status !== 'none' && (
+                                                    <div>
+                                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                                                            order.whatsapp_status === 'confirmed'
+                                                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                                                : (order.whatsapp_status === 'cancelled'
+                                                                    ? 'bg-red-50 text-red-700 border border-red-200'
+                                                                    : (order.whatsapp_status === 'pending'
+                                                                        ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                                                                        : 'bg-gray-100 text-gray-600'))
+                                                        }`}>
+                                                            <span>💬</span>
+                                                            <span>
+                                                                {order.whatsapp_status === 'confirmed' && 'مؤكد واتس'}
+                                                                {order.whatsapp_status === 'cancelled' && 'ملغي واتس'}
+                                                                {order.whatsapp_status === 'pending' && 'بانتظار الواتس'}
+                                                                {order.whatsapp_status === 'no_whatsapp' && 'بدون واتس'}
+                                                            </span>
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </td>
                                             <td className="px-6 py-4 font-extrabold text-indigo-600">
                                                 {formatCurrency(order.total)}
@@ -357,7 +415,8 @@ export default function OrdersIndex({ orders, totalAmount, statusCounts, product
                                                 رقم: {order.reference_number}
                                             </span>
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                                            {getPaymentBadge(order)}
                                             {getStatusBadge(order.status)}
                                         </div>
                                     </div>

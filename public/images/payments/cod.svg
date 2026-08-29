@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" width="100%" height="100%">
+  <!-- Box / Package -->
+  <rect x="45" y="48" width="70" height="52" rx="10" fill="#FFB74D" stroke="#E65100" stroke-width="3"/>
+  <path d="M45 62 L115 62" stroke="#E65100" stroke-width="2"/>
+  <path d="M80 62 L80 100" stroke="#E65100" stroke-width="2"/>
+  <!-- Cash Notes -->
+  <rect x="52" y="22" width="56" height="28" rx="5" fill="#4CAF50" stroke="#1B5E20" stroke-width="3" transform="rotate(-6 80 36)"/>
+  <circle cx="80" cy="35" r="7" fill="#81C784"/>
+  <!-- Hands -->
+  <path d="M25 55 C25 50, 42 45, 55 58 C62 65, 52 75, 45 75 C35 75, 25 65, 25 55 Z" fill="#FFCC80"/>
+  <path d="M135 55 C135 50, 118 45, 105 58 C98 65, 108 75, 115 75 C125 75, 135 65, 135 55 Z" fill="#FFCC80"/>
+  <rect x="18" y="48" width="12" height="24" rx="4" fill="#00B074"/>
+  <rect x="130" y="48" width="12" height="24" rx="4" fill="#00B074"/>
+</svg>

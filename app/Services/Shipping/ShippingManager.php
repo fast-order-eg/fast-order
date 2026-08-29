@@ -5,7 +5,7 @@ namespace App\Services\Shipping;
 use App\Contracts\ShippingProviderInterface;
 use App\Services\Shipping\Drivers\BostaShippingDriver;
 use App\Services\Shipping\Drivers\JntShippingDriver;
-use App\Services\Shipping\Drivers\EgyptPostShippingDriver;
+use App\Services\Shipping\Drivers\AramexShippingDriver;
 use App\Models\Order;
 use App\Models\Shipment;
 use App\Models\ShippingGateway;
@@ -21,7 +21,7 @@ class ShippingManager
         return match ($provider) {
             'bosta' => new BostaShippingDriver(),
             'jnt' => new JntShippingDriver(),
-            'egypt_post' => new EgyptPostShippingDriver(),
+            'aramex' => new AramexShippingDriver(),
             default => throw new InvalidArgumentException("Unsupported shipping provider: {$provider}"),
         };
     }
@@ -38,21 +38,28 @@ class ShippingManager
             ->where('is_active', true)
             ->first();
 
+        $providerTitle = match ($provider) {
+            'bosta'  => 'بوسطة (Bosta)',
+            'jnt'    => 'J&T Express',
+            'aramex' => 'أرامكس (Aramex)',
+            default  => $provider,
+        };
+
         if (!$gateway) {
-            // Create fallback/mock gateway if not configured
-            $gateway = new ShippingGateway([
-                'tenant_id' => $tenantId,
-                'provider' => $provider,
-                'is_active' => true,
-                'credentials' => ['api_key' => 'test_mode'],
-            ]);
+            throw new \RuntimeException("شركة الشحن {$providerTitle} غير مفعلة في متجرك. يرجى تفعيلها أولاً من قائمة شركات الشحن.");
+        }
+
+        $creds = $gateway->credentials ?? [];
+        $hasKey = !empty($creds['api_key']) || !empty($creds['access_token']) || !empty($creds['password']);
+        if (!$hasKey) {
+            throw new \RuntimeException("لم يتم إدخال بيانات الربط (API Key) لشركة {$providerTitle}. يرجى إدخال البيانات في صفحة شركات الشحن أولاً.");
         }
 
         $driver = $this->driver($provider);
         $result = $driver->createShipment($order, $gateway);
 
         if (!$result['success']) {
-            throw new \RuntimeException($result['error'] ?? 'Shipping creation failed.');
+            throw new \RuntimeException($result['error'] ?? 'فشل إنشاء الشحنة مع شركة الشحن.');
         }
 
         return Shipment::create([

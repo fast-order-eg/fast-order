@@ -9,69 +9,97 @@ use Illuminate\Support\Facades\Http;
 
 class BostaShippingDriver implements ShippingProviderInterface
 {
-    protected string $baseUrl = 'https://api.bosta.co/v0';
+    protected string $baseUrl = 'https://api.bosta.co/api/v2';
 
     public function createShipment(Order $order, ShippingGateway $gateway, array $options = []): array
     {
         $apiKey = $gateway->credentials['api_key'] ?? null;
 
-        // If in test mode or API key starts with 'test_', simulate response
-        if (!$apiKey || str_starts_with($apiKey, 'test_') || config('app.env') === 'testing') {
-            $trackingNumber = 'BST-' . strtoupper(\Illuminate\Support\Str::random(8));
+        if (empty($apiKey)) {
+            return [
+                'success' => false,
+                'error'   => 'مفتاح الـ API لشركة بوسطة (Bosta) غير متوفر أو فارغ.',
+            ];
+        }
+
+        if (str_starts_with($apiKey, 'test_') || app()->environment('testing')) {
+            $mockTracking = 'BST-' . rand(100000, 999999);
             return [
                 'success' => true,
-                'tracking_number' => $trackingNumber,
-                'airway_bill_url' => "https://bosta.co/awb/{$trackingNumber}.pdf",
+                'tracking_number' => (string) $mockTracking,
+                'airway_bill_url' => "https://app.bosta.co/api/v2/deliveries/awb/{$mockTracking}",
                 'status' => 'created',
                 'cost' => 45.00,
-                'raw_response' => [
-                    'provider' => 'bosta',
-                    'message' => 'Simulated shipment created for Bosta',
-                    'delivery_id' => $trackingNumber,
-                ],
+                'raw_response' => ['test_mode' => true],
             ];
         }
 
         try {
-            $response = Http::withHeaders([
-                'Authorization' => $apiKey,
-                'Content-Type' => 'application/json',
-            ])->post("{$this->baseUrl}/deliveries", [
-                'type' => 10, // Standard delivery
+            $itemsCount = 1;
+            if (is_array($order->items)) {
+                $itemsCount = array_sum(array_column($order->items, 'qty')) ?: count($order->items);
+            }
+
+            // Split customer name into first and last name for Bosta requirements
+            $nameParts = explode(' ', trim($order->customer_name ?? 'العميل'), 2);
+            $firstName = $nameParts[0] ?: 'العميل';
+            $lastName = $nameParts[1] ?? ' ';
+
+            // Prepare Bosta Delivery Payload
+            $payload = [
+                'type' => 10, // 10 = Deliver (Standard Parcel Delivery)
                 'specs' => [
+                    'packageType' => 'Parcel',
+                    'size' => 'SMALL',
                     'packageDetails' => [
-                        'itemsCount' => $order->items ? $order->items->sum('quantity') : 1,
-                        'description' => "Order #{$order->order_number}",
+                        'itemsCount' => (int) $itemsCount,
+                        'description' => "طلب رقم #{$order->reference_number}",
                     ],
                 ],
                 'dropOffAddress' => [
-                    'firstLine' => $order->shipping_address ?: 'Cairo, Egypt',
+                    'firstLine' => $order->customer_address ?: 'العنوان المحدد من العميل',
                     'city' => $order->governorate ?: 'Cairo',
                 ],
                 'receiver' => [
-                    'firstName' => $order->customer_name,
-                    'lastName' => '',
-                    'phone' => $order->customer_phone,
+                    'firstName' => $firstName,
+                    'lastName'  => $lastName,
+                    'phone'     => $order->customer_phone,
                 ],
-                'cod' => (float) $order->total_amount,
-            ]);
+                'cod' => (float) $order->total,
+                'businessReference' => (string) $order->reference_number,
+                'notes' => $order->notes ?: "طلب من متجر رقم #{$order->reference_number}",
+            ];
+
+            $response = Http::withoutVerifying()->withHeaders([
+                'Authorization' => $apiKey,
+                'x-api-key'     => $apiKey,
+                'Content-Type'  => 'application/json',
+                'Accept'        => 'application/json',
+            ])->timeout(15)->post("{$this->baseUrl}/deliveries", $payload);
 
             if ($response->successful()) {
                 $data = $response->json();
-                $trackingNumber = $data['trackingNumber'] ?? $data['_id'] ?? ('BST-' . rand(100000, 999999));
+                $deliveryData = $data['data'] ?? $data;
+                $trackingNumber = $deliveryData['trackingNumber'] ?? $deliveryData['_id'] ?? ('BST-' . rand(100000, 999999));
+                $deliveryId = $deliveryData['_id'] ?? $trackingNumber;
+
                 return [
                     'success' => true,
-                    'tracking_number' => $trackingNumber,
-                    'airway_bill_url' => $data['airwayBillUrl'] ?? "https://bosta.co/awb/{$trackingNumber}.pdf",
+                    'tracking_number' => (string) $trackingNumber,
+                    'airway_bill_url' => "https://app.bosta.co/api/v2/deliveries/awb/{$deliveryId}",
                     'status' => 'created',
-                    'cost' => (float) ($data['cost'] ?? 45.00),
+                    'cost' => (float) ($deliveryData['price'] ?? 45.00),
                     'raw_response' => $data,
                 ];
             }
 
+            $errorMsg = $response->json()['message'] 
+                ?? $response->json()['error'] 
+                ?? 'فشل إنشاء الشحنة في بوسطة (تحقق من صحة مفتاح API أو البيانات).';
+
             return [
                 'success' => false,
-                'error' => $response->json()['message'] ?? 'Failed to create Bosta shipment',
+                'error' => $errorMsg,
             ];
         } catch (\Exception $e) {
             return [
@@ -85,21 +113,22 @@ class BostaShippingDriver implements ShippingProviderInterface
     {
         $apiKey = $gateway->credentials['api_key'] ?? null;
 
-        if (!$apiKey || str_starts_with($apiKey, 'test_') || config('app.env') === 'testing') {
+        if (!$apiKey || str_starts_with($apiKey, 'test_')) {
             return [
                 'tracking_number' => $trackingNumber,
                 'status' => 'in_transit',
                 'events' => [
-                    ['status' => 'created', 'time' => now()->subHours(5)->toIso8601String(), 'description' => 'Shipment created'],
-                    ['status' => 'picked_up', 'time' => now()->subHours(2)->toIso8601String(), 'description' => 'Picked up by courier'],
+                    ['status' => 'created', 'time' => now()->subHours(5)->toIso8601String(), 'description' => 'تم إنشاء الشحنة في بوسطة'],
+                    ['status' => 'picked_up', 'time' => now()->subHours(2)->toIso8601String(), 'description' => 'تم الاستلام بواسطة المندوب'],
                 ],
             ];
         }
 
         try {
-            $response = Http::withHeaders([
+            $response = Http::withoutVerifying()->withHeaders([
                 'Authorization' => $apiKey,
-            ])->get("{$this->baseUrl}/deliveries/track/{$trackingNumber}");
+                'x-api-key' => $apiKey,
+            ])->timeout(10)->get("{$this->baseUrl}/deliveries/track/{$trackingNumber}");
 
             if ($response->successful()) {
                 return $response->json();

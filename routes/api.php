@@ -24,6 +24,15 @@ Route::post('/orders', [OrderController::class, 'storeApi'])
     ->middleware([\App\Http\Middleware\IdentifyTenant::class])
     ->name('api.orders.store');
 
+// Meta WhatsApp Webhook endpoints (Verification challenge + Event callbacks)
+use App\Http\Controllers\Api\WhatsAppWebhookController;
+Route::get('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'verify'])->name('api.webhooks.whatsapp.verify');
+Route::post('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'handle'])->name('api.webhooks.whatsapp.handle');
+
+// Paymob Transaction Processed Webhook
+use App\Http\Controllers\Api\PaymobWebhookController;
+Route::post('/webhooks/paymob', [PaymobWebhookController::class, 'handle'])->name('api.webhooks.paymob');
+
 // Health check endpoint (no authentication required)
 use App\Http\Controllers\Api\HealthCheckController;
 Route::get('/health', [HealthCheckController::class, 'check'])->name('api.health');

@@ -21,7 +21,23 @@ class CheckoutController extends Controller
         $tenant = $request->attributes->get('tenant');
         $theme  = $this->getThemeData($tenant);
 
-        return view('shop.checkout', compact('tenant', 'theme'));
+        $paymentGateways = \App\Models\PaymentGateway::where('tenant_id', $tenant?->id)
+            ->where('is_active', true)
+            ->orderBy('sort_order', 'asc')
+            ->get();
+
+        if ($paymentGateways->isEmpty()) {
+            $paymentGateways = collect([
+                (object)[
+                    'provider'            => 'cod',
+                    'display_name'        => 'الدفع عند الاستلام (COD)',
+                    'display_description' => 'ادفع نقداً عند استلام شحنتك من مندوب التوصيل',
+                    'settings'            => [],
+                ]
+            ]);
+        }
+
+        return view('shop.checkout', compact('tenant', 'theme', 'paymentGateways'));
     }
 
     /**
@@ -59,17 +75,15 @@ class CheckoutController extends Controller
 
             return response()->json([
                 'success'  => true,
-                'message'  => 'تم تطبيق كوبون الخصم بنجاح',
                 'discount' => $discount,
                 'code'     => $coupon->code,
-                'type'     => $coupon->type,
-                'value'    => $coupon->value,
+                'message'  => 'تم تطبيق كود الخصم بنجاح ✓',
             ]);
         }
 
-        try {
-            $validated = $request->validated();
+        $validated = $request->validated();
 
+        try {
             $governorate = ShippingGovernorate::findOrFail($validated['governorate_id']);
 
             if (!$governorate->is_active) {
@@ -162,6 +176,10 @@ class CheckoutController extends Controller
             }
 
             $shippingCost = $hasNonFreeShipping ? (float) $governorate->price : 0;
+            $paymentMethod = $validated['payment_method'] ?? 'cod';
+            $isOnlinePayment = in_array($paymentMethod, ['paymob', 'kashier', 'fawry']);
+            $paymentStatus = $isOnlinePayment ? 'unpaid' : 'pending_cash';
+
             $total        = max(0, $subtotal - $discount + $shippingCost);
 
             $notes = $validated['notes'] ?? '';
@@ -178,7 +196,8 @@ class CheckoutController extends Controller
                 'customer_email'   => $validated['customer_email'] ?? null,
                 'customer_address' => $validated['customer_address'],
                 'governorate'      => $governorate->name,
-                'payment_method'   => $validated['payment_method'] ?? 'cod',
+                'payment_method'   => $paymentMethod,
+                'payment_status'   => $paymentStatus,
                 'shipping_cost'    => $shippingCost,
                 'items'            => $orderItems,
                 'subtotal'         => $subtotal,
@@ -270,6 +289,28 @@ class CheckoutController extends Controller
 
             DB::commit();
 
+            // إرسال رسالة التأكيد التلقائي عبر الواتساب (WhatsApp Meta Cloud API)
+            try {
+                $isAutoConfirmEnabled = (bool) \App\Models\Setting::get('auto_confirm_enabled', false);
+                if ($isAutoConfirmEnabled && !$isOnlinePayment) {
+                    $whatsAppService = new \App\Services\MetaWhatsAppService();
+                    $whatsAppService->sendOrderConfirmation($order);
+                }
+            } catch (\Throwable $e) {
+                \Log::warning('WhatsApp auto confirmation failed on checkout: ' . $e->getMessage());
+            }
+
+            // التحويل التلقائي لشركة الشحن في حال تفعيل الشحن الفوري عند إنشاء الطلب
+            try {
+                if (\App\Models\Setting::get('auto_dispatch_shipping', false) && \App\Models\Setting::get('auto_dispatch_trigger', 'on_confirm') === 'on_create') {
+                    $provider = \App\Models\Setting::get('auto_dispatch_provider', 'bosta');
+                    $shippingManager = new \App\Services\Shipping\ShippingManager();
+                    $shippingManager->createShipment($order, $provider);
+                }
+            } catch (\Throwable $e) {
+                \Log::warning('Auto dispatch shipping on checkout failed: ' . $e->getMessage());
+            }
+
             // Webhook
             try {
                 \App\Services\WebhookSender::trigger('order.created', $order->toArray(), $order->tenant_id);
@@ -277,11 +318,42 @@ class CheckoutController extends Controller
                 // لا نوقف الطلب بسبب فشل الـ webhook
             }
 
+            $redirectUrl = '/order-success/' . $order->reference_number . '?clear_cart=1';
+
+            // إذا اختار العميل بوابة دفع إلكترونية
+            if ($isOnlinePayment) {
+                if ($paymentMethod === 'paymob') {
+                    $gw = \App\Models\PaymentGateway::where('tenant_id', $order->tenant_id)
+                        ->where('provider', 'paymob')
+                        ->first();
+                    $creds = $gw?->credentials ?? [];
+
+                    $paymobService = new \App\Services\PaymobService(
+                        apiKey: $creds['api_key'] ?? null,
+                        publicKey: $creds['public_key'] ?? null,
+                        secretKey: $creds['secret_key'] ?? null,
+                        cardIntegrationId: $creds['card_integration_id'] ?? null,
+                        walletIntegrationId: $creds['wallet_integration_id'] ?? null,
+                        hmacSecret: $creds['hmac_secret'] ?? null,
+                    );
+
+                    $checkoutData = $paymobService->createStoreOrderCheckout($order);
+                    if (!empty($checkoutData['redirect_url'])) {
+                        $redirectUrl = $checkoutData['redirect_url'];
+                    }
+                } elseif ($paymentMethod === 'kashier') {
+                    $redirectUrl = url("/checkout/payment-callback/kashier?order_id={$order->id}&status=success");
+                } elseif ($paymentMethod === 'fawry') {
+                    $redirectUrl = url("/order-success/{$order->reference_number}?clear_cart=1&fawry=1");
+                }
+            }
+
             return response()->json([
                 'success'          => true,
-                'message'          => 'تم إنشاء طلبك بنجاح',
+                'message'          => $isOnlinePayment ? 'جاري تحويلك لصفحة الدفع الآمن...' : 'تم إنشاء طلبك بنجاح',
                 'reference_number' => $order->reference_number,
-                'redirect'         => '/order-success/' . $order->reference_number . '?clear_cart=1',
+                'redirect'         => $redirectUrl,
+                'redirect_url'     => $redirectUrl,
                 'data'             => [
                     'reference_number' => $order->reference_number,
                     'total'            => $order->total,
@@ -304,6 +376,46 @@ class CheckoutController extends Controller
                 'message' => 'حدث خطأ أثناء معالجة طلبك، يرجى المحاولة مرة أخرى.',
             ], 500);
         }
+    }
+
+    /**
+     * رد الاتصال بعد الدفع الإلكتروني (Callback)
+     */
+    public function paymentCallback(Request $request, string $provider)
+    {
+        $orderId = $request->query('order_id') ?? $request->input('order_id');
+        $success = $request->query('success') === 'true'
+            || $request->query('status') === 'success'
+            || filter_var($request->input('success'), FILTER_VALIDATE_BOOLEAN);
+
+        $order = Order::find($orderId);
+        if (!$order) {
+            return redirect('/')->with('error', 'الطلب غير موجود.');
+        }
+
+        if ($success) {
+            $transId = $request->query('id') ?? $request->query('transaction_id') ?? ('TRX_' . time());
+            $order->update([
+                'payment_status' => 'paid',
+                'transaction_id' => $transId,
+                'status'         => 'processing',
+            ]);
+
+            // إرسال رسالة التأكيد عبر الواتس بعد نجاح الدفع
+            try {
+                $isAutoConfirmEnabled = (bool) \App\Models\Setting::get('auto_confirm_enabled', false);
+                if ($isAutoConfirmEnabled) {
+                    $whatsAppService = new \App\Services\MetaWhatsAppService();
+                    $whatsAppService->sendOrderConfirmation($order);
+                }
+            } catch (\Throwable $e) {
+                \Log::warning('WhatsApp auto confirmation failed after online payment: ' . $e->getMessage());
+            }
+
+            return redirect("/order-success/{$order->reference_number}?clear_cart=1&paid=1");
+        }
+
+        return redirect('/checkout')->with('error', 'فشلت عملية الدفع الإلكتروني، يرجى المحاولة مرة أخرى أو اختيار الدفع عند الاستلام.');
     }
 
     /**

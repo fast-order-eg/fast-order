@@ -1,31 +1,51 @@
 import React, { useState } from 'react';
 import MerchantLayout from '@/Layouts/MerchantLayout';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, useForm, usePage, router } from '@inertiajs/react';
 
 export default function WalletIndex({ wallet_balance, paymentInfo, depositRequests, transactions }) {
     const { flash } = usePage().props;
 
     const [activeTab, setActiveTab] = useState('deposit'); // deposit, history
-    const [quickAmount, setQuickAmount] = useState(300);
+    const [chargeMode, setChargeMode] = useState('instant'); // 'instant' (Paymob) or 'manual' (Cash/InstaPay)
+
+    // Manual Form State
+    const [manualQuickAmount, setManualQuickAmount] = useState(300);
     const [copiedVodafone, setCopiedVodafone] = useState(false);
     const [copiedInstapay, setCopiedInstapay] = useState(false);
     const [copiedCodeId, setCopiedCodeId] = useState(null);
     const [previewImage, setPreviewImage] = useState(null);
     const [viewingReceipt, setViewingReceipt] = useState(null);
 
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const manualForm = useForm({
         amount: 300,
         payment_method: 'vodafone_cash',
         payment_reference: '',
         receipt: null,
     });
 
-    const handleQuickAmount = (val) => {
-        setQuickAmount(val);
+    // Instant (Paymob) Form State
+    const [instantQuickAmount, setInstantQuickAmount] = useState(300);
+    const instantForm = useForm({
+        amount: 300,
+        method_type: 'card', // 'card' or 'wallet'
+        wallet_phone: '',
+    });
+
+    const handleManualQuickAmount = (val) => {
+        setManualQuickAmount(val);
         if (val !== 'custom') {
-            setData('amount', val);
+            manualForm.setData('amount', val);
         } else {
-            setData('amount', '');
+            manualForm.setData('amount', '');
+        }
+    };
+
+    const handleInstantQuickAmount = (val) => {
+        setInstantQuickAmount(val);
+        if (val !== 'custom') {
+            instantForm.setData('amount', val);
+        } else {
+            instantForm.setData('amount', '');
         }
     };
 
@@ -49,33 +69,76 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setData('receipt', file);
+            manualForm.setData('receipt', file);
             setPreviewImage(URL.createObjectURL(file));
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleManualSubmit = (e) => {
         e.preventDefault();
-        post(route('merchant.wallet.deposit'), {
+        manualForm.post(route('merchant.wallet.deposit'), {
             preserveScroll: true,
             onSuccess: () => {
-                reset();
+                manualForm.reset();
                 setPreviewImage(null);
-                setQuickAmount(300);
-                setActiveTab('history'); // Automatic redirect to requests & transactions tab!
+                setManualQuickAmount(300);
+                setActiveTab('history');
             },
         });
     };
 
-    const whatsappLink = `https://wa.me/2${paymentInfo.support_phone?.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('مرحباً، أود الاستفسار عن طلب شحن محفظتي.')}`;
+    const handleInstantSubmit = (e) => {
+        e.preventDefault();
+        instantForm.post(route('merchant.wallet.instant-deposit'), {
+            preserveScroll: true,
+        });
+    };
+
+    const whatsappLink = `https://wa.me/2${paymentInfo?.support_phone?.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('مرحباً، أود الاستفسار عن طلب شحن محفظتي.')}`;
+
+    const getPaymentMethodBadge = (method) => {
+        if (method === 'paymob_card') {
+            return (
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md">
+                    <span>💳</span>
+                    <span>فيزا / ماستركارد (لحظي)</span>
+                </span>
+            );
+        }
+        if (method === 'paymob_wallet') {
+            return (
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                    <span>📱</span>
+                    <span>محفظة إلكترونية (لحظي)</span>
+                </span>
+            );
+        }
+        if (method === 'vodafone_cash') {
+            return (
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-md">
+                    <span>🔴</span>
+                    <span>فودافون كاش</span>
+                </span>
+            );
+        }
+        if (method === 'instapay') {
+            return (
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-md">
+                    <span>⚡</span>
+                    <span>إنستا باي</span>
+                </span>
+            );
+        }
+        return <span className="text-xs font-bold text-gray-700">{method}</span>;
+    };
 
     return (
         <MerchantLayout title="المحفظة والرصيد">
             <Head title="المحفظة والرصيد" />
 
-            <div className="max-w-6xl space-y-6">
+            <div className="max-w-6xl space-y-6" dir="rtl">
                 {/* Header & Balance Card */}
-                <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+                <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
                     <div className="absolute left-0 top-0 translate-y-[-20%] translate-x-[-10%] w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
                     <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                         <div className="space-y-1">
@@ -83,6 +146,7 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
                                 👛 محفظة المتجر
                             </span>
                             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">إدارة المحفظة والرصيد</h1>
+                            <p className="text-xs text-indigo-200/80">شحن الرصيد فورياً واستعراض سجل المعاملات المالية والخصومات</p>
                         </div>
                         <div className="bg-white/10 backdrop-blur-md border border-white/15 p-5 rounded-2xl flex flex-col items-start sm:items-end min-w-[220px]">
                             <span className="text-xs text-indigo-200 font-semibold mb-1">الرصيد الحالي بالمحفظة</span>
@@ -96,9 +160,9 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
                     </div>
                 </div>
 
-                {/* Flash Success Message */}
+                {/* Flash Messages */}
                 {flash?.success && (
-                    <div className="p-4 bg-emerald-50 border-r-4 border-emerald-500 rounded-xl text-emerald-900 text-sm font-bold flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm animate-fade-in">
+                    <div className="p-4 bg-emerald-50 border-r-4 border-emerald-500 rounded-2xl text-emerald-900 text-sm font-bold flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm animate-fade-in">
                         <div className="flex items-center gap-2">
                             <span className="text-base">✓</span>
                             <span>{flash.success}</span>
@@ -107,7 +171,7 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
                             href={whatsappLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors shadow-sm self-start sm:self-auto"
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-colors shadow-sm self-start sm:self-auto"
                         >
                             <span>💬</span>
                             <span>التواصل مع الدعم الفني</span>
@@ -115,299 +179,543 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
                     </div>
                 )}
                 {flash?.error && (
-                    <div className="p-4 bg-rose-50 border-r-4 border-rose-500 rounded-xl text-rose-800 text-sm font-bold flex items-center gap-2 shadow-sm animate-fade-in">
+                    <div className="p-4 bg-rose-50 border-r-4 border-rose-500 rounded-2xl text-rose-800 text-sm font-bold flex items-center gap-2 shadow-sm animate-fade-in">
                         <span>⚠️</span>
-                        {flash.error}
+                        <span>{flash.error}</span>
                     </div>
                 )}
 
-                {/* Navigation Tabs (2 Tabs Only) */}
-                <div className="flex border-b border-gray-200 bg-white rounded-xl shadow-sm p-1.5 gap-2">
+                {/* Navigation Tabs (Deposit vs History) */}
+                <div className="flex border-b border-gray-200 bg-white rounded-2xl shadow-sm p-1.5 gap-2">
                     <button
                         onClick={() => setActiveTab('deposit')}
-                        className={`flex-1 py-3 px-4 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                        className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                             activeTab === 'deposit'
                                 ? 'bg-indigo-600 text-white shadow-md'
                                 : 'text-gray-600 hover:bg-gray-50'
                         }`}
                     >
                         <span>💳</span>
-                        <span>اشحن المحفظة</span>
+                        <span>شحن المحفظة</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('history')}
-                        className={`flex-1 py-3 px-4 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+                        className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                             activeTab === 'history'
                                 ? 'bg-indigo-600 text-white shadow-md'
                                 : 'text-gray-600 hover:bg-gray-50'
                         }`}
                     >
                         <span>📋</span>
-                        <span>طلبات الشحن والمعاملات ({depositRequests.length})</span>
+                        <span>سجل عمليات الشحن والمعاملات ({depositRequests.length})</span>
                     </button>
                 </div>
 
-                {/* Tab 1: Charge Wallet Form */}
+                {/* Tab 1: Charge Wallet (Instant vs Manual) */}
                 {activeTab === 'deposit' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Left Column: Transfer Payment Accounts & Info */}
-                        <div className="lg:col-span-1 space-y-6">
-                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-5">
-                                <h3 className="font-bold text-gray-900 text-base border-b border-gray-100 pb-3 flex items-center gap-2">
-                                    <span>📲</span>
-                                    <span>أرقام استقبال التحويلات</span>
-                                </h3>
+                    <div className="space-y-6">
+                        {/* Charge Mode Selector: Instant vs Manual */}
+                        <div className="bg-gradient-to-r from-slate-50 to-indigo-50/40 p-2 rounded-2xl border border-indigo-100 flex flex-col sm:flex-row gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setChargeMode('instant')}
+                                className={`flex-1 py-3.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-2.5 cursor-pointer ${
+                                    chargeMode === 'instant'
+                                        ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-lg shadow-emerald-600/20 scale-[1.01]'
+                                        : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-100'
+                                }`}
+                            >
+                                <span className="text-base">⚡</span>
+                                <span>شحن لحظي (دفع فوري بالفيزا والمحافظ الإلكترونية)</span>
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                                    chargeMode === 'instant' ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
+                                }`}>
+                                    فوري ⚡
+                                </span>
+                            </button>
 
-                                <p className="text-xs text-gray-500 leading-relaxed">
-                                    قم بتحويل المبلغ المطلوب لأحد الأرقام التابعة لنا، ثم املأ نموذج الشحن:
-                                </p>
-
-                                {/* Vodafone Cash Card */}
-                                <div className="p-4 bg-red-50/70 border border-red-200 rounded-xl space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xs font-bold text-red-800 flex items-center gap-1.5">
-                                            <span>🔴</span> رقم فودافون كاش (Vodafone Cash)
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between bg-white p-2.5 rounded-lg border border-red-100">
-                                        <span className="font-mono font-bold text-gray-900 text-base tracking-wide" dir="ltr">
-                                            {paymentInfo.vodafone_cash}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleCopy(paymentInfo.vodafone_cash, 'vodafone')}
-                                            className="px-3 py-1 bg-red-600 text-white rounded text-xs font-bold hover:bg-red-700 transition-colors shadow-sm"
-                                        >
-                                            {copiedVodafone ? 'تم النسخ ✓' : 'نسخ الرقم 📋'}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* InstaPay Phone Number Card */}
-                                <div className="p-4 bg-purple-50/70 border border-purple-200 rounded-xl space-y-2">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xs font-bold text-purple-800 flex items-center gap-1.5">
-                                            <span>⚡</span> رقم إنستا باي (InstaPay)
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between bg-white p-2.5 rounded-lg border border-purple-100">
-                                        <span className="font-mono font-bold text-gray-900 text-base tracking-wide" dir="ltr">
-                                            {paymentInfo.instapay}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleCopy(paymentInfo.instapay, 'instapay')}
-                                            className="px-3 py-1 bg-purple-600 text-white rounded text-xs font-bold hover:bg-purple-700 transition-colors shadow-sm flex-shrink-0"
-                                        >
-                                            {copiedInstapay ? 'تم النسخ ✓' : 'نسخ الرقم 📋'}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs space-y-1">
-                                    <p className="font-bold flex items-center gap-1">
-                                        <span>⏰</span> مواعيد عمل المراجعة والشحن:
-                                    </p>
-                                    <p className="text-amber-800 leading-relaxed font-semibold">
-                                        {paymentInfo.work_hours || 'من 10 صباحاً حتى 2 بعد منتصف الليل'}
-                                    </p>
-                                </div>
-                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setChargeMode('manual')}
+                                className={`flex-1 py-3.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-2.5 cursor-pointer ${
+                                    chargeMode === 'manual'
+                                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 scale-[1.01]'
+                                        : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-100'
+                                }`}
+                            >
+                                <span className="text-base">📝</span>
+                                <span>شحن يدوي (تحويل كاش / إنستاباي وإرفاق إشعار)</span>
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                                    chargeMode === 'manual' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-700'
+                                }`}>
+                                    مراجعة يدوية
+                                </span>
+                            </button>
                         </div>
 
-                        {/* Right Column: Deposit Form */}
-                        <div className="lg:col-span-2 space-y-6">
-                            <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6">
-                                <h3 className="font-bold text-gray-900 text-base border-b border-gray-100 pb-3 flex items-center justify-between">
-                                    <span className="flex items-center gap-2">
-                                        <span>📝</span>
-                                        <span>تقديم طلب شحن المحفظة</span>
-                                    </span>
-                                    <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
-                                        الحد الأدنى: 300 ج.م
-                                    </span>
-                                </h3>
-
-                                {/* Quick Amounts Selection */}
-                                <div className="space-y-2">
-                                    <label className="block text-xs font-bold text-gray-700">اختر مبلغ الشحن السريع:</label>
-                                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                                        {[300, 600, 1000, 2000].map((amt) => (
-                                            <button
-                                                key={amt}
-                                                type="button"
-                                                onClick={() => handleQuickAmount(amt)}
-                                                className={`py-2.5 px-3 rounded-lg text-xs font-bold border transition-all ${
-                                                    quickAmount === amt
-                                                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                                                        : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
-                                                }`}
-                                            >
-                                                {amt} ج.م
-                                            </button>
-                                        ))}
-                                        <button
-                                            type="button"
-                                            onClick={() => handleQuickAmount('custom')}
-                                            className={`py-2.5 px-3 rounded-lg text-xs font-bold border transition-all ${
-                                                quickAmount === 'custom'
-                                                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                                                    : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
-                                            }`}
-                                        >
-                                            مبلغ آخر ✏️
-                                        </button>
+                        {/* MODE A: INSTANT TOP-UP (PAYMOB) */}
+                        {chargeMode === 'instant' && (
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                                {/* Left 7/12: Instant Deposit Form */}
+                                <div className="lg:col-span-7 bg-white rounded-3xl border border-emerald-200/80 shadow-sm p-6 sm:p-7 space-y-6">
+                                    <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">⚡</span>
+                                            <div>
+                                                <h3 className="font-bold text-gray-900 text-sm sm:text-base">شحن رصيد فوري ولحظي</h3>
+                                                <p className="text-[11px] text-gray-400">يضاف الرصيد إلى محفظتك في نفس الثانية فور إتمام الدفع</p>
+                                            </div>
+                                        </div>
+                                        <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                                            الحد الأدنى: 300 ج.م
+                                        </span>
                                     </div>
-                                </div>
 
-                                {/* Custom Amount Input */}
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-700 mb-1">
-                                        مبلغ الشحن (جنيه مصري):
-                                    </label>
-                                    <input
-                                        type="number"
-                                        min="300"
-                                        step="1"
-                                        required
-                                        value={data.amount}
-                                        onChange={(e) => setData('amount', e.target.value)}
-                                        placeholder="أدخل مبلغ الشحن (300 كحد أدنى)"
-                                        className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                                    />
-                                    {errors.amount && <span className="text-xs text-rose-600 mt-1 block font-medium">{errors.amount}</span>}
-                                </div>
+                                    <form onSubmit={handleInstantSubmit} className="space-y-5">
+                                        {/* Quick Amount Selector */}
+                                        <div className="space-y-2">
+                                            <label className="block text-xs font-bold text-gray-700">اختر المبلغ المراد شحنه:</label>
+                                            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                                                {[300, 600, 1000, 2000].map((amt) => (
+                                                    <button
+                                                        key={amt}
+                                                        type="button"
+                                                        onClick={() => handleInstantQuickAmount(amt)}
+                                                        className={`py-2.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                                                            instantQuickAmount === amt
+                                                                ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm scale-[1.02]'
+                                                                : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+                                                        }`}
+                                                    >
+                                                        {amt} ج.م
+                                                    </button>
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleInstantQuickAmount('custom')}
+                                                    className={`py-2.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                                                        instantQuickAmount === 'custom'
+                                                            ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm scale-[1.02]'
+                                                            : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+                                                        }`}
+                                                    >
+                                                    مبلغ آخر ✏️
+                                                </button>
+                                            </div>
+                                        </div>
 
-                                {/* Transfer Method Selection */}
-                                <div className="space-y-2">
-                                    <label className="block text-xs font-bold text-gray-700">وسيلة التحويل المستخدمة:</label>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <label
-                                            className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                                                data.payment_method === 'vodafone_cash'
-                                                    ? 'border-red-500 bg-red-50/50 ring-2 ring-red-500/20'
-                                                    : 'border-gray-200 hover:bg-gray-50'
-                                            }`}
-                                        >
+                                        {/* Amount input */}
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-700 mb-1">
+                                                مبلغ الشحن (جنيه مصري):
+                                            </label>
                                             <input
-                                                type="radio"
-                                                name="payment_method"
-                                                value="vodafone_cash"
-                                                checked={data.payment_method === 'vodafone_cash'}
-                                                onChange={(e) => setData('payment_method', e.target.value)}
-                                                className="text-red-600 focus:ring-red-500"
-                                            />
-                                            <span className="text-xs font-bold text-gray-800">فودافون كاش 🔴</span>
-                                        </label>
-
-                                        <label
-                                            className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                                                data.payment_method === 'instapay'
-                                                    ? 'border-purple-500 bg-purple-50/50 ring-2 ring-purple-500/20'
-                                                    : 'border-gray-200 hover:bg-gray-50'
-                                            }`}
-                                        >
-                                            <input
-                                                type="radio"
-                                                name="payment_method"
-                                                value="instapay"
-                                                checked={data.payment_method === 'instapay'}
-                                                onChange={(e) => setData('payment_method', e.target.value)}
-                                                className="text-purple-600 focus:ring-purple-500"
-                                            />
-                                            <span className="text-xs font-bold text-gray-800">إنستا باي ⚡</span>
-                                        </label>
-                                    </div>
-                                    {errors.payment_method && <span className="text-xs text-rose-600 mt-1 block font-medium">{errors.payment_method}</span>}
-                                </div>
-
-                                {/* Sender Number Field */}
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-700 mb-1">
-                                        الرقم المُنقَل منه (الرقم المحوّل منه):
-                                    </label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={data.payment_reference}
-                                        onChange={(e) => setData('payment_reference', e.target.value)}
-                                        placeholder="أدخل رقم الهاتف المحول منه"
-                                        className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                                    />
-                                    {errors.payment_reference && <span className="text-xs text-rose-600 mt-1 block font-medium">{errors.payment_reference}</span>}
-                                </div>
-
-                                {/* Receipt Image Upload Field */}
-                                <div className="space-y-2">
-                                    <label className="block text-xs font-bold text-gray-700">صورة إيصال التحويل (إسكرين شوت):</label>
-                                    <div className="flex flex-col sm:flex-row items-center gap-4">
-                                        <label className="flex-1 w-full flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-indigo-500 hover:bg-indigo-50/20 transition-all text-center">
-                                            <svg className="w-8 h-8 text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                            </svg>
-                                            <span className="text-xs font-bold text-indigo-600">اختر صورة الإيصال للرفع</span>
-                                            <span className="text-[11px] text-gray-400 mt-0.5">PNG, JPG حتى 3 ميجابايت</span>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
+                                                type="number"
+                                                min="300"
+                                                step="1"
                                                 required
-                                                onChange={handleFileChange}
-                                                className="hidden"
+                                                value={instantForm.data.amount}
+                                                onChange={(e) => {
+                                                    instantForm.setData('amount', e.target.value);
+                                                    setInstantQuickAmount(Number(e.target.value) || 'custom');
+                                                }}
+                                                placeholder="أدخل المبلغ (300 كحد أدنى)"
+                                                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                                             />
-                                        </label>
-                                        {previewImage && (
-                                            <div className="w-24 h-24 rounded-xl border border-gray-200 overflow-hidden bg-gray-50 flex-shrink-0 shadow-sm relative group">
-                                                <img src={previewImage} alt="معاينة الإيصال" className="w-full h-full object-cover" />
-                                                <span className="absolute inset-0 bg-black/40 text-white text-[10px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    معاينة
-                                                </span>
+                                            {instantForm.errors.amount && (
+                                                <span className="text-xs text-rose-600 mt-1 block font-medium">{instantForm.errors.amount}</span>
+                                            )}
+                                        </div>
+
+                                        {/* Payment Method Selector */}
+                                        <div className="space-y-2">
+                                            <label className="block text-xs font-bold text-gray-700">طريقة الدفع الإلكتروني:</label>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                {/* Option 1: Card */}
+                                                <label
+                                                    className={`flex items-start gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                                                        instantForm.data.method_type === 'card'
+                                                            ? 'border-indigo-600 bg-indigo-50/50 shadow-sm'
+                                                            : 'border-gray-200 hover:bg-gray-50'
+                                                    }`}
+                                                >
+                                                    <input
+                                                        type="radio"
+                                                        name="instant_method"
+                                                        value="card"
+                                                        checked={instantForm.data.method_type === 'card'}
+                                                        onChange={() => instantForm.setData('method_type', 'card')}
+                                                        className="mt-1 text-indigo-600 focus:ring-indigo-500"
+                                                    />
+                                                    <div className="space-y-0.5">
+                                                        <div className="text-xs font-extrabold text-gray-900 flex items-center gap-1.5">
+                                                            <span>💳</span>
+                                                            <span>فيزا / ماستركارد / ميزة</span>
+                                                        </div>
+                                                        <p className="text-[11px] text-gray-500">كروت بنكية محلية ودولية (خصم مباشر / ائتمان)</p>
+                                                    </div>
+                                                </label>
+
+                                                {/* Option 2: Mobile Wallet */}
+                                                <label
+                                                    className={`flex items-start gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                                                        instantForm.data.method_type === 'wallet'
+                                                            ? 'border-emerald-600 bg-emerald-50/50 shadow-sm'
+                                                            : 'border-gray-200 hover:bg-gray-50'
+                                                    }`}
+                                                >
+                                                    <input
+                                                        type="radio"
+                                                        name="instant_method"
+                                                        value="wallet"
+                                                        checked={instantForm.data.method_type === 'wallet'}
+                                                        onChange={() => instantForm.setData('method_type', 'wallet')}
+                                                        className="mt-1 text-emerald-600 focus:ring-emerald-500"
+                                                    />
+                                                    <div className="space-y-0.5">
+                                                        <div className="text-xs font-extrabold text-gray-900 flex items-center gap-1.5">
+                                                            <span>📱</span>
+                                                            <span>المحافظ الإلكترونية</span>
+                                                        </div>
+                                                        <p className="text-[11px] text-gray-500">فودافون كاش، إتصالات، أورانج، وي، ميزة</p>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        {/* Mobile Wallet Phone (if wallet selected) */}
+                                        {instantForm.data.method_type === 'wallet' && (
+                                            <div className="p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2 animate-fade-in">
+                                                <label className="block text-xs font-bold text-emerald-950">
+                                                    رقم المحفظة الإلكترونية التي ستدفع منها:
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    pattern="[0-9]*"
+                                                    required
+                                                    value={instantForm.data.wallet_phone}
+                                                    onChange={(e) => {
+                                                        const cleanDigits = e.target.value.replace(/\D/g, '').slice(0, 11);
+                                                        instantForm.setData('wallet_phone', cleanDigits);
+                                                    }}
+                                                    placeholder="01xxxxxxxxx"
+                                                    className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-sm font-mono font-bold focus:outline-none transition-all ${
+                                                        instantForm.data.wallet_phone.length > 0 && (instantForm.data.wallet_phone.length !== 11 || !instantForm.data.wallet_phone.startsWith('01'))
+                                                            ? 'border-rose-400 focus:ring-2 focus:ring-rose-400 text-rose-700'
+                                                            : 'border-emerald-300 focus:ring-2 focus:ring-emerald-500 text-gray-900'
+                                                    }`}
+                                                    dir="ltr"
+                                                />
+
+                                                {/* Show error explanation ONLY if user entered an invalid phone */}
+                                                {instantForm.data.wallet_phone.length > 0 && (!instantForm.data.wallet_phone.startsWith('01') || (instantForm.data.wallet_phone.length > 0 && instantForm.data.wallet_phone.length < 11)) && (
+                                                    <p className="text-[11px] text-rose-600 font-bold flex items-center gap-1 mt-1">
+                                                        <span>⚠️</span>
+                                                        <span>يرجى إدخال رقم هاتف محفظة مصري صحيح مكون من 11 رقماً ويبدأ بـ 01 (مثال: 01012345678).</span>
+                                                    </p>
+                                                )}
+
+                                                {instantForm.errors.wallet_phone && (
+                                                    <p className="text-[11px] text-rose-600 font-bold flex items-center gap-1 mt-1">
+                                                        <span>⚠️</span>
+                                                        <span>{instantForm.errors.wallet_phone}</span>
+                                                    </p>
+                                                )}
                                             </div>
                                         )}
+
+                                        {/* Submit Button */}
+                                        <button
+                                            type="submit"
+                                            disabled={
+                                                instantForm.processing ||
+                                                (instantForm.data.method_type === 'wallet' && (instantForm.data.wallet_phone.length !== 11 || !instantForm.data.wallet_phone.startsWith('01')))
+                                            }
+                                            className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-extrabold text-sm rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                                        >
+                                            <span>⚡</span>
+                                            <span>{instantForm.processing ? 'جاري تجهيز بوابة الدفع...' : `دفع (${instantForm.data.amount || 0} ج.م) وشحن الرصيد فوراً`}</span>
+                                        </button>
+                                    </form>
+                                </div>
+
+                                {/* Right 5/12: Instant Info Card */}
+                                <div className="lg:col-span-5 space-y-4">
+                                    <div className="bg-gradient-to-br from-emerald-900 to-teal-950 text-white rounded-3xl p-6 shadow-md space-y-4">
+                                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/15 rounded-full text-xs font-bold text-emerald-200">
+                                            <span>🔒</span>
+                                            <span>بوابة دفع مؤمنة بالكامل</span>
+                                        </div>
+
+                                        <h4 className="text-base font-black leading-snug">
+                                            كيف يعمل الشحن اللحظي الفوري؟
+                                        </h4>
+
+                                        <ul className="space-y-3 text-xs text-emerald-100/90 leading-relaxed">
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-emerald-400 font-bold">1.</span>
+                                                <span>يتم تحويلك إلى صفحة الدفع الرسمية والمشفرة من <strong>Paymob</strong>.</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-emerald-400 font-bold">2.</span>
+                                                <span>أدخل بيانات الكارت أو وافق على طلب الخصم من محفظتك.</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span className="text-emerald-400 font-bold">3.</span>
+                                                <span><strong>في نفس ثانية نجاح الدفع</strong>، يضاف الرصيد فورياً إلى محفظتك ويوثق في سجل المعاملات دون انتظار أي موافقة يدوية!</span>
+                                            </li>
+                                        </ul>
                                     </div>
-                                    {errors.receipt && <span className="text-xs text-rose-600 mt-1 block font-medium">{errors.receipt}</span>}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* MODE B: MANUAL TOP-UP (VODAFONE CASH / INSTAPAY) */}
+                        {chargeMode === 'manual' && (
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                {/* Left Column: Transfer Payment Accounts & Info */}
+                                <div className="lg:col-span-1 space-y-6">
+                                    <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 space-y-5">
+                                        <h3 className="font-bold text-gray-900 text-base border-b border-gray-100 pb-3 flex items-center gap-2">
+                                            <span>📲</span>
+                                            <span>أرقام استقبال التحويلات</span>
+                                        </h3>
+
+                                        <p className="text-xs text-gray-500 leading-relaxed">
+                                            قم بتحويل المبلغ المطلوب لأحد الأرقام التابعة لنا، ثم املأ نموذج الشحن:
+                                        </p>
+
+                                        {/* Vodafone Cash Card */}
+                                        <div className="p-4 bg-red-50/70 border border-red-200 rounded-2xl space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-bold text-red-800 flex items-center gap-1.5">
+                                                    <span>🔴</span> رقم فودافون كاش (Vodafone Cash)
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-red-100">
+                                                <span className="font-mono font-bold text-gray-900 text-base tracking-wide" dir="ltr">
+                                                    {paymentInfo?.vodafone_cash || '010xxxxxxxx'}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleCopy(paymentInfo?.vodafone_cash, 'vodafone')}
+                                                    className="px-3 py-1 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700 transition-colors shadow-sm cursor-pointer"
+                                                >
+                                                    {copiedVodafone ? 'تم النسخ ✓' : 'نسخ 📋'}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* InstaPay Phone Number Card */}
+                                        <div className="p-4 bg-purple-50/70 border border-purple-200 rounded-2xl space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-bold text-purple-800 flex items-center gap-1.5">
+                                                    <span>⚡</span> رقم إنستا باي (InstaPay)
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-purple-100">
+                                                <span className="font-mono font-bold text-gray-900 text-base tracking-wide" dir="ltr">
+                                                    {paymentInfo?.instapay || 'username@instapay'}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleCopy(paymentInfo?.instapay, 'instapay')}
+                                                    className="px-3 py-1 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 transition-colors shadow-sm flex-shrink-0 cursor-pointer"
+                                                >
+                                                    {copiedInstapay ? 'تم النسخ ✓' : 'نسخ 📋'}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl text-amber-900 text-xs space-y-1">
+                                            <p className="font-bold flex items-center gap-1">
+                                                <span>⏰</span> مواعيد عمل المراجعة اليدوية:
+                                            </p>
+                                            <p className="text-amber-800 leading-relaxed font-semibold">
+                                                {paymentInfo?.work_hours || 'من 10 صباحاً حتى 2 بعد منتصف الليل'}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                {/* Work Hours Notice */}
-                                <div className="p-3.5 bg-indigo-50/70 border border-indigo-100 rounded-xl text-xs text-indigo-900 font-bold flex items-center gap-2">
-                                    <span>⏳</span>
-                                    <span>مواعيد العمل للمراجعة والتأكيد: من 10 صباحاً حتى 2 بعد منتصف الليل.</span>
-                                </div>
+                                {/* Right Column: Manual Deposit Form */}
+                                <div className="lg:col-span-2 space-y-6">
+                                    <form onSubmit={handleManualSubmit} className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 sm:p-7 space-y-6">
+                                        <h3 className="font-bold text-gray-900 text-base border-b border-gray-100 pb-3 flex items-center justify-between">
+                                            <span className="flex items-center gap-2">
+                                                <span>📝</span>
+                                                <span>تقديم طلب شحن يدوي</span>
+                                            </span>
+                                            <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
+                                                الحد الأدنى: 300 ج.م
+                                            </span>
+                                        </h3>
 
-                                {/* Submit Button */}
-                                <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="w-full py-3.5 bg-indigo-600 text-white font-extrabold text-sm rounded-xl hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
-                                >
-                                    {processing ? 'جاري إرسال الطلب...' : 'إرسال طلب الشحن 🚀'}
-                                </button>
-                            </form>
-                        </div>
+                                        {/* Quick Amounts Selection */}
+                                        <div className="space-y-2">
+                                            <label className="block text-xs font-bold text-gray-700">اختر مبلغ الشحن السريع:</label>
+                                            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                                                {[300, 600, 1000, 2000].map((amt) => (
+                                                    <button
+                                                        key={amt}
+                                                        type="button"
+                                                        onClick={() => handleManualQuickAmount(amt)}
+                                                        className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                                                            manualQuickAmount === amt
+                                                                ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                                                                : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+                                                        }`}
+                                                    >
+                                                        {amt} ج.م
+                                                    </button>
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleManualQuickAmount('custom')}
+                                                    className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                                                        manualQuickAmount === 'custom'
+                                                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                                                            : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+                                                    }`}
+                                                >
+                                                    مبلغ آخر ✏️
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Custom Amount Input */}
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-700 mb-1">
+                                                مبلغ الشحن (جنيه مصري):
+                                            </label>
+                                            <input
+                                                type="number"
+                                                min="300"
+                                                step="1"
+                                                required
+                                                value={manualForm.data.amount}
+                                                onChange={(e) => manualForm.setData('amount', e.target.value)}
+                                                placeholder="أدخل مبلغ الشحن (300 كحد أدنى)"
+                                                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                                            />
+                                            {manualForm.errors.amount && (
+                                                <span className="text-xs text-rose-600 mt-1 block font-medium">{manualForm.errors.amount}</span>
+                                            )}
+                                        </div>
+
+                                        {/* Transfer Method Selection */}
+                                        <div className="space-y-2">
+                                            <label className="block text-xs font-bold text-gray-700">وسيلة التحويل المستخدمة:</label>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <label
+                                                    className={`flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                                                        manualForm.data.payment_method === 'vodafone_cash'
+                                                            ? 'border-red-500 bg-red-50/50 ring-2 ring-red-500/20'
+                                                            : 'border-gray-200 hover:bg-gray-50'
+                                                    }`}
+                                                >
+                                                    <input
+                                                        type="radio"
+                                                        name="payment_method"
+                                                        value="vodafone_cash"
+                                                        checked={manualForm.data.payment_method === 'vodafone_cash'}
+                                                        onChange={(e) => manualForm.setData('payment_method', e.target.value)}
+                                                        className="text-red-600 focus:ring-red-500"
+                                                    />
+                                                    <span className="text-xs font-bold text-gray-800">فودافون كاش 🔴</span>
+                                                </label>
+
+                                                <label
+                                                    className={`flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                                                        manualForm.data.payment_method === 'instapay'
+                                                            ? 'border-purple-500 bg-purple-50/50 ring-2 ring-purple-500/20'
+                                                            : 'border-gray-200 hover:bg-gray-50'
+                                                    }`}
+                                                >
+                                                    <input
+                                                        type="radio"
+                                                        name="payment_method"
+                                                        value="instapay"
+                                                        checked={manualForm.data.payment_method === 'instapay'}
+                                                        onChange={(e) => manualForm.setData('payment_method', e.target.value)}
+                                                        className="text-purple-600 focus:ring-purple-500"
+                                                    />
+                                                    <span className="text-xs font-bold text-gray-800">إنستا باي ⚡</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        {/* Sender Number Field */}
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-700 mb-1">
+                                                الرقم المُنقَل منه (الرقم المحوّل منه):
+                                            </label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={manualForm.data.payment_reference}
+                                                onChange={(e) => manualForm.setData('payment_reference', e.target.value)}
+                                                placeholder="أدخل رقم الهاتف المحول منه"
+                                                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                                            />
+                                            {manualForm.errors.payment_reference && (
+                                                <span className="text-xs text-rose-600 mt-1 block font-medium">{manualForm.errors.payment_reference}</span>
+                                            )}
+                                        </div>
+
+                                        {/* Receipt Image Upload Field */}
+                                        <div className="space-y-2">
+                                            <label className="block text-xs font-bold text-gray-700">صورة إيصال التحويل (إسكرين شوت):</label>
+                                            <div className="flex flex-col sm:flex-row items-center gap-4">
+                                                <label className="flex-1 w-full flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer hover:border-indigo-500 hover:bg-indigo-50/20 transition-all text-center">
+                                                    <svg className="w-8 h-8 text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                    </svg>
+                                                    <span className="text-xs font-bold text-indigo-600">اختر صورة الإيصال للرفع</span>
+                                                    <span className="text-[11px] text-gray-400 mt-0.5">PNG, JPG حتى 3 ميجابايت</span>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        required
+                                                        onChange={handleFileChange}
+                                                        className="hidden"
+                                                    />
+                                                </label>
+                                                {previewImage && (
+                                                    <div className="w-24 h-24 rounded-2xl border border-gray-200 overflow-hidden bg-gray-50 flex-shrink-0 shadow-sm relative group">
+                                                        <img src={previewImage} alt="معاينة الإيصال" className="w-full h-full object-cover" />
+                                                        <span className="absolute inset-0 bg-black/40 text-white text-[10px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            معاينة
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {manualForm.errors.receipt && (
+                                                <span className="text-xs text-rose-600 mt-1 block font-medium">{manualForm.errors.receipt}</span>
+                                            )}
+                                        </div>
+
+                                        {/* Submit Button */}
+                                        <button
+                                            type="submit"
+                                            disabled={manualForm.processing}
+                                            className="w-full py-3.5 bg-indigo-600 text-white font-extrabold text-sm rounded-2xl hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                                        >
+                                            {manualForm.processing ? 'جاري إرسال الطلب...' : 'إرسال طلب الشحن اليدوي 🚀'}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
                 {/* Tab 2: Combined Requests & Transactions History */}
                 {activeTab === 'history' && (
                     <div className="space-y-6">
-                        {/* Fixed Support Action Bar Above Tables */}
-                        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-xl p-4 text-white flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
-                            <div className="flex items-center gap-2 text-sm font-extrabold">
-                                <span>💬</span>
-                                <span>هل لديك أي استفسار حول حالة طلب الشحن أو الرصيد؟</span>
-                            </div>
-                            <a
-                                href={whatsappLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="px-5 py-2 bg-white text-emerald-800 rounded-lg text-xs font-black hover:bg-emerald-50 transition-all shadow-sm flex items-center gap-1.5 self-stretch sm:self-auto justify-center"
-                            >
-                                <span>💬</span>
-                                <span>الدعم الفني عبر واتساب</span>
-                            </a>
-                        </div>
-
                         {/* Section 1: Deposit Requests */}
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
+                        <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 space-y-4">
                             <h3 className="font-bold text-gray-900 text-base border-b border-gray-100 pb-3 flex items-center justify-between">
                                 <span className="flex items-center gap-2">
                                     <span>📋</span>
@@ -421,10 +729,10 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
                                     <table className="w-full text-right border-collapse">
                                         <thead>
                                             <tr className="bg-gray-50 text-gray-500 text-xs font-bold border-b border-gray-100">
-                                                <th className="px-4 py-3 whitespace-nowrap">الرقم المرجعي (6 أرقام)</th>
+                                                <th className="px-4 py-3 whitespace-nowrap">الرقم المرجعي</th>
                                                 <th className="px-4 py-3 whitespace-nowrap">المبلغ</th>
-                                                <th className="px-4 py-3 whitespace-nowrap">وسيلة التحويل</th>
-                                                <th className="px-4 py-3 whitespace-nowrap">الرقم المحول منه</th>
+                                                <th className="px-4 py-3 whitespace-nowrap">طريقة الشحن</th>
+                                                <th className="px-4 py-3 whitespace-nowrap">المرجع / الرقم</th>
                                                 <th className="px-4 py-3 whitespace-nowrap">الإيصال</th>
                                                 <th className="px-4 py-3 whitespace-nowrap">التاريخ والوقت</th>
                                                 <th className="px-4 py-3 whitespace-nowrap">الحالة</th>
@@ -441,26 +749,28 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
                                                             <button
                                                                 type="button"
                                                                 onClick={() => handleCopyRefCode(req.reference_code, req.id)}
-                                                                className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-[11px] font-bold transition-all shadow-sm"
+                                                                className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-[11px] font-bold transition-all shadow-sm cursor-pointer"
                                                                 title="نسخ الرقم المرجعي"
                                                             >
-                                                                {copiedCodeId === req.id ? 'تم النسخ ✓' : 'نسخ 📋'}
+                                                                {copiedCodeId === req.id ? 'تم ✓' : 'نسخ'}
                                                             </button>
                                                         </div>
                                                     </td>
                                                     <td className="px-4 py-3.5 font-extrabold text-gray-900 text-sm whitespace-nowrap">
                                                         {Math.round(req.amount).toLocaleString('en-US')} ج.م
                                                     </td>
-                                                    <td className="px-4 py-3.5 font-bold text-gray-700 whitespace-nowrap">
-                                                        {req.payment_method === 'vodafone_cash' ? 'فودافون كاش 🔴' : 'إنستا باي ⚡'}
+                                                    <td className="px-4 py-3.5 whitespace-nowrap">
+                                                        {getPaymentMethodBadge(req.payment_method)}
                                                     </td>
-                                                    <td className="px-4 py-3.5 font-mono font-bold text-gray-800 whitespace-nowrap" dir="ltr">{req.payment_reference}</td>
+                                                    <td className="px-4 py-3.5 font-mono font-bold text-gray-800 whitespace-nowrap" dir="ltr">
+                                                        {req.payment_reference || '-'}
+                                                    </td>
                                                     <td className="px-4 py-3.5 whitespace-nowrap">
                                                         {req.receipt_url ? (
                                                             <button
                                                                 type="button"
                                                                 onClick={() => setViewingReceipt(req.receipt_url)}
-                                                                className="text-xs font-bold text-indigo-600 hover:underline inline-flex items-center gap-1 whitespace-nowrap"
+                                                                className="text-xs font-bold text-indigo-600 hover:underline inline-flex items-center gap-1 whitespace-nowrap cursor-pointer"
                                                             >
                                                                 عرض الإيصال 🖼️
                                                             </button>
@@ -477,7 +787,7 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
                                                     <td className="px-4 py-3.5 whitespace-nowrap">
                                                         {req.status === 'pending' && (
                                                             <span className="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-full font-bold inline-block whitespace-nowrap">
-                                                                ⏳ قيد المراجعة
+                                                                ⏳ قيد المعالجة
                                                             </span>
                                                         )}
                                                         {req.status === 'approved' && (
@@ -488,10 +798,12 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
                                                         {req.status === 'rejected' && (
                                                             <div className="space-y-1">
                                                                 <span className="px-2.5 py-1 bg-rose-50 text-rose-800 border border-rose-200 rounded-full font-bold inline-block whitespace-nowrap">
-                                                                    ❌ مرفوض
+                                                                    ❌ فشل / مرفوض
                                                                 </span>
                                                                 {req.rejection_reason && (
-                                                                    <p className="text-[11px] text-rose-600 font-semibold">{req.rejection_reason}</p>
+                                                                    <p className="text-[11px] text-rose-600 font-semibold max-w-[200px] truncate" title={req.rejection_reason}>
+                                                                        {req.rejection_reason}
+                                                                    </p>
                                                                 )}
                                                             </div>
                                                         )}
@@ -510,7 +822,7 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
                         </div>
 
                         {/* Section 2: Wallet Transactions Log */}
-                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
+                        <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 space-y-4">
                             <h3 className="font-bold text-gray-900 text-base border-b border-gray-100 pb-3 flex items-center justify-between">
                                 <span className="flex items-center gap-2">
                                     <span>📊</span>
@@ -578,7 +890,7 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
                             <h4 className="font-bold text-gray-900 text-sm">صورة إيصال التحويل المرفقة</h4>
                             <button
                                 onClick={() => setViewingReceipt(null)}
-                                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-bold"
+                                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 font-bold cursor-pointer"
                             >
                                 ✕
                             </button>

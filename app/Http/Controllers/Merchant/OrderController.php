@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Merchant;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\StockMovement;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -198,6 +199,12 @@ class OrderController extends Controller
             return $item;
         });
 
+        $activeShippingGateways = \App\Models\ShippingGateway::withoutGlobalScopes()
+            ->where('tenant_id', $order->tenant_id)
+            ->where('is_active', true)
+            ->pluck('provider')
+            ->toArray();
+
         return Inertia::render('Merchant/Orders/Show', [
             'order' => [
                 'id'               => $order->id,
@@ -207,6 +214,9 @@ class OrderController extends Controller
                 'customer_email'   => $order->customer_email,
                 'customer_address' => $order->customer_address,
                 'governorate'      => $order->governorate,
+                'payment_method'   => $order->payment_method,
+                'payment_status'   => $order->payment_status,
+                'transaction_id'   => $order->transaction_id,
                 'total'            => $order->total,
                 'subtotal'         => $order->subtotal,
                 'shipping_cost'    => $order->shipping_cost,
@@ -214,8 +224,13 @@ class OrderController extends Controller
                 'is_unlocked'      => (bool) $order->is_unlocked,
                 'items'            => $items,
                 'notes'            => $order->notes,
-                'created_at'       => $order->created_at?->format('Y-m-d H:i'),
-            ]
+                'whatsapp_status'      => $order->whatsapp_status,
+                'whatsapp_sent_at'     => $order->whatsapp_sent_at ? \Carbon\Carbon::parse($order->whatsapp_sent_at)->format('Y-m-d H:i') : null,
+                'whatsapp_response_at' => $order->whatsapp_response_at ? \Carbon\Carbon::parse($order->whatsapp_response_at)->format('Y-m-d H:i') : null,
+                'whatsapp_message_id'  => $order->whatsapp_message_id,
+                'created_at'           => $order->created_at ? \Carbon\Carbon::parse($order->created_at)->format('Y-m-d H:i') : null,
+            ],
+            'active_shipping_gateways' => $activeShippingGateways,
         ]);
     }
 
@@ -225,12 +240,55 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order)
     {
         $validated = $request->validate([
-            'status' => 'required|in:pending,confirmed,shipped,delivered,cancelled'
+            'status' => 'required|in:pending,confirmed,shipped,delivered,cancelled',
+            'notes'  => 'nullable|string|max:1000',
         ]);
 
-        $order->update(['status' => $validated['status']]);
+        $oldStatus = $order->status;
+        $newStatus = $validated['status'];
+
+        // لو تحولت الحالة إلى ملغي ولم تكن ملغية من قبل → استرجاع المخزون
+        if ($newStatus === 'cancelled' && $oldStatus !== 'cancelled') {
+            $this->restoreOrderStock($order);
+        }
+
+        $updateData = ['status' => $newStatus];
+        if ($request->filled('notes')) {
+            $updateData['notes'] = ($order->notes ? $order->notes . "\n" : '') . $request->notes;
+        }
+
+        $order->update($updateData);
+
+        // التحويل التلقائي لشركة الشحن عند تأكيد الطلب
+        if (in_array($newStatus, ['confirmed', 'shipped']) && $oldStatus !== $newStatus) {
+            $this->handleAutoDispatchShipping($order);
+        }
 
         return redirect()->back()->with('success', 'تم تحديث حالة الطلب بنجاح ✓');
+    }
+
+    /**
+     * معالجة التحويل التلقائي لشركة الشحن
+     */
+    protected function handleAutoDispatchShipping(Order $order): void
+    {
+        try {
+            $enabled = (bool) \App\Models\Setting::get('auto_dispatch_shipping', false);
+            if (!$enabled) return;
+
+            $exists = \App\Models\Shipment::where('order_id', $order->id)->exists();
+            if ($exists) return;
+
+            $provider = \App\Models\Setting::get('auto_dispatch_provider', 'bosta');
+            $shippingManager = new \App\Services\Shipping\ShippingManager();
+            $shipment = $shippingManager->createShipment($order, $provider);
+
+            if ($shipment && $order->status !== 'shipped') {
+                $order->update(['status' => 'shipped']);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Auto dispatch to shipping failed for Order #{$order->id}: " . $e->getMessage());
+        }
     }
 
     /**
@@ -238,8 +296,42 @@ class OrderController extends Controller
      */
     public function cancel(Order $order)
     {
-        $order->update(['status' => 'cancelled']);
-        return redirect()->back()->with('success', 'تم إلغاء الطلب بنجاح ✓');
+        if ($order->status !== 'cancelled') {
+            $this->restoreOrderStock($order);
+            $order->update(['status' => 'cancelled']);
+        }
+
+        return redirect()->back()->with('success', 'تم إلغاء الطلب واسترجاع المخزون بنجاح ✓');
+    }
+
+    /**
+     * استرجاع كميات المخزون للطلب الملغي
+     */
+    protected function restoreOrderStock(Order $order): void
+    {
+        if (empty($order->items) || !is_array($order->items)) {
+            return;
+        }
+
+        foreach ($order->items as $item) {
+            $product = Product::find($item['id'] ?? null);
+            if ($product) {
+                $qty = (int) ($item['quantity'] ?? $item['qty'] ?? 1);
+                $selectedSize  = $item['selectedSize']  ?? null;
+                $selectedColor = $item['selectedColor'] ?? null;
+                $options       = is_array($item['options'] ?? null) ? $item['options'] : [];
+
+                $product->incrementVariantStock($qty, $selectedSize, $selectedColor, $options);
+
+                StockMovement::create([
+                    'tenant_id'   => $product->tenant_id,
+                    'product_id'  => $product->id,
+                    'quantity'    => $qty,
+                    'type'        => 'in',
+                    'description' => 'استرجاع مخزون بسبب إلغاء الطلب #' . ($order->reference_number ?: $order->id),
+                ]);
+            }
+        }
     }
 
     /**

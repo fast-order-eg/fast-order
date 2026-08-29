@@ -114,4 +114,180 @@ class WalletController extends Controller
 
         return redirect()->back()->with('success', 'تم تقديم طلب شحن المحفظة بنجاح! يتم مراجعة الطلب وتغذية الحساب خلال ساعتين عمل.');
     }
+
+    /**
+     * Start Instant Paymob Deposit.
+     */
+    public function instantDeposit(Request $request, \App\Services\PaymobService $paymobService)
+    {
+        $validated = $request->validate([
+            'amount'       => 'required|numeric|min:300',
+            'method_type'  => 'required|string|in:card,wallet',
+            'wallet_phone' => 'nullable|required_if:method_type,wallet|string|regex:/^01[0125][0-9]{8}$/',
+        ], [
+            'amount.required'            => 'يرجى إدخال مبلغ الشحن.',
+            'amount.numeric'             => 'المبلغ يجب أن يكون قيمة رقمية.',
+            'amount.min'                 => 'عفواً، الحد الأدنى لشحن المحفظة هو 300 جنيه.',
+            'method_type.required'       => 'يرجى اختيار وسيلة الدفع (فيزا أو محفظة).',
+            'wallet_phone.required_if'   => 'يرجى كتابة رقم المحفظة الإلكترونية لإتمام الدفع.',
+            'wallet_phone.regex'         => 'يرجى إدخال رقم هاتف محفظة مصري صحيح مكون من 11 رقماً (مثال: 01012345678).',
+        ]);
+
+        $tenant = app(Tenant::class);
+
+        // Create pending subscription receipt record
+        $receipt = SubscriptionReceipt::create([
+            'tenant_id'         => $tenant->id,
+            'plan_id'           => null,
+            'type'              => 'wallet',
+            'amount'            => $validated['amount'],
+            'payment_method'    => $validated['method_type'] === 'wallet' ? 'paymob_wallet' : 'paymob_card',
+            'payment_reference' => 'بانتظار تأكيد الدفع الإلكتروني...',
+            'receipt_path'      => null,
+            'status'            => 'pending',
+        ]);
+
+        $result = $paymobService->initiateDeposit(
+            $receipt,
+            $tenant,
+            $validated['method_type'],
+            $validated['wallet_phone'] ?? null
+        );
+
+        if (!$result['success']) {
+            $receipt->update([
+                'status'           => 'rejected',
+                'rejection_reason' => $result['message'],
+            ]);
+
+            return redirect()->back()->with('error', $result['message'] ?? 'فشل الاتصال ببوابة الدفع.');
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success'      => true,
+                'redirect_url' => $result['redirect_url'],
+            ]);
+        }
+
+        return Inertia::location($result['redirect_url']);
+    }
+
+    /**
+     * Browser redirect callback after Paymob payment.
+     */
+    public function paymobCallback(Request $request)
+    {
+        $success = filter_var($request->query('success', false), FILTER_VALIDATE_BOOLEAN)
+            || $request->query('txn_response_code') === 'APPROVED';
+
+        $orderId = $request->query('order');
+        $merchantOrderId = $request->query('merchant_order_id');
+        $transactionId = $request->query('id');
+
+        // Check if there is an associated receipt
+        $receipt = null;
+        if ($merchantOrderId && preg_match('/WALLET_(\d+)_(\d+)/', $merchantOrderId, $m)) {
+            $receipt = SubscriptionReceipt::find((int) $m[2]);
+        }
+        if (!$receipt && $orderId) {
+            $receipt = SubscriptionReceipt::where('payment_reference', 'like', "%{$orderId}%")->latest()->first();
+        }
+
+        if ($success) {
+            if ($receipt && $receipt->status !== 'approved') {
+                $tenant = $receipt->tenant;
+                if ($tenant) {
+                    $tenant->increment('wallet_balance', $receipt->amount);
+                    WalletTransaction::create([
+                        'tenant_id'   => $tenant->id,
+                        'amount'      => $receipt->amount,
+                        'type'        => 'credit',
+                        'description' => "⚡ شحن محفظة لحظي عبر Paymob (معاملة #{$transactionId})",
+                        'created_by'  => null,
+                    ]);
+                }
+                $receipt->update([
+                    'status'            => 'approved',
+                    'approved_at'       => now(),
+                    'payment_reference' => "Paymob Trans #{$transactionId}",
+                ]);
+            }
+
+            return redirect()->route('merchant.wallet.index')->with('success', '⚡ تم شحن المحفظة بنجاح وإضافة الرصيد إلى حسابك فوراً!');
+        }
+
+        if ($receipt && $receipt->status === 'pending') {
+            $receipt->update([
+                'status'           => 'rejected',
+                'rejection_reason' => 'فشلت عملية الدفع من البنك أو تم إلغاؤها من المستخدم.',
+            ]);
+        }
+
+        return redirect()->route('merchant.wallet.index')->with('error', '⚠️ تعذر إتمام عملية الدفع، يرجى المحاولة مرة أخرى أو استخدام وسيلة دفع مختلفة.');
+    }
+
+    /**
+     * Paymob Sandbox Test Screen (when keys are in simulation/test mode).
+     */
+    public function paymobSandbox(Request $request): Response
+    {
+        $receiptId = $request->query('receipt_id');
+        $method = $request->query('method', 'card');
+        $amount = (float) $request->query('amount', 300);
+
+        $receipt = SubscriptionReceipt::findOrFail($receiptId);
+
+        return Inertia::render('Merchant/Wallet/PaymobSandbox', [
+            'receipt' => [
+                'id'             => $receipt->id,
+                'reference_code' => $receipt->reference_code,
+                'amount'         => $receipt->amount,
+                'method'         => $method,
+            ],
+        ]);
+    }
+
+    /**
+     * Process Sandbox Simulation Action.
+     */
+    public function completeSandbox(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'receipt_id' => 'required|exists:subscription_receipts,id',
+            'action'     => 'required|in:success,fail',
+        ]);
+
+        $receipt = SubscriptionReceipt::findOrFail($validated['receipt_id']);
+        $tenant = $receipt->tenant;
+
+        if ($validated['action'] === 'success') {
+            $receipt->update([
+                'status'            => 'approved',
+                'payment_method'    => $receipt->payment_method ?: 'paymob_card',
+                'payment_reference' => 'SANDBOX_TRANS_' . time(),
+                'approved_at'       => now(),
+            ]);
+
+            if ($tenant) {
+                $tenant->increment('wallet_balance', $receipt->amount);
+                WalletTransaction::create([
+                    'tenant_id'   => $tenant->id,
+                    'amount'      => $receipt->amount,
+                    'type'        => 'credit',
+                    'description' => "⚡ شحن محفظة لحظي عبر Paymob (تجريبي Sandbox)",
+                    'created_by'  => null,
+                ]);
+            }
+
+            return redirect()->route('merchant.wallet.index')->with('success', '⚡ تم محاكاة الدفع بنجاح وإضافة الرصيد إلى محفظتك فوراً!');
+        }
+
+        $receipt->update([
+            'status'           => 'rejected',
+            'rejection_reason' => 'تم رفض عملية الدفع التجريبية (Sandbox Simulation).',
+        ]);
+
+        return redirect()->route('merchant.wallet.index')->with('error', 'تمت محاكاة فشل عملية الدفع التجريبية.');
+    }
 }

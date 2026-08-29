@@ -15,19 +15,10 @@ class JntShippingDriver implements ShippingProviderInterface
     {
         $accessToken = $gateway->credentials['access_token'] ?? $gateway->credentials['api_key'] ?? null;
 
-        if (!$accessToken || str_starts_with($accessToken, 'test_') || config('app.env') === 'testing') {
-            $trackingNumber = 'JNT-' . strtoupper(\Illuminate\Support\Str::random(8));
+        if (empty($accessToken)) {
             return [
-                'success' => true,
-                'tracking_number' => $trackingNumber,
-                'airway_bill_url' => "https://jtexpress.com/awb/{$trackingNumber}.pdf",
-                'status' => 'created',
-                'cost' => 40.00,
-                'raw_response' => [
-                    'provider' => 'jnt',
-                    'message' => 'Simulated shipment created for J&T Express',
-                    'bill_code' => $trackingNumber,
-                ],
+                'success' => false,
+                'error'   => 'مفتاح الـ API لشركة J&T Express غير متوفر أو فارغ.',
             ];
         }
 

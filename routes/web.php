@@ -114,6 +114,11 @@ Route::domain('app.' . $baseDomain)->group(function () {
         Route::put('/tutorials/{tutorial}', [App\Http\Controllers\SuperAdmin\TutorialController::class, 'update'])->name('superadmin.tutorials.update');
         Route::patch('/tutorials/{tutorial}/toggle', [App\Http\Controllers\SuperAdmin\TutorialController::class, 'toggle'])->name('superadmin.tutorials.toggle');
         Route::delete('/tutorials/{tutorial}', [App\Http\Controllers\SuperAdmin\TutorialController::class, 'destroy'])->name('superadmin.tutorials.destroy');
+
+        // Meta WhatsApp Gateway & Billing Settings (Super Admin)
+        Route::get('/whatsapp-gateway', [App\Http\Controllers\SuperAdmin\WhatsAppGatewayController::class, 'index'])->name('superadmin.whatsapp.index');
+        Route::post('/whatsapp-gateway/settings', [App\Http\Controllers\SuperAdmin\WhatsAppGatewayController::class, 'updateSettings'])->name('superadmin.whatsapp.update-settings');
+        Route::post('/whatsapp-gateway/test', [App\Http\Controllers\SuperAdmin\WhatsAppGatewayController::class, 'sendTestMessage'])->name('superadmin.whatsapp.test');
     });
 });
 
@@ -247,10 +252,20 @@ Route::prefix('admin')->group(function () {
             Route::get('/support', [\App\Http\Controllers\Merchant\SupportController::class, 'index'])->name('merchant.support.index');
             Route::get('/tutorials', [\App\Http\Controllers\Merchant\TutorialController::class, 'index'])->name('merchant.tutorials.index');
 
-            // Shipping Gateways management routes (Bosta, J&T Express, Egypt Post)
+            // Auto Confirmation routes (WhatsApp)
+            Route::prefix('auto-confirm')->name('merchant.auto-confirm.')->group(function () {
+                Route::get('/', [\App\Http\Controllers\Merchant\AutoConfirmController::class, 'index'])->name('index');
+                Route::post('/', [\App\Http\Controllers\Merchant\AutoConfirmController::class, 'update'])->name('update');
+            });
+
+            // Shipping Gateways management routes (Bosta, J&T Express, Aramex)
             Route::prefix('shipping-gateways')->name('merchant.shipping-gateways.')->group(function () {
                 Route::get('/', [\App\Http\Controllers\Merchant\ShippingGatewaysController::class, 'index'])->name('index');
                 Route::post('/', [\App\Http\Controllers\Merchant\ShippingGatewaysController::class, 'store'])->name('store');
+                Route::post('/auto-dispatch', [\App\Http\Controllers\Merchant\ShippingGatewaysController::class, 'updateAutoDispatch'])->name('auto-dispatch');
+                Route::post('/connect-api-key', [\App\Http\Controllers\Merchant\ShippingGatewaysController::class, 'connectApiKey'])->name('connect-api-key');
+                Route::post('/connect-aramex', [\App\Http\Controllers\Merchant\ShippingGatewaysController::class, 'connectAramex'])->name('connect-aramex');
+                Route::post('/connect-jnt', [\App\Http\Controllers\Merchant\ShippingGatewaysController::class, 'connectJntApi'])->name('connect-jnt');
                 Route::post('/connect-account', [\App\Http\Controllers\Merchant\ShippingGatewaysController::class, 'connectAccount'])->name('connect-account');
                 Route::get('/connect/jnt', [\App\Http\Controllers\Merchant\ShippingGatewaysController::class, 'connectJnt'])->name('connect.jnt');
                 Route::patch('/{provider}/toggle', [\App\Http\Controllers\Merchant\ShippingGatewaysController::class, 'toggle'])->name('toggle');
@@ -260,9 +275,15 @@ Route::prefix('admin')->group(function () {
             Route::post('/orders/{order}/shipment', [\App\Http\Controllers\Merchant\ShipmentController::class, 'store'])->name('merchant.orders.shipment.store');
             Route::get('/shipments/{shipment}/track', [\App\Http\Controllers\Merchant\ShipmentController::class, 'track'])->name('merchant.shipments.track');
 
+            // Payment Gateways management
+            Route::prefix('payment-gateways')->name('merchant.payment-gateways')->group(function () {
+                Route::get('/', [\App\Http\Controllers\Merchant\PaymentGatewaysController::class, 'index']);
+                Route::post('/{provider}', [\App\Http\Controllers\Merchant\PaymentGatewaysController::class, 'update'])->name('.update');
+                Route::patch('/{provider}/toggle', [\App\Http\Controllers\Merchant\PaymentGatewaysController::class, 'toggle'])->name('.toggle');
+            });
+
             // Coming Soon pages (Phase 67)
             Route::get('/ai-tools', fn() => \Inertia\Inertia::render('Merchant/ComingSoon/AiTools'))->name('merchant.ai-tools');
-            Route::get('/payment-gateways', fn() => \Inertia\Inertia::render('Merchant/ComingSoon/PaymentGateways'))->name('merchant.payment-gateways');
 
             // Promotions management routes (Phase 63)
             Route::resource('promotions', \App\Http\Controllers\Merchant\PromotionController::class)->names('merchant.promotions');

@@ -395,29 +395,69 @@
                     <h2 class="card-title"><i class="fas fa-credit-card" style="color:var(--primary)"></i> طريقة الدفع</h2>
 
                     <div class="payment-grid">
-                        <label class="pay-opt selected" id="opt-cod" onclick="selectPayment('cod', this)">
-                            <input type="radio" name="payment_method" value="cod" checked>
-                            <div class="pay-icon">🏠</div>
-                            <div class="pay-info">
-                                <h4>الدفع عند الاستلام (COD)</h4>
-                                <p>ادفع نقداً عند وصول طلبك</p>
-                            </div>
-                        </label>
+                        @php
+                            $hasActiveGateways = isset($paymentGateways) && count($paymentGateways) > 0;
+                            $isFirst = true;
+                        @endphp
 
-                        <label class="pay-opt" id="opt-transfer" onclick="selectPayment('transfer', this)">
-                            <input type="radio" name="payment_method" value="transfer">
-                            <div class="pay-icon">📱</div>
-                            <div class="pay-info">
-                                <h4>تحويل إلكتروني</h4>
-                                <p>InstaPay أو فودافون كاش</p>
-                            </div>
-                        </label>
-                    </div>
-
-                    <div class="transfer-note" id="transfer-details">
-                        <strong>📲 بيانات التحويل:</strong><br>
-                        الرقم: <strong>01092308465</strong><br>
-                        يرجى تحويل المبلغ وإرسال صورة الإيصال على الواتساب بعد إتمام الطلب.
+                        @if($hasActiveGateways)
+                            @foreach($paymentGateways as $gw)
+                                @php
+                                    $gwId = $gw->provider ?? 'cod';
+                                    $title = $gw->display_name ?: match($gwId) {
+                                        'cod' => 'الدفع عند الاستلام (COD)',
+                                        'paymob' => 'البطاقات البنكية والمحافظ (Paymob)',
+                                        'kashier' => 'الدفع الإلكتروني (Kashier)',
+                                        'fawry' => 'فوري باي (Fawry)',
+                                        default => ucfirst($gwId)
+                                    };
+                                    $desc = $gw->display_description ?: match($gwId) {
+                                        'cod' => 'ادفع نقداً عند وصول طلبك',
+                                        'paymob' => 'ادفع بأمان عبر الفيزا، ماستركارد، ميزة والمحافظ الإلكترونية',
+                                        'kashier' => 'ادفع بأمان عبر البطاقات والمحافظ الإلكترونية',
+                                        'fawry' => 'ادفع برقم مرجعي عبر أي منفذ فوري في مصر',
+                                        default => ''
+                                    };
+                                    $badge = match($gwId) {
+                                        'paymob' => '/images/payments/cards_meeza_badge.svg',
+                                        'kashier' => '/images/payments/cards_meeza_badge.svg',
+                                        'fawry' => '/images/payments/fawry.svg',
+                                        default => null
+                                    };
+                                    $icon = match($gwId) {
+                                        'cod' => '🏠',
+                                        'paymob' => '💳',
+                                        'kashier' => '🟢',
+                                        'fawry' => '🟡',
+                                        default => '💳'
+                                    };
+                                    $isSelected = $isFirst;
+                                    $isFirst = false;
+                                @endphp
+                                <label class="pay-opt {{ $isSelected ? 'selected' : '' }}" id="opt-{{ $gwId }}" onclick="selectPayment('{{ $gwId }}', this)">
+                                    <input type="radio" name="payment_method" value="{{ $gwId }}" {{ $isSelected ? 'checked' : '' }}>
+                                    <div class="pay-icon">{{ $icon }}</div>
+                                    <div class="pay-info" style="flex: 1;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                            <h4>{{ $title }}</h4>
+                                            @if($badge)
+                                                <img src="{{ $badge }}" alt="{{ $gwId }}" style="height: 18px; max-width: 110px; object-fit: contain;">
+                                            @endif
+                                        </div>
+                                        <p>{{ $desc }}</p>
+                                    </div>
+                                </label>
+                            @endforeach
+                        @else
+                            <label class="pay-opt selected" id="opt-cod" onclick="selectPayment('cod', this)">
+                                <input type="radio" name="payment_method" value="cod" checked>
+                                <div class="pay-icon">🏠</div>
+                                <div class="pay-info">
+                                    <h4>الدفع عند الاستلام (COD)</h4>
+                                    <p>ادفع نقداً عند وصول طلبك</p>
+                                </div>
+                            </label>
+                        @endif
                     </div>
 
                     <!-- حفظ العنوان للمرات القادمة -->
@@ -803,8 +843,12 @@ async function applyCoupon() {
 function selectPayment(method, el) {
     document.querySelectorAll('.pay-opt').forEach(o => o.classList.remove('selected'));
     el.classList.add('selected');
-    el.querySelector('input[type=radio]').checked = true;
-    document.getElementById('transfer-details').classList.toggle('show', method === 'transfer');
+    const radio = el.querySelector('input[type=radio]');
+    if (radio) radio.checked = true;
+    const transferDetails = document.getElementById('transfer-details');
+    if (transferDetails) {
+        transferDetails.classList.toggle('show', method === 'transfer');
+    }
 }
 
 // ─── Place order ─────────────────────────────────────────────────────────────
