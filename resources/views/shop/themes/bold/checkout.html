@@ -5,61 +5,35 @@
   <meta charset="utf-8">
   <meta name="facebook-domain-verification" content="thjq95dh1a88yu3cmr55fhq2xqvxr3" />
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>اتمام الشراء - Store</title>
+  <title>إتمام الشراء - Store</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/shop/styles.css?v=202604021">
-  <link rel="stylesheet" href="/shop/themes/bold/style.css?v=1.0.0">
+  <link rel="stylesheet" href="/shop/themes/default/style.css?v=1.0.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <!-- Meta Pixel Code -->
-  <script>
-    !function (f, b, e, v, n, t, s) {
-      if (f.fbq) return; n = f.fbq = function () {
-        n.callMethod ?
-        n.callMethod.apply(n, arguments) : n.queue.push(arguments)
-      };
-      if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
-      n.queue = []; t = b.createElement(e); t.async = !0;
-      t.src = v; s = b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t, s)
-    }(window, document, 'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-    // fbq('init', ...) is handled dynamically by shared.js
-    // Fire InitiateCheckout on page load
-    window.addEventListener('load', function () {
-      try {
-        var cart = JSON.parse(localStorage.getItem('bird_cart') || '[]');
-        var total = cart.reduce(function (s, x) { return s + (Number(x.price) * Number(x.qty || 1)); }, 0);
-        var ids = cart.map(function (x) { return String(x.id); });
-        if (typeof fbq !== 'undefined') {
-          fbq('track', 'InitiateCheckout', {
-            content_ids: items.map(function(i){ return i.id; }),
-            content_type: 'product',
-            value: finalTotal,
-            currency: 'EGP'
-          });
-        }
-        if (typeof ttq !== 'undefined') {
-          ttq.track('InitiateCheckout', {
-            contents: items.map(function(i){
-              return {
-                content_id: i.id,
-                content_name: i.name,
-                quantity: i.qty,
-                price: i.price
-              };
-            }),
-            content_type: 'product',
-            value: finalTotal,
-            currency: 'EGP'
-          });
-        }
-      } catch (e) { console.error('Pixel InitiateCheckout error', e); }
-    });
-  </script>
-  <!-- Dynamic pixel handles noscript if needed -->
-  <!-- End Meta Pixel Code -->
+  <style>
+    body {
+      direction: rtl;
+      text-align: right;
+      font-family: 'Cairo', sans-serif;
+      background-color: #f8fafc;
+    }
+    .checkout-container {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 900px) {
+      .checkout-container {
+        grid-template-columns: 1fr !important;
+      }
+    }
+    .pay-option:hover {
+      border-color: #4f46e5 !important;
+    }
+  </style>
 </head>
 
 <body class="theme-default classic-theme">
@@ -79,17 +53,16 @@
       <a href="/shop/index.html">الرئيسية</a>
       <a href="/shop/categories.html">الأقسام</a>
       <a href="/shop/products.html">المنتجات</a>
-      <a href="/shop/contact.html">اتصل بنا</a>
+      <a style="display:none !important;" href="/shop/contact.html">اتصل بنا</a>
     </nav>
   </header>
 
   <main class="container">
-    <h1 class="page-title">إتمام الشراء</h1>
+    <h1 class="page-title" style="margin: 20px 0 24px; font-size: 24px; font-weight: 800; color: #1e293b;">إتمام الشراء</h1>
 
-    <div style="display: grid; grid-template-columns: 1fr 350px; gap: 24px; margin-bottom: 24px;">
-      <!-- Left Column - Form -->
-      <div class="card"
-        style="padding: 24px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid #e5e7eb;">
+    <div class="checkout-container">
+      <!-- Right Column: Order Form -->
+      <div class="card" style="padding: 24px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e5e7eb; background: #fff;">
         <!-- Guest Checkout Banner -->
         <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #bfdbfe; border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
           <i class="fa fa-user-shield" style="color: #3b82f6; font-size: 20px;"></i>
@@ -99,545 +72,213 @@
           </div>
         </div>
 
-        <h2
-          style="color: #111827; font-size: 20px; font-weight: 700; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #f3f4f6;">
-          بيانات الطلب</h2>
+        <h2 style="color: #111827; font-size: 18px; font-weight: 700; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #f3f4f6;">
+          بيانات الطلب
+        </h2>
 
         <form id="checkoutForm" style="display: grid; gap: 20px;">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
             <div>
-              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">الاسم الكامل <span
-                  style="color:#ef4444">*</span></label>
-              <input required name="name" type="text"
-                style="width: 100%; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; transition: all 0.3s ease;"
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">الاسم الكامل <span style="color:#ef4444">*</span></label>
+              <input required name="name" id="nameInput" type="text"
+                placeholder="أدخل الاسم بالكامل"
+                style="width: 100%; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; font-family: Cairo, sans-serif; transition: all 0.3s ease;"
                 onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e5e7eb'">
             </div>
             <div>
-              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">رقم الهاتف <span
-                  style="color:#ef4444">*</span></label>
-              <input required name="phone" type="tel" inputmode="tel" pattern="[0-9\s\-+()]{6,}"
-                style="width: 100%; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; transition: all 0.3s ease;"
+              <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">رقم الهاتف <span style="color:#ef4444">*</span></label>
+              <input required name="phone" id="phoneInput" type="tel" inputmode="tel" maxlength="11"
+                placeholder="رقم الهاتف (مثل: 01012345678)"
+                style="width: 100%; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; font-family: Cairo, sans-serif; transition: all 0.3s ease;"
                 onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e5e7eb'">
+              <div id="phoneErrorMsg" style="color: #ef4444; font-size: 0.8rem; margin-top: 6px; display: none; font-weight: 600;">يجب أن يكون رقم الهاتف 11 رقماً ويبدأ بـ 01 (مثل: 01012345678)</div>
             </div>
           </div>
 
           <div>
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">المحافظة <span
-                style="color:#ef4444">*</span></label>
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">المحافظة <span style="color:#ef4444">*</span></label>
             <div style="position: relative;">
               <select required name="governorate" id="governorateSelect"
-                style="width: 100%; padding: 14px 45px 14px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); cursor: pointer; appearance: none; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);"
-                onfocus="this.style.borderColor='#4f46e5'; this.style.boxShadow='0 0 0 3px rgba(79, 70, 229, 0.1)'"
-                onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)'"
+                style="width: 100%; padding: 12px 40px 12px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; font-family: Cairo, sans-serif; background: #fff; cursor: pointer; appearance: none; -webkit-appearance: none; transition: all 0.3s ease;"
+                onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e5e7eb'"
                 onchange="updateShippingCost()">
                 <option value="">جاري تحميل المحافظات...</option>
               </select>
-              <div
-                style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; transition: all 0.3s ease;">
-                <svg style="width: 18px; height: 18px; color: #4f46e5;" fill="none" stroke="currentColor"
-                  viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
-                </svg>
-              </div>
-              <div
-                style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none;">
-                <svg style="width: 18px; height: 18px; color: #6b7280;" fill="none" stroke="currentColor"
-                  viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                </svg>
+              <div style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); pointer-events: none;">
+                <i class="fa fa-chevron-down" style="color: #64748b; font-size: 12px;"></i>
               </div>
             </div>
           </div>
 
           <div>
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">العنوان بالتفاصيل <span
-                style="color:#ef4444">*</span></label>
-            <textarea required name="address" rows="3"
-              style="width: 100%; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; resize: vertical; transition: all 0.3s ease;"
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">العنوان بالتفاصيل <span style="color:#ef4444">*</span></label>
+            <textarea required name="address" id="addressInput" rows="3"
+              style="width: 100%; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; font-family: Cairo, sans-serif; resize: vertical; transition: all 0.3s ease;"
               onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e5e7eb'"
               placeholder="أدخل العنوان الكامل مع رقم الشارع والمنطقة"></textarea>
           </div>
 
           <div>
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">ملاحظات إضافية
-              (اختياري)</label>
-            <textarea name="notes" rows="2"
-              style="width: 100%; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 16px; resize: vertical; transition: all 0.3s ease;"
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">ملاحظات إضافية (اختياري)</label>
+            <textarea name="notes" id="notesInput" rows="2"
+              style="width: 100%; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 15px; font-family: Cairo, sans-serif; resize: vertical; transition: all 0.3s ease;"
               onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e5e7eb'"
               placeholder="أي ملاحظات خاصة بالطلب"></textarea>
           </div>
 
-          <!-- طريقة الشحن وطريقة الدفع -->
+          <!-- طريقة الشحن -->
           <div style="border-top: 2px solid #f3f4f6; padding-top: 16px;">
-            <label style="display: block; margin-bottom: 12px; font-weight: 700; color: #111827; font-size: 16px;"><i class="fa fa-shipping-fast" style="color: #4f46e5; margin-left: 8px;"></i>طريقة الشحن</label>
+            <label style="display: block; margin-bottom: 12px; font-weight: 700; color: #111827; font-size: 15px;"><i class="fa fa-shipping-fast" style="color: #4f46e5; margin-left: 8px;"></i>طريقة الشحن</label>
             <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;">
               <div style="display: flex; align-items: center; gap: 12px;">
                 <span style="font-size: 24px;">🚚</span>
                 <div>
-                  <div style="font-weight: 700; color: #1e293b;">توصيل سريع للمنزل</div>
-                  <div style="font-size: 13px; color: #64748b;">يتم التوصيل حسب المحافظة المختارة</div>
+                  <div style="font-weight: 700; color: #1e293b; font-size: 14px;">توصيل سريع للمنزل</div>
+                  <div style="font-size: 12px; color: #64748b;">يتم التوصيل حسب المحافظة المختارة</div>
                 </div>
               </div>
               <span id="shippingMethodBadge" style="background: #e0e7ff; color: #4338ca; padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 700;">حسب المحافظة</span>
             </div>
           </div>
 
-          <div style="border-top: 2px solid #f3f4f6; padding-top: 16px;">
-            <label style="display: block; margin-bottom: 12px; font-weight: 700; color: #111827; font-size: 16px;"><i class="fa fa-credit-card" style="color: #4f46e5; margin-left: 8px;"></i>طريقة الدفع <span style="color:#ef4444">*</span></label>
-            <div style="display: grid; gap: 12px;">
-              <label class="pay-option" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 2px solid #4f46e5; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">
-                <input type="radio" name="pay" value="cod" checked style="width: 18px; height: 18px; accent-color: #4f46e5;" onchange="toggleTransferInfo()">
-                <span style="font-size: 22px;">🏠</span>
-                <div>
-                  <div style="font-weight: 700; color: #1e293b;">الدفع عند الاستلام (COD)</div>
-                  <div style="font-size: 13px; color: #64748b;">ادفع نقداً عند استلام طلبك من المندوب</div>
-                </div>
-              </label>
-
-              <label class="pay-option" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 2px solid #e2e8f0; background: #ffffff; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">
-                <input type="radio" name="pay" value="transfer" style="width: 18px; height: 18px; accent-color: #4f46e5;" onchange="toggleTransferInfo()">
-                <span style="font-size: 22px;">📱</span>
-                <div>
-                  <div style="font-weight: 700; color: #1e293b;">تحويل إلكتروني (InstaPay / فودافون كاش)</div>
-                  <div style="font-size: 13px; color: #64748b;">تحويل فوري وإرسال إيصال الدفع</div>
-                </div>
-              </label>
-            </div>
-            
-            <div id="transferInfoBox" style="display: none; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 12px; padding: 12px 16px; margin-top: 12px; font-size: 14px; color: #92400e;">
-              <strong>📲 بيانات التحويل الإلكتروني:</strong><br>
-              رقم المحفظة / انستاباي: <strong>01092308465</strong><br>
-              <span style="font-size: 12px;">يرجى تحويل المبلغ ثم إرسال صورة إيصال التحويل عبر الواتساب بعد تأكيد الطلب.</span>
-            </div>
+          <!-- طريقة الدفع (تظهر فقط إذا كانت هناك بوابات دفع إلكتروني مفعلة) -->
+          <div id="paymentGatewaySection" style="display: none; border-top: 2px solid #f3f4f6; padding-top: 16px;">
+            <label style="display: block; margin-bottom: 12px; font-weight: 700; color: #111827; font-size: 15px;"><i class="fa fa-credit-card" style="color: #4f46e5; margin-left: 8px;"></i>طريقة الدفع <span style="color:#ef4444">*</span></label>
+            <div id="paymentOptionsContainer" style="display: grid; gap: 12px;"></div>
           </div>
-
-          <!-- حفظ العنوان للمرات القادمة -->
-          <div style="border-top: 2px solid #f3f4f6; padding-top: 16px;">
-            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 15px; color: #334155; font-weight: 600;">
-              <input type="checkbox" name="save_address" id="saveAddressChk" checked style="width: 18px; height: 18px; accent-color: #4f46e5;">
-              <span>حفظ هذه البيانات (الاسم، الهاتف، العنوان) لاستخدامها في طلباتي القادمة</span>
-            </label>
-          </div>
-
-          <!-- الموافقة على الشروط والأحكام -->
-          <div>
-            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 14px; color: #475569;">
-              <input type="checkbox" name="terms" id="termsChk" required checked style="width: 18px; height: 18px; accent-color: #4f46e5; margin-top: 2px;">
-              <span>أوافق على <a href="/shop/contact.html" target="_blank" style="color: #4f46e5; text-decoration: underline; font-weight: 600;">الشروط والأحكام</a> وسياسة الخصوصية وأتعهد بصحة البيانات المدخلة.</span>
-            </label>
-          </div>
+          <input type="hidden" name="pay" id="selectedPaymentMethod" value="cod">
         </form>
-    </div>
+      </div>
 
-    <!-- Right Column - Order Summary -->
-    <div style="display: flex; flex-direction: column; gap: 16px;">
-      <div class="card" style="padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-        <div style="margin-bottom: 16px;">
-          <h3
-            style="color: #111827; font-size: 18px; font-weight: 700; margin: 0; padding-bottom: 12px; border-bottom: 2px solid #f3f4f6;">
-            ملخص الطلب</h3>
-        </div>
-        <div id="orderSummary" style="margin-bottom: 16px;">
-          <!-- سيتم ملء هذا القسم بـ JavaScript -->
-        </div>
+      <!-- Left Column: Order Summary -->
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="card" style="padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e5e7eb; background: #fff;">
+          <h3 style="color: #111827; font-size: 16px; font-weight: 700; margin: 0 0 16px; padding-bottom: 12px; border-bottom: 2px solid #f3f4f6;">
+            ملخص الطلب
+          </h3>
+          
+          <div id="orderSummary" style="margin-bottom: 16px;">
+            <!-- Cart items populated by JS -->
+          </div>
 
-        <div style="border-top: 2px solid #f3f4f6; padding-top: 16px;">
-          <!-- Coupon Section -->
-          <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed #e5e7eb;">
-            <label style="display: block; margin-bottom: 8px; font-weight: 700; color: #374151; font-size: 14px;"><i class="fa fa-ticket-alt" style="color: #4f46e5; margin-left: 6px;"></i>كوبون الخصم</label>
-            <div style="display: flex; gap: 8px;">
-              <input type="text" id="couponInput" placeholder="أدخل كود الخصم (مثال: SAVE10)" style="flex: 1; padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; text-transform: uppercase;">
-              <button type="button" id="applyCouponBtn" onclick="applyCouponCode()" style="padding: 10px 18px; background: #4f46e5; color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; transition: background 0.2s;">تطبيق</button>
+          <div style="border-top: 2px solid #f3f4f6; padding-top: 16px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+              <span style="color: #6b7280;">المجموع الفرعي:</span>
+              <span id="subtotal" style="font-weight: 700; color: #1e293b;">0 جنيه</span>
             </div>
-            <div id="couponMessage" style="font-size: 13px; margin-top: 6px; display: none; font-weight: 600;"></div>
-          </div>
-
-          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-            <span style="color: #6b7280;">المجموع الفرعي:</span>
-            <span id="subtotal" style="font-weight: 600;">0 جنيه</span>
-          </div>
-          <div id="discountRow" style="display: none; justify-content: space-between; margin-bottom: 8px;">
-            <span style="color: #16a34a; font-weight: 600;">الخصم (كوبون <span id="appliedCouponCodeText"></span>):</span>
-            <span id="discountAmount" style="font-weight: 700; color: #16a34a;">0 جنيه</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-            <span style="color: #6b7280;">رسوم الشحن:</span>
-            <span id="shippingCost" style="font-weight: 600; color: #4f46e5;">25 جنيه</span>
-          </div>
-          <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid #e5e7eb;">
-            <span style="font-size: 18px; font-weight: 700; color: #111827;">الإجمالي:</span>
-            <span id="totalAmount" style="font-size: 18px; font-weight: 700; color: #4f46e5;">25 جنيه</span>
+            <div id="discountRow" style="display: none; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+              <span style="color: #16a34a; font-weight: 600;">الخصم (كوبون <span id="appliedCouponCodeText"></span>):</span>
+              <span id="discountAmount" style="font-weight: 700; color: #16a34a;">0 جنيه</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px;">
+              <span style="color: #6b7280;">رسوم الشحن:</span>
+              <span id="shippingCost" style="font-weight: 700; color: #4f46e5;">مجاني</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid #e5e7eb; font-size: 17px;">
+              <span style="font-weight: 800; color: #111827;">الإجمالي:</span>
+              <span id="totalAmount" style="font-weight: 800; color: #4f46e5;">0 جنيه</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Action Buttons -->
-      <div style="display: flex; flex-direction: column; gap: 12px;">
-        <button form="checkoutForm" type="submit"
-          style="width: 100%; padding: 16px 24px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);"
-          onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(79, 70, 229, 0.4)'"
-          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(79, 70, 229, 0.3)'">
-          <i class="fa fa-check-circle" style="margin-left: 8px;"></i>
-          تأكيد الطلب
-        </button>
-        <a href="/shop/cart.html"
-          style="width: 100%; padding: 14px 24px; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); color: #475569; border: 2px solid #cbd5e1; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; text-decoration: none; text-align: center; display: block; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
-          onmouseover="this.style.borderColor='#64748b'; this.style.color='#334155'; this.style.background='linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)'; this.style.transform='translateY(-1px)'"
-          onmouseout="this.style.borderColor='#cbd5e1'; this.style.color='#475569'; this.style.background='linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'; this.style.transform='translateY(0)'">
-          العودة للسلة
-        </a>
+        <!-- Action Buttons -->
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <button form="checkoutForm" type="submit" id="submitBtn"
+            style="width: 100%; padding: 16px 24px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); font-family: Cairo, sans-serif;">
+            <i class="fa fa-check-circle" style="margin-left: 8px;"></i>
+            تأكيد الطلب
+          </button>
+          <a href="/shop/cart.html"
+            style="width: 100%; padding: 14px 24px; background: #ffffff; color: #475569; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; text-decoration: none; text-align: center; display: block; font-family: Cairo, sans-serif;">
+            ← العودة للسلة
+          </a>
+        </div>
       </div>
     </div>
-    </div>
-
-    <!-- Mobile Responsive Design -->
-    <style>
-      @media (max-width: 768px) {
-        main.container>div:first-of-type {
-          grid-template-columns: 1fr !important;
-          gap: 16px !important;
-        }
-
-        .card h2 {
-          font-size: 18px !important;
-        }
-
-        .card form>div:first-child {
-          grid-template-columns: 1fr !important;
-        }
-
-        .card form [style*="grid-template-columns: 1fr 1fr"] {
-          grid-template-columns: 1fr !important;
-        }
-      }
-    </style>
   </main>
 
   <footer class="container footer">
-    <div style="text-align: center; padding: 20px; color: #6b7280;">
-      © <span id="year">2025</span> Store. جميع الحقوق محفوظة.
+    <div style="text-align: center; padding: 20px; color: #6b7280; font-size: 14px;">
+      © <span id="year">2026</span> Store. جميع الحقوق محفوظة.
     </div>
   </footer>
-  <!-- <a class="wapp-float" href="https://wa.me/201146520922" target="_blank" aria-label="WhatsApp"><i
-      class="fa-brands fa-whatsapp"></i></a> -->
 
+  <script src="/shop/shared.js?v=20260714"></script>
   <script>
     let currentShippingCost = 0;
     let governoratesData = [];
-  </script>
-  <script src="/shop/shared.js?v=20260714"></script>
-  <script>
-    // تحديث السنة في الـ footer
-    document.addEventListener('DOMContentLoaded', function () {
-      const yearElement = document.getElementById('year');
-      if (yearElement) {
-        yearElement.textContent = new Date().getFullYear();
-      }
-    });
-
-    // Initialize BirdCart if available
-    if (typeof BirdCart !== 'undefined') {
-      BirdCart.updateCartCount();
-    }
-
-    // Load governorates from backend
-    async function loadGovernorates() {
-      try {
-        console.log('Loading governorates from backend...');
-
-        const response = await fetch('/public-api/shipping-governorates');
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        console.log('Backend response:', result);
-
-        if (!result.data || !Array.isArray(result.data)) {
-          throw new Error('Invalid response format from backend');
-        }
-
-        governoratesData = result.data;
-        console.log('Loaded governorates:', governoratesData);
-
-        populateGovernoratesDropdown();
-
-      } catch (error) {
-        console.error('Error loading governorates from backend:', error);
-        alert('حدث خطأ في تحميل المحافظات. يرجى التأكد من تشغيل السيرفر والمحاولة مرة أخرى.');
-      }
-    }
-
-    // Populate governorates dropdown
-    function populateGovernoratesDropdown() {
-      const select = document.getElementById('governorateSelect');
-      if (!select) {
-        console.error('❌ Governorate select element not found!');
-        return;
-      }
-
-      select.innerHTML = '<option value="">اختر المحافظة</option>';
-
-      console.log('📋 Populating dropdown with governorates from backend');
-
-      // Sort governorates: active first, then inactive
-      const sortedGovernorates = [...governoratesData].sort((a, b) => {
-        if (a.is_active && !b.is_active) return -1;
-        if (!a.is_active && b.is_active) return 1;
-        return a.name.localeCompare(b.name, 'ar');
-      });
-
-      sortedGovernorates.forEach((gov) => {
-        const option = document.createElement('option');
-        option.value = gov.id;
-        option.dataset.shipping = gov.price;
-        option.dataset.isActive = gov.is_active.toString();
-
-        if (gov.is_active) {
-          option.textContent = gov.name; // اسم المحافظة فقط بدون السعر
-          option.style.color = '#000000';
-        } else {
-          option.textContent = `${gov.name} - غير متاحة`;
-          option.disabled = true;
-          option.style.color = '#9ca3af';
-          option.style.fontStyle = 'italic';
-          option.style.backgroundColor = '#f3f4f6';
-        }
-
-        select.appendChild(option);
-      });
-
-      updateShippingCost();
-      console.log('✅ Dropdown populated successfully');
-    }
-
-
-    // Initialize page
-    function initializePage() {
-      console.log('🚀 Initializing checkout page...');
-
-      // Check if we have cart data in localStorage first
-      let cartData = [];
-      try {
-        const storedCart = localStorage.getItem('bird_cart');
-        if (storedCart) {
-          cartData = JSON.parse(storedCart);
-          console.log('📦 Cart loaded from localStorage:', cartData);
-        }
-      } catch (error) {
-        console.error('❌ Error loading cart from localStorage:', error);
-      }
-
-      // If no cart data, create test data
-      if (!cartData || cartData.length === 0) {
-        console.log('🧪 Creating test cart data...');
-        cartData = [
-          {
-            id: 1,
-            name: 'منتج تجريبي للاختبار',
-            price: 100,
-            image: null,
-            qty: 2
-          }
-        ];
-        localStorage.setItem('bird_cart', JSON.stringify(cartData));
-        console.log('✅ Test data saved to localStorage');
-      }
-
-      loadGovernorates().then(() => {
-        updateOrderSummary();
-        updateShippingCost();
-        updatePaymentStyle();
-        
-        // Load saved address from localStorage if available
-        try {
-          const savedInfo = localStorage.getItem('saved_customer_info');
-          if (savedInfo) {
-            const info = JSON.parse(savedInfo);
-            if (info.name) document.querySelector('input[name="name"]').value = info.name;
-            if (info.phone) document.querySelector('input[name="phone"]').value = info.phone;
-            if (info.address) document.querySelector('textarea[name="address"]').value = info.address;
-            if (info.governorate_id) {
-              const sel = document.getElementById('governorateSelect');
-              if (sel) {
-                sel.value = info.governorate_id;
-                updateShippingCost();
-              }
-            }
-            console.log('✅ Pre-filled customer info from localStorage');
-          }
-        } catch(e) { console.error('Error loading saved info:', e); }
-
-        console.log('✅ Page initialization complete');
-      });
-    }
-
-    // Update shipping cost based on selected governorate
-    function updateShippingCost() {
-      console.log('💰 Updating shipping cost...');
-
-      // فحص المنتجات في السلة لمعرفة نوع الشحن
-      const cartItems = BirdCart.getCart();
-      const hasNonFreeShipping = cartItems.some(item => item.shipping_type !== 'free');
-
-      // إذا كانت جميع المنتجات شحن مجاني
-      if (!hasNonFreeShipping) {
-        currentShippingCost = 0;
-        const shippingElement = document.getElementById('shippingCost');
-        if (shippingElement) {
-          shippingElement.textContent = 'مجاني';
-          shippingElement.style.color = '#16a34a';
-          console.log('🆓 All products have free shipping');
-        }
-        updateTotalAmount();
-        return;
-      }
-
-      // إذا كان هناك منتج واحد على الأقل يتطلب رسوم شحن
-      const select = document.getElementById('governorateSelect');
-      const selectedOption = select.options[select.selectedIndex];
-
-      if (selectedOption && selectedOption.value && selectedOption.dataset.shipping) {
-        const isActive = selectedOption.dataset.isActive === 'true';
-        if (isActive) {
-          currentShippingCost = parseInt(selectedOption.dataset.shipping);
-          console.log('✅ Shipping cost updated:', currentShippingCost, 'for', selectedOption.textContent);
-        } else {
-          currentShippingCost = 0;
-          console.log('❌ Selected governorate is inactive');
-        }
-      } else {
-        currentShippingCost = 0;
-        console.log('⚠️ No governorate selected');
-      }
-
-      const shippingElement = document.getElementById('shippingCost');
-      if (shippingElement) {
-        shippingElement.textContent = currentShippingCost > 0 ?
-          new Intl.NumberFormat('en-EG').format(currentShippingCost) + ' جنيه' :
-          'غير متاحة';
-        shippingElement.style.color = '#4f46e5';
-        console.log('📄 Shipping cost display updated:', shippingElement.textContent);
-      }
-
-      updateTotalAmount();
-
-      updateTotalAmount();
-    }
-
-    // Update order summary display
-    function updateOrderSummary() {
-      console.log('📋 Updating order summary...');
-
-      let cart;
-      // Try to get cart from BirdCart or localStorage
-      if (typeof BirdCart !== 'undefined' && BirdCart.getCart) {
-        cart = BirdCart.getCart();
-      } else {
-        try {
-          cart = JSON.parse(localStorage.getItem('bird_cart') || '[]');
-        } catch (e) {
-          cart = [];
-        }
-      }
-
-      const summaryDiv = document.getElementById('orderSummary');
-
-      console.log('🛒 Cart data in updateOrderSummary:', cart);
-
-      if (!cart || cart.length === 0) {
-        summaryDiv.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 20px;">السلة فارغة</p>';
-        updateSubtotal(0);
-        return;
-      }
-
-      let subtotal = 0;
-      const itemsHtml = cart.map((item, index) => {
-        // Ensure data types are correct
-        const itemPrice = parseFloat(item.price) || 0;
-        const itemQty = parseInt(item.qty) || 1;
-        const itemTotal = itemPrice * itemQty;
-        subtotal += itemTotal;
-
-        console.log(`📦 Item ${index + 1}: ${item.name}, Price: ${itemPrice}, Qty: ${itemQty}, Total: ${itemTotal}`);
-
-        return `
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0;">
-            <div style="flex: 1;">
-              <div style="font-weight: 600; color: #111827; margin-bottom: 4px;">
-                ${item.name || 'منتج'}
-                ${item.selectedSize ? `<span style="font-size:0.75rem; background:#dbeafe; color:#1e40af; padding:2px 6px; border-radius:4px; margin-right:4px; font-weight:normal;">المقاس: ${item.selectedSize}</span>` : ''}
-                ${item.selectedColor ? `<span style="font-size:0.75rem; background:#fce7f3; color:#be185d; padding:2px 6px; border-radius:4px; margin-right:4px; font-weight:normal;">اللون: ${item.selectedColor}</span>` : ''}
-              </div>
-              <div style="font-size: 14px; color: #6b7280;">الكمية: ${itemQty} × ${new Intl.NumberFormat('en-EG').format(itemPrice)} جنيه</div>
-            </div>
-            <div style="font-weight: 600; color: #4f46e5;">${new Intl.NumberFormat('en-EG').format(itemTotal)} جنيه</div>
-          </div>
-        `;
-      }).join('');
-
-      console.log('💰 Calculated subtotal in updateOrderSummary:', subtotal);
-      summaryDiv.innerHTML = itemsHtml;
-      updateSubtotal(subtotal);
-    }
-
-    // Update subtotal display
-    function updateSubtotal(amount) {
-      console.log('📊 Updating subtotal with amount:', amount);
-      const subtotalElement = document.getElementById('subtotal');
-      if (subtotalElement) {
-        subtotalElement.textContent = new Intl.NumberFormat('en-EG').format(amount) + ' جنيه';
-        console.log('✅ Subtotal element updated to:', subtotalElement.textContent);
-      } else {
-        console.error('❌ Subtotal element not found!');
-      }
-      updateTotalAmount();
-    }
-
     let appliedDiscount = 0;
     let appliedCouponCode = null;
 
-    // Update total amount
-    function updateTotalAmount() {
-      let cart;
-      // Try to get cart from BirdCart or localStorage
-      if (typeof BirdCart !== 'undefined' && BirdCart.getCart) {
-        cart = BirdCart.getCart();
-      } else {
-        try {
-          cart = JSON.parse(localStorage.getItem('bird_cart') || '[]');
-        } catch (e) {
-          cart = [];
+    document.addEventListener('DOMContentLoaded', function () {
+      const yearElement = document.getElementById('year');
+      if (yearElement) yearElement.textContent = new Date().getFullYear();
+      if (typeof BirdCart !== 'undefined') BirdCart.updateCartCount();
+      initializePage();
+    });
+
+    async function initializePage() {
+      loadPaymentGateways();
+      checkAppliedCouponFromCart();
+      await loadGovernorates();
+      updateOrderSummary();
+      updateShippingCost();
+    }
+
+    // Load available online payment gateways dynamically from API
+    async function loadPaymentGateways() {
+      try {
+        const response = await fetch('/public-api/payment-gateways');
+        if (!response.ok) return;
+        const res = await response.json();
+        const gateways = res.gateways || [];
+        const hasOnlineGateways = gateways.length > 0;
+        const section = document.getElementById('paymentGatewaySection');
+        const container = document.getElementById('paymentOptionsContainer');
+        const hiddenPay = document.getElementById('selectedPaymentMethod');
+
+        if (!hasOnlineGateways) {
+          if (section) section.style.display = 'none';
+          if (hiddenPay) hiddenPay.value = 'cod';
+          return;
         }
-      }
 
-      const subtotal = cart.reduce((sum, item) => {
-        const itemPrice = parseFloat(item.price) || 0;
-        const itemQty = parseInt(item.qty) || 0;
-        return sum + (itemPrice * itemQty);
-      }, 0);
+        if (section && container) {
+          section.style.display = 'block';
+          let html = `
+            <label class="pay-option" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 2px solid #4f46e5; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">
+              <input type="radio" name="pay_radio" value="cod" checked style="width: 18px; height: 18px; accent-color: #4f46e5;" onchange="onPaymentOptionChange(this.value)">
+              <span style="font-size: 22px;">🏠</span>
+              <div>
+                <div style="font-weight: 700; color: #1e293b; font-size: 14px;">الدفع عند الاستلام (COD)</div>
+                <div style="font-size: 12px; color: #64748b;">ادفع نقداً عند استلام طلبك من المندوب</div>
+              </div>
+            </label>
+          `;
 
-      const total = Math.max(0, subtotal - appliedDiscount + currentShippingCost);
+          gateways.forEach(gw => {
+            html += `
+              <label class="pay-option" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 2px solid #e2e8f0; background: #ffffff; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">
+                <input type="radio" name="pay_radio" value="${gw.code}" style="width: 18px; height: 18px; accent-color: #4f46e5;" onchange="onPaymentOptionChange(this.value)">
+                <span style="font-size: 22px;">💳</span>
+                <div>
+                  <div style="font-weight: 700; color: #1e293b; font-size: 14px;">${gw.name} (دفع إلكتروني)</div>
+                  <div style="font-size: 12px; color: #64748b;">ادفع بأمان عبر الفيزا أو الماستركارد أو المحافظ الإلكترونية</div>
+                </div>
+              </label>
+            `;
+          });
 
-      console.log('🧮 Final calculation - Subtotal:', subtotal, 'Discount:', appliedDiscount, 'Shipping:', currentShippingCost, 'Total:', total);
-
-      const totalElement = document.getElementById('totalAmount');
-      if (totalElement) {
-        totalElement.textContent = new Intl.NumberFormat('en-EG').format(total) + ' جنيه';
+          container.innerHTML = html;
+        }
+      } catch (e) {
+        console.warn('Could not load payment gateways:', e);
       }
     }
 
-    // Toggle Transfer Info Box
-    function toggleTransferInfo() {
-      const transferRadio = document.querySelector('input[name="pay"][value="transfer"]');
-      const box = document.getElementById('transferInfoBox');
-      if (box && transferRadio) {
-        box.style.display = transferRadio.checked ? 'block' : 'none';
-      }
+    function onPaymentOptionChange(val) {
+      const hiddenPay = document.getElementById('selectedPaymentMethod');
+      if (hiddenPay) hiddenPay.value = val;
       document.querySelectorAll('.pay-option').forEach(el => {
         const input = el.querySelector('input[type="radio"]');
         if (input && input.checked) {
@@ -650,194 +291,267 @@
       });
     }
 
-    // Apply Coupon via AJAX
-    async function applyCouponCode() {
-      const input = document.getElementById('couponInput');
-      const msgDiv = document.getElementById('couponMessage');
-      const btn = document.getElementById('applyCouponBtn');
-      if (!input || !input.value.trim()) {
-        msgDiv.textContent = 'الرجاء إدخال كود الخصم';
-        msgDiv.style.color = '#dc2626';
-        msgDiv.style.display = 'block';
+    // Read coupon applied in cart
+    function checkAppliedCouponFromCart() {
+      const couponCode = localStorage.getItem('fastorder_coupon_code');
+      const couponType = localStorage.getItem('fastorder_coupon_type');
+      const couponValue = parseFloat(localStorage.getItem('fastorder_coupon_value') || 0);
+
+      let cart = [];
+      try { cart = (typeof BirdCart !== 'undefined') ? BirdCart.getCart() : JSON.parse(localStorage.getItem('bird_cart') || '[]'); } catch(e){}
+      const subtotal = cart.reduce((s, x) => s + ((parseFloat(x.price) || 0) * (parseInt(x.qty) || 1)), 0);
+
+      if (couponCode && couponValue > 0) {
+        if (couponType === 'percentage') {
+          appliedDiscount = (subtotal * couponValue) / 100;
+        } else {
+          appliedDiscount = couponValue;
+        }
+        appliedDiscount = Math.min(appliedDiscount, subtotal);
+        appliedCouponCode = couponCode;
+
+        const discRow = document.getElementById('discountRow');
+        if (discRow) discRow.style.display = 'flex';
+        const txt = document.getElementById('appliedCouponCodeText');
+        if (txt) txt.textContent = couponCode;
+        const amt = document.getElementById('discountAmount');
+        if (amt) amt.textContent = '-' + new Intl.NumberFormat('en-EG').format(appliedDiscount) + ' جنيه';
+      } else {
+        appliedDiscount = 0;
+        appliedCouponCode = null;
+        const discRow = document.getElementById('discountRow');
+        if (discRow) discRow.style.display = 'none';
+      }
+    }
+
+    // Load governorates
+    async function loadGovernorates() {
+      try {
+        const response = await fetch('/public-api/shipping-governorates');
+        if (!response.ok) return;
+        const result = await response.json();
+        governoratesData = result.data || [];
+
+        const select = document.getElementById('governorateSelect');
+        if (!select) return;
+
+        select.innerHTML = '<option value="">اختر المحافظة</option>';
+        const sortedGovs = [...governoratesData].sort((a, b) => {
+          if (a.is_active && !b.is_active) return -1;
+          if (!a.is_active && b.is_active) return 1;
+          return (a.name || '').localeCompare(b.name || '', 'ar');
+        });
+
+        sortedGovs.forEach(gov => {
+          const opt = document.createElement('option');
+          opt.value = gov.id;
+          opt.dataset.shipping = gov.price !== undefined ? gov.price : (gov.shipping_cost || 0);
+          opt.dataset.isActive = String(gov.is_active);
+          if (gov.is_active) {
+            opt.textContent = gov.name;
+          } else {
+            opt.textContent = `${gov.name} - غير متاحة`;
+            opt.disabled = true;
+          }
+          select.appendChild(opt);
+        });
+      } catch (e) {
+        console.error('Error loading governorates:', e);
+      }
+    }
+
+    // Update shipping
+    function updateShippingCost() {
+      const cartItems = (typeof BirdCart !== 'undefined') ? BirdCart.getCart() : [];
+      const hasNonFreeShipping = cartItems.some(item => item.shipping_type !== 'free');
+
+      if (!hasNonFreeShipping) {
+        currentShippingCost = 0;
+        const shEl = document.getElementById('shippingCost');
+        if (shEl) {
+          shEl.textContent = 'مجاني';
+          shEl.style.color = '#16a34a';
+        }
+        updateTotalAmount();
         return;
       }
-      
-      const code = input.value.trim().toUpperCase();
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
-      
-      try {
-        let cart = [];
-        try { cart = JSON.parse(localStorage.getItem('bird_cart') || '[]'); } catch(e){}
-        const subtotal = cart.reduce((s, x) => s + ((parseFloat(x.price) || 0) * (parseInt(x.qty) || 1)), 0);
-        
-        const response = await fetch('/checkout', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : ''
-          },
-          body: JSON.stringify({
-            action: 'check_coupon',
-            coupon_code: code,
-            subtotal: subtotal
-          })
-        });
-        
-        const res = await response.json();
-        if (res.success) {
-          appliedDiscount = parseFloat(res.discount) || 0;
-          appliedCouponCode = res.code || code;
-          msgDiv.textContent = '✔ ' + res.message + ` (خصم: ${new Intl.NumberFormat('en-EG').format(appliedDiscount)} جنيه)`;
-          msgDiv.style.color = '#16a34a';
-          msgDiv.style.display = 'block';
-          
-          document.getElementById('discountRow').style.display = 'flex';
-          document.getElementById('appliedCouponCodeText').textContent = appliedCouponCode;
-          document.getElementById('discountAmount').textContent = '-' + new Intl.NumberFormat('en-EG').format(appliedDiscount) + ' جنيه';
-          input.disabled = true;
-          btn.textContent = 'تم';
-          updateTotalAmount();
+
+      const select = document.getElementById('governorateSelect');
+      const selectedOption = select ? select.options[select.selectedIndex] : null;
+
+      if (selectedOption && selectedOption.value && selectedOption.dataset.shipping) {
+        if (selectedOption.dataset.isActive === 'true' || selectedOption.dataset.isActive === '1') {
+          currentShippingCost = parseInt(selectedOption.dataset.shipping) || 0;
         } else {
-          appliedDiscount = 0;
-          appliedCouponCode = null;
-          msgDiv.textContent = '✖ ' + (res.message || 'كود الخصم غير صحيح');
-          msgDiv.style.color = '#dc2626';
-          msgDiv.style.display = 'block';
-          document.getElementById('discountRow').style.display = 'none';
-          updateTotalAmount();
+          currentShippingCost = 0;
         }
-      } catch (err) {
-        msgDiv.textContent = '✖ حدث خطأ أثناء التحقق من الكوبون';
-        msgDiv.style.color = '#dc2626';
-        msgDiv.style.display = 'block';
-      } finally {
-        btn.disabled = false;
-        if (!input.disabled) btn.textContent = 'تطبيق';
+      } else {
+        currentShippingCost = 0;
+      }
+
+      const shippingElement = document.getElementById('shippingCost');
+      if (shippingElement) {
+        shippingElement.textContent = currentShippingCost > 0 
+          ? new Intl.NumberFormat('en-EG').format(currentShippingCost) + ' جنيه'
+          : (select && select.value ? 'مجاني' : '—');
+        shippingElement.style.color = currentShippingCost > 0 ? '#4f46e5' : '#16a34a';
+      }
+
+      updateTotalAmount();
+    }
+
+    // Render summary
+    function updateOrderSummary() {
+      let cart = (typeof BirdCart !== 'undefined') ? BirdCart.getCart() : [];
+      const summaryDiv = document.getElementById('orderSummary');
+      if (!summaryDiv) return;
+
+      if (!cart || cart.length === 0) {
+        summaryDiv.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 20px;">السلة فارغة</p>';
+        updateSubtotal(0);
+        return;
+      }
+
+      let subtotal = 0;
+      const itemsHtml = cart.map(item => {
+        const itemPrice = parseFloat(item.price) || 0;
+        const itemQty = parseInt(item.qty) || 1;
+        const itemTotal = itemPrice * itemQty;
+        subtotal += itemTotal;
+
+        let variantBadges = '';
+        if (item.selectedSize || item.size) {
+          variantBadges += `<span style="font-size:0.75rem; background:#dbeafe; color:#1e40af; padding:2px 6px; border-radius:4px; margin-inline-end:4px; font-weight:normal;">المقاس: ${item.selectedSize || item.size}</span>`;
+        }
+        if (item.selectedColor || item.color) {
+          variantBadges += `<span style="font-size:0.75rem; background:#fce7f3; color:#be185d; padding:2px 6px; border-radius:4px; margin-inline-end:4px; font-weight:normal;">اللون: ${item.selectedColor || item.color}</span>`;
+        }
+        if (item.options && typeof item.options === 'object') {
+          for (let optK in item.options) {
+            if (item.options[optK]) {
+              variantBadges += `<span style="font-size:0.75rem; background:#f3e8ff; color:#7e22ce; padding:2px 6px; border-radius:4px; margin-inline-end:4px; font-weight:normal;">${optK}: ${item.options[optK]}</span>`;
+            }
+          }
+        }
+
+        return `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f3f4f6;">
+            <div style="flex: 1;">
+              <div style="font-weight: 600; color: #111827; margin-bottom: 4px; font-size: 14px;">
+                ${item.name || 'منتج'}
+                ${variantBadges}
+              </div>
+              <div style="font-size: 13px; color: #64748b;">الكمية: ${itemQty} × ${new Intl.NumberFormat('en-EG').format(itemPrice)} جنيه</div>
+            </div>
+            <div style="font-weight: 700; color: #4f46e5; font-size: 14px;">${new Intl.NumberFormat('en-EG').format(itemTotal)} جنيه</div>
+          </div>
+        `;
+      }).join('');
+
+      summaryDiv.innerHTML = itemsHtml;
+      updateSubtotal(subtotal);
+      checkAppliedCouponFromCart();
+    }
+
+    function updateSubtotal(amount) {
+      const subtotalElement = document.getElementById('subtotal');
+      if (subtotalElement) {
+        subtotalElement.textContent = new Intl.NumberFormat('en-EG').format(amount) + ' جنيه';
+      }
+      updateTotalAmount();
+    }
+
+    function updateTotalAmount() {
+      let cart = (typeof BirdCart !== 'undefined') ? BirdCart.getCart() : [];
+      const subtotal = cart.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * (parseInt(item.qty) || 1)), 0);
+      const total = Math.max(0, subtotal - appliedDiscount + currentShippingCost);
+      const totalElement = document.getElementById('totalAmount');
+      if (totalElement) {
+        totalElement.textContent = new Intl.NumberFormat('en-EG').format(total) + ' جنيه';
       }
     }
 
-    // Update payment method styling (removed)
-    function updatePaymentStyle() {
-      toggleTransferInfo();
+    // Phone Input Realtime Formatting & Validation
+    const pInput = document.getElementById('phoneInput');
+    const pErr = document.getElementById('phoneErrorMsg');
+    const phoneRegex = /^01[0125][0-9]{8}$/;
+
+    if (pInput) {
+      pInput.addEventListener('input', function() {
+        let val = this.value.replace(/\D/g, '');
+        if (val.length >= 1 && val[0] !== '0') val = '0' + val;
+        if (val.length >= 2 && val[1] !== '1') val = '01' + val.slice(2);
+        this.value = val.slice(0, 11);
+
+        if (this.value.length === 11) {
+          if (phoneRegex.test(this.value)) {
+            this.style.borderColor = '#10b981';
+            if (pErr) pErr.style.display = 'none';
+          } else {
+            this.style.borderColor = '#ef4444';
+            if (pErr) pErr.style.display = 'block';
+          }
+        } else {
+          this.style.borderColor = '#e5e7eb';
+          if (pErr) pErr.style.display = 'none';
+        }
+      });
     }
 
-
-    // Form submission handler
+    // Form Submission
     const form = document.getElementById('checkoutForm');
     if (form) {
-      console.log('✅ Form found, adding event listener');
       form.addEventListener('submit', async function (e) {
         e.preventDefault();
 
-        console.log('📝 Form submitted - Processing order...');
-
         const formData = new FormData(form);
+        const customerName = (formData.get('name') || '').trim();
+        let customerPhone = (formData.get('phone') || '').replace(/[\s\+\-]/g, '');
+        if (customerPhone.startsWith('201')) customerPhone = '0' + customerPhone.substring(2);
+        else if (customerPhone.startsWith('00201')) customerPhone = '0' + customerPhone.substring(4);
+        const customerAddress = (formData.get('address') || '').trim();
+        const hiddenPayEl = document.getElementById('selectedPaymentMethod');
+        const paymentMethod = (hiddenPayEl ? hiddenPayEl.value : formData.get('pay')) || 'cod';
 
-        // Get form values
-        const customerName = formData.get('name');
-        const customerPhone = formData.get('phone');
-        const customerAddress = formData.get('address');
-        const paymentMethod = formData.get('pay') || 'cod';
-
-        // Check terms checkbox
-        const termsChk = document.getElementById('termsChk');
-        if (termsChk && !termsChk.checked) {
-          alert('يرجى الموافقة على الشروط والأحكام لمتابعة الطلب');
-          return;
-        }
-
-        console.log('📋 Customer info:', {
-          name: customerName,
-          phone: customerPhone,
-          address: customerAddress,
-          payment: paymentMethod
-        });
-
-        // Validate required fields
         if (!customerName || !customerPhone || !customerAddress) {
           alert('يرجى ملء جميع البيانات المطلوبة');
           return;
         }
 
-        // Get cart data from localStorage
-        let cart = [];
-        try {
-          const storedCart = localStorage.getItem('bird_cart');
-          if (storedCart) {
-            cart = JSON.parse(storedCart);
-            console.log('🛒 Cart data:', cart);
+        if (!phoneRegex.test(customerPhone)) {
+          if (pInput) {
+            pInput.style.borderColor = '#ef4444';
+            pInput.focus();
           }
-        } catch (error) {
-          console.error('❌ Error getting cart data:', error);
+          if (pErr) pErr.style.display = 'block';
+          return;
         }
 
+        let cart = (typeof BirdCart !== 'undefined') ? BirdCart.getCart() : [];
         if (!cart || cart.length === 0) {
           alert('السلة فارغة');
           return;
         }
 
-        // Check governorate selection
         const governorateSelect = document.getElementById('governorateSelect');
-        const selectedOption = governorateSelect.options[governorateSelect.selectedIndex];
+        const selectedOption = governorateSelect ? governorateSelect.options[governorateSelect.selectedIndex] : null;
 
         if (!selectedOption || !selectedOption.value) {
           alert('يرجى اختيار المحافظة');
           return;
         }
 
-        if (selectedOption.dataset.isActive !== 'true') {
-          alert('المحافظة المختارة غير متاحة حالياً');
-          return;
+        const submitBtn = document.getElementById('submitBtn');
+        const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
+        if (submitBtn) {
+          submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin" style="margin-left: 8px;"></i>جاري المعالجة...';
+          submitBtn.disabled = true;
         }
 
-        // Save address for future if checked
-        const saveChk = document.getElementById('saveAddressChk');
-        if (saveChk && saveChk.checked) {
-          try {
-            localStorage.setItem('saved_customer_info', JSON.stringify({
-              name: customerName,
-              phone: customerPhone,
-              address: customerAddress,
-              governorate_id: selectedOption.value
-            }));
-            console.log('✅ Saved customer info to localStorage for future use');
-          } catch(e){}
-        }
-
-        // Show loading state
-        const submitBtn = document.querySelector('button[type="submit"][form="checkoutForm"]');
-        if (!submitBtn) {
-          console.error('❌ Submit button not found!');
-          alert('خطأ في العثور على زر الإرسال');
-          return;
-        }
-
-        const originalBtnText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin" style="margin-left: 8px;"></i>جاري المعالجة...';
-        submitBtn.disabled = true;
-
-        // Calculate totals
-        const subtotal = cart.reduce((sum, item) => {
-          const itemPrice = parseFloat(item.price) || 0;
-          const itemQty = parseInt(item.qty) || 0;
-          return sum + (itemPrice * itemQty);
-        }, 0);
-
+        const subtotal = cart.reduce((sum, item) => sum + ((parseFloat(item.price) || 0) * (parseInt(item.qty) || 1)), 0);
         const total = Math.max(0, subtotal - appliedDiscount + currentShippingCost);
-        const referenceNumber = Math.floor(10000 + Math.random() * 90000); // Random 5-digit number
+        const referenceNumber = Math.floor(10000 + Math.random() * 90000);
 
-        console.log('💰 Order totals:', {
-          subtotal: subtotal,
-          discount: appliedDiscount,
-          shipping: currentShippingCost,
-          total: total,
-          reference: referenceNumber
-        });
-
-        // Create order data
         const orderData = {
           customer_name: customerName,
           customer_phone: customerPhone,
@@ -845,18 +559,13 @@
           governorate_id: selectedOption.value,
           payment_method: paymentMethod,
           coupon_code: appliedCouponCode,
-          save_address: saveChk ? saveChk.checked : false,
+          save_address: false,
           terms: true,
           items: cart,
           notes: formData.get('notes') || null
         };
 
-        console.log('✅ Order data prepared:', orderData);
-
-        // Send to backend (try /checkout first, then fallback to /api/orders)
         try {
-          console.log('🌐 Sending request to /checkout...');
-
           let response = await fetch('/checkout', {
             method: 'POST',
             headers: {
@@ -869,7 +578,6 @@
           });
 
           if (response.status === 404 || response.status === 405) {
-            console.log('🌐 Fallback sending request to /api/orders...');
             response = await fetch('/api/orders', {
               method: 'POST',
               headers: {
@@ -880,8 +588,6 @@
               body: JSON.stringify(orderData)
             });
           }
-
-          console.log('📡 Response status:', response.status);
 
           if (!response.ok) {
             const errorText = await response.text();
@@ -896,16 +602,12 @@
           }
 
           const result = await response.json();
-          console.log('📧 Response data:', result);
 
           if (result.success || result.reference_number) {
             const refNum = result.reference_number || (result.data ? result.data.reference_number : referenceNumber);
             const finalTotal = result.total || (result.data ? result.data.total : total);
-            console.log('🎉 Order created successfully! Ref:', refNum);
 
-            // Store success data for display
-            const cartItems = BirdCart ? BirdCart.getCart() : [];
-            const successData = {
+            sessionStorage.setItem('orderSuccess', JSON.stringify({
               reference_number: refNum,
               customer_name: customerName,
               customer_phone: customerPhone,
@@ -915,365 +617,33 @@
               discount: appliedDiscount,
               shipping_cost: currentShippingCost,
               total: finalTotal,
-              items: cartItems
-            };
+              items: cart
+            }));
 
-            sessionStorage.setItem('orderSuccess', JSON.stringify(successData));
-
-            // Clear cart
             localStorage.removeItem('bird_cart');
+            localStorage.removeItem('fastorder_coupon_code');
+            localStorage.removeItem('fastorder_coupon_type');
+            localStorage.removeItem('fastorder_coupon_value');
+            localStorage.removeItem('fastorder_coupon_discount');
             if (typeof BirdCart !== 'undefined' && BirdCart.clearCart) {
               BirdCart.clearCart();
             }
 
-            // Redirect to success page
             const redirectUrl = result.redirect || `/shop/order-success.html?ref=${refNum}`;
             window.location.href = redirectUrl;
           } else {
             throw new Error(result.message || 'فشل في إنشاء الطلب');
           }
         } catch (error) {
-          console.error('❌ Error creating order:', error);
-
-          // Restore button state
+          console.error('Error creating order:', error);
           if (submitBtn) {
             submitBtn.innerHTML = originalBtnText;
             submitBtn.disabled = false;
           }
-
-          if (error.name === 'TypeError' && error.message.includes('fetch')) {
-            alert('خطأ في الاتصال بالسيرفر. يرجى التأكد من تشغيل السيرفر والمحاولة مرة أخرى.');
-          } else {
-            alert('حدث خطأ أثناء معالجة الطلب: ' + (error.message || 'خطأ غير معروف'));
-          }
-        }
-      });
-    } else {
-      console.error('❌ Form not found! ID: checkoutForm');
-    }
-
-    // Make functions global
-    window.updateShippingCost = updateShippingCost;
-    window.updatePaymentStyle = updatePaymentStyle;
-
-    // Initialize when page loads
-    console.log('🚀 Script loading...');
-    console.log('📄 Document ready state:', document.readyState);
-
-    // Initialize BirdCart if available
-    if (typeof BirdCart !== 'undefined') {
-      BirdCart.updateCartCount();
-      console.log('✅ BirdCart loaded successfully');
-    } else {
-      console.log('⚠️ BirdCart not available');
-    }
-
-    if (document.readyState === 'loading') {
-      console.log('⏳ Waiting for DOMContentLoaded...');
-      document.addEventListener('DOMContentLoaded', initializePage);
-    } else {
-      console.log('✅ DOM already loaded, initializing immediately...');
-      initializePage();
-    }
-  </script>
-
-  <script>
-    document.getElementById('footYear').textContent = new Date().getFullYear();
-
-    var currentShipping = 0;
-    var governorates   = [];
-
-    /* ---- Format ---- */
-    function fmt(n) {
-      return new Intl.NumberFormat('en-EG', { maximumFractionDigits: 0 }).format(Math.round(Number(n || 0))) + ' EGP';
-    }
-
-    /* ---- Load governorates ---- */
-    fetch('/public-api/shipping-governorates')
-      .then(function(r){ return r.json(); })
-      .then(function(res){
-        governorates = (res.data || []).filter(function(g){ return g.is_active; });
-        var sel = document.getElementById('governorateSelect');
-        sel.innerHTML = '<option value="">اختر المحافظة</option>';
-        governorates.sort(function(a,b){ return a.name.localeCompare(b.name,'ar'); })
-          .forEach(function(g){
-            var opt = document.createElement('option');
-            opt.value = g.id;
-            opt.textContent = g.name;
-            opt.dataset.price = g.price;
-            sel.appendChild(opt);
-          });
-        renderSummary();
-      })
-      .catch(function(){ });
-
-    /* ---- Render order items ---- */
-    function renderSummary() {
-      var cart = BirdCart.getCart();
-      var box  = document.getElementById('orderItems');
-
-      if (!cart.length) {
-        box.innerHTML = '<p style="color:#6b7280;text-align:center;padding:16px;">السلة فارغة</p>';
-        return;
-      }
-
-      var subtotal = 0;
-      box.innerHTML = cart.map(function(it) {
-        var line = (it.price || 0) * (it.qty || 1);
-        subtotal += line;
-
-        var sizeTag  = it.selectedSize  ? '<span style="font-size:.75rem;background:#dbeafe;color:#1e40af;padding:2px 6px;border-radius:4px;margin-right:4px;">المقاس: '+it.selectedSize+'</span>' : '';
-        var colorTag = it.selectedColor ? '<span style="font-size:.75rem;background:#fce7f3;color:#be185d;padding:2px 6px;border-radius:4px;margin-right:4px;">اللون: '+it.selectedColor+'</span>' : '';
-
-        return '<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f3f4f6;">' +
-          '<div style="flex:1;">' +
-            '<div style="font-weight:600;color:#111827;margin-bottom:3px;">' + (it.name||'منتج') + '</div>' +
-            (sizeTag||colorTag ? '<div style="margin-bottom:4px;">' + sizeTag + colorTag + '</div>' : '') +
-            '<div style="font-size:14px;color:#6b7280;">الكمية: ' + (it.qty||1) + ' × ' + fmt(it.price) + '</div>' +
-          '</div>' +
-          '<div style="font-weight:700;color:#4f46e5;margin-right:8px;">' + fmt(line) + '</div>' +
-        '</div>';
-      }).join('');
-
-      document.getElementById('sumSubtotal').textContent = fmt(subtotal);
-      updateTotal(subtotal);
-    }
-
-    /* ---- Update shipping ---- */
-    function updateShipping() {
-      var sel = document.getElementById('governorateSelect');
-      var opt = sel.options[sel.selectedIndex];
-      currentShipping = opt && opt.dataset.price ? parseInt(opt.dataset.price) : 0;
-      var shEl = document.getElementById('sumShipping');
-      shEl.textContent = currentShipping > 0 ? fmt(currentShipping) : '—';
-      shEl.style.color  = currentShipping > 0 ? '#4f46e5' : '#9ca3af';
-
-      var cart     = BirdCart.getCart();
-      var subtotal = cart.reduce(function(s,it){ return s + (it.price||0)*(it.qty||1); }, 0);
-      updateTotal(subtotal);
-    }
-
-    function updateTotal(subtotal) {
-      var couponCode = localStorage.getItem('fastorder_coupon_code');
-      var couponType = localStorage.getItem('fastorder_coupon_type');
-      var couponValue = parseFloat(localStorage.getItem('fastorder_coupon_value') || 0);
-      var discount = 0;
-
-      if (couponCode && couponValue > 0) {
-        if (couponType === 'percentage') {
-          discount = (subtotal * couponValue) / 100;
-        } else {
-          discount = couponValue;
-        }
-        discount = Math.min(discount, subtotal);
-      }
-
-      var row = document.getElementById('couponRow');
-      var discEl = document.getElementById('sumDiscount');
-      if (discount > 0 && couponCode) {
-        row.style.display = 'flex';
-        discEl.textContent = '−' + fmt(discount);
-      } else {
-        row.style.display = 'none';
-      }
-
-      var finalTotal = Math.max(0, subtotal - discount + currentShipping);
-      document.getElementById('sumTotal').textContent = fmt(finalTotal);
-    }
-
-    /* ---- Phone Input Realtime Formatting & Validation ---- */
-    var pInput = document.getElementById('phoneInput');
-    var pErr = document.getElementById('phoneErrorMsg');
-    var phoneRegex = /^01[0125][0-9]{8}$/;
-
-    if (pInput) {
-      pInput.addEventListener('input', function() {
-        // Strip non-digits completely
-        var val = this.value.replace(/\D/g, '');
-        
-        // Force starting with 01 if user types other numbers
-        if (val.length >= 1 && val[0] !== '0') {
-          val = '0' + val;
-        }
-        if (val.length >= 2 && val[1] !== '1') {
-          val = '01' + val.slice(2);
-        }
-        
-        // Enforce 11 digits max
-        this.value = val.slice(0, 11);
-
-        if (this.value.length === 11) {
-          if (phoneRegex.test(this.value)) {
-            this.style.borderColor = '#10b981';
-            this.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.15)';
-            if (pErr) pErr.style.display = 'none';
-          } else {
-            this.style.borderColor = '#ef4444';
-            this.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.2)';
-            if (pErr) pErr.style.display = 'block';
-          }
-        } else {
-          this.style.borderColor = '#e5e7eb';
-          this.style.boxShadow = 'none';
-          if (pErr) pErr.style.display = 'none';
-        }
-      });
-
-      pInput.addEventListener('blur', function() {
-        if (this.value && (!phoneRegex.test(this.value) || this.value.length !== 11)) {
-          this.style.borderColor = '#ef4444';
-          this.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.2)';
-          if (pErr) pErr.style.display = 'block';
-        }
-      });
-
-      pInput.addEventListener('paste', function(e) {
-        var pasted = (e.clipboardData || window.clipboardData).getData('text');
-        var clean = pasted.replace(/\D/g, '');
-        if (clean.length > 0 && !clean.startsWith('01')) {
-          if (clean.startsWith('1')) clean = '0' + clean;
-          else clean = '01' + clean;
-        }
-        this.value = clean.slice(0, 11);
-        e.preventDefault();
-
-        if (this.value.length === 11 && phoneRegex.test(this.value)) {
-          this.style.borderColor = '#10b981';
-          this.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.15)';
-          if (pErr) pErr.style.display = 'none';
+          alert('حدث خطأ أثناء معالجة الطلب: ' + (error.message || 'يرجى المحاولة مرة أخرى'));
         }
       });
     }
-
-    /* ---- Form submit ---- */
-    document.getElementById('checkoutForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-
-      var form = e.target;
-      var fd   = new FormData(form);
-      var name = fd.get('name');
-      var phone = (fd.get('phone') || '').replace(/[\s\+\-]/g, '');
-      if (phone.startsWith('201')) phone = '0' + phone.substring(2);
-      else if (phone.startsWith('00201')) phone = '0' + phone.substring(4);
-      var addr = fd.get('address');
-
-      if (!name || !phone || !addr) { alert('يرجى ملء جميع البيانات المطلوبة'); return; }
-
-      // Enforce strictly 11 digits starting with 010, 011, 012, 015
-      if (!phone || !phoneRegex.test(phone)) {
-        if (pInput) {
-          pInput.style.borderColor = '#ef4444';
-          pInput.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.2)';
-          pInput.focus();
-        }
-        if (pErr) pErr.style.display = 'block';
-        return;
-      }
-
-      var sel = document.getElementById('governorateSelect');
-      var opt = sel.options[sel.selectedIndex];
-      if (!opt || !opt.value) { alert('يرجى اختيار المحافظة'); return; }
-
-      var cart = BirdCart.getCart();
-      if (!cart.length) { alert('السلة فارغة'); return; }
-
-      var btn = document.getElementById('submitBtn');
-      var orig = btn.innerHTML;
-      btn.innerHTML = '<i class="fa fa-spinner fa-spin" style="margin-left:8px;"></i>جاري المعالجة...';
-      btn.disabled = true;
-
-      var subtotal = cart.reduce(function(s,it){ return s+(it.price||0)*(it.qty||1); },0);
-      
-      var couponCode = localStorage.getItem('fastorder_coupon_code');
-      var couponType = localStorage.getItem('fastorder_coupon_type');
-      var couponValue = parseFloat(localStorage.getItem('fastorder_coupon_value') || 0);
-      var discount = 0;
-
-      if (couponCode && couponValue > 0) {
-        if (couponType === 'percentage') {
-          discount = (subtotal * couponValue) / 100;
-        } else {
-          discount = couponValue;
-        }
-        discount = Math.min(discount, subtotal);
-      }
-
-      var total = Math.max(0, subtotal - discount + currentShipping);
-
-      try {
-        var res = await fetch('/api/orders', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json', 
-            'Accept': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest' 
-          },
-          body: JSON.stringify({
-            customer_name:    name,
-            customer_phone:   phone,
-            customer_address: addr,
-            governorate_id:   opt.value,
-            payment_method:   'cod',
-            coupon_code:      couponCode || null,
-            items:            cart,
-            notes:            fd.get('notes') || null
-          })
-        });
-
-        var result = await res.json();
-
-        if (result.success) {
-          sessionStorage.setItem('orderSuccess', JSON.stringify({
-            reference_number: result.data.reference_number,
-            customer_name:  name,
-            customer_phone: phone,
-            governorate:    opt.textContent,
-            subtotal:       subtotal,
-            shipping_cost:  currentShipping,
-            discount:       discount,
-            coupon_code:    couponCode,
-            total:          result.data.total || total,
-            items:          cart
-          }));
-          localStorage.removeItem('bird_cart');
-          localStorage.removeItem('fastorder_coupon_code');
-          localStorage.removeItem('fastorder_coupon_type');
-          localStorage.removeItem('fastorder_coupon_value');
-          localStorage.removeItem('fastorder_coupon_discount');
-          window.location.href = '/shop/order-success.html?ref=' + result.data.reference_number;
-        } else {
-          var errorDetails = '';
-          if (result.errors) {
-             for (var key in result.errors) {
-                errorDetails += '\n- ' + result.errors[key].join(', ');
-             }
-          }
-          alert((result.message || 'حدث خطأ أثناء إتمام الطلب') + errorDetails);
-          btn.innerHTML = orig;
-          btn.disabled = false;
-        }
-      } catch (err) {
-        alert('تعذر الاتصال بالخادم، يرجى المحاولة لاحقاً');
-        btn.innerHTML = orig;
-        btn.disabled = false;
-      }
-    });
-
-    /* ---- Settings dynamic loader ---- */
-    (function(){
-      fetch('/public-api/settings').then(function(r){return r.json();}).then(function(res){
-        var d = res.data; if(!d) return;
-        if(d.logo_url) document.querySelectorAll('.brand img').forEach(function(el){el.src=d.logo_url;});
-        if(d.store_name) document.querySelectorAll('.brand span').forEach(function(el){el.textContent=d.store_name;});
-        if(d.whatsapp) document.querySelectorAll('a.wapp-float').forEach(function(el){el.href='https://wa.me/'+d.whatsapp;});
-        if(d.phone) document.querySelectorAll('a[href^="tel:"]').forEach(function(el){el.href='tel:'+d.phone;});
-      }).catch(function(){});
-    })();
-
-    /* ---- Init ---- */
-    window.updateShipping = updateShipping;
-    BirdCart.updateCartCount();
-    renderSummary();
   </script>
 </body>
 
