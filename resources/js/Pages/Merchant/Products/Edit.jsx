@@ -332,10 +332,10 @@ export default function Edit({ product, categories, allProducts = [] }) {
 
     const getVariantPriceValue = (combo) => {
         const found = variantsStock.find(v => isComboEqual(v, combo));
-        if (found && found.price !== undefined && found.price !== null && found.price !== '') {
+        if (found && found.price !== undefined && found.price !== null) {
             return found.price;
         }
-        return data.price_after || '';
+        return '';
     };
 
     const getVariantStockValue = (combo) => {
