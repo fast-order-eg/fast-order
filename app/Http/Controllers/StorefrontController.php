@@ -591,15 +591,15 @@ s0.parentNode.insertBefore(s1,s0);
     top: 8px !important;
     left: 8px !important;
     right: auto !important;
-    background: #ef4444 !important;
+    background: #dc2626 !important;
     color: #ffffff !important;
-    padding: 2px 7px !important;
-    border-radius: 5px !important;
-    font-size: 0.72rem !important;
-    font-weight: 800 !important;
+    padding: 4px 10px !important;
+    border-radius: 9999px !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
     line-height: 1.2 !important;
     z-index: 5 !important;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25) !important;
     white-space: nowrap !important;
     pointer-events: none !important;
     border: none !important;
@@ -612,13 +612,13 @@ s0.parentNode.insertBefore(s1,s0);
     left: auto !important;
     background: #16a34a !important;
     color: #ffffff !important;
-    padding: 2px 7px !important;
-    border-radius: 5px !important;
-    font-size: 0.72rem !important;
+    padding: 4px 10px !important;
+    border-radius: 9999px !important;
+    font-size: 0.75rem !important;
     font-weight: 700 !important;
     line-height: 1.2 !important;
     z-index: 5 !important;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25) !important;
     white-space: nowrap !important;
     pointer-events: none !important;
   }
@@ -627,16 +627,16 @@ s0.parentNode.insertBefore(s1,s0);
     .discount-badge, .badge-discount {
       top: 6px !important;
       left: 6px !important;
-      padding: 2px 5px !important;
-      font-size: 0.68rem !important;
-      border-radius: 4px !important;
+      padding: 3px 8px !important;
+      font-size: 0.7rem !important;
+      border-radius: 9999px !important;
     }
     .free-shipping-badge {
       top: 6px !important;
       right: 6px !important;
-      padding: 2px 5px !important;
-      font-size: 0.68rem !important;
-      border-radius: 4px !important;
+      padding: 3px 8px !important;
+      font-size: 0.7rem !important;
+      border-radius: 9999px !important;
     }
   }
 
