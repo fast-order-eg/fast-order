@@ -79,9 +79,31 @@ body {
   background-color: var(--bg-main);
   color: var(--text-main);
   line-height: 1.75;
+  direction: rtl;
+  text-align: right;
   overflow-x: hidden;
   opacity: 0;
   transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html[dir="rtl"], html[dir="rtl"] body {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+html[dir="ltr"], html[dir="ltr"] body {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+.page-title, h1.page-title {
+  text-align: right;
+  margin: 20px 0 16px;
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+html[dir="ltr"] .page-title, html[dir="ltr"] h1.page-title {
+  text-align: left;
 }
 
 .ready body,

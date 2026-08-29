@@ -46,10 +46,31 @@ html, body {
   background-color: var(--bg-color);
   color: var(--text-color);
   line-height: 1.6;
-  direction: inherit;
+  direction: rtl;
+  text-align: right;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeSpeed;
+}
+
+html[dir="rtl"], html[dir="rtl"] body {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+html[dir="ltr"], html[dir="ltr"] body {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+.page-title, h1.page-title {
+  text-align: right;
+  margin: 20px 0 16px;
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+html[dir="ltr"] .page-title, html[dir="ltr"] h1.page-title {
+  text-align: left;
 }
 
 a {

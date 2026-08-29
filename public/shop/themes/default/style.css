@@ -38,9 +38,30 @@ html, body {
   background-color: var(--bg-color);
   color: var(--text-color);
   line-height: 1.6;
-  direction: inherit;
+  direction: rtl;
+  text-align: right;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+}
+
+html[dir="rtl"], html[dir="rtl"] body {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+html[dir="ltr"], html[dir="ltr"] body {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+.page-title, h1.page-title {
+  text-align: right;
+  margin: 20px 0 16px;
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+html[dir="ltr"] .page-title, html[dir="ltr"] h1.page-title {
+  text-align: left;
 }
 
 a {
@@ -477,11 +498,17 @@ img {
    ========================================================================== */
 .category-card {
   text-align: center;
-  padding: 20px;
+  padding: 0;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  height: 100%;
 }
 
 .category-card:hover {
@@ -491,18 +518,38 @@ img {
 }
 
 .category-card img {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  margin: 0 auto 12px;
-  object-fit: cover;
-  border: 2px solid var(--primary-light);
+  width: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  height: auto !important;
+  max-height: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  object-fit: cover !important;
+  border: none !important;
+  display: block !important;
+  transition: transform var(--transition-normal);
 }
 
-.category-card h3 {
-  font-size: 1.05rem;
+.category-card:hover img {
+  transform: scale(1.03);
+}
+
+.category-card .body {
+  padding: 12px 10px;
+  background: var(--card-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.category-card h3, .category-card .title {
+  font-size: 1rem;
   font-weight: 700;
   color: var(--text-color);
+  margin: 0;
+  text-align: center;
+  line-height: 1.4;
 }
 
 .category-chips {

@@ -66,7 +66,10 @@ class StorefrontController extends Controller
         $html = file_get_contents($filePath);
 
         // Adjust HTML lang and dir dynamically based on store locale (default to Arabic RTL)
-        $locale = Setting::get('store_language', 'ar') ?: 'ar';
+        $locale = $request->query('lang') ?? session('locale') ?? Setting::get('store_language', 'ar') ?: 'ar';
+        if (!in_array($locale, ['ar', 'en'])) {
+            $locale = 'ar';
+        }
         $dir = ($locale === 'en') ? 'ltr' : 'rtl';
         $html = preg_replace('/<html[^>]*>/i', '<html lang="' . $locale . '" dir="' . $dir . '">', $html, 1);
 
@@ -274,6 +277,63 @@ s0.parentNode.insertBefore(s1,s0);
   }
   html, body {
     font-family: var(--font-family) !important;
+    direction: rtl;
+    text-align: right;
+  }
+  html[dir="rtl"], html[dir="rtl"] body {
+    direction: rtl !important;
+    text-align: right !important;
+  }
+  html[dir="ltr"], html[dir="ltr"] body {
+    direction: ltr !important;
+    text-align: left !important;
+  }
+
+  /* Page Titles Alignment */
+  .page-title, h1.page-title {
+    text-align: right !important;
+  }
+  html[dir="ltr"] .page-title, html[dir="ltr"] h1.page-title {
+    text-align: left !important;
+  }
+
+  /* Category Card Square & Clean Styling (Remove circular borders & distortion) */
+  .category-card {
+    border-radius: var(--border-radius) !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+  }
+  .category-card img, #categoriesGrid .card img, .subcategories-grid .card img {
+    width: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    height: auto !important;
+    max-height: none !important;
+    object-fit: cover !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    display: block !important;
+  }
+  .category-card .body {
+    padding: 12px 10px !important;
+    background: #ffffff !important;
+    text-align: center !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .category-card .title, .category-card h3 {
+    margin: 0 !important;
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    color: #1f2937 !important;
   }
 
   /* Global Border Radius Customization Across Storefront */

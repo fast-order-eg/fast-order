@@ -122,8 +122,8 @@
             html += '<div class="subcategories-grid grid">';
 
             subcategories.forEach(sub => {
-              html += '<div class="card category-card" style="cursor: pointer; transition: all 0.3s ease;" onclick="location.href=\'/shop/category-products.html?id=' + sub.id + '&name=' + encodeURIComponent(sub.name) + '\'">';
-              html += '<img src="' + (sub.image_url || 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image') + '" alt="' + sub.name + '" style="width: 100%; height: 150px; object-fit: cover;">';
+              html += '<div class="card category-card" style="cursor: pointer;" onclick="location.href=\'/shop/category-products.html?id=' + sub.id + '&name=' + encodeURIComponent(sub.name) + '\'">';
+              html += '<img src="' + (sub.image_url || 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image') + '" alt="' + sub.name + '" style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block;">';
               html += '<div class="body">';
               html += '<h3 class="title">' + sub.name + '</h3>';
               html += '</div>';
@@ -146,8 +146,8 @@
             html += '</div>';
             html += '<div class="subcategories-grid grid">';
             subcategories.forEach(sub => {
-              html += '<div class="card category-card" style="cursor: pointer; transition: all 0.3s ease;" onclick="location.href=\'/shop/category-products.html?id=' + sub.id + '&name=' + encodeURIComponent(sub.name) + '\'">';
-              html += '<img src="' + (sub.image_url || 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image') + '" alt="' + sub.name + '" style="width: 100%; height: 150px; object-fit: cover;">';
+              html += '<div class="card category-card" style="cursor: pointer;" onclick="location.href=\'/shop/category-products.html?id=' + sub.id + '&name=' + encodeURIComponent(sub.name) + '\'">';
+              html += '<img src="' + (sub.image_url || 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image') + '" alt="' + sub.name + '" style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block;">';
               html += '<div class="body"><h3 class="title">' + sub.name + '</h3>';
               html += '</div></div>';
             });
@@ -162,8 +162,8 @@
           html += '<h2 style="color: #8b4513; font-size: 1.5rem; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.1); font-weight: 700; padding: 1rem;">أقسام أخرى</h2>';
           html += '</div><div class="subcategories-grid grid">';
           categoriesWithoutMainCategory.forEach(cat => {
-            html += '<div class="card category-card" style="cursor: pointer; transition: all 0.3s ease;" onclick="location.href=\'/shop/category-products.html?id=' + cat.id + '&name=' + encodeURIComponent(cat.name) + '\'">';
-            html += '<img src="' + (cat.image_url || 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image') + '" alt="' + cat.name + '" style="width: 100%; height: 150px; object-fit: cover;">';
+            html += '<div class="card category-card" style="cursor: pointer;" onclick="location.href=\'/shop/category-products.html?id=' + cat.id + '&name=' + encodeURIComponent(cat.name) + '\'">';
+            html += '<img src="' + (cat.image_url || 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image') + '" alt="' + cat.name + '" style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block;">';
             html += '<div class="body"><h3 class="title">' + cat.name + '</h3>';
             html += '</div></div>';
           });
