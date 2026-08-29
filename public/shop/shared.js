@@ -396,6 +396,118 @@ function productCard(p){
   return card;
 }
 
+function enableDragScroll(sliderEl) {
+  let isDown = false;
+  let startX = 0;
+  let scrollLeft = 0;
+  let moved = false;
+
+  sliderEl.addEventListener('mousedown', (e) => {
+    isDown = true;
+    moved = false;
+    sliderEl.classList.add('dragging');
+    startX = e.pageX - sliderEl.offsetLeft;
+    scrollLeft = sliderEl.scrollLeft;
+  });
+
+  window.addEventListener('mouseleave', () => {
+    if (!isDown) return;
+    isDown = false;
+    sliderEl.classList.remove('dragging');
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (!isDown) return;
+    isDown = false;
+    sliderEl.classList.remove('dragging');
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - sliderEl.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    if (Math.abs(walk) > 5) {
+      moved = true;
+    }
+    sliderEl.scrollLeft = scrollLeft - walk;
+  });
+
+  sliderEl.addEventListener('click', (e) => {
+    if (moved) {
+      e.preventDefault();
+      e.stopPropagation();
+      moved = false;
+    }
+  }, true);
+}
+
+function makeProductSlider(gridEl, isCategories = false) {
+  if (!gridEl) return;
+  gridEl.classList.add('product-slider-track');
+  
+  let wrapper = gridEl.parentElement;
+  if (!wrapper || !wrapper.classList.contains('product-slider-wrapper')) {
+    wrapper = document.createElement('div');
+    wrapper.className = 'product-slider-wrapper';
+    gridEl.parentNode.insertBefore(wrapper, gridEl);
+    wrapper.appendChild(gridEl);
+    
+    const prevBtn = document.createElement('button');
+    prevBtn.type = 'button';
+    prevBtn.className = 'slider-arrow-btn prev-arrow';
+    prevBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+    prevBtn.setAttribute('aria-label', 'السابق');
+    
+    const nextBtn = document.createElement('button');
+    nextBtn.type = 'button';
+    nextBtn.className = 'slider-arrow-btn next-arrow';
+    nextBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+    nextBtn.setAttribute('aria-label', 'التالي');
+    
+    prevBtn.onclick = (e) => {
+      e.preventDefault();
+      const scrollAmt = gridEl.clientWidth * 0.75;
+      gridEl.scrollBy({ left: scrollAmt, behavior: 'smooth' });
+    };
+    nextBtn.onclick = (e) => {
+      e.preventDefault();
+      const scrollAmt = gridEl.clientWidth * 0.75;
+      gridEl.scrollBy({ left: -scrollAmt, behavior: 'smooth' });
+    };
+    
+    wrapper.appendChild(prevBtn);
+    wrapper.appendChild(nextBtn);
+    
+    enableDragScroll(gridEl);
+    
+    let autoTimer = null;
+    let isInteracting = false;
+    
+    function startAuto() {
+      if (autoTimer) clearInterval(autoTimer);
+      autoTimer = setInterval(() => {
+        if (!isInteracting && gridEl && gridEl.children.length > 2) {
+          const maxScroll = gridEl.scrollWidth - gridEl.clientWidth;
+          const currentScroll = Math.abs(gridEl.scrollLeft);
+          if (currentScroll >= maxScroll - 20) {
+            gridEl.scrollTo({ left: 0, behavior: 'smooth' });
+          } else {
+            gridEl.scrollBy({ left: -240, behavior: 'smooth' });
+          }
+        }
+      }, 3500);
+    }
+    
+    wrapper.addEventListener('mouseenter', () => { isInteracting = true; });
+    wrapper.addEventListener('mouseleave', () => { isInteracting = false; });
+    wrapper.addEventListener('touchstart', () => { isInteracting = true; }, { passive: true });
+    wrapper.addEventListener('touchend', () => { setTimeout(() => { isInteracting = false; }, 2500); }, { passive: true });
+    
+    startAuto();
+  }
+}
+
 function renderProducts(root, items){
   root.innerHTML='';
   const currentLang = getStorefrontLang();
@@ -403,11 +515,20 @@ function renderProducts(root, items){
     root.innerHTML='<p class="muted">' + (currentLang === 'en' ? 'No products to display.' : 'لا توجد منتجات لعرضها.') + '</p>'; 
     return; 
   }
-  const frag = document.createDocumentFragment(); items.forEach(p=> frag.appendChild(productCard(p))); root.appendChild(frag);
+  const frag = document.createDocumentFragment(); 
+  items.forEach(p=> frag.appendChild(productCard(p))); 
+  root.appendChild(frag);
+
+  // Auto-convert to horizontal slider on Homepage only
+  const isHomepage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/shop' || window.location.pathname === '/shop/' || !window.location.pathname.includes('.html');
+  const isTargetGrid = root.id === 'offersGrid' || root.id === 'productsGrid' || root.id === 'homeProductsGrid';
+  if (isHomepage && isTargetGrid && items.length > 2) {
+    makeProductSlider(root, false);
+  }
 }
 
 function categoryCard(c){
-  const card = createEl('div','card');
+  const card = createEl('div','card category-card');
   card.style.cursor = 'pointer';
   card.addEventListener('click', () => {
     window.location.href = `/shop/category-products.html?id=${c.id}&name=${encodeURIComponent(c.name || '')}`;
@@ -422,43 +543,8 @@ function categoryCard(c){
   const title = createEl('h3','title'); 
   title.textContent = c.name || '';
   
-  // Add click indicator
-  const clickIndicator = createEl('div', 'click-indicator');
-  const currentLang = getStorefrontLang();
-  clickIndicator.innerHTML = currentLang === 'en' ? '<i class="fa fa-arrow-right"></i>' : '<i class="fa fa-arrow-left"></i>';
-  clickIndicator.style.cssText = `
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: rgba(99, 102, 241, 0.9);
-    color: white;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  `;
-  
-  card.style.position = 'relative';
-  card.addEventListener('mouseenter', () => {
-    clickIndicator.style.opacity = '1';
-    card.style.transform = 'translateY(-4px)';
-    card.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
-  });
-  
-  card.addEventListener('mouseleave', () => {
-    clickIndicator.style.opacity = '0';
-    card.style.transform = 'translateY(0)';
-    card.style.boxShadow = 'var(--shadow)';
-  });
-  
   body.append(title); 
   card.appendChild(body);
-  card.appendChild(clickIndicator);
   
   return card;
 }
@@ -471,7 +557,15 @@ function renderCategories(root, items){
     return; 
   }
   const frag = document.createDocumentFragment();
-  items.forEach(c=> frag.appendChild(categoryCard(c))); root.appendChild(frag);
+  items.forEach(c=> frag.appendChild(categoryCard(c))); 
+  root.appendChild(frag);
+
+  // Auto-convert to horizontal slider on Homepage only
+  const isHomepage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/shop' || window.location.pathname === '/shop/' || !window.location.pathname.includes('.html');
+  const isTargetGrid = root.id === 'categoriesGrid';
+  if (isHomepage && isTargetGrid && items.length > 2) {
+    makeProductSlider(root, true);
+  }
 }
 
 function renderSkeletonProducts(root, count = 4) {

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/shop/styles.css?v=202604021">
+  <link rel="stylesheet" href="/shop/styles.css?v=20260829_2">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <meta name="robots" content="noindex">
   <meta http-equiv="Cache-Control" content="no-store" />
@@ -168,10 +168,91 @@
       }
     }
 
+    function initHeroSliderDragAndSwipe() {
+      const sliderContainer = document.querySelector('.slider-container');
+      if (!sliderContainer || sliderContainer.dataset.dragInit) return;
+      sliderContainer.dataset.dragInit = 'true';
+
+      let isDown = false;
+      let startX = 0;
+      let moved = false;
+
+      sliderContainer.style.cursor = 'grab';
+
+      sliderContainer.addEventListener('mousedown', (e) => {
+        if (e.target.closest('button')) return;
+        isDown = true;
+        moved = false;
+        startX = e.pageX;
+        sliderContainer.style.cursor = 'grabbing';
+        stopAutoSlide();
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        const diffX = e.pageX - startX;
+        if (Math.abs(diffX) > 8) {
+          moved = true;
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (!isDown) return;
+        isDown = false;
+        sliderContainer.style.cursor = 'grab';
+
+        const diffX = e.pageX - startX;
+        if (Math.abs(diffX) > 40) {
+          if (diffX > 0) {
+            changeSlide(-1);
+          } else {
+            changeSlide(1);
+          }
+        } else {
+          startAutoSlide();
+        }
+      });
+
+      let touchStartX = 0;
+      sliderContainer.addEventListener('touchstart', (e) => {
+        if (!e.touches || !e.touches[0]) return;
+        touchStartX = e.touches[0].pageX;
+        moved = false;
+        stopAutoSlide();
+      }, { passive: true });
+
+      sliderContainer.addEventListener('touchmove', () => {
+        moved = true;
+      }, { passive: true });
+
+      sliderContainer.addEventListener('touchend', (e) => {
+        if (!e.changedTouches || !e.changedTouches[0]) return;
+        const diffX = e.changedTouches[0].pageX - touchStartX;
+        if (Math.abs(diffX) > 40) {
+          if (diffX > 0) {
+            changeSlide(-1);
+          } else {
+            changeSlide(1);
+          }
+        } else {
+          startAutoSlide();
+        }
+      }, { passive: true });
+
+      sliderContainer.addEventListener('click', (e) => {
+        if (moved) {
+          e.preventDefault();
+          e.stopPropagation();
+          moved = false;
+        }
+      }, true);
+    }
+
     function initSlider() {
       slides = document.querySelectorAll('.slide');
       totalSlides = slides.length;
       renderSliderDots();
+      initHeroSliderDragAndSwipe();
 
       if (totalSlides > 0) {
         // Ensure all images are loaded before starting
@@ -319,7 +400,7 @@
       }
     });
   </script>
-  <script src="/shop/shared.js?v=20260714"></script>
+  <script src="/shop/shared.js?v=20260829_2"></script>
   <script>
     const yearEl = document.getElementById('year'); if (yearEl) yearEl.textContent = new Date().getFullYear();
 

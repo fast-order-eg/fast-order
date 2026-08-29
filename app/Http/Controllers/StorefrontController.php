@@ -439,6 +439,94 @@ s0.parentNode.insertBefore(s1,s0);
     }
   }
 
+  /* Horizontal Swipeable Product & Category Carousel */
+  .product-slider-wrapper {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .product-slider-track {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 16px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 6px 4px 14px 4px !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    scroll-behavior: smooth;
+    cursor: grab;
+  }
+  .product-slider-track::-webkit-scrollbar {
+    display: none !important;
+  }
+  .product-slider-track.dragging {
+    cursor: grabbing !important;
+    scroll-snap-type: none !important;
+    scroll-behavior: auto !important;
+  }
+  .product-slider-track .card {
+    flex: 0 0 230px !important;
+    min-width: 230px !important;
+    max-width: 230px !important;
+    scroll-snap-align: start;
+    height: 100%;
+  }
+  @media (min-width: 1024px) {
+    .product-slider-track .card {
+      flex: 0 0 250px !important;
+      min-width: 250px !important;
+      max-width: 250px !important;
+    }
+  }
+  @media (max-width: 768px) {
+    .product-slider-track {
+      gap: 10px !important;
+      padding: 4px 2px 10px 2px !important;
+    }
+    .product-slider-track .card {
+      flex: 0 0 calc(50% - 5px) !important;
+      min-width: calc(50% - 5px) !important;
+      max-width: calc(50% - 5px) !important;
+    }
+    .slider-arrow-btn {
+      display: none !important;
+    }
+  }
+
+  .slider-arrow-btn {
+    position: absolute;
+    top: 45%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #0f172a;
+    color: #ffffff;
+    border: 1px solid #334155;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+    opacity: 0.9;
+  }
+  .slider-arrow-btn:hover {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+    background: #000000;
+  }
+  .slider-arrow-btn.prev-arrow {
+    right: -14px;
+  }
+  .slider-arrow-btn.next-arrow {
+    left: -14px;
+  }
+
   /* Global Border Radius Customization Across Storefront */
   .card, .category-card, .product-card-skeleton, .product-card,
   .hero-slider .slider-container, .hero-slider .slide,
