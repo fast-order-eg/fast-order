@@ -655,20 +655,43 @@ html[dir="ltr"] .page-title,html[dir="ltr"] h1.page-title{text-align:left;}
   pointer-events: none !important;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .discount-badge, .badge-discount {
-    top: 6px !important;
-    left: 6px !important;
-    padding: 3px 8px !important;
-    font-size: 0.7rem !important;
-    border-radius: 9999px !important;
+    top: 5px !important;
+    left: 5px !important;
+    padding: 2px 5px !important;
+    font-size: 0.58rem !important;
+    font-weight: 700 !important;
+    line-height: 1.1 !important;
+    border-radius: 4px !important;
+    max-width: 48% !important;
+    box-shadow: 0 1px 4px rgba(220, 38, 38, 0.2) !important;
   }
   .free-shipping-badge {
-    top: 6px !important;
-    right: 6px !important;
-    padding: 3px 8px !important;
-    font-size: 0.7rem !important;
-    border-radius: 9999px !important;
+    top: 5px !important;
+    right: 5px !important;
+    padding: 2px 5px !important;
+    font-size: 0.58rem !important;
+    font-weight: 700 !important;
+    line-height: 1.1 !important;
+    border-radius: 4px !important;
+    max-width: 48% !important;
+    box-shadow: 0 1px 4px rgba(22, 163, 74, 0.2) !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .discount-badge, .badge-discount {
+    top: 4px !important;
+    left: 4px !important;
+    padding: 1.5px 4px !important;
+    font-size: 0.52rem !important;
+  }
+  .free-shipping-badge {
+    top: 4px !important;
+    right: 4px !important;
+    padding: 1.5px 4px !important;
+    font-size: 0.52rem !important;
   }
 }
 
@@ -1072,31 +1095,6 @@ html[dir="ltr"] .page-title,html[dir="ltr"] h1.page-title{text-align:left;}
   
   .container main .filter-dropdown {
     align-self: center;
-  }
-}
-
-/* Free Shipping Badge Styles */
-.free-shipping-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: #16a34a;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  z-index: 2;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  white-space: nowrap;
-}
-
-@media (max-width: 640px) {
-  .free-shipping-badge {
-    font-size: 0.7rem;
-    padding: 3px 6px;
-    top: 6px;
-    right: 6px;
   }
 }
 
