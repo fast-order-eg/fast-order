@@ -683,7 +683,6 @@ s0.parentNode.insertBefore(s1,s0);
     margin: 0 auto !important;
     padding: 10px 16px !important;
     box-sizing: border-box !important;
-    overflow: hidden !important;
   }
   header.header .brand, header.header-layout-classic .brand {
     order: 1 !important;
@@ -792,7 +791,6 @@ s0.parentNode.insertBefore(s1,s0);
       box-sizing: border-box !important;
       width: 100% !important;
       max-width: 100vw !important;
-      overflow: hidden !important;
       gap: 6px !important;
     }
     header.header .brand, header.header-layout-classic .brand, header.header-layout-centered .brand {
@@ -859,18 +857,21 @@ s0.parentNode.insertBefore(s1,s0);
       flex-shrink: 0 !important;
     }
     header.header .nav, header.header-layout-classic .nav, header.header-layout-centered .nav {
-      position: fixed !important;
-      top: 52px !important;
+      position: absolute !important;
+      top: 100% !important;
       right: 0 !important;
       left: 0 !important;
+      width: 100% !important;
       background: #ffffff !important;
+      border-top: 1px solid #f1f5f9 !important;
       border-bottom: 1px solid #e5e7eb !important;
       flex-direction: column !important;
       padding: 12px 16px !important;
       gap: 8px !important;
       display: none !important;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important;
-      z-index: 100 !important;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+      z-index: 9999 !important;
+      margin: 0 !important;
     }
     header.header .nav.open, header.header-layout-classic .nav.open, header.header-layout-centered .nav.open {
       display: flex !important;
