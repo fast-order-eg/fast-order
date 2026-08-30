@@ -120,6 +120,7 @@
         const nameEl = document.getElementById('siteName');
         if (nameEl) nameEl.textContent = data.store_name;
         document.title = data.store_name;
+        if (typeof adjustBrandFontSize === 'function') adjustBrandFontSize();
       }
       if (data.phone) {
         const callBtn = document.getElementById('callBtn');

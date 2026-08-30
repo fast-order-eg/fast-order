@@ -944,7 +944,25 @@ s0.parentNode.insertBefore(s1,s0);
         }
 
         // Dynamically replace store name & logo in body elements if they exist
-        $html = preg_replace('/<span id="siteName">.*?<\/span>/i', '<span id="siteName">' . e($storeName) . '</span>', $html);
+        $words = array_values(array_filter(preg_split('/\s+/u', trim($storeName))));
+        $wordCount = count($words);
+        $charCount = mb_strlen($storeName);
+
+        $longClass = '';
+        $spanClass = '';
+        if ($wordCount >= 4 || $charCount >= 20) {
+            $longClass = ' very-long-name';
+            $spanClass = 'brand-very-long-name';
+        } elseif ($wordCount >= 3 || $charCount >= 12) {
+            $longClass = ' long-name';
+            $spanClass = 'brand-long-name';
+        }
+
+        if ($longClass) {
+            $html = preg_replace('/(<a[^>]*class=["\'][^"\']*brand)([^"\']*["\'])/i', '$1' . $longClass . '$2', $html);
+        }
+
+        $html = preg_replace('/<span id="siteName"[^>]*>.*?<\/span>/i', '<span id="siteName"' . ($spanClass ? ' class="' . $spanClass . '"' : '') . '>' . e($storeName) . '</span>', $html);
         if ($logo) {
             $logoUrl = asset('storage/' . $logo);
             $html = preg_replace('/(<img id="siteLogo"[^>]*src=")[^"]*("[^>]*>)/i', '$1' . e($logoUrl) . '$2', $html);

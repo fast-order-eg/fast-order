@@ -1413,3 +1413,33 @@ window.submitQmAddToCart = function() {
   }
 };
 
+// ======================================
+// Auto-scale Brand Name for Long Store Names (3+ words)
+// ======================================
+function adjustBrandFontSize() {
+  const nameEl = document.getElementById('siteName');
+  if (!nameEl) return;
+  const text = (nameEl.textContent || '').trim();
+  if (!text) return;
+  const words = text.split(/\s+/).filter(Boolean);
+  const brandEl = nameEl.closest('.brand');
+
+  nameEl.classList.remove('brand-long-name', 'brand-very-long-name');
+  if (brandEl) brandEl.classList.remove('long-name', 'very-long-name');
+
+  if (words.length >= 4 || text.length >= 20) {
+    nameEl.classList.add('brand-very-long-name');
+    if (brandEl) brandEl.classList.add('very-long-name');
+  } else if (words.length >= 3 || text.length >= 12) {
+    nameEl.classList.add('brand-long-name');
+    if (brandEl) brandEl.classList.add('long-name');
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', adjustBrandFontSize);
+} else {
+  adjustBrandFontSize();
+}
+window.adjustBrandFontSize = adjustBrandFontSize;
+
