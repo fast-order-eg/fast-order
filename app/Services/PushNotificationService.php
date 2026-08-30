@@ -36,17 +36,17 @@ class PushNotificationService
         try {
             $logo = \App\Models\Setting::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('key', 'logo')->value('value');
             if ($logo && \Illuminate\Support\Facades\Storage::disk('public')->exists($logo)) {
-                return asset('storage/' . $logo);
+                return url('storage/' . $logo);
             }
             $tenant = \App\Models\Tenant::find($tenantId);
             if ($tenant && $tenant->logo && \Illuminate\Support\Facades\Storage::disk('public')->exists($tenant->logo)) {
-                return asset('storage/' . $tenant->logo);
+                return url('storage/' . $tenant->logo);
             }
         } catch (\Throwable $e) {
             // Ignore
         }
 
-        return asset('images/notification-icon.png');
+        return url('images/logo.png');
     }
 
     /**
@@ -69,7 +69,7 @@ class PushNotificationService
             'body'  => $body,
             'url'   => $url,
             'icon'  => $notificationIcon,
-            'badge' => '/images/notification-badge.png',
+            'badge' => url('images/logo.png'),
             'data'  => array_merge($extra, ['url' => $url]),
         ]);
 

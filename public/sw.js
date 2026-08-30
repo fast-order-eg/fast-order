@@ -1,4 +1,4 @@
-﻿// FastOrder Service Worker - Push Notifications
+// FastOrder Service Worker - Push Notifications
 self.addEventListener('install', function() { self.skipWaiting(); });
 self.addEventListener('activate', function(e) { e.waitUntil(clients.claim()); });
 
@@ -11,8 +11,8 @@ self.addEventListener('push', function(event) {
     var title = data.title || 'FastOrder';
     var options = {
         body: data.body || '',
-        icon: data.icon || '/images/notification-icon.png',
-        badge: data.badge || '/images/notification-badge.png',
+        icon: data.icon || '/images/logo.png',
+        badge: data.badge || '/images/logo.png',
         tag: 'fo-' + (data.data && data.data.order_id ? data.data.order_id : Date.now()),
         renotify: true,
         requireInteraction: false,

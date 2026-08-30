@@ -130,14 +130,14 @@ class OrderController extends Controller
     public function unlock(Order $order)
     {
         if ($order->is_unlocked) {
-            return redirect()->route('merchant.orders.show', $order->id);
+            return redirect("/admin/orders/{$order->id}");
         }
 
         $tenant = app(\App\Models\Tenant::class);
         $fee    = 2;
 
         if (($tenant->wallet_balance ?? 0) < $fee) {
-            return redirect()->route('merchant.orders.index')
+            return redirect('/admin/orders')
                 ->with('insufficient_balance', 'رصيد المحفظة غير كافٍ. يرجى شحن المحفظة لعرض تفاصيل الطلب.');
         }
 
@@ -150,13 +150,13 @@ class OrderController extends Controller
         ]);
         $order->update(['is_unlocked' => true, 'unlocked_at' => now()]);
 
-        return redirect()->route('merchant.orders.show', $order->id);
+        return redirect("/admin/orders/{$order->id}");
     }
 
     /**
      * عرض تفاصيل الطلب
      * الطلبات الجديدة تُفتح تلقائياً عند الإنشاء.
-     * الطلبات القديمة المقفولة: لو في رصيد → خصم وفتح. لو لا → رجوع بـ flash.
+     * الطلبات القديمة المقفولة: لو في رصيد → خصم وفتح. لو لا → رجوع لصفحة الطلبات مع رسالة الشحن.
      */
     public function show(Order $order)
     {
@@ -165,7 +165,7 @@ class OrderController extends Controller
             $fee    = 2;
 
             if (($tenant->wallet_balance ?? 0) < $fee) {
-                return redirect()->route('merchant.orders.index')
+                return redirect('/admin/orders')
                     ->with('insufficient_balance', 'رصيد المحفظة غير كافٍ. يرجى شحن المحفظة لعرض تفاصيل الطلب.');
             }
 
