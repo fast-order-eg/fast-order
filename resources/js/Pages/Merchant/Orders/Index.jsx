@@ -407,13 +407,10 @@ export default function OrdersIndex({ orders, totalAmount, statusCounts, product
                         {orders.data.length > 0 ? (
                             orders.data.map((order, idx) => (
                                 <div key={order.id} className="p-4 bg-white space-y-3">
-                                    <div className="flex justify-between items-center">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded font-bold">
-                                                # {(orders.current_page - 1) * orders.per_page + idx + 1}
-                                            </span>
-                                            <span className="font-mono font-bold text-gray-900 text-sm">
-                                                رقم: {order.reference_number}
+                                    <div className="flex justify-between items-center gap-2">
+                                        <div className="flex items-center gap-1.5 flex-nowrap shrink-0">
+                                            <span className="font-mono font-extrabold text-gray-900 text-xs sm:text-sm bg-gray-100 border border-gray-200 px-2 py-0.5 rounded-md whitespace-nowrap inline-flex items-center" dir="ltr">
+                                                #{order.reference_number}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-1.5 flex-wrap justify-end">

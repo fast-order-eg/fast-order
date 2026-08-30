@@ -29,9 +29,30 @@ class PushNotificationService
     }
 
     /**
+     * الحصول على رابط لوجو المتجر للإشعار.
+     */
+    public function getTenantLogo(int $tenantId): string
+    {
+        try {
+            $logo = \App\Models\Setting::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('key', 'logo')->value('value');
+            if ($logo && \Illuminate\Support\Facades\Storage::disk('public')->exists($logo)) {
+                return asset('storage/' . $logo);
+            }
+            $tenant = \App\Models\Tenant::find($tenantId);
+            if ($tenant && $tenant->logo && \Illuminate\Support\Facades\Storage::disk('public')->exists($tenant->logo)) {
+                return asset('storage/' . $tenant->logo);
+            }
+        } catch (\Throwable $e) {
+            // Ignore
+        }
+
+        return asset('images/notification-icon.png');
+    }
+
+    /**
      * ارسال اشعار لكل اجهزة التاجر المشتركة.
      */
-    public function sendToTenant(int $tenantId, string $title, string $body, string $url = '', array $extra = []): void
+    public function sendToTenant(int $tenantId, string $title, string $body, string $url = '', array $extra = [], ?string $icon = null): void
     {
         $subscriptions = PushSubscription::where('tenant_id', $tenantId)
             ->where('is_active', true)
@@ -41,13 +62,15 @@ class PushNotificationService
             return;
         }
 
+        $notificationIcon = $icon ?: $this->getTenantLogo($tenantId);
+
         $payload = json_encode([
             'title' => $title,
             'body'  => $body,
             'url'   => $url,
-            'icon'  => '/images/notification-icon.png',
+            'icon'  => $notificationIcon,
             'badge' => '/images/notification-badge.png',
-            'data'  => $extra,
+            'data'  => array_merge($extra, ['url' => $url]),
         ]);
 
         $failedIds = [];
@@ -86,16 +109,34 @@ class PushNotificationService
     {
         $orderRef = $orderData['reference_number'] ?? '#???';
         $total    = number_format((float)($orderData['total'] ?? 0), 2);
-        $customer = $orderData['customer_name'] ?? 'عميل';
+        
+        // استخراج الاسم الأول فقط (فردي)
+        $customerFullName = trim($orderData['customer_name'] ?? 'عميل');
+        $nameParts = preg_split('/\s+/', $customerFullName);
+        $firstName = !empty($nameParts[0]) ? $nameParts[0] : 'عميل';
+
         $orderId  = $orderData['id'] ?? '';
-        $url      = "/admin/orders/{$orderId}";
+        
+        // فحص باقة التاجر والرصيد لتحديد مسار التوجيه
+        $tenant = \App\Models\Tenant::find($tenantId);
+        $isLocked = false;
+        if ($tenant && $tenant->isCommissionPlan()) {
+            if (($tenant->wallet_balance ?? 0) < 2) {
+                $isLocked = true;
+            }
+        }
+
+        // إذا كان الطلب مقفولاً بسبب الرصيد يتم توجيهه إلى صفحة الطلبات العامة فقط
+        $url = $isLocked ? "/admin/orders" : "/admin/orders/{$orderId}";
+        $storeLogo = $this->getTenantLogo($tenantId);
 
         $this->sendToTenant(
             $tenantId,
             "طلب جديد {$orderRef}",
-            "العميل: {$customer} | {$total} ج.م",
+            "العميل: {$firstName} | {$total} ج.م",
             $url,
-            ['order_id' => $orderId, 'type' => 'new_order']
+            ['order_id' => $orderId, 'type' => 'new_order'],
+            $storeLogo
         );
     }
 
