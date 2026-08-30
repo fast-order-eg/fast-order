@@ -348,6 +348,13 @@ class CheckoutController extends Controller
                 // لا نوقف الطلب بسبب فشل الـ webhook
             }
 
+            // إرسال حدث الشراء عبر Conversion API (CAPI Server-Side Tracking)
+            try {
+                \App\Services\ConversionApiService::sendPurchaseEvent($order, $request->ip(), $request->userAgent());
+            } catch (\Throwable $e) {
+                \Log::warning('CAPI sendPurchaseEvent failed on checkout: ' . $e->getMessage());
+            }
+
             // Web Push Notification للتاجر
             try {
                 $pushSettings = \App\Models\Setting::get('push_notifications', null);

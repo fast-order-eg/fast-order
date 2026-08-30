@@ -120,6 +120,13 @@ class OrderController extends Controller
         // Trigger Webhook order.created
         \App\Services\WebhookSender::trigger('order.created', $order->toArray(), $order->tenant_id);
 
+        // إرسال حدث الشراء عبر Conversion API (CAPI Server-Side Tracking)
+        try {
+            \App\Services\ConversionApiService::sendPurchaseEvent($order, $request->ip(), $request->userAgent());
+        } catch (\Throwable $e) {
+            \Log::warning('CAPI sendPurchaseEvent failed on store: ' . $e->getMessage());
+        }
+
         // Web Push Notification للتاجر
         try {
             $pushSettings = \App\Models\Setting::get('push_notifications', null, $order->tenant_id);
@@ -341,6 +348,13 @@ class OrderController extends Controller
             try {
                 \App\Services\WebhookSender::trigger('order.created', $order->toArray(), $order->tenant_id);
             } catch (\Throwable $e) {}
+
+            // إرسال حدث الشراء عبر Conversion API (CAPI Server-Side Tracking)
+            try {
+                \App\Services\ConversionApiService::sendPurchaseEvent($order, $request->ip(), $request->userAgent());
+            } catch (\Throwable $e) {
+                \Log::warning('CAPI sendPurchaseEvent failed on storeApi: ' . $e->getMessage());
+            }
 
             // Web Push Notification للتاجر
             try {

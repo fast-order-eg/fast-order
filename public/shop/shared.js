@@ -47,11 +47,18 @@
   }
 
   // دالة موحدة لتتبع حدث الشراء (Purchase) لكل البيكسلات (فيسبوك، تيك توك، سناب شات، وجوجل أناليتكس)
-  window.trackPurchaseEvent = function(totalValue, items, orderId) {
+  window.trackPurchaseEvent = function(totalValue, items, orderId, orderRef) {
     var val = Number(totalValue) || 0;
     var contentIds = (items || []).map(function(i) { return String(i.id || i.product_id || ''); });
 
-    // 1. Facebook Pixel
+    var eventId = String(orderId || '');
+    if (orderRef && orderId && !eventId.startsWith('ORDER_')) {
+      eventId = 'ORDER_' + orderId + '_' + orderRef;
+    } else if (orderRef && !orderId) {
+      eventId = 'ORDER_' + orderRef;
+    }
+
+    // 1. Facebook Pixel (Meta)
     if (typeof fbq !== 'undefined') {
       try {
         var fbParams = {
@@ -60,8 +67,8 @@
           content_type: 'product',
           content_ids: contentIds
         };
-        if (orderId) {
-          fbq('track', 'Purchase', fbParams, { eventID: String(orderId) });
+        if (eventId) {
+          fbq('track', 'Purchase', fbParams, { eventID: eventId });
         } else {
           fbq('track', 'Purchase', fbParams);
         }
@@ -73,11 +80,13 @@
       try {
         ttq.track('PlaceAnOrder', {
           value: val,
-          currency: 'EGP'
+          currency: 'EGP',
+          event_id: eventId
         });
         ttq.track('CompletePayment', {
           value: val,
-          currency: 'EGP'
+          currency: 'EGP',
+          event_id: eventId
         });
       } catch (e) { console.error('TikTok Purchase Error', e); }
     }
@@ -88,7 +97,8 @@
         snaptr('track', 'PURCHASE', {
           price: val,
           currency: 'EGP',
-          transaction_id: String(orderId || '')
+          event_tag: eventId,
+          transaction_id: eventId
         });
       } catch (e) { console.error('Snapchat Purchase Error', e); }
     }
@@ -97,7 +107,7 @@
     if (typeof gtag !== 'undefined') {
       try {
         gtag('event', 'purchase', {
-          transaction_id: String(orderId || ''),
+          transaction_id: eventId,
           value: val,
           currency: 'EGP'
         });

@@ -282,6 +282,16 @@ Route::prefix('admin')->group(function () {
                 Route::patch('/{provider}/toggle', [\App\Http\Controllers\Merchant\PaymentGatewaysController::class, 'toggle'])->name('.toggle');
             });
 
+            // Conversion API (CAPI) management routes
+            Route::prefix('conversion-api')->name('merchant.conversion-api.')->group(function () {
+                Route::get('/', [\App\Http\Controllers\Merchant\ConversionApiController::class, 'index'])->name('index');
+                Route::post('/', [\App\Http\Controllers\Merchant\ConversionApiController::class, 'store'])->name('store');
+                Route::put('/{conversionApi}', [\App\Http\Controllers\Merchant\ConversionApiController::class, 'update'])->name('update');
+                Route::delete('/{conversionApi}', [\App\Http\Controllers\Merchant\ConversionApiController::class, 'destroy'])->name('destroy');
+                Route::patch('/{conversionApi}/toggle', [\App\Http\Controllers\Merchant\ConversionApiController::class, 'toggle'])->name('toggle');
+                Route::post('/{conversionApi}/test', [\App\Http\Controllers\Merchant\ConversionApiController::class, 'testEvent'])->name('test');
+            });
+
             // Coming Soon pages (Phase 67)
             Route::get('/ai-tools', fn() => \Inertia\Inertia::render('Merchant/ComingSoon/AiTools'))->name('merchant.ai-tools');
 
