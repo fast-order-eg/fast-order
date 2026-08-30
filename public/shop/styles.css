@@ -367,9 +367,7 @@ html[dir="ltr"] .page-title,html[dir="ltr"] h1.page-title{text-align:left;}
 .p-gallery{position:relative}
 .p-main{position:relative;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background:#fff}
 .p-main img{width:100%;height:360px;object-fit:contain;display:block;background:#fff}
-.p-arrow{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border:none;border-radius:50%;background:rgba(0,0,0,.4);color:#fff;font-size:20px;cursor:pointer}
-.p-prev{right:10px}
-.p-next{left:10px}
+.p-arrow{display:none !important;visibility:hidden !important;opacity:0 !important;pointer-events:none !important}
 /* Product thumbnails horizontal scroll - Mobile & Desktop optimized */
 .p-thumbs{
   display:flex !important;

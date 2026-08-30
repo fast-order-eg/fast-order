@@ -624,6 +624,14 @@ s0.parentNode.insertBefore(s1,s0);
     color: var(--primary-color) !important;
   }
 
+  /* Hide gallery navigation arrows - swipe only */
+  .p-arrow, .lightbox .p-arrow {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
   /* Discount & Shipping Badges on Product Card */
   .discount-badge, .badge-discount {
     position: absolute !important;

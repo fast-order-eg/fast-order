@@ -438,8 +438,6 @@
             <div class="p-gallery">
               <div class="p-main">
                 <img id="pMain" src="${imgs[0] || ''}" alt="${p.name || ''}">
-                <button class="p-arrow p-prev" aria-label="السابق">‹</button>
-                <button class="p-arrow p-next" aria-label="التالي">›</button>
               </div>
               <div class="p-thumbs">${imgs.map((src, i) => `<button class="p-thumb ${i === 0 ? 'active' : ''}" data-idx="${i}"><img src="${src}" alt="thumb ${i + 1}"></button>`).join('')}</div>
             </div>
@@ -509,9 +507,7 @@
         ${descList ? `<div class="card" style="padding:16px;margin-top:12px"><h3 style="margin:0 0 10px">المواصفات</h3><ul class="desc-list">${descList}</ul></div>` : ''}
         <div class="lightbox" id="pLightbox">
           <button class="close" aria-label="إغلاق">✕</button>
-          <button class="p-arrow p-prev" aria-label="السابق">‹</button>
           <img id="lbImg" src="${imgs[0] || ''}" alt="">
-          <button class="p-arrow p-next" aria-label="التالي">›</button>
         </div>
         <div class="sticky-buy-bar">
           <button class="btn btn-primary p-btn-buy-now" data-id="${p.id}" data-name="${p.name || ''}" data-price="${p.price_after || 0}" data-image="${p.image_url || ''}" data-shipping="${p.shipping_type || 'free'}" data-price-before="${p.price_before || 0}" data-has-sizes="${p.sizes && p.sizes.length ? 'yes' : 'no'}" data-has-colors="${p.colors && p.colors.length ? 'yes' : 'no'}" style="width: 100%; padding: 14px; font-size: 1.2rem; font-weight: bold; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; border: none; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"><i class="fa fa-bolt"></i> إتمام الشراء الآن</button>
@@ -522,8 +518,11 @@
       const main = document.getElementById('pMain');
       const thumbs = Array.from(document.querySelectorAll('.p-thumb'));
       const mainContainer = document.querySelector('.p-main');
+      const lb = document.getElementById('pLightbox');
+      const lbImg = document.getElementById('lbImg');
 
       function show(i) {
+        if (!imgs || !imgs.length) return;
         idx = (i + imgs.length) % imgs.length;
         const nextSrc = imgs[idx];
         main.classList.add('fade-out');
@@ -534,16 +533,11 @@
         thumbs.forEach(t => t.classList.remove('active'));
         const t = thumbs[idx];
         if (t) t.classList.add('active');
+        if (lb && lb.classList.contains('open') && lbImg) {
+          lbImg.src = nextSrc;
+        }
       }
 
-      document.querySelector('.p-prev').addEventListener('click', (e) => {
-        e.stopPropagation();
-        show(idx - 1);
-      });
-      document.querySelector('.p-next').addEventListener('click', (e) => {
-        e.stopPropagation();
-        show(idx + 1);
-      });
       thumbs.forEach(t => t.addEventListener('click', () => show(+t.dataset.idx)));
 
       // Hover Zoom Effect - Desktop Only (disable on touch screens)
@@ -567,41 +561,74 @@
         main.style.transformOrigin = 'center center';
       });
 
-      // Mobile Swipe & Reset Logic
+      // Mobile Swipe & Reset Logic on Main Image
       let startX = 0;
+      let startY = 0;
       mainContainer.addEventListener('touchstart', (e) => {
-        startX = e.touches[0].clientX;
+        if (e.touches && e.touches.length > 0) {
+          startX = e.touches[0].clientX;
+          startY = e.touches[0].clientY;
+        }
         main.style.transform = 'scale(1)';
         main.style.transformOrigin = 'center center';
       }, { passive: true });
+
       mainContainer.addEventListener('touchend', (e) => {
         main.style.transform = 'scale(1)';
         main.style.transformOrigin = 'center center';
-        const diffX = e.changedTouches[0].clientX - startX;
-        if (Math.abs(diffX) > 40) {
-          if (diffX > 0) {
-            show(idx - 1);
-          } else {
-            show(idx + 1);
+        if (e.changedTouches && e.changedTouches.length > 0) {
+          const diffX = e.changedTouches[0].clientX - startX;
+          const diffY = e.changedTouches[0].clientY - startY;
+          if (Math.abs(diffX) > 35 && Math.abs(diffX) > Math.abs(diffY)) {
+            if (diffX < 0) {
+              // Swipe LEFT -> navigate to image on the left
+              show(idx - 1);
+            } else {
+              // Swipe RIGHT -> navigate to image on the right
+              show(idx + 1);
+            }
           }
         }
       }, { passive: true });
 
-      // Lightbox
-      const lb = document.getElementById('pLightbox');
-      const lbImg = document.getElementById('lbImg');
-      function openLb() { lb.classList.add('open'); lbImg.src = imgs[idx]; }
+      // Lightbox (Fullscreen Modal)
+      function openLb() { lb.classList.add('open'); if (lbImg) lbImg.src = imgs[idx]; }
       function closeLb() { lb.classList.remove('open'); }
       main.addEventListener('click', openLb);
-      lb.querySelector('.close').addEventListener('click', closeLb);
-      lb.querySelector('.p-prev').addEventListener('click', () => { show(idx - 1); lbImg.src = imgs[idx]; });
-      lb.querySelector('.p-next').addEventListener('click', () => { show(idx + 1); lbImg.src = imgs[idx]; });
+      const lbClose = lb.querySelector('.close');
+      if (lbClose) lbClose.addEventListener('click', closeLb);
       lb.addEventListener('click', (e) => { if (e.target === lb) closeLb(); });
+
+      // Lightbox Touch Swipe
+      let lbStartX = 0;
+      let lbStartY = 0;
+      lb.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches.length > 0) {
+          lbStartX = e.touches[0].clientX;
+          lbStartY = e.touches[0].clientY;
+        }
+      }, { passive: true });
+
+      lb.addEventListener('touchend', (e) => {
+        if (e.changedTouches && e.changedTouches.length > 0) {
+          const diffX = e.changedTouches[0].clientX - lbStartX;
+          const diffY = e.changedTouches[0].clientY - lbStartY;
+          if (Math.abs(diffX) > 35 && Math.abs(diffX) > Math.abs(diffY)) {
+            if (diffX < 0) {
+              show(idx - 1);
+            } else {
+              show(idx + 1);
+            }
+            if (lbImg) lbImg.src = imgs[idx];
+          }
+        }
+      }, { passive: true });
+
       document.addEventListener('keydown', (e) => {
         if (!lb.classList.contains('open')) return;
         if (e.key === 'Escape') closeLb();
-        if (e.key === 'ArrowLeft') { show(idx + 1); lbImg.src = imgs[idx]; }
-        if (e.key === 'ArrowRight') { show(idx - 1); lbImg.src = imgs[idx]; }
+        if (e.key === 'ArrowLeft') { show(idx - 1); if (lbImg) lbImg.src = imgs[idx]; }
+        if (e.key === 'ArrowRight') { show(idx + 1); if (lbImg) lbImg.src = imgs[idx]; }
       });
 
       window.currentProductData = p;
