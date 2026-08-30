@@ -120,13 +120,22 @@ class PushNotificationService
         // فحص باقة التاجر والرصيد لتحديد مسار التوجيه
         $tenant = \App\Models\Tenant::find($tenantId);
         $isLocked = false;
-        if ($tenant && $tenant->isCommissionPlan()) {
-            if (($tenant->wallet_balance ?? 0) < 2) {
-                $isLocked = true;
+        if ($tenant) {
+            $activeSub = $tenant->subscriptions()->where('status', 'active')->latest()->first();
+            $isCommission = $activeSub && ($activeSub->plan?->slug === 'commission' || str_contains($activeSub->plan?->name ?? '', 'عمولة'));
+
+            if ($isCommission) {
+                if (($tenant->wallet_balance ?? 0) < 2) {
+                    $isLocked = true;
+                }
+            } else {
+                if ($tenant->subscription_status === 'expired' || ($tenant->subscription_ends_at && $tenant->subscription_ends_at->isPast())) {
+                    $isLocked = true;
+                }
             }
         }
 
-        // إذا كان الطلب مقفولاً بسبب الرصيد يتم توجيهه إلى صفحة الطلبات العامة فقط
+        // إذا كان الطلب مقفولاً بسبب الرصيد أو انتهاء الاشتراك يتم توجيهه إلى صفحة الطلبات العامة فقط
         $url = $isLocked ? "/admin/orders" : "/admin/orders/{$orderId}";
         $storeLogo = $this->getTenantLogo($tenantId);
 

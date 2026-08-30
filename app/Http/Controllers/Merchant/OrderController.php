@@ -131,7 +131,22 @@ class OrderController extends Controller
     {
         $tenant = app(\App\Models\Tenant::class);
 
-        // لو التاجر مشترك في باقة شهرية أو سنوية أو باقة تجريبية → فتح مجاني فوري
+        $activeSub = $tenant->subscriptions()->where('status', 'active')->latest()->first();
+        $isCommission = $activeSub && ($activeSub->plan?->slug === 'commission' || str_contains($activeSub->plan?->name ?? '', 'عمولة'));
+
+        $isSubscriptionExpired = false;
+        if (!$isCommission) {
+            if ($tenant->subscription_status === 'expired' || ($tenant->subscription_ends_at && $tenant->subscription_ends_at->isPast())) {
+                $isSubscriptionExpired = true;
+            }
+        }
+
+        if ($isSubscriptionExpired) {
+            return redirect('/admin/orders')
+                ->with('subscription_expired', 'انتهت فترة اشتراك باقتك. يرجى تجديد الاشتراك لعرض تفاصيل الطلب.');
+        }
+
+        // لو التاجر مشترك في باقة شهرية أو سنوية أو باقة تجريبية سارية → فتح مجاني فوري
         if (!$tenant || !$tenant->isCommissionPlan()) {
             $order->update(['is_unlocked' => true, 'unlocked_at' => now()]);
             return redirect("/admin/orders/{$order->id}");
@@ -169,8 +184,24 @@ class OrderController extends Controller
     {
         $tenant = app(\App\Models\Tenant::class);
 
-        // استثناء الباقات الشهرية والسنوية والتجريبية: تفتح دائماً بدون أي خصم أو قفل
-        if (!$order->is_unlocked && $tenant && !$tenant->isCommissionPlan()) {
+        $activeSub = $tenant->subscriptions()->where('status', 'active')->latest()->first();
+        $isCommission = $activeSub && ($activeSub->plan?->slug === 'commission' || str_contains($activeSub->plan?->name ?? '', 'عمولة'));
+
+        $isSubscriptionExpired = false;
+        if (!$isCommission) {
+            if ($tenant->subscription_status === 'expired' || ($tenant->subscription_ends_at && $tenant->subscription_ends_at->isPast())) {
+                $isSubscriptionExpired = true;
+            }
+        }
+
+        // لو اشتراك التاجر منتهي → إعادة توجيهه لصفحة الطلبات ليظهر له مودال التجديد
+        if ($isSubscriptionExpired) {
+            return redirect('/admin/orders')
+                ->with('subscription_expired', 'انتهت فترة اشتراك باقتك. يرجى تجديد الاشتراك لعرض تفاصيل الطلب.');
+        }
+
+        // استثناء الباقات الشهرية والسنوية والتجريبية السارية: تفتح دائماً بدون أي خصم أو قفل
+        if (!$order->is_unlocked && !$isCommission) {
             $order->update(['is_unlocked' => true, 'unlocked_at' => now()]);
         }
 
