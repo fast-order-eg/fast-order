@@ -213,11 +213,6 @@ Route::prefix('admin')->group(function () {
             Route::get('/theme', [\App\Http\Controllers\Merchant\ThemeController::class, 'index'])->name('merchant.theme.index');
             Route::put('/theme', [\App\Http\Controllers\Merchant\ThemeController::class, 'update'])->name('merchant.theme.update');
 
-            // Media Library routes
-            Route::get('/media', [\App\Http\Controllers\Merchant\MediaController::class, 'index'])->name('merchant.media.index');
-            Route::delete('/media', [\App\Http\Controllers\Merchant\MediaController::class, 'destroy'])->name('merchant.media.destroy');
-
-
             // Coupons management routes
             Route::patch('/coupons/{coupon}/toggle', [App\Http\Controllers\Merchant\CouponController::class, 'toggle'])->name('merchant.coupons.toggle');
             Route::resource('/coupons', App\Http\Controllers\Merchant\CouponController::class)->names('merchant.coupons');
