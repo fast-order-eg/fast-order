@@ -462,7 +462,9 @@ s0.parentNode.insertBefore(s1,s0);
   #homepageSections #offersGrid,
   #homepageSections #bestSellersGrid,
   #homepageSections #productsGrid,
-  #homepageSections #homeProductsGrid {
+  #homepageSections #homeProductsGrid,
+  #relatedGrid,
+  #crossSellGrid {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
@@ -481,7 +483,9 @@ s0.parentNode.insertBefore(s1,s0);
   #homepageSections #offersGrid::-webkit-scrollbar,
   #homepageSections #bestSellersGrid::-webkit-scrollbar,
   #homepageSections #productsGrid::-webkit-scrollbar,
-  #homepageSections #homeProductsGrid::-webkit-scrollbar {
+  #homepageSections #homeProductsGrid::-webkit-scrollbar,
+  #relatedGrid::-webkit-scrollbar,
+  #crossSellGrid::-webkit-scrollbar {
     display: none !important;
   }
   .product-slider-track.dragging {
@@ -493,7 +497,9 @@ s0.parentNode.insertBefore(s1,s0);
   #homepageSections #offersGrid .card,
   #homepageSections #bestSellersGrid .card,
   #homepageSections #productsGrid .card,
-  #homepageSections #homeProductsGrid .card {
+  #homepageSections #homeProductsGrid .card,
+  #relatedGrid .card,
+  #crossSellGrid .card {
     flex: 0 0 230px !important;
     min-width: 230px !important;
     max-width: 230px !important;
@@ -506,7 +512,9 @@ s0.parentNode.insertBefore(s1,s0);
     #homepageSections #offersGrid .card,
     #homepageSections #bestSellersGrid .card,
     #homepageSections #productsGrid .card,
-    #homepageSections #homeProductsGrid .card {
+    #homepageSections #homeProductsGrid .card,
+    #relatedGrid .card,
+    #crossSellGrid .card {
       flex: 0 0 250px !important;
       min-width: 250px !important;
       max-width: 250px !important;
@@ -517,7 +525,9 @@ s0.parentNode.insertBefore(s1,s0);
     #homepageSections #offersGrid,
     #homepageSections #bestSellersGrid,
     #homepageSections #productsGrid,
-    #homepageSections #homeProductsGrid {
+    #homepageSections #homeProductsGrid,
+    #relatedGrid,
+    #crossSellGrid {
       gap: 10px !important;
       padding: 4px 2px 10px 2px !important;
     }
@@ -525,7 +535,9 @@ s0.parentNode.insertBefore(s1,s0);
     #homepageSections #offersGrid .card,
     #homepageSections #bestSellersGrid .card,
     #homepageSections #productsGrid .card,
-    #homepageSections #homeProductsGrid .card {
+    #homepageSections #homeProductsGrid .card,
+    #relatedGrid .card,
+    #crossSellGrid .card {
       flex: 0 0 calc(50% - 5px) !important;
       min-width: calc(50% - 5px) !important;
       max-width: calc(50% - 5px) !important;

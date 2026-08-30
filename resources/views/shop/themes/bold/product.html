@@ -129,7 +129,7 @@
       <div id="crossSellGrid" class="grid text-right"></div>
     </section>
 
-    <section class="section">
+    <section class="section" id="relatedSection">
       <div class="section-head">
         <h2>منتجات مشابهة</h2>
       </div>
@@ -374,7 +374,7 @@
     }
   </style>
   <script>window.API_BASE = '/public-api';</script>
-  <script src="/shop/shared.js?v=20260714"></script>
+  <script src="/shop/shared.js?v=20260830_30"></script>
   <script>
     const params = new URLSearchParams(location.search);
     const id = params.get('id');
@@ -1595,10 +1595,54 @@
     };
 
 
-    function loadRelated(categoryId, excludeId) {
-      if (!categoryId) return;
-      const url = `${window.API_BASE}/products?category_id=${categoryId}&exclude_id=${excludeId}&limit=8`;
-      fetch(url).then(r => r.json()).then(({ data }) => { renderProducts(relatedGrid, data); });
+    async function loadRelated(categoryId, excludeId) {
+      const section = document.getElementById('relatedSection') || (relatedGrid ? (relatedGrid.closest('.section') || relatedGrid.parentElement) : null);
+      try {
+        let items = [];
+        // 1. Fetch products from same category (up to 10)
+        if (categoryId) {
+          try {
+            const r1 = await fetch(`${window.API_BASE}/products?category_id=${categoryId}&exclude_id=${excludeId}&limit=10`);
+            const json1 = await r1.json();
+            if (json1 && Array.isArray(json1.data)) {
+              items = json1.data.filter(p => Number(p.id) !== Number(excludeId));
+            }
+          } catch(e){}
+        }
+
+        // 2. If fewer than 10 products, complete up to 10 from other categories
+        if (items.length < 10) {
+          try {
+            const r2 = await fetch(`${window.API_BASE}/products?exclude_id=${excludeId}&limit=15`);
+            const json2 = await r2.json();
+            if (json2 && Array.isArray(json2.data)) {
+              const existingIds = new Set(items.map(p => Number(p.id)));
+              existingIds.add(Number(excludeId));
+              for (const other of json2.data) {
+                if (!existingIds.has(Number(other.id))) {
+                  items.push(other);
+                  existingIds.add(Number(other.id));
+                  if (items.length >= 10) break;
+                }
+              }
+            }
+          } catch(e){}
+        }
+
+        // 3. If no other products in store, hide section completely
+        if (!items || items.length === 0) {
+          if (section) section.style.display = 'none';
+          if (relatedGrid) relatedGrid.innerHTML = '';
+          return;
+        }
+
+        // 4. Show section and render products with slider
+        if (section) section.style.display = 'block';
+        renderProducts(relatedGrid, items.slice(0, 10));
+      } catch (err) {
+        console.error('Error loading related products:', err);
+        if (section && (!items || items.length === 0)) section.style.display = 'none';
+      }
     }
   </script>
 

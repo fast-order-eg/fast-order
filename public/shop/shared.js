@@ -523,10 +523,11 @@ function renderProducts(root, items){
   items.forEach(p=> frag.appendChild(productCard(p))); 
   root.appendChild(frag);
 
-  // Auto-convert to horizontal slider on Homepage only
+  // Auto-convert to horizontal slider on Homepage & Product Details page
   const isHomepage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/shop' || window.location.pathname === '/shop/' || !window.location.pathname.includes('.html');
-  const isTargetGrid = root.id === 'offersGrid' || root.id === 'bestSellersGrid' || root.id === 'productsGrid' || root.id === 'homeProductsGrid';
-  if (isHomepage && isTargetGrid && items.length > 0) {
+  const isProductPage = window.location.pathname.includes('product.html');
+  const isTargetGrid = root.id === 'offersGrid' || root.id === 'bestSellersGrid' || root.id === 'productsGrid' || root.id === 'homeProductsGrid' || root.id === 'relatedGrid' || root.id === 'crossSellGrid';
+  if ((isHomepage || isProductPage) && isTargetGrid && items.length > 0) {
     makeProductSlider(root, false);
   }
 }
