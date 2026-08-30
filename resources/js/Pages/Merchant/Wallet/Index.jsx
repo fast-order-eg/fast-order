@@ -70,12 +70,19 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
         const file = e.target.files[0];
         if (file) {
             manualForm.setData('receipt', file);
+            manualForm.clearErrors('receipt');
             setPreviewImage(URL.createObjectURL(file));
         }
     };
 
     const handleManualSubmit = (e) => {
         e.preventDefault();
+
+        if (!manualForm.data.receipt) {
+            manualForm.setError('receipt', 'يرجى إرفاق صورة إيصال التحويل (إسكرين شوت) لإتمام الطلب.');
+            return;
+        }
+
         manualForm.post(route('merchant.wallet.deposit'), {
             preserveScroll: true,
             onSuccess: () => {
@@ -408,18 +415,25 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
 
                                         {/* Receipt Image Upload Field */}
                                         <div className="space-y-2">
-                                            <label className="block text-xs font-bold text-gray-700">صورة إيصال التحويل (إسكرين شوت):</label>
+                                            <label className="block text-xs font-bold text-gray-700">
+                                                صورة إيصال التحويل (إسكرين شوت): <span className="text-rose-500">*</span>
+                                            </label>
                                             <div className="flex flex-col sm:flex-row items-center gap-4">
-                                                <label className="flex-1 w-full flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer hover:border-indigo-500 hover:bg-indigo-50/20 transition-all text-center">
-                                                    <svg className="w-8 h-8 text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <label className={`flex-1 w-full flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-2xl cursor-pointer transition-all text-center ${
+                                                    manualForm.errors.receipt 
+                                                        ? 'border-rose-400 bg-rose-50/40 hover:bg-rose-50/60 ring-2 ring-rose-100' 
+                                                        : 'border-gray-300 hover:border-indigo-500 hover:bg-indigo-50/20'
+                                                }`}>
+                                                    <svg className={`w-8 h-8 mb-1 ${manualForm.errors.receipt ? 'text-rose-400' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                                     </svg>
-                                                    <span className="text-xs font-bold text-indigo-600">اختر صورة الإيصال للرفع</span>
+                                                    <span className={`text-xs font-bold ${manualForm.errors.receipt ? 'text-rose-600' : 'text-indigo-600'}`}>
+                                                        اختر صورة الإيصال للرفع
+                                                    </span>
                                                     <span className="text-[11px] text-gray-400 mt-0.5">PNG, JPG حتى 3 ميجابايت</span>
                                                     <input
                                                         type="file"
                                                         accept="image/*"
-                                                        required
                                                         onChange={handleFileChange}
                                                         className="hidden"
                                                     />
@@ -434,7 +448,12 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
                                                 )}
                                             </div>
                                             {manualForm.errors.receipt && (
-                                                <span className="text-xs text-rose-600 mt-1 block font-medium">{manualForm.errors.receipt}</span>
+                                                <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-600 font-bold flex items-center gap-1.5 mt-1">
+                                                    <svg className="w-4 h-4 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    <span>{manualForm.errors.receipt}</span>
+                                                </div>
                                             )}
                                         </div>
 
