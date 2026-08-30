@@ -74,7 +74,10 @@ class StorefrontController extends Controller
         $html = preg_replace('/<html[^>]*>/i', '<html lang="' . $locale . '" dir="' . $dir . '">', $html, 1);
 
         // Fetch settings for the current tenant
-        $storeName = Setting::get('store_name', 'Store');
+        $tenant = app()->bound(\App\Models\Tenant::class) ? app(\App\Models\Tenant::class) : null;
+        $storeName = Setting::get('store_name') ?: ($tenant?->name ?? 'متجر إلكتروني');
+        $storeLogo = Setting::get('logo') ? asset('storage/' . Setting::get('logo')) : ($tenant?->logo ? asset('storage/' . $tenant->logo) : asset('images/logo.png'));
+        $storeDescription = Setting::get('store_description') ?: ('تسوق أفضل المنتجات والعروض الحصرية بأعلى جودة وأفضل الأسعار من متجر ' . $storeName);
         $facebookPixelId = Setting::get('facebook_pixel_id', '');
         $tiktokPixelId = Setting::get('tiktok_pixel_id', '');
         $googleAnalyticsId = Setting::get('google_analytics_id', '');
@@ -1007,7 +1010,11 @@ s0.parentNode.insertBefore(s1,s0);
             }
         }
 
-        // Handle Product Details Page specific SEO (JSON-LD & Title/Description replacement)
+        // Clean existing static open graph & twitter tags if any
+        $html = preg_replace('/<meta\s+property=["\']og:[^"\']+["\'][^>]*>/i', '', $html);
+        $html = preg_replace('/<meta\s+name=["\']twitter:[^"\']+["\'][^>]*>/i', '', $html);
+
+        // Handle Product Details Page specific SEO (JSON-LD & Title/Description/OpenGraph replacement)
         if ($page === 'product.html' && $request->has('id')) {
             $productId = $request->query('id');
             $product = Product::find($productId);
@@ -1018,9 +1025,11 @@ s0.parentNode.insertBefore(s1,s0);
                     ? asset('storage/' . $product->main_image_path) 
                     : ($product->image_url ?: 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image');
                 
-                $description = Str::limit(strip_tags($product->description), 160);
+                $rawDescription = strip_tags($product->description);
+                $description = Str::limit($rawDescription, 160) ?: ('اشتري ' . $product->name . ' بأفضل سعر وتوصيل سريع من متجر ' . $storeName);
                 
                 $price = $product->price_after ?? $product->price;
+                $pageTitle = $product->name . ' - ' . $storeName;
 
                 $jsonLd = [
                     '@context' => 'https://schema.org/',
@@ -1044,9 +1053,24 @@ s0.parentNode.insertBefore(s1,s0);
 ' . json_encode($jsonLd, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . '
 </script>';
 
+                // Social Sharing & Open Graph Meta Tags (WhatsApp, Facebook, Twitter, Telegram)
+                $headInjections[] = '<!-- Social Sharing & WhatsApp Preview Meta Tags -->
+<meta property="og:type" content="product" />
+<meta property="og:site_name" content="' . e($storeName) . '" />
+<meta property="og:title" content="' . e($pageTitle) . '" />
+<meta property="og:description" content="' . e($description) . '" />
+<meta property="og:image" content="' . e($imageUrl) . '" />
+<meta property="og:url" content="' . e($request->fullUrl()) . '" />
+<meta property="product:price:amount" content="' . e($price) . '" />
+<meta property="product:price:currency" content="EGP" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="' . e($pageTitle) . '" />
+<meta name="twitter:description" content="' . e($description) . '" />
+<meta name="twitter:image" content="' . e($imageUrl) . '" />';
+
                 // Replace Page Title dynamically
                 $titlePattern = '/<title>.*?<\/title>/i';
-                $newTitle = '<title>' . e($product->name) . ' - ' . e($storeName) . '</title>';
+                $newTitle = '<title>' . e($pageTitle) . '</title>';
                 if (preg_match($titlePattern, $html)) {
                     $html = preg_replace($titlePattern, $newTitle, $html);
                 } else {
@@ -1059,13 +1083,40 @@ s0.parentNode.insertBefore(s1,s0);
             }
         } else {
             // General pages: replace title with store name
+            $pageTitle = $storeName;
+            if ($page === 'categories.html') {
+                $pageTitle = 'الأقسام - ' . $storeName;
+            } elseif ($page === 'products.html') {
+                $pageTitle = 'جميع المنتجات - ' . $storeName;
+            } elseif ($page === 'cart.html') {
+                $pageTitle = 'سلة المشتريات - ' . $storeName;
+            } elseif ($page === 'contact.html') {
+                $pageTitle = 'تواصل معنا - ' . $storeName;
+            }
+
+            // Social Sharing & Open Graph Meta Tags (WhatsApp, Facebook, Twitter, Telegram)
+            $headInjections[] = '<!-- Social Sharing & WhatsApp Preview Meta Tags -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="' . e($storeName) . '" />
+<meta property="og:title" content="' . e($pageTitle) . '" />
+<meta property="og:description" content="' . e($storeDescription) . '" />
+<meta property="og:image" content="' . e($storeLogo) . '" />
+<meta property="og:url" content="' . e($request->fullUrl()) . '" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="' . e($pageTitle) . '" />
+<meta name="twitter:description" content="' . e($storeDescription) . '" />
+<meta name="twitter:image" content="' . e($storeLogo) . '" />';
+
             $titlePattern = '/<title>.*?<\/title>/i';
-            $newTitle = '<title>' . e($storeName) . '</title>';
+            $newTitle = '<title>' . e($pageTitle) . '</title>';
             if (preg_match($titlePattern, $html)) {
                 $html = preg_replace($titlePattern, $newTitle, $html);
             } else {
                 $headInjections[] = $newTitle;
             }
+
+            $metaDesc = '<meta name="description" content="' . e($storeDescription) . '">';
+            $html = str_ireplace('</head>', $metaDesc . "\n</head>", $html);
         }
 
         // Enable SEO Crawling - Replace "noindex" robots tag with indexable one

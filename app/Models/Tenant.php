@@ -170,4 +170,12 @@ class Tenant extends Model
         }
         return false;
     }
+
+    /**
+     * Get the store display name
+     */
+    public function getStoreNameAttribute(): string
+    {
+        return Setting::get('store_name', $this->name ?: 'متجري', $this->id);
+    }
 }

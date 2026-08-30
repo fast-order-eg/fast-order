@@ -375,20 +375,7 @@ Route::prefix('admin')->group(function () {
     // B. Tenant Storefront Routes (tenant.fastorder.test)
     Route::middleware(['web', 'tenant', 'tenant.active'])->group(function () {
         
-        Route::get('/', function () {
-            $tenantName = app(\App\Models\Tenant::class)->name ?? 'Store';
-            return response('<!DOCTYPE html>
-            <html lang="ar">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="facebook-domain-verification" content="2d59ex7cii10rhhw2o9ny77tfcwft0" />
-                <title>Storefront - ' . e($tenantName) . '</title>
-            </head>
-            <body>
-                <script>window.location.href="/shop/index.html";</script>
-            </body>
-            </html>');
-        })->name('storefront.home');
+        Route::get('/', [\App\Http\Controllers\StorefrontController::class, 'servePage'])->name('storefront.home');
 
         // Dynamic SEO & Metadata routes
         Route::get('/sitemap.xml', [\App\Http\Controllers\StorefrontController::class, 'sitemap'])->name('storefront.sitemap');

@@ -4,7 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>إتمام الطلب - {{ $tenant->name ?? 'المتجر' }}</title>
+    @php
+        $storeName = \App\Models\Setting::get('store_name') ?: ($tenant->name ?? 'المتجر');
+        $storeLogo = \App\Models\Setting::get('logo') ? asset('storage/' . \App\Models\Setting::get('logo')) : ($tenant->logo ? asset('storage/' . $tenant->logo) : asset('images/logo.png'));
+    @endphp
+    <title>إتمام الطلب - {{ $storeName }}</title>
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ $storeName }}">
+    <meta property="og:title" content="إتمام الطلب - {{ $storeName }}">
+    <meta property="og:image" content="{{ $storeLogo }}">
     <link rel="stylesheet" href="/shop/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">

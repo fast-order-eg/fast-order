@@ -3,8 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>العروض والتخفيضات الحصرية - {{ $tenant->name ?? 'فاست أوردر' }}</title>
-    <meta name="description" content="اكتشف أقوى عروض الفلاش سيل والخصومات الموسمية الحصرية من {{ $tenant->name ?? 'متجرنا' }}. تسوق الآن بأفضل الأسعار قبل نفاد الكمية!">
+    @php
+        $storeName = \App\Models\Setting::get('store_name') ?: ($tenant->name ?? 'المتجر');
+        $storeLogo = \App\Models\Setting::get('logo') ? asset('storage/' . \App\Models\Setting::get('logo')) : ($tenant->logo ? asset('storage/' . $tenant->logo) : asset('images/logo.png'));
+    @endphp
+    <title>العروض والتخفيضات الحصرية - {{ $storeName }}</title>
+    <meta name="description" content="اكتشف أقوى عروض الفلاش سيل والخصومات الموسمية الحصرية من {{ $storeName }}. تسوق الآن بأفضل الأسعار قبل نفاد الكمية!">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ $storeName }}">
+    <meta property="og:title" content="العروض والتخفيضات الحصرية - {{ $storeName }}">
+    <meta property="og:description" content="اكتشف أقوى عروض الفلاش سيل والخصومات الموسمية الحصرية من {{ $storeName }}.">
+    <meta property="og:image" content="{{ $storeLogo }}">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>

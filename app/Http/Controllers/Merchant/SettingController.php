@@ -140,6 +140,10 @@ class SettingController extends Controller
                 }
 
                 Setting::set($key, $val ?? '', 'general', $tenantId);
+
+                if ($key === 'store_name' && !empty($val) && $tenant) {
+                    $tenant->update(['name' => $val]);
+                }
             }
         }
 

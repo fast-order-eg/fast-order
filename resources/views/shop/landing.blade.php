@@ -3,14 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $landingPage->seo_title ?? ($landingPage->title ?? 'عرض خاص') }} | {{ $tenant->name ?? 'المتجر الرسمي' }}</title>
-    <meta name="description" content="{{ $landingPage->seo_description ?? ($landingPage->title ?? 'صفحة هبوط حصرية بعروض وخصومات مميزة') }}">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-
     @php
+        $storeName = \App\Models\Setting::get('store_name') ?: ($tenant->name ?? 'المتجر الرسمي');
+        $storeLogo = \App\Models\Setting::get('logo') ? asset('storage/' . \App\Models\Setting::get('logo')) : ($tenant->logo ? asset('storage/' . $tenant->logo) : asset('images/logo.png'));
         $fbPixelId = $landingPage->facebook_pixel_id ?: \App\Models\Setting::get('facebook_pixel_id');
         $ttPixelId = $landingPage->tiktok_pixel_id ?: \App\Models\Setting::get('tiktok_pixel_id');
     @endphp
+    <title>{{ $landingPage->seo_title ?? ($landingPage->title ?? 'عرض خاص') }} | {{ $storeName }}</title>
+    <meta name="description" content="{{ $landingPage->seo_description ?? ($landingPage->title ?? 'صفحة هبوط حصرية بعروض وخصومات مميزة') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <!-- Open Graph / WhatsApp / Facebook Preview -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ $storeName }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="{{ $landingPage->seo_title ?? ($landingPage->title ?? 'عرض خاص') }} | {{ $storeName }}">
+    <meta property="og:description" content="{{ $landingPage->seo_description ?? ($landingPage->title ?? 'صفحة هبوط حصرية بعروض وخصومات مميزة') }}">
+    <meta property="og:image" content="{{ $landingPage->featured_image ?? $storeLogo }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $landingPage->seo_title ?? ($landingPage->title ?? 'عرض خاص') }} | {{ $storeName }}">
+    <meta name="twitter:description" content="{{ $landingPage->seo_description ?? ($landingPage->title ?? 'صفحة هبوط حصرية بعروض وخصومات مميزة') }}">
+    <meta name="twitter:image" content="{{ $landingPage->featured_image ?? $storeLogo }}">
 
     @if ($fbPixelId)
         <!-- Facebook Pixel Code -->
@@ -42,15 +55,6 @@
             }(window, document, 'ttq');
         </script>
         <!-- End TikTok Pixel Code -->
-    @endif
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:title" content="{{ $landingPage->seo_title ?? ($landingPage->title ?? 'عرض خاص') }}">
-    <meta property="og:description" content="{{ $landingPage->seo_description ?? ($landingPage->title ?? 'صفحة هبوط حصرية بعروض وخصومات مميزة') }}">
-    <meta property="og:image" content="{{ $landingPage->featured_image ?? ($tenant->logo ? asset($tenant->logo) : '') }}">
-    
     <!-- Google Fonts: Cairo -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
