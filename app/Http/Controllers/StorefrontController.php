@@ -1390,8 +1390,67 @@ s0.parentNode.insertBefore(s1,s0);
             $html = str_ireplace('</head>', $metaDesc . "\n</head>", $html);
         }
 
-        // Enable SEO Crawling - Replace "noindex" robots tag with indexable one
-        $html = str_ireplace('<meta name="robots" content="noindex">', '<meta name="robots" content="index, follow">', $html);
+        // Inject Mobile-optimized 2-line Product Titles (Amazon style)
+        $headInjections[] = '<style id="fo-mobile-product-titles">
+@media (max-width: 768px) {
+  .card .title,
+  .product-card .title,
+  .product-title,
+  .grid .card .title,
+  .card .body h3.title,
+  .card .body a h3,
+  .card a h3,
+  h3.title {
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+    min-height: 2.7em !important;
+    max-height: 2.7em !important;
+    height: 2.7em !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    text-align: center !important;
+    margin: 0 0 6px 0 !important;
+    padding: 0 2px !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+    letter-spacing: -0.2px !important;
+  }
+}
+@media (max-width: 480px) {
+  .card .title,
+  .product-card .title,
+  .product-title,
+  .grid .card .title,
+  .card .body h3.title,
+  .card .body a h3,
+  .card a h3,
+  h3.title {
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+    min-height: 2.7em !important;
+    max-height: 2.7em !important;
+    height: 2.7em !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    text-align: center !important;
+    margin: 0 0 4px 0 !important;
+    padding: 0 2px !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+    letter-spacing: -0.2px !important;
+  }
+}
+</style>';
 
         // Inject Head Scripts
         if (!empty($headInjections)) {
