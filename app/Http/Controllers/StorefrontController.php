@@ -458,10 +458,15 @@ s0.parentNode.insertBefore(s1,s0);
     width: 100%;
     margin: 0 auto;
   }
-  .product-slider-track {
+  .product-slider-track,
+  #homepageSections #offersGrid,
+  #homepageSections #bestSellersGrid,
+  #homepageSections #productsGrid,
+  #homepageSections #homeProductsGrid {
     display: flex !important;
     flex-direction: row !important;
-    gap: 16px !important;
+    flex-wrap: nowrap !important;
+    gap: 14px !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
     scroll-snap-type: x mandatory;
@@ -472,7 +477,11 @@ s0.parentNode.insertBefore(s1,s0);
     scroll-behavior: smooth;
     cursor: grab;
   }
-  .product-slider-track::-webkit-scrollbar {
+  .product-slider-track::-webkit-scrollbar,
+  #homepageSections #offersGrid::-webkit-scrollbar,
+  #homepageSections #bestSellersGrid::-webkit-scrollbar,
+  #homepageSections #productsGrid::-webkit-scrollbar,
+  #homepageSections #homeProductsGrid::-webkit-scrollbar {
     display: none !important;
   }
   .product-slider-track.dragging {
@@ -480,26 +489,43 @@ s0.parentNode.insertBefore(s1,s0);
     scroll-snap-type: none !important;
     scroll-behavior: auto !important;
   }
-  .product-slider-track .card {
+  .product-slider-track .card,
+  #homepageSections #offersGrid .card,
+  #homepageSections #bestSellersGrid .card,
+  #homepageSections #productsGrid .card,
+  #homepageSections #homeProductsGrid .card {
     flex: 0 0 230px !important;
     min-width: 230px !important;
     max-width: 230px !important;
     scroll-snap-align: start;
     height: 100%;
+    box-sizing: border-box !important;
   }
   @media (min-width: 1024px) {
-    .product-slider-track .card {
+    .product-slider-track .card,
+    #homepageSections #offersGrid .card,
+    #homepageSections #bestSellersGrid .card,
+    #homepageSections #productsGrid .card,
+    #homepageSections #homeProductsGrid .card {
       flex: 0 0 250px !important;
       min-width: 250px !important;
       max-width: 250px !important;
     }
   }
   @media (max-width: 768px) {
-    .product-slider-track {
+    .product-slider-track,
+    #homepageSections #offersGrid,
+    #homepageSections #bestSellersGrid,
+    #homepageSections #productsGrid,
+    #homepageSections #homeProductsGrid {
       gap: 10px !important;
       padding: 4px 2px 10px 2px !important;
     }
-    .product-slider-track .card {
+    .product-slider-track .card,
+    #homepageSections #offersGrid .card,
+    #homepageSections #bestSellersGrid .card,
+    #homepageSections #productsGrid .card,
+    #homepageSections #homeProductsGrid .card {
       flex: 0 0 calc(50% - 5px) !important;
       min-width: calc(50% - 5px) !important;
       max-width: calc(50% - 5px) !important;

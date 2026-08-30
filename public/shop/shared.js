@@ -521,7 +521,7 @@ function renderProducts(root, items){
   // Auto-convert to horizontal slider on Homepage only
   const isHomepage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/shop' || window.location.pathname === '/shop/' || !window.location.pathname.includes('.html');
   const isTargetGrid = root.id === 'offersGrid' || root.id === 'bestSellersGrid' || root.id === 'productsGrid' || root.id === 'homeProductsGrid';
-  if (isHomepage && isTargetGrid && items.length > 2) {
+  if (isHomepage && isTargetGrid && items.length > 0) {
     makeProductSlider(root, false);
   }
 }
