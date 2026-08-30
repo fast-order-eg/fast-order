@@ -175,9 +175,15 @@ class TenantController extends Controller
             'plan_id' => ['nullable', 'integer', 'exists:subscription_plans,id'],
             'ends_at' => ['nullable', 'date'],
         ], [
-            'email.unique' => 'البريد الإلكتروني مستخدم بالفعل.',
-            'slug.unique' => 'السب دومين (الرابط) مستخدم بالفعل.',
-            'slug.alpha_dash' => 'يجب أن يحتوي الرابط على أحرف وأرقام وشرطات فقط.',
+            'name.required' => 'يرجى إدخال اسم المتجر.',
+            'owner_name.required' => 'يرجى إدخال اسم مالك المتجر.',
+            'email.required' => 'يرجى إدخال البريد الإلكتروني.',
+            'email.unique' => 'البريد الإلكتروني مستخدم بالفعل لتاجر آخر.',
+            'password.required' => 'يرجى إدخال كلمة المرور.',
+            'password.min' => 'يجب ألا تقل كلمة المرور عن 8 خانات أو أرقام.',
+            'slug.required' => 'يرجى إدخال رابط المتجر.',
+            'slug.unique' => 'السب دومين (الرابط) مستخدم بالفعل لمتجر آخر، يرجى اختيار رابط مختلف.',
+            'slug.alpha_dash' => 'يجب أن يحتوي الرابط على أحرف إنجليزية وأرقام وشرطات فقط بدون مسافات أو حروف عربية.',
         ]);
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($request) {

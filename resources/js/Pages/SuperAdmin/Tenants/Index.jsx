@@ -221,6 +221,20 @@ export default function Index({ tenants, filters, plans, planCounts }) {
 
     const handleCreateSubmit = (e) => {
         e.preventDefault();
+        
+        const errors = {};
+        if (!createData.password || createData.password.length < 8) {
+            errors.password = 'يجب ألا تقل كلمة المرور عن 8 خانات أو أرقام.';
+        }
+        if (!createData.slug || !/^[a-zA-Z0-9-_]+$/.test(createData.slug)) {
+            errors.slug = 'يجب أن يحتوي الرابط على أحرف إنجليزية وأرقام وشرطات فقط بدون مسافات.';
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setCreateErrors(errors);
+            return;
+        }
+
         setSubmitting(true);
         router.post(
             route('superadmin.tenants.store'),
@@ -265,11 +279,11 @@ export default function Index({ tenants, filters, plans, planCounts }) {
                             {planCounts && (
                                 <span className="px-3 py-1 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-xs font-extrabold shadow-2xs flex items-center gap-1.5">
                                     <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
-                                    {plan === 'free' ? `الباقة المجانية: ${planCounts.free} متجر` :
-                                     plan === 'monthly' ? `الباقة الشهرية: ${planCounts.monthly} متجر` :
-                                     plan === 'yearly' ? `الباقة السنوية: ${planCounts.yearly} متجر` :
-                                     plan === 'commission' ? `باقة العمولة: ${planCounts.commission} متجر` :
-                                     `إجمالي المتاجر: ${planCounts.all} متجر`}
+                                    {plan === 'free' ? `${planCounts.free} متجر` :
+                                     plan === 'monthly' ? `${planCounts.monthly} متجر` :
+                                     plan === 'yearly' ? `${planCounts.yearly} متجر` :
+                                     plan === 'commission' ? `${planCounts.commission} متجر` :
+                                     `${planCounts.all} متجر`}
                                 </span>
                             )}
                         </div>
@@ -544,6 +558,22 @@ export default function Index({ tenants, filters, plans, planCounts }) {
                             </div>
 
                             <form onSubmit={handleCreateSubmit} className="mt-5 space-y-4">
+                                {Object.keys(createErrors).length > 0 && (
+                                    <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-bold flex items-start gap-2 text-right">
+                                        <svg className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                        <div>
+                                            <p>تنبيه: يرجى مراجعة البيانات المحددة باللون الأحمر أدناه:</p>
+                                            <ul className="list-disc list-inside mt-1 font-normal text-[11px] space-y-0.5">
+                                                {Object.entries(createErrors).map(([k, err]) => (
+                                                    <li key={k}>{err}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">
                                         اسم المتجر

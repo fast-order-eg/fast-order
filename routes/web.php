@@ -119,6 +119,12 @@ Route::domain('app.' . $baseDomain)->group(function () {
         Route::get('/whatsapp-gateway', [App\Http\Controllers\SuperAdmin\WhatsAppGatewayController::class, 'index'])->name('superadmin.whatsapp.index');
         Route::post('/whatsapp-gateway/settings', [App\Http\Controllers\SuperAdmin\WhatsAppGatewayController::class, 'updateSettings'])->name('superadmin.whatsapp.update-settings');
         Route::post('/whatsapp-gateway/test', [App\Http\Controllers\SuperAdmin\WhatsAppGatewayController::class, 'sendTestMessage'])->name('superadmin.whatsapp.test');
+
+        // Super Admin Profile & Team Management
+        Route::get('/admins', [App\Http\Controllers\SuperAdmin\AdminProfileController::class, 'index'])->name('superadmin.admins.index');
+        Route::put('/admins/profile', [App\Http\Controllers\SuperAdmin\AdminProfileController::class, 'updateProfile'])->name('superadmin.admins.profile.update');
+        Route::post('/admins', [App\Http\Controllers\SuperAdmin\AdminProfileController::class, 'storeAdmin'])->name('superadmin.admins.store');
+        Route::delete('/admins/{admin}', [App\Http\Controllers\SuperAdmin\AdminProfileController::class, 'destroyAdmin'])->name('superadmin.admins.destroy');
     });
 });
 

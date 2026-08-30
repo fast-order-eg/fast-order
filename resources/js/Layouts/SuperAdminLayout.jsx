@@ -82,7 +82,18 @@ export default function SuperAdminLayout({ children }) {
                 </svg>
             )
         },
+        {
+            href: '/admins',
+            label: 'إدارة المشرفين والحساب',
+            icon: (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            )
+        },
     ];
+
+    const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row font-sans" dir="rtl">
@@ -145,6 +156,13 @@ export default function SuperAdminLayout({ children }) {
                             <p className="text-xs text-indigo-300 truncate">{auth?.user?.email}</p>
                         </div>
                     </div>
+                    <Link
+                        href="/admins"
+                        onClick={closeMobileMenu}
+                        className="w-full mb-2 py-2 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border border-indigo-500/30"
+                    >
+                        <span>⚙️ إعدادات الحساب والمشرفين</span>
+                    </Link>
                     <button
                         onClick={(e) => {
                             e.preventDefault();
@@ -199,24 +217,15 @@ export default function SuperAdminLayout({ children }) {
 
                 {/* Desktop User Profile */}
                 <div className="p-4 border-t border-indigo-900 flex items-center justify-start mt-auto shrink-0 bg-indigo-900/30">
-                    <div className="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center font-extrabold text-xs shrink-0 border border-indigo-400">
-                        {auth?.user?.name ? auth.user.name.substring(0, 2).toUpperCase() : 'AD'}
-                    </div>
-                    <div className={`mr-3 min-w-0 ${!isSidebarOpen && 'hidden'}`}>
-                        <p className="text-xs font-bold text-white truncate">{auth?.user?.name || 'Super Admin'}</p>
-                        <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                router.post('/logout', {}, {
-                                    onSuccess: () => { window.location.href = '/login'; },
-                                    onError: () => { window.location.href = '/login'; }
-                                });
-                            }}
-                            className="text-xs text-rose-300 hover:text-rose-100 block text-right font-medium mt-0.5"
-                        >
-                            تسجيل الخروج
-                        </button>
-                    </div>
+                    <Link href="/admins" className="flex items-center gap-3 group">
+                        <div className="w-9 h-9 rounded-full bg-indigo-600 group-hover:bg-indigo-500 text-white flex items-center justify-center font-extrabold text-xs shrink-0 border border-indigo-400 transition-colors">
+                            {auth?.user?.name ? auth.user.name.substring(0, 2).toUpperCase() : 'AD'}
+                        </div>
+                        <div className={`mr-1 min-w-0 ${!isSidebarOpen && 'hidden'}`}>
+                            <p className="text-xs font-bold text-white group-hover:text-indigo-200 truncate transition-colors">{auth?.user?.name || 'Super Admin'}</p>
+                            <span className="text-[11px] text-indigo-300 block">إعدادات الحساب</span>
+                        </div>
+                    </Link>
                 </div>
             </aside>
 
@@ -241,13 +250,76 @@ export default function SuperAdminLayout({ children }) {
                         </h1>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <span className="text-xs sm:text-sm text-gray-500 font-medium hidden sm:inline">
-                            {auth?.user?.email}
-                        </span>
-                        <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs border border-indigo-200">
-                            {auth?.user?.name ? auth.user.name.substring(0, 1).toUpperCase() : 'A'}
-                        </div>
+                    {/* Top Left Profile Circle & Dropdown */}
+                    <div className="relative">
+                        <button
+                            type="button"
+                            onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                            className="flex items-center gap-3 p-1.5 rounded-2xl hover:bg-gray-100 focus:outline-none transition-all border border-transparent hover:border-gray-200 cursor-pointer"
+                        >
+                            <div className="text-left hidden sm:block">
+                                <p className="text-xs font-bold text-gray-800 leading-tight">{auth?.user?.name || 'Super Admin'}</p>
+                                <p className="text-[11px] text-gray-400 font-medium">{auth?.user?.email}</p>
+                            </div>
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold text-xs shadow-xs border-2 border-white ring-2 ring-indigo-50">
+                                {auth?.user?.name ? auth.user.name.substring(0, 1).toUpperCase() : 'A'}
+                            </div>
+                        </button>
+
+                        {/* Dropdown Menu */}
+                        {isProfileDropdownOpen && (
+                            <>
+                                <div 
+                                    className="fixed inset-0 z-40" 
+                                    onClick={() => setIsProfileDropdownOpen(false)}
+                                />
+                                <div className="absolute left-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 py-2 overflow-hidden text-right animate-in fade-in zoom-in-95 duration-100">
+                                    <div className="px-4 py-3 bg-gray-50/70 border-b border-gray-100">
+                                        <p className="text-xs font-bold text-gray-800">{auth?.user?.name || 'Super Admin'}</p>
+                                        <p className="text-[11px] text-gray-500 font-mono mt-0.5 truncate" dir="ltr">{auth?.user?.email}</p>
+                                        <span className="inline-block mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-50 text-indigo-600 border border-indigo-100">
+                                            👑 مدير عام (Super Admin)
+                                        </span>
+                                    </div>
+
+                                    <div className="py-1">
+                                        <Link
+                                            href="/admins"
+                                            onClick={() => setIsProfileDropdownOpen(false)}
+                                            className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                                        >
+                                            <span className="text-sm">👤</span>
+                                            <span>تعديل بياناتي وكلمة المرور</span>
+                                        </Link>
+                                        <Link
+                                            href="/admins"
+                                            onClick={() => setIsProfileDropdownOpen(false)}
+                                            className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                                        >
+                                            <span className="text-sm">👥</span>
+                                            <span>إدارة المشرفين (إضافة مشرف جديد)</span>
+                                        </Link>
+                                    </div>
+
+                                    <div className="border-t border-gray-100 pt-1">
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setIsProfileDropdownOpen(false);
+                                                router.post('/logout', {}, {
+                                                    onSuccess: () => { window.location.href = '/login'; },
+                                                    onError: () => { window.location.href = '/login'; }
+                                                });
+                                            }}
+                                            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors text-right"
+                                        >
+                                            <span className="text-sm">🚪</span>
+                                            <span>تسجيل الخروج</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </header>
 
