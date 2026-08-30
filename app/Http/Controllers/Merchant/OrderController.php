@@ -358,22 +358,26 @@ class OrderController extends Controller
         }
 
         foreach ($order->items as $item) {
-            $product = Product::find($item['id'] ?? null);
-            if ($product) {
-                $qty = (int) ($item['quantity'] ?? $item['qty'] ?? 1);
-                $selectedSize  = $item['selectedSize']  ?? null;
-                $selectedColor = $item['selectedColor'] ?? null;
-                $options       = is_array($item['options'] ?? null) ? $item['options'] : [];
+            try {
+                $product = Product::find($item['id'] ?? null);
+                if ($product) {
+                    $qty = (int) ($item['quantity'] ?? $item['qty'] ?? 1);
+                    $selectedSize  = $item['selectedSize']  ?? null;
+                    $selectedColor = $item['selectedColor'] ?? null;
+                    $options       = is_array($item['options'] ?? null) ? $item['options'] : [];
 
-                $product->incrementVariantStock($qty, $selectedSize, $selectedColor, $options);
+                    $product->incrementVariantStock($qty, $selectedSize, $selectedColor, $options);
 
-                StockMovement::create([
-                    'tenant_id'   => $product->tenant_id,
-                    'product_id'  => $product->id,
-                    'quantity'    => $qty,
-                    'type'        => 'in',
-                    'description' => 'استرجاع مخزون بسبب إلغاء الطلب #' . ($order->reference_number ?: $order->id),
-                ]);
+                    StockMovement::create([
+                        'tenant_id'   => $product->tenant_id,
+                        'product_id'  => $product->id,
+                        'quantity'    => $qty,
+                        'type'        => 'in',
+                        'description' => 'استرجاع مخزون بسبب إلغاء الطلب #' . ($order->reference_number ?: $order->id),
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Could not restore stock for item in Order #{$order->id}: " . $e->getMessage());
             }
         }
     }
