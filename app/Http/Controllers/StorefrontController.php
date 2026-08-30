@@ -665,8 +665,16 @@ s0.parentNode.insertBefore(s1,s0);
     color: var(--primary-color) !important;
   }
 
-  /* === HEADER LAYOUT 1: CLASSIC (CLEAN STANDARD) === */
-  header.header, header.header-layout-classic {
+  /* Prevent horizontal scroll / overflow on entire page */
+  html, body {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* === HEADER GLOBAL & LAYOUTS === */
+  header.header, header.header-layout-classic, header.header-layout-centered {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
@@ -675,13 +683,45 @@ s0.parentNode.insertBefore(s1,s0);
     margin: 0 auto !important;
     padding: 10px 16px !important;
     box-sizing: border-box !important;
+    overflow: hidden !important;
   }
   header.header .brand, header.header-layout-classic .brand {
     order: 1 !important;
     display: flex !important;
     align-items: center !important;
-    gap: 10px !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+    flex: 0 1 auto !important;
+    overflow: hidden !important;
+  }
+  header.header .brand img, header.header-layout-classic .brand img, header.header-layout-centered .brand img {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    max-width: 38px !important;
+    border-radius: 8px !important;
+    border: 1px solid #e5e7eb !important;
+    object-fit: cover !important;
     flex-shrink: 0 !important;
+  }
+  header.header .brand span, header.header-layout-classic .brand span, header.header-layout-centered .brand span,
+  .brand span, #siteName, .site-name {
+    font-size: 1.1rem !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    min-width: 0 !important;
+    display: block !important;
+  }
+  .brand.long-name span, .brand-long-name, .brand span.brand-long-name {
+    font-size: 0.92rem !important;
+    font-weight: 700 !important;
+  }
+  .brand.very-long-name span, .brand-very-long-name, .brand span.brand-very-long-name {
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
   }
   header.header .nav, header.header-layout-classic .nav {
     order: 2 !important;
@@ -729,34 +769,98 @@ s0.parentNode.insertBefore(s1,s0);
       position: absolute !important;
       inset-inline-start: 24px !important;
       top: 18px !important;
-      order: 3 !important;
+      margin: 0 !important;
     }
   }
+
+  /* === MOBILE HEADER RESPONSIVE OVERRIDES (MAX-WIDTH 768px) === */
   @media (max-width: 768px) {
+    html, body {
+      overflow-x: hidden !important;
+      max-width: 100vw !important;
+      width: 100% !important;
+    }
     header.header, header.header-layout-classic, header.header-layout-centered {
       display: flex !important;
+      flex-direction: row !important;
       align-items: center !important;
       justify-content: space-between !important;
       position: sticky !important;
       top: 0 !important;
       z-index: 50 !important;
-      padding: 10px 14px !important;
+      padding: 6px 8px !important;
+      box-sizing: border-box !important;
+      width: 100% !important;
+      max-width: 100vw !important;
+      overflow: hidden !important;
+      gap: 6px !important;
     }
     header.header .brand, header.header-layout-classic .brand, header.header-layout-centered .brand {
       order: 1 !important;
       margin: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 5px !important;
+      min-width: 0 !important;
+      flex: 1 1 auto !important;
+      max-width: calc(100vw - 135px) !important;
+      overflow: hidden !important;
+    }
+    header.header .brand img, header.header-layout-classic .brand img, header.header-layout-centered .brand img {
+      width: 34px !important;
+      height: 34px !important;
+      min-width: 34px !important;
+      max-width: 34px !important;
+      border-radius: 6px !important;
+      flex-shrink: 0 !important;
+    }
+    header.header .brand span, header.header-layout-classic .brand span, header.header-layout-centered .brand span,
+    .brand span, #siteName, .site-name {
+      font-size: 0.85rem !important;
+      font-weight: 700 !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      line-height: 1.15 !important;
+      display: block !important;
+      min-width: 0 !important;
+    }
+    .brand.long-name span, .brand-long-name, .brand span.brand-long-name,
+    header.header .brand.long-name span {
+      font-size: 0.76rem !important;
+      line-height: 1.1 !important;
+    }
+    .brand.very-long-name span, .brand-very-long-name, .brand span.brand-very-long-name,
+    header.header .brand.very-long-name span {
+      font-size: 0.70rem !important;
+      line-height: 1.1 !important;
     }
     header.header .icons, header.header-layout-classic .icons, header.header-layout-centered .icons {
       order: 2 !important;
       margin-inline-start: auto !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+      flex-shrink: 0 !important;
+    }
+    .icon-round {
+      width: 34px !important;
+      height: 34px !important;
+      min-width: 34px !important;
+      flex-shrink: 0 !important;
     }
     header.header .menu-toggle, header.header-layout-classic .menu-toggle, header.header-layout-centered .menu-toggle {
       order: 3 !important;
       display: flex !important;
+      width: 34px !important;
+      height: 34px !important;
+      min-width: 34px !important;
+      padding: 5px !important;
+      flex-shrink: 0 !important;
     }
     header.header .nav, header.header-layout-classic .nav, header.header-layout-centered .nav {
       position: fixed !important;
-      top: 58px !important;
+      top: 52px !important;
       right: 0 !important;
       left: 0 !important;
       background: #ffffff !important;
@@ -770,6 +874,39 @@ s0.parentNode.insertBefore(s1,s0);
     }
     header.header .nav.open, header.header-layout-classic .nav.open, header.header-layout-centered .nav.open {
       display: flex !important;
+    }
+  }
+
+  @media (max-width: 360px) {
+    header.header, header.header-layout-classic, header.header-layout-centered {
+      padding: 4px 6px !important;
+      gap: 4px !important;
+    }
+    header.header .brand, header.header-layout-classic .brand, header.header-layout-centered .brand {
+      gap: 4px !important;
+      max-width: calc(100vw - 118px) !important;
+    }
+    header.header .brand img {
+      width: 28px !important;
+      height: 28px !important;
+      min-width: 28px !important;
+      max-width: 28px !important;
+    }
+    header.header .brand span, .brand span, #siteName, .site-name {
+      font-size: 0.74rem !important;
+    }
+    .brand.long-name span, .brand-long-name, .brand span.brand-long-name {
+      font-size: 0.68rem !important;
+    }
+    .icon-round {
+      width: 30px !important;
+      height: 30px !important;
+      min-width: 30px !important;
+    }
+    header.header .menu-toggle, header.header-layout-classic .menu-toggle, header.header-layout-centered .menu-toggle {
+      width: 30px !important;
+      height: 30px !important;
+      min-width: 30px !important;
     }
   }
 
@@ -962,10 +1099,19 @@ s0.parentNode.insertBefore(s1,s0);
             $html = preg_replace('/(<a[^>]*class=["\'][^"\']*brand)([^"\']*["\'])/i', '$1' . $longClass . '$2', $html);
         }
 
-        $html = preg_replace('/<span id="siteName"[^>]*>.*?<\/span>/i', '<span id="siteName"' . ($spanClass ? ' class="' . $spanClass . '"' : '') . '>' . e($storeName) . '</span>', $html);
+        if (preg_match('/<span id="siteName"[^>]*>.*?<\/span>/i', $html)) {
+            $html = preg_replace('/<span id="siteName"[^>]*>.*?<\/span>/i', '<span id="siteName"' . ($spanClass ? ' class="' . $spanClass . '"' : '') . '>' . e($storeName) . '</span>', $html);
+        } else {
+            $html = preg_replace('/(<a[^>]*class=["\'][^"\']*brand[^"\']*["\'][^>]*>[\s\S]*?<span[^>]*>)(.*?)(<\/span>)/i', '$1' . e($storeName) . '$3', $html);
+        }
+
         if ($logo) {
             $logoUrl = asset('storage/' . $logo);
-            $html = preg_replace('/(<img id="siteLogo"[^>]*src=")[^"]*("[^>]*>)/i', '$1' . e($logoUrl) . '$2', $html);
+            if (preg_match('/(<img id="siteLogo"[^>]*src=")[^"]*("[^>]*>)/i', $html)) {
+                $html = preg_replace('/(<img id="siteLogo"[^>]*src=")[^"]*("[^>]*>)/i', '$1' . e($logoUrl) . '$2', $html);
+            } else {
+                $html = preg_replace('/(<a[^>]*class=["\'][^"\']*brand[^"\']*["\'][^>]*>[\s\S]*?<img[^>]*src=")[^"]*("[^>]*>)/i', '$1' . e($logoUrl) . '$2', $html);
+            }
         }
 
         // Google Analytics
