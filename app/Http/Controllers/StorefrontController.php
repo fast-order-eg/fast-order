@@ -663,42 +663,69 @@ s0.parentNode.insertBefore(s1,s0);
   }
 
   @media (max-width: 768px) {
+    /* Single Badge on Mobile: Full, normal size */
     .discount-badge, .badge-discount {
-      top: 5px !important;
-      left: 5px !important;
-      padding: 2px 5px !important;
-      font-size: 0.58rem !important;
+      top: 6px !important;
+      left: 6px !important;
+      padding: 3px 8px !important;
+      font-size: 0.70rem !important;
       font-weight: 700 !important;
-      line-height: 1.1 !important;
-      border-radius: 4px !important;
-      max-width: 48% !important;
-      box-shadow: 0 1px 4px rgba(220, 38, 38, 0.2) !important;
+      line-height: 1.2 !important;
+      border-radius: 9999px !important;
+      box-shadow: 0 2px 6px rgba(220, 38, 38, 0.2) !important;
     }
     .free-shipping-badge {
+      top: 6px !important;
+      right: 6px !important;
+      padding: 3px 8px !important;
+      font-size: 0.70rem !important;
+      font-weight: 700 !important;
+      line-height: 1.2 !important;
+      border-radius: 9999px !important;
+      box-shadow: 0 2px 6px rgba(22, 163, 74, 0.2) !important;
+    }
+
+    /* Dual Badges on Mobile (Discount + Free Shipping simultaneously): Compact size */
+    .card.has-dual-badges .discount-badge,
+    .card.has-dual-badges .badge-discount,
+    .card.has-dual-badges .free-shipping-badge,
+    .card:has(.discount-badge):has(.free-shipping-badge) .discount-badge,
+    .card:has(.discount-badge):has(.free-shipping-badge) .free-shipping-badge {
       top: 5px !important;
-      right: 5px !important;
       padding: 2px 5px !important;
       font-size: 0.58rem !important;
       font-weight: 700 !important;
       line-height: 1.1 !important;
       border-radius: 4px !important;
       max-width: 48% !important;
-      box-shadow: 0 1px 4px rgba(22, 163, 74, 0.2) !important;
+    }
+    .card.has-dual-badges .discount-badge,
+    .card:has(.discount-badge):has(.free-shipping-badge) .discount-badge {
+      left: 5px !important;
+    }
+    .card.has-dual-badges .free-shipping-badge,
+    .card:has(.discount-badge):has(.free-shipping-badge) .free-shipping-badge {
+      right: 5px !important;
     }
   }
 
   @media (max-width: 380px) {
-    .discount-badge, .badge-discount {
+    .card.has-dual-badges .discount-badge,
+    .card.has-dual-badges .badge-discount,
+    .card.has-dual-badges .free-shipping-badge,
+    .card:has(.discount-badge):has(.free-shipping-badge) .discount-badge,
+    .card:has(.discount-badge):has(.free-shipping-badge) .free-shipping-badge {
       top: 4px !important;
-      left: 4px !important;
       padding: 1.5px 4px !important;
       font-size: 0.52rem !important;
     }
-    .free-shipping-badge {
-      top: 4px !important;
+    .card.has-dual-badges .discount-badge,
+    .card:has(.discount-badge):has(.free-shipping-badge) .discount-badge {
+      left: 4px !important;
+    }
+    .card.has-dual-badges .free-shipping-badge,
+    .card:has(.discount-badge):has(.free-shipping-badge) .free-shipping-badge {
       right: 4px !important;
-      padding: 1.5px 4px !important;
-      font-size: 0.52rem !important;
     }
   }
 

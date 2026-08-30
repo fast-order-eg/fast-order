@@ -358,21 +358,26 @@ function productCard(p){
   const link = createEl('a'); link.href = `/shop/product.html?id=${p.id}`; link.style.textDecoration='none'; link.style.color='inherit';
   const img = createEl('img'); img.src = p.image_url || 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image'; img.alt=p.name||''; link.appendChild(img);
   
-  // بادج الخصم في أعلى يسار الصورة ببادينج وحجم متناسق وأنيق
+  // بادج الخصم والشحن المجاني مع فحص وجود الاثنين معاً
   const nowVal = Math.round(Number(p.price_after ?? 0));
   const beforeVal = p.price_before != null ? Math.round(Number(p.price_before)) : null;
-  if (beforeVal && beforeVal > nowVal) {
+  const hasDiscount = Boolean(beforeVal && beforeVal > nowVal && Math.round(((beforeVal - nowVal) / beforeVal) * 100) > 0);
+  const hasFreeShipping = (p.shipping_type === 'free');
+
+  if (hasDiscount && hasFreeShipping) {
+    card.classList.add('has-dual-badges');
+  }
+
+  if (hasDiscount) {
     const pct = Math.round(((beforeVal - nowVal) / beforeVal) * 100);
-    if (pct > 0) {
-      const discountBadge = createEl('div', 'discount-badge');
-      const currentLang = getStorefrontLang();
-      discountBadge.textContent = currentLang === 'en' ? `${pct}% OFF` : `خصم ${pct}%`;
-      card.appendChild(discountBadge);
-    }
+    const discountBadge = createEl('div', 'discount-badge');
+    const currentLang = getStorefrontLang();
+    discountBadge.textContent = currentLang === 'en' ? `${pct}% OFF` : `خصم ${pct}%`;
+    card.appendChild(discountBadge);
   }
 
   // إضافة بادج الشحن المجاني
-  if (p.shipping_type === 'free') {
+  if (hasFreeShipping) {
     const freeShippingBadge = createEl('div', 'free-shipping-badge');
     const currentLang = getStorefrontLang();
     freeShippingBadge.textContent = currentLang === 'en' ? 'Free Shipping' : 'شحن مجاناً';
