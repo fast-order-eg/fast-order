@@ -1856,14 +1856,21 @@
       quickForm.addEventListener('submit', async function(e) {
         e.preventDefault();
 
+        if (this.dataset.submitting === 'true') {
+          return;
+        }
+
         if (!validateQuickForm(this)) {
           return;
         }
 
+        this.dataset.submitting = 'true';
         var btn = document.getElementById('quickSubmitBtn');
         var originalText = btn.innerHTML;
         btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> جاري تأكيد الطلب...';
         btn.disabled = true;
+        btn.style.pointerEvents = 'none';
+        btn.style.opacity = '0.7';
 
         var fd = new FormData(this);
         
@@ -1976,13 +1983,19 @@
                }
             }
             alert((data.message || 'حدث خطأ أثناء إتمام الطلب') + errorDetails);
+            this.dataset.submitting = 'false';
             btn.innerHTML = originalText;
             btn.disabled = false;
+            btn.style.pointerEvents = 'auto';
+            btn.style.opacity = '1';
           }
         } catch(err) {
           alert('تعذر الاتصال بالخادم: ' + err.message);
+          this.dataset.submitting = 'false';
           btn.innerHTML = originalText;
           btn.disabled = false;
+          btn.style.pointerEvents = 'auto';
+          btn.style.opacity = '1';
         }
       });
     }

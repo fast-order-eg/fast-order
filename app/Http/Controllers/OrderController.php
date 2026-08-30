@@ -77,6 +77,21 @@ class OrderController extends Controller
 
         $shippingCost = $hasNonFreeShipping ? $governorate->price : 0;
         $total = $subtotal + $shippingCost;
+        $tenantId = $governorate->tenant_id ?? null;
+
+        // 🛡️ فحص التكرار (Deduplication Guard): منع تكرار نفس الطلب لنفس العميل ونفس القيمة خلال 60 ثانية
+        if ($tenantId && !empty($validated['customer_phone'])) {
+            $recentDuplicate = Order::where('tenant_id', $tenantId)
+                ->where('customer_phone', $validated['customer_phone'])
+                ->where('total', $total)
+                ->where('created_at', '>=', now()->subSeconds(60))
+                ->latest('id')
+                ->first();
+
+            if ($recentDuplicate) {
+                return redirect(url('/order-success/' . $recentDuplicate->reference_number . '?clear_cart=1'));
+            }
+        }
 
         $order = Order::createWithReference([
             'customer_name'    => $validated['customer_name'],
@@ -208,6 +223,30 @@ class OrderController extends Controller
 
             $shippingCost = $hasNonFreeShipping ? $governorate->price : 0;
             $total = max(0, $subtotal - $discount + $shippingCost);
+            $tenantId = $governorate->tenant_id ?? null;
+
+            // 🛡️ فحص التكرار (Deduplication Guard): منع تكرار نفس الطلب لنفس العميل ونفس القيمة خلال 60 ثانية
+            if ($tenantId && !empty($validated['customer_phone'])) {
+                $recentDuplicate = Order::where('tenant_id', $tenantId)
+                    ->where('customer_phone', $validated['customer_phone'])
+                    ->where('total', $total)
+                    ->where('created_at', '>=', now()->subSeconds(60))
+                    ->latest('id')
+                    ->first();
+
+                if ($recentDuplicate) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'تم استلام طلبك بنجاح',
+                        'data'    => [
+                            'id'               => $recentDuplicate->id,
+                            'reference_number' => $recentDuplicate->reference_number,
+                            'total'            => $recentDuplicate->total,
+                            'redirect_url'     => '/shop/order-success.html?ref=' . $recentDuplicate->reference_number
+                        ]
+                    ]);
+                }
+            }
 
             $paymentMethod = $validated['payment_method'] ?? 'cod';
             $isOnlinePayment = in_array($paymentMethod, ['paymob', 'kashier', 'fawry', 'card', 'wallet']);
