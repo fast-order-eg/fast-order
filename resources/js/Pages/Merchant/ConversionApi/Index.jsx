@@ -362,122 +362,124 @@ export default function ConversionApiIndex({ pixels = [] }) {
 
             {/* Add / Edit Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" dir="rtl">
-                    <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 animate-scaleUp">
-                        <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
-                            <h3 className="text-xl font-black text-gray-900 flex items-center gap-2">
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-3 sm:p-6 flex justify-center items-center" dir="rtl">
+                    <div className="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-gray-100 animate-scaleUp my-auto max-h-[92vh] flex flex-col">
+                        <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-gray-100 mb-3 sm:mb-4 shrink-0">
+                            <h3 className="text-lg sm:text-xl font-black text-gray-900 flex items-center gap-2">
                                 <span>🎯</span> {editingPixel ? 'تعديل بيكسل CAPI' : 'إضافة بيكسل CAPI جديد'}
                             </h3>
                             <button
                                 type="button"
                                 onClick={closeModal}
-                                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center text-sm font-bold"
+                                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center text-sm font-bold transition-colors"
                             >
                                 ✕
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            {/* Platform */}
-                            <div>
-                                <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                                    نوع المنصة <span className="text-red-500">*</span>
-                                </label>
-                                <select
-                                    value={data.platform}
-                                    onChange={(e) => setData('platform', e.target.value)}
-                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none"
-                                >
-                                    <option value="facebook">Meta (Facebook)</option>
-                                    <option value="tiktok">TikTok</option>
-                                    <option value="snapchat">Snapchat</option>
-                                </select>
-                                {errors.platform && <p className="text-red-500 text-xs mt-1">{errors.platform}</p>}
-                            </div>
+                        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
+                            <div className="space-y-3.5 sm:space-y-4 overflow-y-auto pr-1 pl-1 flex-1 py-1">
+                                {/* Platform */}
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                                        نوع المنصة <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        value={data.platform}
+                                        onChange={(e) => setData('platform', e.target.value)}
+                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none"
+                                    >
+                                        <option value="facebook">Meta (Facebook)</option>
+                                        <option value="tiktok">TikTok</option>
+                                        <option value="snapchat">Snapchat</option>
+                                    </select>
+                                    {errors.platform && <p className="text-red-500 text-xs mt-1">{errors.platform}</p>}
+                                </div>
 
-                            {/* Pixel ID */}
-                            <div>
-                                <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                                    معرّف البيكسل (Pixel ID) <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={data.pixel_id}
-                                    onChange={(e) => setData('pixel_id', e.target.value.trim())}
-                                    placeholder="مثال: 123456789012345"
-                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none"
-                                    dir="ltr"
-                                />
-                                {errors.pixel_id && <p className="text-red-500 text-xs mt-1">{errors.pixel_id}</p>}
-                            </div>
+                                {/* Pixel ID */}
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                                        معرّف البيكسل (Pixel ID) <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={data.pixel_id}
+                                        onChange={(e) => setData('pixel_id', e.target.value.trim())}
+                                        placeholder="مثال: 123456789012345"
+                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none"
+                                        dir="ltr"
+                                    />
+                                    {errors.pixel_id && <p className="text-red-500 text-xs mt-1">{errors.pixel_id}</p>}
+                                </div>
 
-                            {/* Access Token */}
-                            <div>
-                                <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                                    رمز الوصول (Access Token) <span className="text-red-500">*</span>
-                                </label>
-                                <textarea
-                                    value={data.access_token}
-                                    onChange={(e) => setData('access_token', e.target.value.trim())}
-                                    rows="3"
-                                    placeholder="EAAG..."
-                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none"
-                                    dir="ltr"
-                                />
-                                <p className="text-[11px] text-gray-500 mt-1">
-                                    يتم توليده من تبويب Settings في Events Manager تحت قسم Conversions API.
-                                </p>
-                                {errors.access_token && <p className="text-red-500 text-xs mt-1">{errors.access_token}</p>}
-                            </div>
+                                {/* Access Token */}
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                                        رمز الوصول (Access Token) <span className="text-red-500">*</span>
+                                    </label>
+                                    <textarea
+                                        value={data.access_token}
+                                        onChange={(e) => setData('access_token', e.target.value.trim())}
+                                        rows="3"
+                                        placeholder="EAAG..."
+                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none"
+                                        dir="ltr"
+                                    />
+                                    <p className="text-[11px] text-gray-500 mt-1">
+                                        يتم توليده من تبويب Settings في Events Manager تحت قسم Conversions API.
+                                    </p>
+                                    {errors.access_token && <p className="text-red-500 text-xs mt-1">{errors.access_token}</p>}
+                                </div>
 
-                            {/* Test Event Code */}
-                            <div>
-                                <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                                    كود الأحداث التجريبية (Test Event Code) <span className="text-gray-400 font-normal">(اختياري للتيست)</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={data.test_event_code}
-                                    onChange={(e) => setData('test_event_code', e.target.value.trim())}
-                                    placeholder="مثال: TEST12345"
-                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none"
-                                    dir="ltr"
-                                />
-                                <p className="text-[11px] text-gray-500 mt-1">
-                                    إذا كنت تقوم باختبار الأحداث في تبويب Test Events انسخ الكود وضعه هنا. قم بحذفه عند بدء الحملات الفعلية.
-                                </p>
-                            </div>
+                                {/* Test Event Code */}
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                                        كود الأحداث التجريبية (Test Event Code) <span className="text-gray-400 font-normal">(اختياري للتيست)</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={data.test_event_code}
+                                        onChange={(e) => setData('test_event_code', e.target.value.trim())}
+                                        placeholder="مثال: TEST12345"
+                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none"
+                                        dir="ltr"
+                                    />
+                                    <p className="text-[11px] text-gray-500 mt-1">
+                                        إذا كنت تقوم باختبار الأحداث في تبويب Test Events انسخ الكود وضعه هنا. قم بحذفه عند بدء الحملات الفعلية.
+                                    </p>
+                                </div>
 
-                            {/* Note */}
-                            <div>
-                                <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                                    ملاحظة لتمييز البيكسل <span className="text-gray-400 font-normal">(اختياري)</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={data.note}
-                                    onChange={(e) => setData('note', e.target.value)}
-                                    placeholder="مثال: بيكسل الملابس / بيكسل العطور"
-                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none"
-                                />
-                            </div>
+                                {/* Note */}
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                                        ملاحظة لتمييز البيكسل <span className="text-gray-400 font-normal">(اختياري)</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={data.note}
+                                        onChange={(e) => setData('note', e.target.value)}
+                                        placeholder="مثال: بيكسل الملابس / بيكسل العطور"
+                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none"
+                                    />
+                                </div>
 
-                            {/* Active checkbox */}
-                            <div className="flex items-center gap-2 pt-2">
-                                <input
-                                    type="checkbox"
-                                    id="is_active"
-                                    checked={data.is_active}
-                                    onChange={(e) => setData('is_active', e.target.checked)}
-                                    className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-gray-300"
-                                />
-                                <label htmlFor="is_active" className="text-sm font-bold text-gray-800 cursor-pointer">
-                                    تفعيل إرسال الأحداث لهذا البيكسل فوراً
-                                </label>
+                                {/* Active checkbox */}
+                                <div className="flex items-center gap-2 pt-1">
+                                    <input
+                                        type="checkbox"
+                                        id="is_active"
+                                        checked={data.is_active}
+                                        onChange={(e) => setData('is_active', e.target.checked)}
+                                        className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-gray-300 cursor-pointer"
+                                    />
+                                    <label htmlFor="is_active" className="text-sm font-bold text-gray-800 cursor-pointer">
+                                        تفعيل إرسال الأحداث لهذا البيكسل فوراً
+                                    </label>
+                                </div>
                             </div>
 
                             {/* Actions */}
-                            <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                            <div className="flex items-center justify-end gap-3 pt-3 sm:pt-4 border-t border-gray-100 shrink-0 mt-2">
                                 <button
                                     type="button"
                                     onClick={closeModal}
@@ -500,22 +502,22 @@ export default function ConversionApiIndex({ pixels = [] }) {
 
             {/* Guide Modal */}
             {isGuideOpen && (
-                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" dir="rtl">
-                    <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-gray-100">
-                        <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
-                            <h3 className="text-xl font-black text-gray-900 flex items-center gap-2">
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-3 sm:p-6 flex justify-center items-center" dir="rtl">
+                    <div className="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl border border-gray-100 my-auto max-h-[92vh] flex flex-col">
+                        <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-gray-100 mb-3 sm:mb-4 shrink-0">
+                            <h3 className="text-lg sm:text-xl font-black text-gray-900 flex items-center gap-2">
                                 <span>📖</span> دليل استخراج الـ Access Token للـ Conversions API
                             </h3>
                             <button
                                 type="button"
                                 onClick={() => setIsGuideOpen(false)}
-                                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center text-sm font-bold"
+                                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center text-sm font-bold transition-colors"
                             >
                                 ✕
                             </button>
                         </div>
 
-                        <div className="space-y-6 text-sm text-gray-700 leading-relaxed max-h-[70vh] overflow-y-auto pl-2">
+                        <div className="space-y-4 sm:space-y-6 text-sm text-gray-700 leading-relaxed overflow-y-auto pl-1 pr-1 flex-1 py-1">
                             {/* Meta Guide */}
                             <div className="p-4 bg-blue-50/60 rounded-2xl border border-blue-100 space-y-2">
                                 <h4 className="text-base font-black text-blue-900 flex items-center gap-2">
