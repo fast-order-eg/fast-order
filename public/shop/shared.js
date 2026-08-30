@@ -520,7 +520,7 @@ function renderProducts(root, items){
 
   // Auto-convert to horizontal slider on Homepage only
   const isHomepage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/shop' || window.location.pathname === '/shop/' || !window.location.pathname.includes('.html');
-  const isTargetGrid = root.id === 'offersGrid' || root.id === 'productsGrid' || root.id === 'homeProductsGrid';
+  const isTargetGrid = root.id === 'offersGrid' || root.id === 'bestSellersGrid' || root.id === 'productsGrid' || root.id === 'homeProductsGrid';
   if (isHomepage && isTargetGrid && items.length > 2) {
     makeProductSlider(root, false);
   }
@@ -824,6 +824,7 @@ function renderHomepageLayout(settings) {
     {id: 'hero_slider', enabled: true, title: 'البانر الإعلاني', title_en: 'Hero Slider'},
     {id: 'featured_categories', enabled: true, title: 'الأقسام المميزة', title_en: 'Featured Categories'},
     {id: 'best_offers', enabled: true, title: 'أفضل العروض والخصومات', title_en: 'Best Offers & Discounts'},
+    {id: 'best_sellers', enabled: true, title: 'الأكثر طلباً ومبيعاً', title_en: 'Best Sellers'},
     {id: 'latest_products', enabled: true, title: 'أحدث المنتجات', title_en: 'Latest Products'}
   ];
 

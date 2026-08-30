@@ -295,14 +295,14 @@ html[dir="ltr"] .page-title,html[dir="ltr"] h1.page-title{text-align:left;}
 .section-head h2{margin:0;font-size:1.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .section-head .more{color:var(--primary-color);text-decoration:none;white-space:nowrap;flex-shrink:0;font-size:0.9rem;font-weight:700}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
-/* Mobile: 2 columns for ALL grids (products, categories, offers, subcategories) */
-.grid#productsGrid,#productsGrid.grid,.grid#categoriesGrid,#categoriesGrid.grid,.subcategories-grid,#offersGrid,#offersGrid.grid{grid-template-columns:repeat(2,1fr)}
-/* Tablet and larger: 4 columns for categories/offers */
-@media(min-width:768px){.grid#categoriesGrid,.grid#productsGrid,#categoriesGrid.grid,#productsGrid.grid,.subcategories-grid,#offersGrid,#offersGrid.grid{grid-template-columns:repeat(4,1fr)}}
-@media(min-width:1200px){.grid#categoriesGrid,#categoriesGrid.grid,.subcategories-grid,#offersGrid,#offersGrid.grid{grid-template-columns:repeat(4,1fr)}}
+/* Mobile: 2 columns for ALL grids (products, categories, offers, best sellers, subcategories) */
+.grid#productsGrid,#productsGrid.grid,.grid#categoriesGrid,#categoriesGrid.grid,.subcategories-grid,#offersGrid,#offersGrid.grid,#bestSellersGrid,#bestSellersGrid.grid{grid-template-columns:repeat(2,1fr)}
+/* Tablet and larger: 4 columns for categories/offers/best sellers */
+@media(min-width:768px){.grid#categoriesGrid,.grid#productsGrid,#categoriesGrid.grid,#productsGrid.grid,.subcategories-grid,#offersGrid,#offersGrid.grid,#bestSellersGrid,#bestSellersGrid.grid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:1200px){.grid#categoriesGrid,#categoriesGrid.grid,.subcategories-grid,#offersGrid,#offersGrid.grid,#bestSellersGrid,#bestSellersGrid.grid{grid-template-columns:repeat(4,1fr)}}
 /* Desktop: 5 columns for products catalog and 4 columns for offers on desktop screens (1024px+) */
 @media(min-width:1024px){.grid#productsGrid,#productsGrid.grid{grid-template-columns:repeat(5,1fr) !important;gap:16px !important}}
-@media(min-width:1024px){.grid#offersGrid,#offersGrid.grid{grid-template-columns:repeat(4,1fr) !important;gap:16px !important}}
+@media(min-width:1024px){.grid#offersGrid,#offersGrid.grid,.grid#bestSellersGrid,#bestSellersGrid.grid{grid-template-columns:repeat(4,1fr) !important;gap:16px !important}}
 /* خاص بصفحة الأقسام - فرض 4 أعمدة في الشاشات الكبيرة */
 .subcategories-grid.grid{grid-template-columns:repeat(2,1fr)}
 @media(min-width:768px){.subcategories-grid.grid{grid-template-columns:repeat(4,1fr) !important}}
@@ -323,7 +323,7 @@ html[dir="ltr"] .page-title,html[dir="ltr"] h1.page-title{text-align:left;}
   .card{margin-bottom:6px}
   .grid .card img, .product-card img{height:140px;object-fit:cover}
   .category-card img, #categoriesGrid .card img {height:130px !important}
-  #productsGrid.grid,#categoriesGrid.grid,#offersGrid.grid{gap:10px;padding:0 2px}
+  #productsGrid.grid,#categoriesGrid.grid,#offersGrid.grid,#bestSellersGrid.grid{gap:10px;padding:0 2px}
   .card .btn-add{font-size:0.78rem !important;padding:7px 6px !important;white-space:nowrap !important}
 }
 @media(max-width:480px){

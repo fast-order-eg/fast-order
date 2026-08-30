@@ -495,6 +495,24 @@ Route::prefix('admin')->group(function () {
                 return asset('storage/' . ltrim($path, '/'));
             };
 
+            // Calculate sales count per product from real non-cancelled orders
+            $productSales = [];
+            try {
+                $orders = \App\Models\Order::whereNotIn('status', ['cancelled'])->latest()->limit(500)->get(['items']);
+                foreach ($orders as $order) {
+                    $items = is_array($order->items) ? $order->items : (json_decode($order->items, true) ?: []);
+                    foreach ($items as $item) {
+                        $pid = (int) ($item['id'] ?? ($item['product_id'] ?? 0));
+                        $qty = (int) ($item['qty'] ?? ($item['quantity'] ?? 1));
+                        if ($pid > 0) {
+                            $productSales[$pid] = ($productSales[$pid] ?? 0) + max(1, $qty);
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Ignore gracefully
+            }
+
             $q = Product::query()->with('category');
             if ($catId = request('category_id')) {
                 $q->where('category_id', (int) $catId);
@@ -509,7 +527,7 @@ Route::prefix('admin')->group(function () {
 
             if ($page) {
                 $paginated = $q->paginate($limit);
-                $items = collect($paginated->items())->map(function ($p) use ($formatImg) {
+                $items = collect($paginated->items())->map(function ($p) use ($formatImg, $productSales) {
                     $cat = $p->category;
                     $catName = $cat ? ($cat->name_ar ?: ($cat->name ?: $cat->name_en)) : null;
                     $img = $p->image_url ?: $p->main_image_path;
@@ -519,6 +537,7 @@ Route::prefix('admin')->group(function () {
                         'description' => $p->description,
                         'price_before' => $p->price_before,
                         'price_after' => $p->price_after ?? $p->price,
+                        'sales_count' => $productSales[$p->id] ?? 0,
                         'stock' => $p->stock,
                         'category_id' => $p->category_id,
                         'category' => $catName,
@@ -545,7 +564,7 @@ Route::prefix('admin')->group(function () {
                 $q->limit((int) $limitReq);
             }
 
-            $items = $q->get()->map(function ($p) use ($formatImg) {
+            $items = $q->get()->map(function ($p) use ($formatImg, $productSales) {
                 $cat = $p->category;
                 $catName = $cat ? ($cat->name_ar ?: ($cat->name ?: $cat->name_en)) : null;
                 $img = $p->image_url ?: $p->main_image_path;
@@ -555,6 +574,7 @@ Route::prefix('admin')->group(function () {
                     'description' => $p->description,
                     'price_before' => $p->price_before,
                     'price_after' => $p->price_after ?? $p->price,
+                    'sales_count' => $productSales[$p->id] ?? 0,
                     'stock' => $p->stock,
                     'category_id' => $p->category_id,
                     'category' => $catName,

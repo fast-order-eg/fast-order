@@ -86,6 +86,15 @@
       <div id="offersGrid" class="grid"></div>
     </section>
 
+    <!-- Best Sellers section -->
+    <section id="sec-best_sellers" class="section container" style="display: none;">
+      <div class="section-head">
+        <h2 id="title-best_sellers">الأكثر طلباً ومبيعاً 🔥</h2>
+        <a class="more" href="/shop/products.html?sort=best_sellers">عرض الكل</a>
+      </div>
+      <div id="bestSellersGrid" class="grid"></div>
+    </section>
+
     <!-- Products grid -->
     <section id="sec-latest_products" class="section container" style="display: none;">
       <div class="section-head">
@@ -421,6 +430,7 @@
             {id: 'hero_slider', enabled: true},
             {id: 'featured_categories', enabled: true},
             {id: 'best_offers', enabled: true},
+            {id: 'best_sellers', enabled: true},
             {id: 'latest_products', enabled: true}
           ]
         };
@@ -434,6 +444,7 @@
       const isHeroEnabled = !sections.length || sections.some(s => s.id === 'hero_slider' && s.enabled);
       const isCategoriesEnabled = !sections.length || sections.some(s => s.id === 'featured_categories' && s.enabled);
       const isOffersEnabled = !sections.length || sections.some(s => s.id === 'best_offers' && s.enabled);
+      const isBestSellersEnabled = !sections.length || sections.some(s => s.id === 'best_sellers' && s.enabled);
       const isLatestEnabled = !sections.length || sections.some(s => s.id === 'latest_products' && s.enabled);
 
       const lang = getStorefrontLang();
@@ -471,7 +482,7 @@
             const featuredIds = settings.homepage_featured_categories.map(Number);
             featuredCats = data.filter(c => featuredIds.includes(Number(c.id)));
           } else {
-            featuredCats = data.slice(0, 4);
+            featuredCats = data.slice(0, 12);
           }
           renderCategories(document.getElementById('categoriesGrid'), featuredCats);
         }).catch(() => {
@@ -479,13 +490,16 @@
         });
       }
 
-      // Load Products if Best Offers or Latest Products is enabled
-      if (isOffersEnabled || isLatestEnabled) {
+      // Load Products if Best Offers, Best Sellers or Latest Products is enabled
+      if (isOffersEnabled || isBestSellersEnabled || isLatestEnabled) {
         if (isOffersEnabled) renderSkeletonProducts(document.getElementById('offersGrid'), 4);
+        if (isBestSellersEnabled) renderSkeletonProducts(document.getElementById('bestSellersGrid'), 4);
         if (isLatestEnabled) renderSkeletonProducts(document.getElementById('productsGrid'), 4);
+
         fetch(`${window.API_BASE}/products`).then(r => r.json()).then(({ data }) => {
+          // 1. Best Offers (10-12 products)
           if (isOffersEnabled) {
-            const discountedProducts = data.filter(product => {
+            let discountedProducts = data.filter(product => {
               const priceBefore = parseFloat(product.price_before || 0);
               const priceAfter = parseFloat(product.price_after || 0);
               return priceBefore > 0 && priceAfter > 0 && priceBefore > priceAfter;
@@ -497,7 +511,12 @@
               return discountB - discountA;
             });
 
-            const bestOffersLimit = settings.homepage_best_offers_limit ? parseInt(settings.homepage_best_offers_limit) : 4;
+            if (discountedProducts.length < 12) {
+              const remaining = data.filter(p => !discountedProducts.some(dp => dp.id === p.id));
+              discountedProducts = discountedProducts.concat(remaining);
+            }
+
+            const bestOffersLimit = settings.homepage_best_offers_limit ? parseInt(settings.homepage_best_offers_limit) : 12;
 
             if (discountedProducts.length > 0) {
               renderProducts(document.getElementById('offersGrid'), discountedProducts.slice(0, bestOffersLimit));
@@ -506,13 +525,41 @@
             }
           }
 
+          // 2. Best Sellers (10-12 products)
+          if (isBestSellersEnabled) {
+            let bestSellerProducts = [...data];
+            const hasRealSales = bestSellerProducts.some(p => Number(p.sales_count || 0) > 0);
+            if (hasRealSales) {
+              bestSellerProducts.sort((a, b) => (Number(b.sales_count || 0)) - (Number(a.sales_count || 0)));
+            } else {
+              // Diversify selection if no sales yet
+              bestSellerProducts.sort((a, b) => {
+                const discB = (Number(b.price_before || 0) - Number(b.price_after || 0));
+                const discA = (Number(a.price_before || 0) - Number(a.price_after || 0));
+                return discB - discA || (b.id % 5) - (a.id % 5);
+              });
+            }
+
+            const bestSellersLimit = settings.homepage_best_sellers_limit ? parseInt(settings.homepage_best_sellers_limit) : 12;
+
+            if (bestSellerProducts.length > 0) {
+              renderProducts(document.getElementById('bestSellersGrid'), bestSellerProducts.slice(0, bestSellersLimit));
+            } else {
+              document.getElementById('bestSellersGrid').innerHTML = '<p class="muted">' + (lang === 'en' ? 'No products available.' : 'لا توجد منتجات متاحة.') + '</p>';
+            }
+          }
+
+          // 3. Latest Products (10-12 products)
           if (isLatestEnabled) {
-            const latestProductsLimit = settings.homepage_latest_products_limit ? parseInt(settings.homepage_latest_products_limit) : 5;
+            const latestProductsLimit = settings.homepage_latest_products_limit ? parseInt(settings.homepage_latest_products_limit) : 12;
             renderProducts(document.getElementById('productsGrid'), data.slice(0, latestProductsLimit));
           }
         }).catch(() => {
           if (isOffersEnabled) {
             document.getElementById('offersGrid').innerHTML = '<p class="muted">' + (lang === 'en' ? 'Failed to load offers.' : 'تعذر تحميل العروض الآن.') + '</p>';
+          }
+          if (isBestSellersEnabled) {
+            document.getElementById('bestSellersGrid').innerHTML = '<p class="muted">' + (lang === 'en' ? 'Failed to load best sellers.' : 'تعذر تحميل الأكثر مبيعاً الآن.') + '</p>';
           }
           if (isLatestEnabled) {
             document.getElementById('productsGrid').innerHTML = '<p class="muted">' + (lang === 'en' ? 'Failed to load products.' : 'تعذر تحميل المنتجات الآن.') + '</p>';

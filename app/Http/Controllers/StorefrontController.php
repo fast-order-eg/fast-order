@@ -97,15 +97,24 @@ class StorefrontController extends Controller
                 ['id' => 'hero_slider', 'enabled' => true, 'title' => 'البانر الإعلاني', 'title_en' => 'Hero Slider'],
                 ['id' => 'featured_categories', 'enabled' => true, 'title' => 'الأقسام المميزة', 'title_en' => 'Featured Categories'],
                 ['id' => 'best_offers', 'enabled' => true, 'title' => 'أفضل العروض والخصومات', 'title_en' => 'Best Offers & Discounts'],
+                ['id' => 'best_sellers', 'enabled' => true, 'title' => 'الأكثر طلباً ومبيعاً', 'title_en' => 'Best Sellers'],
                 ['id' => 'latest_products', 'enabled' => true, 'title' => 'أحدث المنتجات', 'title_en' => 'Latest Products']
             ];
+        } else {
+            // Ensure best_sellers is included if not present in custom saved sections
+            $hasBestSellers = collect($homepageSections)->contains('id', 'best_sellers');
+            if (!$hasBestSellers) {
+                // insert best_sellers right before latest_products or at the end
+                $homepageSections[] = ['id' => 'best_sellers', 'enabled' => true, 'title' => 'الأكثر طلباً ومبيعاً', 'title_en' => 'Best Sellers'];
+            }
         }
 
         $featuredCats = Setting::get('homepage_featured_categories');
         $featuredCats = $featuredCats ? json_decode($featuredCats, true) : [];
 
-        $bestOffersLimit = (int) Setting::get('homepage_best_offers_limit', 4);
-        $latestProductsLimit = (int) Setting::get('homepage_latest_products_limit', 5);
+        $bestOffersLimit = (int) Setting::get('homepage_best_offers_limit', 12);
+        $bestSellersLimit = (int) Setting::get('homepage_best_sellers_limit', 12);
+        $latestProductsLimit = (int) Setting::get('homepage_latest_products_limit', 12);
 
         $activeMenus = \App\Models\Menu::active()->get()->groupBy('location')->map(function ($items) {
             return $items->first()->items ?? [];
@@ -124,6 +133,7 @@ class StorefrontController extends Controller
             'homepage_sections' => $homepageSections,
             'homepage_featured_categories' => $featuredCats,
             'homepage_best_offers_limit' => $bestOffersLimit,
+            'homepage_best_sellers_limit' => $bestSellersLimit,
             'homepage_latest_products_limit' => $latestProductsLimit,
             'menus' => $activeMenus,
         ];
