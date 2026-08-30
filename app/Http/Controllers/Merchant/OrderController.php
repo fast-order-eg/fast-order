@@ -129,12 +129,19 @@ class OrderController extends Controller
      */
     public function unlock(Order $order)
     {
+        $tenant = app(\App\Models\Tenant::class);
+
+        // لو التاجر مشترك في باقة شهرية أو سنوية أو باقة تجريبية → فتح مجاني فوري
+        if (!$tenant || !$tenant->isCommissionPlan()) {
+            $order->update(['is_unlocked' => true, 'unlocked_at' => now()]);
+            return redirect("/admin/orders/{$order->id}");
+        }
+
         if ($order->is_unlocked) {
             return redirect("/admin/orders/{$order->id}");
         }
 
-        $tenant = app(\App\Models\Tenant::class);
-        $fee    = 2;
+        $fee = 2;
 
         if (($tenant->wallet_balance ?? 0) < $fee) {
             return redirect('/admin/orders')
@@ -160,9 +167,15 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
+        $tenant = app(\App\Models\Tenant::class);
+
+        // استثناء الباقات الشهرية والسنوية والتجريبية: تفتح دائماً بدون أي خصم أو قفل
+        if (!$order->is_unlocked && $tenant && !$tenant->isCommissionPlan()) {
+            $order->update(['is_unlocked' => true, 'unlocked_at' => now()]);
+        }
+
         if (!$order->is_unlocked) {
-            $tenant = app(\App\Models\Tenant::class);
-            $fee    = 2;
+            $fee = 2;
 
             if (($tenant->wallet_balance ?? 0) < $fee) {
                 return redirect('/admin/orders')
