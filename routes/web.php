@@ -387,6 +387,9 @@ Route::prefix('admin')->group(function () {
         Route::get('/shop/{page}', [\App\Http\Controllers\StorefrontController::class, 'servePage'])
             ->where('page', '^[a-zA-Z0-9_-]+\.html$')
             ->name('storefront.page');
+        Route::get('/{page}', [\App\Http\Controllers\StorefrontController::class, 'servePage'])
+            ->where('page', '^[a-zA-Z0-9_-]+\.html$')
+            ->name('storefront.root_page');
 
         // Cart page
         Route::get('/cart', [\App\Http\Controllers\StorefrontController::class, 'cart'])->name('storefront.cart');

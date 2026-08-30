@@ -462,7 +462,7 @@
             <a href="/" class="btn btn-primary">
                 <i class="fas fa-shopping-bag"></i> متابعة التسوق
             </a>
-            <a href="/order-success.html?ref={{ $order->reference_number }}" class="btn btn-secondary">
+            <a href="/tracking?order_number={{ $order->reference_number }}&phone={{ urlencode($order->customer_phone) }}" class="btn btn-secondary">
                 <i class="fas fa-box"></i> تتبع الطلب
             </a>
         </div>

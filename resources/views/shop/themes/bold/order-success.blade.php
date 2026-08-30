@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -288,7 +288,7 @@
             <a href="/shop/" class="btn btn-primary">
                 <i class="fas fa-shopping-bag"></i> متابعة التسوق
             </a>
-            <a href="/shop/order-success.html?ref={{ $order->reference_number }}" class="btn btn-secondary">
+            <a href="/tracking?order_number={{ $order->reference_number }}&phone={{ urlencode($order->customer_phone) }}" class="btn btn-secondary">
                 <i class="fas fa-box"></i> تتبع الطلب
             </a>
         </div>
