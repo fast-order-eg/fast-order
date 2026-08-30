@@ -459,11 +459,8 @@
 
         {{-- Actions --}}
         <div class="actions">
-            <a href="/" class="btn btn-primary">
-                <i class="fas fa-shopping-bag"></i> متابعة التسوق
-            </a>
-            <a href="/tracking?order_number={{ $order->reference_number }}&phone={{ urlencode($order->customer_phone) }}" class="btn btn-secondary">
-                <i class="fas fa-box"></i> تتبع الطلب
+            <a href="/" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.85rem 1.5rem; font-size: 1rem;">
+                <i class="fas fa-shopping-bag"></i> متابعة التسوق والعودة للرئيسية
             </a>
         </div>
 
