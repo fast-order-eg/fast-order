@@ -297,7 +297,7 @@
         <div class="row">
             <label class="remember">
                 <input type="checkbox" name="remember" checked>
-                <span>تذكرني (جلسة مستمرة 60 يوماً)</span>
+                <span>تذكرني</span>
             </label>
             @if(Route::has('password.request'))
             <a href="{{ route('password.request') }}" class="forgot">نسيت كلمة المرور؟</a>
@@ -345,8 +345,6 @@
             إنشاء متجر جديد (تاجر)
         </a>
     </div>
-
-    <p class="footer-note">محمي بواسطة <span>Fast Order Security</span> © {{ date('Y') }}</p>
 </div>
 </body>
 </html>
