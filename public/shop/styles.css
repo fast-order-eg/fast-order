@@ -325,27 +325,80 @@ html[dir="ltr"] .page-title,html[dir="ltr"] h1.page-title{text-align:left;}
   .category-card img, #categoriesGrid .card img {height:130px !important}
   #productsGrid.grid,#categoriesGrid.grid,#offersGrid.grid,#bestSellersGrid.grid{gap:10px;padding:0 2px}
   .card .btn-add{font-size:0.78rem !important;padding:7px 6px !important;white-space:nowrap !important}
+  
+  /* Amazon-style 2-line title on mobile */
+  .card .title,
+  .product-card .title,
+  .product-title,
+  .grid .card .title,
+  .fo-product-card__title {
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+    min-height: 2.7em !important;
+    max-height: 2.7em !important;
+    height: 2.7em !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    text-align: center !important;
+    margin: 0 0 6px 0 !important;
+    padding: 0 2px !important;
+    word-break: break-word !important;
+    letter-spacing: -0.2px !important;
+  }
 }
 @media(max-width:480px){
   .section-head h2{font-size:0.92rem !important}
   .section-head .more{font-size:0.75rem !important}
   .card .btn-add{font-size:0.74rem !important;padding:6px 4px !important;white-space:nowrap !important}
+  
+  /* Amazon-style 2-line title on small mobile */
+  .card .title,
+  .product-card .title,
+  .product-title,
+  .grid .card .title,
+  .fo-product-card__title {
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+    min-height: 2.7em !important;
+    max-height: 2.7em !important;
+    height: 2.7em !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    text-align: center !important;
+    margin: 0 0 4px 0 !important;
+    padding: 0 2px !important;
+    word-break: break-word !important;
+    letter-spacing: -0.2px !important;
+  }
 }
 @media(min-width:1024px){.card img{height:200px}}
 .card .body{padding:10px;display:flex;flex-direction:column;flex-grow:1;position:relative;text-align:center}
 .card .title{
-  font-weight:700;
-  margin:0 0 6px;
-  flex-grow:1;
-  text-align:center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+  flex-grow: 1;
+  text-align: center;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.4;
-  max-height: 2.8em; /* 2 lines × 1.4 line-height */
+  line-height: 1.35;
+  min-height: 2.7em;
+  max-height: 2.7em;
+  height: 2.7em;
 }
 .card .price{color:var(--primary-color);font-weight:700;margin-bottom:10px;text-align:center}
 .card .btn-add{margin-top:auto;width:100%;text-align:center !important;justify-content:center !important;align-items:center !important;font-size:1.1em;white-space:nowrap;display:flex !important}
