@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
 import MerchantLayout from '@/Layouts/MerchantLayout';
 import axios from 'axios';
@@ -175,16 +175,78 @@ export default function PushNotifications({ vapidPublicKey, deviceCount, setting
         };
     };
 
+    const isIOS = typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+    const isStandalone = typeof window !== 'undefined' && (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true);
+
     if (!supported) {
         return (
             <MerchantLayout>
                 <Head title="إشعارات الطلبات" />
-                <div className="p-6 max-w-xl mx-auto" dir="rtl">
-                    <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 text-rose-700 text-center shadow-sm">
-                        <div className="text-4xl mb-3">⚠️</div>
-                        <h3 className="font-bold text-lg mb-1">متصفحك لا يدعم الإشعارات الفورية</h3>
-                        <p className="text-sm text-rose-600">يرجى فتح لوحة التحكم من متصفح حديث مثل Google Chrome أو Microsoft Edge أو Safari 16.4+.</p>
+                <div className="p-4 md:p-6 max-w-xl mx-auto space-y-5" dir="rtl">
+                    {/* رأس الصفحة */}
+                    <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-2xl shadow-sm">
+                            🔔
+                        </div>
+                        <div>
+                            <h1 className="text-lg md:text-xl font-bold text-gray-900">إشعارات الطلبات الفورية</h1>
+                            <p className="text-xs md:text-sm text-gray-500 mt-0.5">تنبيهات صوتية فورية على جهازك لحظة وصول أي طلب جديد</p>
+                        </div>
                     </div>
+
+                    {isIOS ? (
+                        <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 border-2 border-indigo-200 rounded-3xl p-6 shadow-sm space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-2xl shadow-md">
+                                    🍏
+                                </div>
+                                <div>
+                                    <h3 className="font-extrabold text-base md:text-lg text-indigo-950">تفعيل الإشعارات على أجهزة iPhone</h3>
+                                    <p className="text-xs text-indigo-700 font-medium">خطوات سريعة وبسيطة لتشغيل التنبيهات</p>
+                                </div>
+                            </div>
+
+                            <p className="text-xs sm:text-sm text-gray-700 leading-relaxed font-medium bg-white/80 p-3.5 rounded-2xl border border-indigo-100">
+                                تشترط شركة <strong className="text-indigo-900">Apple (iOS)</strong> إضافة لوحة التحكم إلى الشاشة الرئيسية لموبايلك أولاً لتفعيل الإشعارات الفورية:
+                            </p>
+
+                            <div className="space-y-3 pt-1">
+                                <div className="flex items-start gap-3 bg-white p-3.5 rounded-2xl border border-gray-100 shadow-2xs">
+                                    <span className="w-7 h-7 rounded-xl bg-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0">1</span>
+                                    <p className="text-xs sm:text-sm text-gray-800 font-medium leading-normal">
+                                        افتح هذا الرابط من متصفح <strong className="text-indigo-700">Safari</strong> الرئيسي (وليس من داخل تطبيق واتساب أو فيسبوك).
+                                    </p>
+                                </div>
+
+                                <div className="flex items-start gap-3 bg-white p-3.5 rounded-2xl border border-gray-100 shadow-2xs">
+                                    <span className="w-7 h-7 rounded-xl bg-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0">2</span>
+                                    <p className="text-xs sm:text-sm text-gray-800 font-medium leading-normal">
+                                        اضغط على زر المشاركة <span className="inline-flex items-center px-2 py-0.5 rounded bg-gray-100 font-mono text-indigo-600 border border-gray-200 text-xs">📤 Share</span> أسفل المتصفح.
+                                    </p>
+                                </div>
+
+                                <div className="flex items-start gap-3 bg-white p-3.5 rounded-2xl border border-gray-100 shadow-2xs">
+                                    <span className="w-7 h-7 rounded-xl bg-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0">3</span>
+                                    <p className="text-xs sm:text-sm text-gray-800 font-medium leading-normal">
+                                        مرر للأسفل واختر <strong className="text-indigo-700">«إضافة إلى الشاشة الرئيسية» (Add to Home Screen 📲)</strong> ثم اضغط <strong className="text-emerald-700">«إضافة / Add»</strong>.
+                                    </p>
+                                </div>
+
+                                <div className="flex items-start gap-3 bg-white p-3.5 rounded-2xl border border-gray-100 shadow-2xs">
+                                    <span className="w-7 h-7 rounded-xl bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0">4</span>
+                                    <p className="text-xs sm:text-sm text-gray-800 font-medium leading-normal">
+                                        افتح أيقونة <strong className="text-indigo-700">FastOrder</strong> من شاشة هاتفك الرئيسية، وادخل على هذه الصفحة واضغط <strong>«تفعيل الإشعارات»</strong>.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 text-rose-700 text-center shadow-sm">
+                            <div className="text-4xl mb-3">⚠️</div>
+                            <h3 className="font-bold text-lg mb-1">متصفحك لا يدعم الإشعارات الفورية</h3>
+                            <p className="text-sm text-rose-600">يرجى فتح لوحة التحكم من متصفح حديث مثل Google Chrome أو Microsoft Edge أو Safari 16.4+.</p>
+                        </div>
+                    )}
                 </div>
             </MerchantLayout>
         );
