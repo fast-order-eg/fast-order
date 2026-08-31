@@ -28,12 +28,19 @@ class TenantController extends Controller
                 }
             ]);
 
-        // Search filter
-        if ($search = $request->input('search')) {
+        // Search filter: Phone, Email, Store Link/Slug, Domain, Store Name, Owner Name
+        if ($search = trim((string) $request->input('search', ''))) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('slug', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                  ->orWhere('custom_domain', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhereHas('owner', function ($oq) use ($search) {
+                      $oq->where('name', 'like', "%{$search}%")
+                         ->orWhere('email', 'like', "%{$search}%")
+                         ->orWhere('phone', 'like', "%{$search}%");
+                  });
             });
         }
 
@@ -72,8 +79,31 @@ class TenantController extends Controller
             }
         }
 
-        // Always order by newest first
-        $query->orderBy('created_at', 'desc');
+        // Sorting
+        $sortBy = $request->input('sort_by', 'latest');
+        if ($sortBy === 'most_products') {
+            $query->orderBy('products_count', 'desc');
+        } elseif ($sortBy === 'most_orders') {
+            $query->orderBy('orders_count', 'desc');
+        } elseif ($sortBy === 'expiring_soon') {
+            $query->where(function ($q) {
+                $q->whereNotNull('subscription_ends_at')
+                  ->orWhereNotNull('trial_ends_at');
+            })
+            ->whereDoesntHave('subscriptions', function ($sq) {
+                $sq->where('status', 'active')
+                   ->whereHas('plan', fn($pq) => $pq->where('slug', 'commission'));
+            })
+            ->orderByRaw('CASE 
+                WHEN subscription_ends_at IS NOT NULL AND subscription_ends_at >= NOW() THEN 0 
+                WHEN trial_ends_at IS NOT NULL AND trial_ends_at >= NOW() THEN 1 
+                ELSE 2 
+            END ASC, COALESCE(subscription_ends_at, trial_ends_at) ASC');
+        } elseif ($sortBy === 'oldest') {
+            $query->orderBy('created_at', 'asc');
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
 
         $tenants = $query->paginate(20)->withQueryString();
         $plans = SubscriptionPlan::where('is_active', true)->get();
@@ -91,7 +121,7 @@ class TenantController extends Controller
 
         return Inertia::render('SuperAdmin/Tenants/Index', [
             'tenants' => $tenants,
-            'filters' => $request->only(['search', 'status', 'plan']),
+            'filters' => $request->only(['search', 'status', 'plan', 'sort_by']),
             'plans' => $plans,
             'planCounts' => $planCounts,
         ]);

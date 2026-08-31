@@ -43,6 +43,7 @@ export default function Index({ tenants, filters, plans, planCounts }) {
     const [search, setSearch] = useState(safeFilters.search || '');
     const [status, setStatus] = useState(safeFilters.status || 'all');
     const [plan, setPlan] = useState(safeFilters.plan || 'all');
+    const [sortBy, setSortBy] = useState(safeFilters.sort_by || 'latest');
 
     // Helper to render status badge
     const renderStatusBadge = (tenant, planObj) => {
@@ -183,10 +184,19 @@ export default function Index({ tenants, filters, plans, planCounts }) {
     };
 
     const handleSearch = (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
         router.get(
             route('superadmin.tenants.index'),
-            { search, status, plan },
+            { search, status, plan, sort_by: sortBy },
+            { preserveState: true, replace: true }
+        );
+    };
+
+    const handleClearSearch = () => {
+        setSearch('');
+        router.get(
+            route('superadmin.tenants.index'),
+            { search: '', status, plan, sort_by: sortBy },
             { preserveState: true, replace: true }
         );
     };
@@ -195,7 +205,7 @@ export default function Index({ tenants, filters, plans, planCounts }) {
         setStatus(newStatus);
         router.get(
             route('superadmin.tenants.index'),
-            { search, status: newStatus, plan },
+            { search, status: newStatus, plan, sort_by: sortBy },
             { preserveState: true, replace: true }
         );
     };
@@ -204,7 +214,16 @@ export default function Index({ tenants, filters, plans, planCounts }) {
         setPlan(newPlan);
         router.get(
             route('superadmin.tenants.index'),
-            { search, status, plan: newPlan },
+            { search, status, plan: newPlan, sort_by: sortBy },
+            { preserveState: true, replace: true }
+        );
+    };
+
+    const handleSortChange = (newSort) => {
+        setSortBy(newSort);
+        router.get(
+            route('superadmin.tenants.index'),
+            { search, status, plan, sort_by: newSort },
             { preserveState: true, replace: true }
         );
     };
@@ -313,7 +332,7 @@ export default function Index({ tenants, filters, plans, planCounts }) {
 
                 {/* Filters Section */}
                 <div className="p-6 bg-gray-50/50 border-b border-gray-100">
-                    <form onSubmit={handleSearch} className="flex flex-col md:flex-row items-center gap-4">
+                    <form onSubmit={handleSearch} className="flex flex-col lg:flex-row items-center gap-3">
                         <div className="flex-1 w-full relative">
                             <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -322,14 +341,26 @@ export default function Index({ tenants, filters, plans, planCounts }) {
                             </span>
                             <input
                                 type="text"
-                                placeholder="البحث باسم المتجر، الرابط، أو البريد الإلكتروني..."
+                                placeholder="البحث باسم المتجر، المالك، الرابط، الهاتف، أو الإيميل..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="w-full pr-10 pl-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                                className="w-full pr-10 pl-10 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                             />
+                            {search && (
+                                <button
+                                    type="button"
+                                    onClick={handleClearSearch}
+                                    className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400 hover:text-rose-600 transition-colors focus:outline-none"
+                                    title="إلغاء البحث"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            )}
                         </div>
 
-                        <div className="w-full md:w-48">
+                        <div className="w-full sm:w-auto min-w-[140px]">
                             <select
                                 value={status}
                                 onChange={(e) => handleStatusChange(e.target.value)}
@@ -339,7 +370,7 @@ export default function Index({ tenants, filters, plans, planCounts }) {
                                     backgroundSize: '1.25rem',
                                     backgroundRepeat: 'no-repeat',
                                 }}
-                                className="w-full pl-10 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none"
+                                className="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none font-medium text-gray-700"
                             >
                                 <option value="all">كل الحالات</option>
                                 <option value="active">نشط</option>
@@ -348,7 +379,7 @@ export default function Index({ tenants, filters, plans, planCounts }) {
                             </select>
                         </div>
 
-                        <div className="w-full md:w-52">
+                        <div className="w-full sm:w-auto min-w-[160px]">
                             <select
                                 value={plan}
                                 onChange={(e) => handlePlanFilterChange(e.target.value)}
@@ -358,7 +389,7 @@ export default function Index({ tenants, filters, plans, planCounts }) {
                                     backgroundSize: '1.25rem',
                                     backgroundRepeat: 'no-repeat',
                                 }}
-                                className="w-full pl-10 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none font-semibold text-gray-700"
+                                className="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none font-semibold text-gray-700"
                             >
                                 <option value="all">جميع الباقات</option>
                                 <option value="free">الباقة المجانية 🎁</option>
@@ -368,9 +399,29 @@ export default function Index({ tenants, filters, plans, planCounts }) {
                             </select>
                         </div>
 
+                        <div className="w-full sm:w-auto min-w-[190px]">
+                            <select
+                                value={sortBy}
+                                onChange={(e) => handleSortChange(e.target.value)}
+                                style={{
+                                    backgroundImage: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E")`,
+                                    backgroundPosition: 'left 0.75rem center',
+                                    backgroundSize: '1.25rem',
+                                    backgroundRepeat: 'no-repeat',
+                                }}
+                                className="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none font-semibold text-gray-700"
+                            >
+                                <option value="latest">ترتيب: الأحدث تسجيلاً 🕒</option>
+                                <option value="most_products">ترتيب: الأكثر منتجات 🛍️</option>
+                                <option value="most_orders">ترتيب: الأكثر طلبات 📦</option>
+                                <option value="expiring_soon">ترتيب: أوشك على الانتهاء ⚠️</option>
+                                <option value="oldest">ترتيب: الأقدم تسجيلاً 📅</option>
+                            </select>
+                        </div>
+
                         <button
                             type="submit"
-                            className="w-full md:w-auto px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex-shrink-0"
                         >
                             بحث
                         </button>
