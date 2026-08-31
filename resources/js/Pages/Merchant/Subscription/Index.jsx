@@ -169,10 +169,10 @@ export default function SubscriptionIndex({ subscription, plans, receipts, usage
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                         <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-100 flex items-center justify-between sm:flex-col sm:items-start sm:justify-center">
-                            <span className="text-gray-500 text-xs font-semibold">تاريخ انتهاء الاشتراك</span>
+                            <span className="text-gray-500 text-xs font-semibold">{isCommissionSub ? 'نظام الباقة' : 'تاريخ انتهاء الاشتراك'}</span>
                             <span className="font-bold text-gray-900 text-base mt-0.5">
                                 {isCommissionSub
-                                    ? 'دائم (يعتمد على رصيد المحفظة 💰)'
+                                    ? 'خصم عمولة على الطلبات ⚡'
                                     : (tenant?.subscription_ends_at || subscription?.ends_at || 'ينتهي بعد 7 أيام')}
                             </span>
                         </div>

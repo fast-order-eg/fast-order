@@ -400,7 +400,9 @@ export default function Dashboard({ stats, recentOrders, chart, pendingReceiptsC
                                 </span>
                             </div>
                             <p className="text-sm font-extrabold text-white mt-1">
-                                {subscriptionInfo?.subscription_ends_at ? (
+                                {subscriptionInfo?.is_commission ? (
+                                    'الاشتراك مفعّل وشغّال بكفاءة'
+                                ) : subscriptionInfo?.subscription_ends_at ? (
                                     <>تاريخ انتهاء الاشتراك بالظبط: <span className="font-mono dir-ltr text-amber-300 font-bold bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">{subscriptionInfo.subscription_ends_at}</span></>
                                 ) : (
                                     'الاشتراك مفعّل وشغّال بكفاءة'

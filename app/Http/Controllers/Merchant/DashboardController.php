@@ -172,7 +172,10 @@ class DashboardController extends Controller
 
         $activeSub = $tenant ? ($tenant->subscriptions()->where('status', 'active')->latest()->first() ?? $tenant->subscriptions()->latest()->first()) : null;
         $planName = $activeSub?->plan?->name ?? 'الباقة المجانية';
-        $isCommission = $activeSub && ($activeSub->plan?->slug === 'commission' || str_contains($activeSub->plan?->name ?? '', 'عمولة'));
+        $isCommission = $tenant ? $tenant->isCommissionPlan() : false;
+        if (!$isCommission && $activeSub) {
+            $isCommission = $activeSub->plan?->slug === 'commission' || str_contains($activeSub->plan?->name ?? '', 'عمولة') || str_contains($activeSub->plan?->name ?? '', 'المحفظة');
+        }
 
         $isExpired = false;
         if ($tenant && !$isCommission) {
@@ -181,7 +184,7 @@ class DashboardController extends Controller
             }
         }
 
-        $endsAt = $activeSub?->ends_at ?? $activeSub?->trial_ends_at ?? $tenant?->subscription_ends_at ?? $tenant?->trial_ends_at;
+        $endsAt = $isCommission ? null : ($activeSub?->ends_at ?? $activeSub?->trial_ends_at ?? $tenant?->subscription_ends_at ?? $tenant?->trial_ends_at);
 
         $subscriptionInfo = [
             'is_expired'           => $isExpired,
@@ -189,6 +192,7 @@ class DashboardController extends Controller
             'subscription_status'  => $tenant?->subscription_status ?? 'active',
             'subscription_ends_at' => $endsAt ? $endsAt->format('Y-m-d') : null,
             'plan_name'            => $planName,
+            'is_commission'        => $isCommission,
         ];
 
         // Always fetch fresh wallet balance to prevent cache mismatch
