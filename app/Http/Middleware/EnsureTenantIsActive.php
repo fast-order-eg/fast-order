@@ -21,7 +21,7 @@ class EnsureTenantIsActive
 
             // Check if active subscription has expired
             $activeSub = $tenant->subscriptions()->where('status', 'active')->latest()->first();
-            $isCommission = $activeSub && ($activeSub->plan?->slug === 'commission' || str_contains($activeSub->plan?->name ?? '', 'عمولة'));
+            $isCommission = $tenant->isCommissionPlan() || ($activeSub && ($activeSub->plan?->slug === 'commission' || str_contains($activeSub->plan?->name ?? '', 'عمولة') || str_contains($activeSub->plan?->name ?? '', 'المحفظة')));
 
             $subExpired = false;
             $trialExpired = false;
@@ -43,9 +43,17 @@ class EnsureTenantIsActive
             $isExpired = !$isCommission && ($tenant->subscription_status === 'expired' || $subExpired || $trialExpired);
             $isSuspended = !$tenant->is_active;
 
-            // Block access for non-superadmin users if store is suspended or expired
-            if (($isSuspended || $isExpired) && !$isSuperAdmin) {
-                if ($request->expectsJson()) {
+            $isAdminRoute = $request->is('admin*') || $request->is('*/admin*');
+            $canBypass = $isSuperAdmin && $isAdminRoute;
+
+            // Block access if store is suspended or expired
+            if (($isSuspended || $isExpired) && !$canBypass) {
+                // Allow expired merchant to access subscription renewal pages in /admin
+                if ($isAdminRoute && ($request->is('*subscription*') || $request->is('*logout*'))) {
+                    return $next($request);
+                }
+
+                if ($request->expectsJson() || $request->is('api/*') || $request->is('public-api/*')) {
                     return response()->json([
                         'success' => false,
                         'message' => $isExpired ? 'عذراً، هذا المتجر متوقف مؤقتاً لانتهاء مدة الاشتراك.' : 'عذراً، هذا المتجر موقوف مؤقتاً بواسطة الإدارة.',

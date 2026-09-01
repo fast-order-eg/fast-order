@@ -11,28 +11,29 @@ class CheckExpiredSubscriptions extends Command
 
     public function handle(): void
     {
-        $this->info('جاري فحص الاشتراكات المنتهية...');
+        $this->info('جاري فحص الاشتراكات والخطط المجانية المنتهية...');
         
-        $expiredTenants = \App\Models\Tenant::where('is_active', true)
-            ->whereNotNull('subscription_ends_at')
-            ->where('subscription_ends_at', '<', now())
-            ->get();
+        $tenants = \App\Models\Tenant::where(function ($q) {
+            $q->where(function ($sq) {
+                $sq->whereNotNull('subscription_ends_at')->where('subscription_ends_at', '<', now());
+            })->orWhere(function ($sq) {
+                $sq->whereNotNull('trial_ends_at')->where('trial_ends_at', '<', now())->whereNull('subscription_ends_at');
+            });
+        })->get();
 
         $count = 0;
-        foreach ($expiredTenants as $tenant) {
-            $activeSub = $tenant->subscriptions()->where('status', 'active')->latest()->first();
-            $isCommission = $activeSub && ($activeSub->plan?->slug === 'commission' || str_contains($activeSub->plan?->name ?? '', 'عمولة'));
-
-            if (!$isCommission) {
-                $tenant->update([
-                    'is_active' => false,
-                    'subscription_status' => 'expired',
-                ]);
-                $count++;
+        foreach ($tenants as $tenant) {
+            if (!$tenant->isCommissionPlan()) {
+                if ($tenant->subscription_status !== 'expired') {
+                    $tenant->update([
+                        'subscription_status' => 'expired',
+                    ]);
+                    $count++;
+                }
             }
         }
 
-        \Illuminate\Support\Facades\Log::info("[Scheduler] Checked expired subscriptions: deactivated {$count} tenants.");
-        $this->info("تم فحص المتاجر وإيقاف {$count} متاجر منتهية الاشتراك بنجاح.");
+        \Illuminate\Support\Facades\Log::info("[Scheduler] Checked expired subscriptions: marked {$count} tenants as expired.");
+        $this->info("تم فحص المتاجر وتحديث {$count} متجر منتهي بنجاح.");
     }
 }
