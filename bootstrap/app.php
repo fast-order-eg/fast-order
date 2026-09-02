@@ -40,7 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'impersonate.cookie' => \App\Http\Middleware\HandleImpersonation::class,
         ]);
 
-        // استثناء logout من CSRF عشان Inertia + subdomain + port 8000
+        // استثناء مسارات المتجر العامة و checkout من CSRF لمنع فشل الطلبات في متصفحات التطبيقات والويب
         $middleware->validateCsrfTokens(except: [
             '*/admin/logout',
             'logout',
@@ -49,6 +49,26 @@ return Application::configure(basePath: dirname(__DIR__))
             'subscriptions/*',
             'backups/*',
             'backups',
+            'checkout',
+            '*/checkout',
+            'orders',
+            '*/orders',
+            'orders/*',
+            '*/orders/*',
+            'api/orders',
+            '*/api/orders',
+            'api/cart/*',
+            '*/api/cart/*',
+            'api/wishlist/*',
+            '*/api/wishlist/*',
+            'shop/checkout/track-partial',
+            '*/shop/checkout/track-partial',
+            'public-api/*',
+            '*/public-api/*',
+            'webhooks/*',
+            '*/webhooks/*',
+            'api/webhooks/*',
+            '*/api/webhooks/*',
         ]);
 
         $middleware->redirectTo(

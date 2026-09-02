@@ -558,24 +558,26 @@
         };
 
         try {
+          const csrfToken = (document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : '') || window.__CSRF_TOKEN__ || '';
           let response = await fetch('/checkout', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
               'X-Requested-With': 'XMLHttpRequest',
-              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : ''
+              'X-CSRF-TOKEN': csrfToken
             },
             body: JSON.stringify(orderData)
           });
 
-          if (response.status === 404 || response.status === 405) {
+          if (response.status === 404 || response.status === 405 || response.status === 419) {
             response = await fetch('/api/orders', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken
               },
               body: JSON.stringify(orderData)
             });

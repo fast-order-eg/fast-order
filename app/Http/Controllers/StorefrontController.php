@@ -1178,7 +1178,13 @@ s0.parentNode.insertBefore(s1,s0);
         
         // Inject CSRF Token dynamically
         $csrfToken = csrf_token();
-        $html = str_ireplace('<meta name="csrf-token" content="">', '<meta name="csrf-token" content="' . $csrfToken . '">', $html);
+        $csrfMetaHtml = '<meta name="csrf-token" content="' . $csrfToken . '">';
+        if (preg_match('/<meta[^>]*name=["\']csrf-token["\'][^>]*>/i', $html)) {
+            $html = preg_replace('/<meta[^>]*name=["\']csrf-token["\'][^>]*>/i', $csrfMetaHtml, $html);
+        } else {
+            $headInjections[] = $csrfMetaHtml;
+        }
+        $headInjections[] = '<script>window.__CSRF_TOKEN__ = ' . json_encode($csrfToken) . ';</script>';
 
         // Replace existing icon link if present, or add to headInjections
         if (preg_match('/<link[^>]*rel=["\'](shortcut )?icon["\'][^>]*>/i', $html)) {
