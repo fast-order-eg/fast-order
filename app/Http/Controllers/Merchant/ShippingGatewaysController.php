@@ -215,14 +215,22 @@ class ShippingGatewaysController extends Controller
     public function connectJntApi(Request $request): RedirectResponse
     {
         $request->validate([
-            'customer_code' => ['required', 'string', 'max:50'],
-            'api_password'  => ['required', 'string', 'max:100'],
+            'customer_code' => ['required', 'string', 'max:100'],
+            'api_account'   => ['nullable', 'string', 'max:100'],
+            'api_password'  => ['nullable', 'string', 'max:100'],
             'private_key'   => ['required', 'string', 'max:255'],
+            'is_sandbox'    => ['nullable', 'boolean'],
         ], [
             'customer_code.required' => 'يرجى إدخال كود العميل لـ J&T (Customer Code).',
-            'api_password.required'  => 'يرجى إدخال كلمة سر الربط (API Password).',
-            'private_key.required'   => 'يرجى إدخال المفتاح السري (Private Key).',
+            'private_key.required'   => 'يرجى إدخال المفتاح السري للتوقيع (Private Key).',
         ]);
+
+        $apiAccount = trim($request->api_account ?: ($request->api_password ?: ''));
+        if (empty($apiAccount)) {
+            return redirect()->back()->withErrors([
+                'api_account' => 'يرجى إدخال اسم حساب الـ API أو المفتاح (API Account).',
+            ]);
+        }
 
         ShippingGateway::updateOrCreate(
             [
@@ -233,8 +241,10 @@ class ShippingGatewaysController extends Controller
                 'is_active' => true,
                 'credentials' => [
                     'customer_code' => trim($request->customer_code),
-                    'api_password'  => trim($request->api_password),
+                    'api_account'   => $apiAccount,
+                    'api_password'  => $apiAccount,
                     'private_key'   => trim($request->private_key),
+                    'is_sandbox'    => (bool) $request->boolean('is_sandbox'),
                     'connected_at'  => now()->toDateTimeString(),
                 ],
             ]

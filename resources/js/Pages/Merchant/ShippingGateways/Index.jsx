@@ -31,8 +31,9 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
     // J&T specific state
     const [jntForm, setJntForm] = useState({
         customer_code: '',
-        api_password: '',
+        api_account: '',
         private_key: '',
+        is_sandbox: false,
     });
 
     const handleOpenModal = (provider) => {
@@ -47,8 +48,9 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
         });
         setJntForm({
             customer_code: '',
-            api_password: '',
+            api_account: '',
             private_key: '',
+            is_sandbox: false,
         });
     };
 
@@ -519,32 +521,45 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
 
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-700 mb-1">
-                                            كلمة سر الربط (API Password) <span className="text-red-500">*</span>
+                                            اسم حساب الـ API أو المفتاح (API Account) <span className="text-red-500">*</span>
                                         </label>
                                         <input
-                                            type="password"
+                                            type="text"
                                             required
-                                            value={jntForm.api_password}
-                                            onChange={(e) => setJntForm({ ...jntForm, api_password: e.target.value })}
-                                            placeholder="أدخل كلمة سر الـ API..."
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 dir-ltr text-left"
+                                            value={jntForm.api_account}
+                                            onChange={(e) => setJntForm({ ...jntForm, api_account: e.target.value })}
+                                            placeholder="أدخل اسم حساب الـ API أو المفتاح..."
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 dir-ltr text-left font-mono"
                                         />
-                                        {errors?.api_password && <p className="text-xs text-red-600 mt-1">{errors.api_password}</p>}
+                                        {errors?.api_account && <p className="text-xs text-red-600 mt-1">{errors.api_account}</p>}
                                     </div>
 
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-700 mb-1">
-                                            المفتاح السري (Private Key) <span className="text-red-500">*</span>
+                                            المفتاح السري للتوقيع (Private Key) <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"
                                             required
                                             value={jntForm.private_key}
                                             onChange={(e) => setJntForm({ ...jntForm, private_key: e.target.value })}
-                                            placeholder="أدخل الـ Private Key..."
+                                            placeholder="أدخل المفتاح السري (Private Key)..."
                                             className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-indigo-500 dir-ltr text-left"
                                         />
                                         {errors?.private_key && <p className="text-xs text-red-600 mt-1">{errors.private_key}</p>}
+                                    </div>
+
+                                    <div className="flex items-center gap-2 pt-1">
+                                        <input
+                                            type="checkbox"
+                                            id="jnt_is_sandbox"
+                                            checked={jntForm.is_sandbox}
+                                            onChange={(e) => setJntForm({ ...jntForm, is_sandbox: e.target.checked })}
+                                            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+                                        />
+                                        <label htmlFor="jnt_is_sandbox" className="text-xs font-medium text-gray-700 cursor-pointer">
+                                            البيئة التجريبية (Sandbox Mode) للاختبار
+                                        </label>
                                     </div>
                                 </div>
                             )}
