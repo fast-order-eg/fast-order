@@ -498,5 +498,18 @@ function toggleItems(btn) {
     setTimeout(() => { wrap.remove(); }, 4000);
 })();
 </script>
+<script src="/shop/shared.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var totalVal = {{ (float) ($order->total ?? 0) }};
+    var orderId = {{ (int) ($order->id ?? 0) }};
+    var orderRef = "{{ addslashes($order->reference_number ?? '') }}";
+    var items = {!! json_encode($order->items ?? []) !!};
+
+    if (typeof window.trackPurchaseEvent === 'function') {
+        window.trackPurchaseEvent(totalVal, items, orderId, orderRef);
+    }
+});
+</script>
 </body>
 </html>

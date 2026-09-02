@@ -600,8 +600,10 @@
           if (result.success || result.reference_number) {
             const refNum = result.reference_number || (result.data ? result.data.reference_number : referenceNumber);
             const finalTotal = result.total || (result.data ? result.data.total : total);
+            const orderId = result.order_id || (result.data ? result.data.order_id : null);
 
             sessionStorage.setItem('orderSuccess', JSON.stringify({
+              order_id: orderId,
               reference_number: refNum,
               customer_name: customerName,
               customer_phone: customerPhone,

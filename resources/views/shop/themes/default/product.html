@@ -1949,21 +1949,6 @@
                 items: payload.items
               }));
             } catch(e) {}
-            try {
-              if (typeof window.trackPurchaseEvent === 'function') {
-                window.trackPurchaseEvent(payload.total, payload.items, data.data.id, data.data.reference_number);
-              } else {
-                if (typeof fbq !== 'undefined') {
-                  fbq('track', 'Purchase', { value: Number(payload.total), currency: 'EGP' }, { eventID: String(data.data.reference_number || '') });
-                }
-                if (typeof ttq !== 'undefined') {
-                  ttq.track('PlaceAnOrder', { value: Number(payload.total), currency: 'EGP' });
-                }
-                if (typeof snaptr !== 'undefined') {
-                  snaptr('track', 'PURCHASE', { price: Number(payload.total), currency: 'EGP' });
-                }
-              }
-            } catch(e) {}
             if(window.BirdCart) {
                 if(typeof window.BirdCart.clearCart === 'function') {
                     window.BirdCart.clearCart();

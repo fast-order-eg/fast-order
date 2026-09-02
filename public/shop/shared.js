@@ -46,70 +46,130 @@
     snaptr('track', 'PAGE_VIEW');
   }
 
-  // دالة موحدة لتتبع حدث الشراء (Purchase) لكل البيكسلات (فيسبوك، تيك توك، سناب شات، وجوجل أناليتكس)
-  window.trackPurchaseEvent = function(totalValue, items, orderId, orderRef) {
+  // Single-Fire Guard: سجل الأحداث التي تم إطلاقها لمنع التكرار
+  window.__FIRED_PURCHASE_EVENTS__ = window.__FIRED_PURCHASE_EVENTS__ || {};
+
+  // دالة موحدة لتتبع حدث الشراء (Purchase) لكل البيكسلات (Meta, TikTok, Snapchat, GA4) مع إلغاء التكرار (Deduplication) 100%
+  window.trackPurchaseEvent = function(totalValue, items, orderId, orderRef, explicitEventId) {
     var val = Number(totalValue) || 0;
     var contentIds = (items || []).map(function(i) { return String(i.id || i.product_id || ''); });
 
-    var eventId = String(orderId || '');
-    if (orderRef && orderId && !eventId.startsWith('ORDER_')) {
-      eventId = 'ORDER_' + orderId + '_' + orderRef;
-    } else if (orderRef && !orderId) {
-      eventId = 'ORDER_' + orderRef;
+    // تحديد الـ event_id الموحد 100% المطابق للسيرفر (ORDER_{orderId}_{orderRef})
+    var eventId = explicitEventId || '';
+    if (!eventId) {
+      if (orderId && orderRef) {
+        var strId = String(orderId);
+        if (strId.startsWith('ORDER_')) {
+          eventId = strId;
+        } else {
+          eventId = 'ORDER_' + orderId + '_' + orderRef;
+        }
+      } else if (orderRef) {
+        var strRef = String(orderRef);
+        if (strRef.startsWith('ORDER_')) {
+          eventId = strRef;
+        } else if (orderId) {
+          eventId = 'ORDER_' + orderId + '_' + strRef;
+        } else {
+          eventId = 'ORDER_' + strRef;
+        }
+      } else if (orderId) {
+        var strSingle = String(orderId);
+        if (strSingle.startsWith('ORDER_')) {
+          eventId = strSingle;
+        } else {
+          eventId = 'ORDER_' + strSingle;
+        }
+      }
     }
 
-    // 1. Facebook Pixel (Meta)
+    if (!eventId) {
+      eventId = 'ORDER_' + Date.now();
+    }
+
+    // ─── Single-Fire Guard: منع الإطلاق المزدوج نهائياً ───
+    if (window.__FIRED_PURCHASE_EVENTS__[eventId]) {
+      console.warn('[Pixel Guard] Purchase event already fired for eventId: ' + eventId + ' (Skipping duplicate fire)');
+      return;
+    }
+    
+    // منع الإطلاق عند عمل Refresh لصفحة النجاح عبر sessionStorage
+    try {
+      var storageGuardKey = 'tracked_purchase_' + eventId;
+      if (sessionStorage.getItem(storageGuardKey)) {
+        console.warn('[Pixel Guard] Purchase already tracked in this session for ' + eventId + ' (Skipping refresh fire)');
+        return;
+      }
+      sessionStorage.setItem(storageGuardKey, '1');
+    } catch(e) {}
+
+    window.__FIRED_PURCHASE_EVENTS__[eventId] = true;
+    console.log('[Pixel Tracking] Firing deduplicated Purchase Event:', { eventId: eventId, value: val, itemsCount: (items || []).length });
+
+    // 1. Facebook Pixel (Meta Browser Pixel) -> Deduplication with Meta CAPI
     if (typeof fbq !== 'undefined') {
       try {
         var fbParams = {
           value: val,
           currency: 'EGP',
           content_type: 'product',
-          content_ids: contentIds
+          content_ids: contentIds,
+          num_items: (items || []).length
         };
-        if (eventId) {
-          fbq('track', 'Purchase', fbParams, { eventID: eventId });
-        } else {
-          fbq('track', 'Purchase', fbParams);
-        }
+        fbq('track', 'Purchase', fbParams, { eventID: eventId });
       } catch (e) { console.error('FB Purchase Error', e); }
     }
 
-    // 2. TikTok Pixel
+    // 2. TikTok Pixel -> Deduplication with TikTok Events API
     if (typeof ttq !== 'undefined') {
       try {
-        ttq.track('PlaceAnOrder', {
-          value: val,
-          currency: 'EGP',
-          event_id: eventId
+        var ttContents = (items || []).map(function(i) {
+          return {
+            content_id: String(i.id || i.product_id || ''),
+            content_type: 'product',
+            content_name: String(i.name || 'product'),
+            quantity: Number(i.qty || i.quantity || 1),
+            price: Number(i.price || 0)
+          };
         });
         ttq.track('CompletePayment', {
           value: val,
           currency: 'EGP',
+          content_type: 'product',
+          contents: ttContents,
           event_id: eventId
-        });
+        }, { event_id: eventId });
       } catch (e) { console.error('TikTok Purchase Error', e); }
     }
 
-    // 3. Snapchat Pixel
+    // 3. Snapchat Pixel -> Deduplication with Snapchat Conversions API
     if (typeof snaptr !== 'undefined') {
       try {
         snaptr('track', 'PURCHASE', {
           price: val,
           currency: 'EGP',
           event_tag: eventId,
-          transaction_id: eventId
+          transaction_id: eventId,
+          item_ids: contentIds
         });
       } catch (e) { console.error('Snapchat Purchase Error', e); }
     }
 
-    // 4. Google Analytics
+    // 4. Google Analytics 4 (GA4)
     if (typeof gtag !== 'undefined') {
       try {
         gtag('event', 'purchase', {
           transaction_id: eventId,
           value: val,
-          currency: 'EGP'
+          currency: 'EGP',
+          items: (items || []).map(function(i) {
+            return {
+              item_id: String(i.id || i.product_id || ''),
+              item_name: String(i.name || ''),
+              price: Number(i.price || 0),
+              quantity: Number(i.qty || i.quantity || 1)
+            };
+          })
         });
       } catch (e) { console.error('GA Purchase Error', e); }
     }

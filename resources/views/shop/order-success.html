@@ -295,11 +295,13 @@
                 console.log('Cart cleared');
             }
 
-            // Track Purchase Event across Facebook, TikTok, Snapchat, GA
+            // Track Purchase Event across Facebook, TikTok, Snapchat, GA with 100% CAPI Deduplication
             try {
                 const orderData = JSON.parse(sessionStorage.getItem('orderSuccess') || '{}');
                 const totalValue = orderData.total || 0;
                 const items = orderData.items || [];
+                const orderId = orderData.order_id || null;
+                const orderRef = orderData.reference_number || referenceNumber;
 
                 const fbPixelId = (window.__SITE_SETTINGS__ && window.__SITE_SETTINGS__.facebook_pixel_id) || '';
                 if (fbPixelId && typeof fbq !== 'undefined') {
@@ -307,16 +309,17 @@
                 }
                 
                 if (typeof window.trackPurchaseEvent === 'function') {
-                    window.trackPurchaseEvent(totalValue, items, referenceNumber);
+                    window.trackPurchaseEvent(totalValue, items, orderId, orderRef);
                 } else {
+                    var eventId = (orderId && orderRef) ? ('ORDER_' + orderId + '_' + orderRef) : ('ORDER_' + orderRef);
                     if (typeof fbq !== 'undefined') {
-                        fbq('track', 'Purchase', { value: Number(totalValue), currency: 'EGP' });
+                        fbq('track', 'Purchase', { value: Number(totalValue), currency: 'EGP' }, { eventID: eventId });
                     }
                     if (typeof ttq !== 'undefined') {
-                        ttq.track('PlaceAnOrder', { value: Number(totalValue), currency: 'EGP' });
+                        ttq.track('CompletePayment', { value: Number(totalValue), currency: 'EGP', event_id: eventId }, { event_id: eventId });
                     }
                     if (typeof snaptr !== 'undefined') {
-                        snaptr('track', 'PURCHASE', { price: Number(totalValue), currency: 'EGP' });
+                        snaptr('track', 'PURCHASE', { price: Number(totalValue), currency: 'EGP', event_tag: eventId, transaction_id: eventId });
                     }
                 }
                 sessionStorage.removeItem('orderSuccess');
