@@ -4,5 +4,5 @@
 - [x] تحديث كنترولر `ShippingGatewaysController` لدعم واستقبال الحقول الأربعة (`customer_code`, `api_account`, `private_key`, `password`) <!-- id: 1 -->
 - [x] تحديث واجهة إعدادات شركات الشحن `ShippingGateways/Index.jsx` لإضافة حقل كلمة سر الـ VIP وتحسين المودال <!-- id: 2 -->
 - [x] فحص الكود محلياً وبناء الأصول (`npm run build`) وتجربة سيناريو التشفير <!-- id: 3 -->
-- [ ] رفع التعديلات عبر Git وتشغيل سكريبت Zero-Downtime Deployment على السيرفر <!-- id: 4 -->
+- [x] رفع التعديلات عبر Git وتشغيل سكريبت Zero-Downtime Deployment على السيرفر <!-- id: 4 -->
 
