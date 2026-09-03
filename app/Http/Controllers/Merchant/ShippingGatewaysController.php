@@ -216,21 +216,16 @@ class ShippingGatewaysController extends Controller
     {
         $request->validate([
             'customer_code' => ['required', 'string', 'max:100'],
-            'api_account'   => ['nullable', 'string', 'max:100'],
-            'api_password'  => ['nullable', 'string', 'max:100'],
+            'api_account'   => ['required', 'string', 'max:100'],
             'private_key'   => ['required', 'string', 'max:255'],
+            'password'      => ['required', 'string', 'max:255'],
             'is_sandbox'    => ['nullable', 'boolean'],
         ], [
-            'customer_code.required' => 'يرجى إدخال كود العميل لـ J&T (Customer Code).',
-            'private_key.required'   => 'يرجى إدخال المفتاح السري للتوقيع (Private Key).',
+            'customer_code.required' => 'يرجى إدخال كود العميل لـ J&T Express (Customer Code).',
+            'api_account.required'   => 'يرجى إدخال كود حساب الـ API (API Account).',
+            'private_key.required'   => 'يرجى إدخال المفتاح الخاص بالتوقيع (Private Key).',
+            'password.required'      => 'يرجى إدخال كلمة سر حساب الـ VIP (VIP Password).',
         ]);
-
-        $apiAccount = trim($request->api_account ?: ($request->api_password ?: ''));
-        if (empty($apiAccount)) {
-            return redirect()->back()->withErrors([
-                'api_account' => 'يرجى إدخال اسم حساب الـ API أو المفتاح (API Account).',
-            ]);
-        }
 
         ShippingGateway::updateOrCreate(
             [
@@ -241,9 +236,9 @@ class ShippingGatewaysController extends Controller
                 'is_active' => true,
                 'credentials' => [
                     'customer_code' => trim($request->customer_code),
-                    'api_account'   => $apiAccount,
-                    'api_password'  => $apiAccount,
+                    'api_account'   => trim($request->api_account),
                     'private_key'   => trim($request->private_key),
+                    'password'      => trim($request->password),
                     'is_sandbox'    => (bool) $request->boolean('is_sandbox'),
                     'connected_at'  => now()->toDateTimeString(),
                 ],

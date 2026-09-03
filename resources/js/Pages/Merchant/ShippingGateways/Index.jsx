@@ -33,6 +33,7 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
         customer_code: '',
         api_account: '',
         private_key: '',
+        password: '',
         is_sandbox: false,
     });
 
@@ -50,6 +51,7 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
             customer_code: '',
             api_account: '',
             private_key: '',
+            password: '',
             is_sandbox: false,
         });
     };
@@ -513,7 +515,7 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
                                             required
                                             value={jntForm.customer_code}
                                             onChange={(e) => setJntForm({ ...jntForm, customer_code: e.target.value })}
-                                            placeholder="أدخل كود العميل لدى J&T..."
+                                            placeholder="مثال: J0086009084"
                                             className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-indigo-500 dir-ltr text-left"
                                         />
                                         {errors?.customer_code && <p className="text-xs text-red-600 mt-1">{errors.customer_code}</p>}
@@ -521,14 +523,14 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
 
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-700 mb-1">
-                                            اسم حساب الـ API أو المفتاح (API Account) <span className="text-red-500">*</span>
+                                            كود حساب الـ API (API Account) <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"
                                             required
                                             value={jntForm.api_account}
                                             onChange={(e) => setJntForm({ ...jntForm, api_account: e.target.value })}
-                                            placeholder="أدخل اسم حساب الـ API أو المفتاح..."
+                                            placeholder="أدخل كود حساب الـ API..."
                                             className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 dir-ltr text-left font-mono"
                                         />
                                         {errors?.api_account && <p className="text-xs text-red-600 mt-1">{errors.api_account}</p>}
@@ -536,17 +538,32 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
 
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-700 mb-1">
-                                            المفتاح السري للتوقيع (Private Key) <span className="text-red-500">*</span>
+                                            المفتاح الخاص بالتوقيع (Private Key) <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"
                                             required
                                             value={jntForm.private_key}
                                             onChange={(e) => setJntForm({ ...jntForm, private_key: e.target.value })}
-                                            placeholder="أدخل المفتاح السري (Private Key)..."
+                                            placeholder="أدخل المفتاح الخاص بالتوقيع (Private Key)..."
                                             className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-indigo-500 dir-ltr text-left"
                                         />
                                         {errors?.private_key && <p className="text-xs text-red-600 mt-1">{errors.private_key}</p>}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                            كلمة سر حساب الـ VIP (VIP Password) <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="password"
+                                            required
+                                            value={jntForm.password}
+                                            onChange={(e) => setJntForm({ ...jntForm, password: e.target.value })}
+                                            placeholder="أدخل كلمة سر حساب الـ VIP..."
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 dir-ltr text-left"
+                                        />
+                                        {errors?.password && <p className="text-xs text-red-600 mt-1">{errors.password}</p>}
                                     </div>
 
                                     <div className="flex items-center gap-2 pt-1">

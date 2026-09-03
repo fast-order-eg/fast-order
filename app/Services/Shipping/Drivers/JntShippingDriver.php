@@ -26,12 +26,13 @@ class JntShippingDriver implements ShippingProviderInterface
         $customerCode = $creds['customer_code'] ?? null;
         $apiAccount   = $creds['api_account'] ?? $creds['api_password'] ?? $creds['api_key'] ?? null;
         $privateKey   = $creds['private_key'] ?? null;
+        $password     = $creds['password'] ?? $creds['vip_password'] ?? null;
         $isSandbox    = (bool) ($creds['is_sandbox'] ?? false);
 
-        if (empty($customerCode) || empty($apiAccount) || empty($privateKey)) {
+        if (empty($customerCode) || empty($apiAccount) || empty($privateKey) || empty($password)) {
             return [
                 'success' => false,
-                'error'   => 'بيانات الربط لشركة J&T Express غير مكتملة (يرجى التأكد من كود العميل واسم حساب API والمفتاح السري).',
+                'error'   => 'بيانات الربط لشركة J&T Express غير مكتملة (يرجى التأكد من كود العميل، اسم حساب API، المفتاح السري، وكلمة سر VIP).',
             ];
         }
 
@@ -85,9 +86,13 @@ class JntShippingDriver implements ShippingProviderInterface
             // 5. Unique Transaction Logistic ID
             $txlogisticId = 'ORD_' . $order->id . '_' . $order->reference_number;
 
-            // 6. Build Business Content Payload
+            // 6. Calculate Body Digest
+            $bodyDigest = $this->calculateBodyDigest($customerCode, $password, $privateKey);
+
+            // 7. Build Business Content Payload
             $bizContentArray = [
                 'customerCode'         => (string) $customerCode,
+                'digest'               => $bodyDigest,
                 'serviceType'          => '01',
                 'orderType'            => '1',
                 'deliveryType'         => '04',
@@ -118,9 +123,9 @@ class JntShippingDriver implements ShippingProviderInterface
                 'remark' => $order->notes ?: "طلب رقم #{$order->reference_number}",
             ];
 
-            $bizContent = json_encode($bizContentArray, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $bizContent = json_encode($bizContentArray, JSON_UNESCAPED_UNICODE);
+            $headerDigest = $this->calculateHeaderDigest($bizContent, $privateKey);
             $timestamp = (string) round(microtime(true) * 1000);
-            $digest = $this->generateDigest($bizContent, $privateKey);
 
             Log::info("J&T Express Shipment Request [Order: {$order->id}]", [
                 'txlogisticId' => $txlogisticId,
@@ -128,13 +133,13 @@ class JntShippingDriver implements ShippingProviderInterface
                 'bizContent'   => $bizContentArray,
             ]);
 
-            // 7. Send Request to J&T Open Platform
+            // 8. Send Request to J&T Open Platform
             $response = Http::asForm()
                 ->withoutVerifying()
                 ->withHeaders([
                     'apiAccount'   => $apiAccount,
+                    'digest'       => $headerDigest,
                     'timestamp'    => $timestamp,
-                    'digest'       => $digest,
                     'Content-Type' => 'application/x-www-form-urlencoded; charset=utf-8',
                 ])
                 ->timeout(25)
@@ -206,6 +211,7 @@ class JntShippingDriver implements ShippingProviderInterface
         $customerCode = $creds['customer_code'] ?? null;
         $apiAccount   = $creds['api_account'] ?? $creds['api_password'] ?? $creds['api_key'] ?? null;
         $privateKey   = $creds['private_key'] ?? null;
+        $password     = $creds['password'] ?? $creds['vip_password'] ?? null;
         $isSandbox    = (bool) ($creds['is_sandbox'] ?? false);
 
         $baseUrl = $isSandbox ? $this->sandboxBaseUrl : $this->liveBaseUrl;
@@ -224,16 +230,20 @@ class JntShippingDriver implements ShippingProviderInterface
                 'billCodes'    => $trackingNumber,
             ];
 
-            $bizContent = json_encode($bizContentArray, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            if (!empty($password)) {
+                $bizContentArray['digest'] = $this->calculateBodyDigest($customerCode, $password, $privateKey);
+            }
+
+            $bizContent = json_encode($bizContentArray, JSON_UNESCAPED_UNICODE);
+            $headerDigest = $this->calculateHeaderDigest($bizContent, $privateKey);
             $timestamp = (string) round(microtime(true) * 1000);
-            $digest = $this->generateDigest($bizContent, $privateKey);
 
             $response = Http::asForm()
                 ->withoutVerifying()
                 ->withHeaders([
                     'apiAccount'   => $apiAccount,
+                    'digest'       => $headerDigest,
                     'timestamp'    => $timestamp,
-                    'digest'       => $digest,
                     'Content-Type' => 'application/x-www-form-urlencoded; charset=utf-8',
                 ])
                 ->timeout(15)
@@ -292,6 +302,7 @@ class JntShippingDriver implements ShippingProviderInterface
         $customerCode = $creds['customer_code'] ?? null;
         $apiAccount   = $creds['api_account'] ?? $creds['api_password'] ?? $creds['api_key'] ?? null;
         $privateKey   = $creds['private_key'] ?? null;
+        $password     = $creds['password'] ?? $creds['vip_password'] ?? null;
         $isSandbox    = (bool) ($creds['is_sandbox'] ?? false);
 
         $baseUrl = $isSandbox ? $this->sandboxBaseUrl : $this->liveBaseUrl;
@@ -308,16 +319,20 @@ class JntShippingDriver implements ShippingProviderInterface
                 'reason'       => 'طلب إلغاء من لوحة تحكم المتجر',
             ];
 
-            $bizContent = json_encode($bizContentArray, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            if (!empty($password)) {
+                $bizContentArray['digest'] = $this->calculateBodyDigest($customerCode, $password, $privateKey);
+            }
+
+            $bizContent = json_encode($bizContentArray, JSON_UNESCAPED_UNICODE);
+            $headerDigest = $this->calculateHeaderDigest($bizContent, $privateKey);
             $timestamp = (string) round(microtime(true) * 1000);
-            $digest = $this->generateDigest($bizContent, $privateKey);
 
             $response = Http::asForm()
                 ->withoutVerifying()
                 ->withHeaders([
                     'apiAccount'   => $apiAccount,
+                    'digest'       => $headerDigest,
                     'timestamp'    => $timestamp,
-                    'digest'       => $digest,
                     'Content-Type' => 'application/x-www-form-urlencoded; charset=utf-8',
                 ])
                 ->timeout(15)
@@ -340,11 +355,28 @@ class JntShippingDriver implements ShippingProviderInterface
     }
 
     /**
-     * Generate J&T signature digest: base64_encode(pack("H*", md5($bizContent . $privateKey)))
+     * Calculate VIP password hash: strtoupper(md5($password . 'jadada236t2'))
      */
-    protected function generateDigest(string $bizContent, string $privateKey): string
+    public function calculatePasswordHash(string $password): string
     {
-        return base64_encode(pack("H*", md5($bizContent . $privateKey)));
+        return strtoupper(md5($password . 'jadada236t2'));
+    }
+
+    /**
+     * Calculate internal Body Digest: base64_encode(md5($customerCode . $pwd . $privateKey, true))
+     */
+    public function calculateBodyDigest(string $customerCode, string $password, string $privateKey): string
+    {
+        $pwd = $this->calculatePasswordHash($password);
+        return base64_encode(md5($customerCode . $pwd . $privateKey, true));
+    }
+
+    /**
+     * Calculate Header Digest: base64_encode(md5($bizContent . $privateKey, true))
+     */
+    public function calculateHeaderDigest(string $bizContent, string $privateKey): string
+    {
+        return base64_encode(md5($bizContent . $privateKey, true));
     }
 
     /**
