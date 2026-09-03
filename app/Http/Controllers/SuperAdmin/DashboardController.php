@@ -49,24 +49,30 @@ class DashboardController extends Controller
                 ];
             });
 
-        // 3. Expiring Subscriptions (Next 7 Days)
+        // 3. Expiring Subscriptions (Next 7 Days) - Exclude permanent commission plans
         $sevenDaysFromNow = Carbon::now()->addDays(7);
         $expiringSubscriptions = Subscription::with(['tenant', 'plan'])
             ->where('status', 'active')
             ->whereNotNull('ends_at')
             ->where('ends_at', '<=', $sevenDaysFromNow)
             ->where('ends_at', '>=', Carbon::now())
+            ->whereDoesntHave('plan', function ($q) {
+                $q->where('slug', 'commission')
+                  ->orWhere('name', 'like', '%عمولة%');
+            })
+            ->where('billing_cycle', '!=', 'commission')
             ->orderBy('ends_at', 'asc')
             ->take(5)
             ->get()
             ->map(function ($sub) {
+                $days = Carbon::now()->diffInDays(Carbon::parse($sub->ends_at), false);
                 return [
                     'id' => $sub->id,
                     'tenant_name' => $sub->tenant ? $sub->tenant->name : 'غير معروف',
                     'tenant_phone' => $sub->tenant ? $sub->tenant->phone : null,
                     'plan_name' => $sub->plan ? $sub->plan->name : 'غير محدد',
                     'ends_at' => $sub->ends_at ? Carbon::parse($sub->ends_at)->format('Y-m-d') : null,
-                    'days_left' => $sub->ends_at ? Carbon::now()->diffInDays(Carbon::parse($sub->ends_at)) : 0,
+                    'days_left' => max(1, (int) round($days)),
                 ];
             });
 
