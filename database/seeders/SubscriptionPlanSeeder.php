@@ -36,7 +36,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'slug'          => 'monthly',
                 'description'   => 'اشتراك شهري مرن بدون التزام طويل',
                 'price_monthly' => 500,
-                'price_yearly'  => 500,
+                'price_yearly'  => 0,
                 'trial_days'    => 0,
                 'limits'        => [
                     'max_products' => 500,

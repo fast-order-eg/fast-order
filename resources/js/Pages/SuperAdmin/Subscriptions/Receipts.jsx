@@ -54,7 +54,7 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
     };
 
     const handleApprove = (receipt) => {
-        const isWallet = receipt.type === 'wallet';
+        const isWallet = receipt.type === 'wallet' || receipt.plan?.slug === 'commission' || receipt.plan?.name?.includes('عمولة');
         const msg = isWallet
             ? `هل أنت متأكد من الموافقة وتأكيد إضافة مبلغ (${Math.round(receipt.amount)} ج.م) في محفظة المتجر؟`
             : 'هل أنت متأكد من الموافقة على هذا الإيصال وتفعيل الاشتراك؟';
@@ -368,28 +368,44 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                {receipt.type === 'wallet' ? (
-                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-extrabold bg-purple-50 text-purple-700 border border-purple-200">
-                                                        👛 شحن محفظة
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
-                                                        📦 اشتراك باقة
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className="font-semibold text-gray-800">
-                                                    {receipt.type === 'wallet' ? 'إيداع محفظة' : (
-                                                        receipt.plan ? (
-                                                            receipt.amount >= receipt.plan.price_yearly 
-                                                                ? 'اشتراك سنوي' 
-                                                                : 'اشتراك شهري'
-                                                        ) : 'خطة غير معروفة'
-                                                    )}
-                                                </span>
-                                            </td>
+                                            {(() => {
+                                                const isCommissionReceipt = receipt.type === 'wallet' || receipt.plan?.slug === 'commission' || receipt.plan?.name?.includes('عمولة');
+                                                const isMonthlyReceipt = receipt.plan?.slug === 'monthly' || receipt.plan?.name?.includes('شهري');
+                                                const isYearlyReceipt = receipt.plan?.slug === 'yearly' || receipt.plan?.name?.includes('سنوي');
+
+                                                return (
+                                                    <>
+                                                        <td className="px-6 py-4">
+                                                            {isCommissionReceipt ? (
+                                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-extrabold bg-purple-50 text-purple-700 border border-purple-200">
+                                                                    👛 شحن محفظة
+                                                                </span>
+                                                            ) : (
+                                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+                                                                    📦 اشتراك باقة
+                                                                </span>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <span className="font-semibold text-gray-800">
+                                                                {isCommissionReceipt 
+                                                                    ? '👛 شحن محفظة' 
+                                                                    : isMonthlyReceipt 
+                                                                        ? 'اشتراك شهري' 
+                                                                        : isYearlyReceipt 
+                                                                            ? 'اشتراك سنوي' 
+                                                                            : (receipt.plan ? (
+                                                                                receipt.plan.price_yearly > receipt.plan.price_monthly && receipt.amount >= receipt.plan.price_yearly 
+                                                                                    ? 'اشتراك سنوي' 
+                                                                                    : 'اشتراك شهري'
+                                                                              ) : 'خطة غير معروفة'
+                                                                            )
+                                                                }
+                                                            </span>
+                                                        </td>
+                                                    </>
+                                                );
+                                            })()}
                                             <td className="px-6 py-4 font-bold text-indigo-600">
                                                 {Math.round(parseFloat(receipt.amount)).toLocaleString('en-US')} ج.م
                                             </td>
@@ -702,20 +718,41 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
                                         value={attachData.plan_id}
                                         onChange={(e) => {
                                             const selectedPlan = (plans || []).find(p => String(p.id) === String(e.target.value));
+                                            const isComm = selectedPlan && (
+                                                selectedPlan.slug === 'commission' || 
+                                                selectedPlan.name?.includes('عمولة') || 
+                                                (parseFloat(selectedPlan.price_monthly) === 0 && selectedPlan.slug !== 'free')
+                                            );
                                             setAttachData({
                                                 ...attachData,
                                                 plan_id: e.target.value,
-                                                amount: selectedPlan ? selectedPlan.price_monthly : ''
+                                                amount: isComm ? '' : (selectedPlan ? selectedPlan.price_monthly : '')
                                             });
                                         }}
                                         className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-right"
                                     >
                                         <option value="">اختر الباقة...</option>
-                                        {(plans || []).map((plan) => (
-                                            <option key={plan.id} value={plan.id}>
-                                                {plan.name} ({Math.round(parseFloat(plan.price_monthly)).toLocaleString('en-US')} ج.م / شهر)
-                                            </option>
-                                        ))}
+                                        {(plans || []).map((plan) => {
+                                            const isComm = plan.slug === 'commission' || plan.name?.includes('عمولة') || (parseFloat(plan.price_monthly) === 0 && plan.slug !== 'free');
+                                            let labelPrice = '';
+                                            if (isComm) {
+                                                labelPrice = 'عمولة 2ج';
+                                            } else if (plan.slug === 'monthly' || plan.name?.includes('شهري')) {
+                                                labelPrice = `${Math.round(parseFloat(plan.price_monthly)).toLocaleString('en-US')} ج.م / شهر`;
+                                            } else if (plan.slug === 'yearly' || plan.name?.includes('سنوي')) {
+                                                labelPrice = `${Math.round(parseFloat(plan.price_yearly || plan.price_monthly)).toLocaleString('en-US')} ج.م / سنة`;
+                                            } else if (parseFloat(plan.price_monthly) > 0) {
+                                                labelPrice = `${Math.round(parseFloat(plan.price_monthly)).toLocaleString('en-US')} ج.م / شهر`;
+                                            } else {
+                                                labelPrice = 'مجاني';
+                                            }
+
+                                            return (
+                                                <option key={plan.id} value={plan.id}>
+                                                    {plan.name} ({labelPrice})
+                                                </option>
+                                            );
+                                        })}
                                     </select>
                                     {attachErrors.plan_id && (
                                         <span className="text-xs text-rose-500 mt-1 block">{attachErrors.plan_id}</span>
@@ -732,7 +769,7 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
                                         required
                                         value={attachData.amount}
                                         onChange={(e) => setAttachData({ ...attachData, amount: e.target.value })}
-                                        placeholder="مثال: 500"
+                                        placeholder="مثال: 300"
                                         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-right"
                                     />
                                     {attachErrors.amount && (
