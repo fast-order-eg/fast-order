@@ -166,6 +166,11 @@ class JntShippingDriver implements ShippingProviderInterface
                     ?? $data['waybillNo'] 
                     ?? $txlogisticId;
 
+                $sortingCode = $data['sortingCode'] 
+                    ?? $data['sortingcode'] 
+                    ?? $data['sortCode'] 
+                    ?? null;
+
                 $airwayBillUrl = $data['airwayBillUrl'] 
                     ?? $data['billUrl'] 
                     ?? "https://www.jtexpress-eg.com/trajectoryQuery?bills={$trackingNumber}";
@@ -173,6 +178,7 @@ class JntShippingDriver implements ShippingProviderInterface
                 return [
                     'success'         => true,
                     'tracking_number' => (string) $trackingNumber,
+                    'sorting_code'    => $sortingCode,
                     'airway_bill_url' => $airwayBillUrl,
                     'status'          => 'created',
                     'cost'            => (float) ($data['shippingFee'] ?? 40.00),

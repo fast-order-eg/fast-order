@@ -210,22 +210,26 @@ class ShippingGatewaysController extends Controller
     }
 
     /**
-     * Connect J&T Express via API Credentials
+     * Connect J&T Express via API Credentials (Official Open Platform)
      */
-    public function connectJntApi(Request $request): RedirectResponse
+    public function connectJnt(Request $request): RedirectResponse
     {
         $request->validate([
-            'customer_code' => ['required', 'string', 'max:100'],
-            'api_account'   => ['required', 'string', 'max:100'],
-            'private_key'   => ['required', 'string', 'max:255'],
-            'password'      => ['required', 'string', 'max:255'],
-            'is_sandbox'    => ['nullable', 'boolean'],
+            'customer_code'     => ['required', 'string', 'max:100'],
+            'api_account'       => ['required', 'string', 'max:100'],
+            'private_key'       => ['required', 'string', 'max:255'],
+            'password'          => ['required_without:customer_password', 'nullable', 'string', 'max:255'],
+            'customer_password' => ['required_without:password', 'nullable', 'string', 'max:255'],
+            'is_sandbox'        => ['nullable', 'boolean'],
         ], [
             'customer_code.required' => 'يرجى إدخال كود العميل لـ J&T Express (Customer Code).',
-            'api_account.required'   => 'يرجى إدخال كود حساب الـ API (API Account).',
-            'private_key.required'   => 'يرجى إدخال المفتاح الخاص بالتوقيع (Private Key).',
-            'password.required'      => 'يرجى إدخال كلمة سر حساب الـ VIP (VIP Password).',
+            'api_account.required'   => 'يرجى إدخال رقم حساب الـ API (apiAccount).',
+            'private_key.required'   => 'يرجى إدخال المفتاح السري للتوقيع (Private Key).',
+            'password.required_without' => 'يرجى إدخال كلمة مرور حساب الـ VIP (VIP Password).',
+            'customer_password.required_without' => 'يرجى إدخال كلمة مرور حساب الـ VIP (VIP Password).',
         ]);
+
+        $password = trim($request->password ?: ($request->customer_password ?: ''));
 
         ShippingGateway::updateOrCreate(
             [
@@ -235,46 +239,27 @@ class ShippingGatewaysController extends Controller
             [
                 'is_active' => true,
                 'credentials' => [
-                    'customer_code' => trim($request->customer_code),
-                    'api_account'   => trim($request->api_account),
-                    'private_key'   => trim($request->private_key),
-                    'password'      => trim($request->password),
-                    'is_sandbox'    => (bool) $request->boolean('is_sandbox'),
-                    'connected_at'  => now()->toDateTimeString(),
+                    'customer_code'     => trim($request->customer_code),
+                    'api_account'       => trim($request->api_account),
+                    'private_key'       => trim($request->private_key),
+                    'password'          => $password,
+                    'customer_password' => $password,
+                    'is_sandbox'        => (bool) $request->boolean('is_sandbox'),
+                    'connected_at'      => now()->toDateTimeString(),
                 ],
             ]
         );
 
         return redirect()->route('merchant.shipping-gateways.index')
-            ->with('success', 'تم ربط وتفعيل حساب J&T Express بنجاح');
+            ->with('success', 'تم ربط وتفعيل حساب J&T Express بنجاح وفقاً للمواصفات الرسمية');
     }
 
     /**
-     * Legacy/Direct OAuth Connect for J&T Express
+     * Alias for connectJnt
      */
-    public function connectJnt(): RedirectResponse
+    public function connectJntApi(Request $request): RedirectResponse
     {
-        $email = auth()->user()?->email ?: 'jnt_merchant@store.com';
-        $generatedToken = 'JNT_OAUTH_' . \Illuminate\Support\Str::random(24);
-
-        ShippingGateway::updateOrCreate(
-            [
-                'tenant_id' => session()->get('tenant_id') ?? config('tenant.id'),
-                'provider' => 'jnt',
-            ],
-            [
-                'is_active' => true,
-                'credentials' => [
-                    'account_email' => $email,
-                    'access_token' => $generatedToken,
-                    'api_key' => $generatedToken,
-                    'connected_at' => now()->toDateTimeString(),
-                ],
-            ]
-        );
-
-        return redirect()->route('merchant.shipping-gateways.index')
-            ->with('success', 'تم ربط حساب J&T Express بنجاح');
+        return $this->connectJnt($request);
     }
 
     /**

@@ -523,14 +523,14 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
 
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-700 mb-1">
-                                            كود حساب الـ API (API Account) <span className="text-red-500">*</span>
+                                            رقم حساب الـ API (apiAccount) <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"
                                             required
                                             value={jntForm.api_account}
                                             onChange={(e) => setJntForm({ ...jntForm, api_account: e.target.value })}
-                                            placeholder="أدخل كود حساب الـ API..."
+                                            placeholder="رقم الحساب المعطى من منصة المطورين..."
                                             className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 dir-ltr text-left font-mono"
                                         />
                                         {errors?.api_account && <p className="text-xs text-red-600 mt-1">{errors.api_account}</p>}
@@ -538,14 +538,14 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
 
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-700 mb-1">
-                                            المفتاح الخاص بالتوقيع (Private Key) <span className="text-red-500">*</span>
+                                            المفتاح السري (Private Key) <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"
                                             required
                                             value={jntForm.private_key}
                                             onChange={(e) => setJntForm({ ...jntForm, private_key: e.target.value })}
-                                            placeholder="أدخل المفتاح الخاص بالتوقيع (Private Key)..."
+                                            placeholder="مفتاح التوقيع الرقمي (Private Key)..."
                                             className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-indigo-500 dir-ltr text-left"
                                         />
                                         {errors?.private_key && <p className="text-xs text-red-600 mt-1">{errors.private_key}</p>}
@@ -553,14 +553,14 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
 
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-700 mb-1">
-                                            كلمة سر حساب الـ VIP (VIP Password) <span className="text-red-500">*</span>
+                                            كلمة مرور حساب الـ VIP (VIP Password) <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="password"
                                             required
                                             value={jntForm.password}
                                             onChange={(e) => setJntForm({ ...jntForm, password: e.target.value })}
-                                            placeholder="أدخل كلمة سر حساب الـ VIP..."
+                                            placeholder="كلمة سر حساب التاجر بنظام VIP Portal..."
                                             className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 dir-ltr text-left"
                                         />
                                         {errors?.password && <p className="text-xs text-red-600 mt-1">{errors.password}</p>}
@@ -575,7 +575,7 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
                                             className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
                                         />
                                         <label htmlFor="jnt_is_sandbox" className="text-xs font-medium text-gray-700 cursor-pointer">
-                                            البيئة التجريبية (Sandbox Mode) للاختبار
+                                            وضع الاختبار التجريبي (Sandbox / Demo Mode)
                                         </label>
                                     </div>
                                 </div>

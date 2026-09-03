@@ -266,9 +266,8 @@ Route::prefix('admin')->group(function () {
                 Route::post('/auto-dispatch', [\App\Http\Controllers\Merchant\ShippingGatewaysController::class, 'updateAutoDispatch'])->name('auto-dispatch');
                 Route::post('/connect-api-key', [\App\Http\Controllers\Merchant\ShippingGatewaysController::class, 'connectApiKey'])->name('connect-api-key');
                 Route::post('/connect-aramex', [\App\Http\Controllers\Merchant\ShippingGatewaysController::class, 'connectAramex'])->name('connect-aramex');
-                Route::post('/connect-jnt', [\App\Http\Controllers\Merchant\ShippingGatewaysController::class, 'connectJntApi'])->name('connect-jnt');
+                Route::post('/connect-jnt', [\App\Http\Controllers\Merchant\ShippingGatewaysController::class, 'connectJnt'])->name('connect-jnt');
                 Route::post('/connect-account', [\App\Http\Controllers\Merchant\ShippingGatewaysController::class, 'connectAccount'])->name('connect-account');
-                Route::get('/connect/jnt', [\App\Http\Controllers\Merchant\ShippingGatewaysController::class, 'connectJnt'])->name('connect.jnt');
                 Route::patch('/{provider}/toggle', [\App\Http\Controllers\Merchant\ShippingGatewaysController::class, 'toggle'])->name('toggle');
             });
 

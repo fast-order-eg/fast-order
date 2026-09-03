@@ -1,8 +1,8 @@
-# خطة ربط درايفر شركة الشحن J&T Express (جي أند تي إكسبريس)
+# خطة ربط وتكامل شركة الشحن J&T Express (جي أند تي إكسبريس - مصر)
 
-- [x] تحديث كلاس `JntShippingDriver` وتطبيق معادلات التشفير والتوقيع المعتمدة رسمياً (VIP Password + Body Digest + Header Digest) <!-- id: 0 -->
-- [x] تحديث كنترولر `ShippingGatewaysController` لدعم واستقبال الحقول الأربعة (`customer_code`, `api_account`, `private_key`, `password`) <!-- id: 1 -->
-- [x] تحديث واجهة إعدادات شركات الشحن `ShippingGateways/Index.jsx` لإضافة حقل كلمة سر الـ VIP وتحسين المودال <!-- id: 2 -->
-- [x] فحص الكود محلياً وبناء الأصول (`npm run build`) وتجربة سيناريو التشفير <!-- id: 3 -->
-- [x] رفع التعديلات عبر Git وتشغيل سكريبت Zero-Downtime Deployment على السيرفر <!-- id: 4 -->
+- [x] تحديث واجهة التاجر (Frontend Modal) لتشمل الحقول الخمسة بدقة (كود العميل، رقم حساب API، المفتاح السري، كلمة مرور VIP، وخيار Sandbox) <!-- id: 0 -->
+- [x] إنشاء واعتماد دالة `connectJnt` في الباك إند للتحقق من وحفظ البيانات الأربعة في `ShippingGateway` <!-- id: 1 -->
+- [x] تطبيق درايفر الشحن `JntShippingDriver` مع خوارزمية التوقيع الثنائي المعتمدة واستخراج رقم البوليصة وكود التوجيه والفرز `sortingCode` <!-- id: 2 -->
+- [x] تسجيل وتأكيد عمل الدرايفر في `ShippingManager` تحت مزود `jnt` <!-- id: 3 -->
+- [x] بناء الواجهة (`npm run build`) واختبار الكود ورفعه على السيرفر بنظام Zero-Downtime <!-- id: 4 -->
 
