@@ -238,6 +238,36 @@ class AbandonedCartController extends Controller
     }
 
     /**
+     * إرسال بريد تذكيري لاستعادة السلة المتروكة
+     */
+    public function sendReminder(Request $request, AbandonedCart $abandonedCart)
+    {
+        $tenant = $request->attributes->get('tenant') ?? auth()->user()?->tenant;
+        if ($abandonedCart->tenant_id !== $tenant?->id) {
+            abort(403);
+        }
+
+        if (empty($abandonedCart->email)) {
+            return back()->with('error', 'هذه السلة لا تحتوي على بريد إلكتروني للعميل.');
+        }
+
+        $locale = $request->input('locale', 'ar');
+        $discountCode = $request->input('discount_code');
+        $discountPercentage = $request->input('discount_percentage') ? (float)$request->input('discount_percentage') : null;
+
+        \Illuminate\Support\Facades\Mail::to($abandonedCart->email)->queue(
+            new \App\Mail\AbandonedCartRecoveryMail($abandonedCart, $discountCode, $discountPercentage, $locale)
+        );
+
+        $abandonedCart->update([
+            'recovery_email_sent_at' => now(),
+            'status' => $abandonedCart->status === 'abandoned' ? 'contacted' : $abandonedCart->status,
+        ]);
+
+        return back()->with('success', 'تم إرسال إيميل التذكير بالاستعادة بنجاح.');
+    }
+
+    /**
      * حذف سلة متروكة
      */
     public function destroy(Request $request, AbandonedCart $abandonedCart)

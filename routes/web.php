@@ -439,6 +439,7 @@ Route::prefix('admin')->group(function () {
         // Cart recovery routes (Phase 85)
         Route::get('/shop/cart/recover/{token}', [\App\Http\Controllers\StorefrontCartRecoveryController::class, 'recover'])
             ->name('storefront.cart.recover');
+        Route::get('/cart/recover/{token}', [\App\Http\Controllers\StorefrontCartRecoveryController::class, 'recover']);
         Route::post('/shop/checkout/track-partial', [\App\Http\Controllers\StorefrontCartRecoveryController::class, 'trackPartial'])
             ->name('storefront.checkout.track_partial');
         Route::post('/checkout/track-partial', [\App\Http\Controllers\StorefrontCartRecoveryController::class, 'trackPartial']);

@@ -1485,19 +1485,19 @@ s0.parentNode.insertBefore(s1,s0);
   var lastSentSignature = '';
   var debounceTimer = null;
 
+  function isProductPage() {
+    return window.location.pathname.indexOf('product') !== -1 ||
+           !!document.getElementById('productId') ||
+           !!document.getElementById('quickCheckoutForm') ||
+           !!document.getElementById('productQtyInput') ||
+           /[?&]id=\d+/.test(window.location.search);
+  }
+
   function getCartItems() {
     var items = [];
-    try {
-      if (window.BirdCart && typeof window.BirdCart.getItems === 'function') {
-        items = window.BirdCart.getItems() || [];
-      } else if (window.BirdCart && typeof window.BirdCart.getCart === 'function') {
-        items = window.BirdCart.getCart() || [];
-      } else {
-        items = JSON.parse(localStorage.getItem('bird_cart') || '[]');
-      }
-    } catch(e) { items = []; }
+    var onProdPage = isProductPage();
 
-    if (!items || items.length === 0) {
+    if (onProdPage) {
       var prodId = document.getElementById('productId') ? document.getElementById('productId').value : null;
       if (!prodId) {
         var match = window.location.search.match(/[?&]id=(\d+)/);
@@ -1506,10 +1506,16 @@ s0.parentNode.insertBefore(s1,s0);
       var prodTitleEl = document.querySelector('.p-title, h1.product-title, .product-name');
       var prodPriceEl = document.querySelector('.p-current-price, .product-price, .price');
       var prodImgEl = document.querySelector('.p-main-img img, .product-image img');
-      var qtyEl = document.getElementById('productQty') || document.querySelector('input[name="quantity"]');
+      var qtyEl = document.getElementById('productQtyInput') || 
+                  document.getElementById('productQty') || 
+                  document.querySelector('input[name="quantity"]');
 
       var prodTitle = prodTitleEl ? prodTitleEl.innerText.trim() : 'منتج';
-      var prodPrice = prodPriceEl ? (parseFloat(prodPriceEl.innerText.replace(/[^\d.]/g, '')) || 0) : 0;
+      var prodPrice = 0;
+      if (prodPriceEl) {
+        var cleanPrice = prodPriceEl.innerText.replace(/[^\d.]/g, '');
+        prodPrice = parseFloat(cleanPrice) || 0;
+      }
       var prodImg = prodImgEl ? prodImgEl.src : '';
       var qty = qtyEl ? (parseInt(qtyEl.value) || 1) : 1;
 
@@ -1523,8 +1529,20 @@ s0.parentNode.insertBefore(s1,s0);
           quantity: qty,
           image: prodImg
         }];
+        return items;
       }
     }
+
+    try {
+      if (window.BirdCart && typeof window.BirdCart.getItems === 'function') {
+        items = window.BirdCart.getItems() || [];
+      } else if (window.BirdCart && typeof window.BirdCart.getCart === 'function') {
+        items = window.BirdCart.getCart() || [];
+      } else {
+        items = JSON.parse(localStorage.getItem('bird_cart') || '[]');
+      }
+    } catch(e) { items = []; }
+
     return items;
   }
 
@@ -1567,11 +1585,11 @@ s0.parentNode.insertBefore(s1,s0);
       return acc + ((parseFloat(i.price) || 0) * (parseInt(i.qty || i.quantity) || 1)); 
     }, 0);
 
-    var currentSignature = phoneVal + '|' + nameVal + '|' + addrVal + '|' + govId + '|' + items.length + '|' + subtotal;
+    var currentSignature = phoneVal + '|' + nameVal + '|' + addrVal + '|' + govId + '|' + items.length + '|' + (items[0] ? (items[0].qty || 1) : 1) + '|' + subtotal;
     if (currentSignature === lastSentSignature) return;
 
-    var isCheckoutPage = window.location.pathname.indexOf('checkout') !== -1;
-    var source = isCheckoutPage ? 'checkout' : 'product_page';
+    var onProdPage = isProductPage();
+    var source = onProdPage ? 'product_page' : 'checkout';
 
     var payload = {
       phone: phoneVal,
@@ -1631,6 +1649,114 @@ s0.parentNode.insertBefore(s1,s0);
     }, delay || 600);
   }
 
+  function restoreRecoveredData() {
+    var raw = sessionStorage.getItem('fo_recovered_data');
+    if (!raw) return;
+
+    var data = null;
+    try {
+      data = JSON.parse(raw);
+    } catch(e) { return; }
+    if (!data) return;
+
+    var restoredAny = false;
+
+    function applyData() {
+      var phoneInputs = document.querySelectorAll('#phoneInput, input[name="phone"], #quickPhone, input[type="tel"]');
+      if (data.phone) {
+        phoneInputs.forEach(function(inp) {
+          if (inp && !inp.value) {
+            inp.value = data.phone;
+            inp.dispatchEvent(new Event('input', { bubbles: true }));
+            restoredAny = true;
+          }
+        });
+      }
+
+      var nameInputs = document.querySelectorAll('#nameInput, input[name="name"], #quickName, input[name="customer_name"]');
+      if (data.name) {
+        nameInputs.forEach(function(inp) {
+          if (inp && !inp.value) {
+            inp.value = data.name;
+            inp.dispatchEvent(new Event('input', { bubbles: true }));
+            restoredAny = true;
+          }
+        });
+      }
+
+      var addrInputs = document.querySelectorAll('#addressInput, input[name="address"], #quickAddress, textarea[name="address"]');
+      if (data.address) {
+        addrInputs.forEach(function(inp) {
+          if (inp && !inp.value) {
+            inp.value = data.address;
+            inp.dispatchEvent(new Event('input', { bubbles: true }));
+            restoredAny = true;
+          }
+        });
+      }
+
+      var govMatched = false;
+      var govSelects = document.querySelectorAll('#governorateSelect, #quickGovernorateSelect, select[name="governorate_id"]');
+      if (data.governorate) {
+        var govSearch = String(data.governorate).trim().toLowerCase();
+        govSelects.forEach(function(sel) {
+          if (sel && sel.options && sel.options.length > 1) {
+            for (var i = 0; i < sel.options.length; i++) {
+              var optText = sel.options[i].text.toLowerCase();
+              if (optText.indexOf(govSearch) !== -1 || govSearch.indexOf(optText) !== -1) {
+                if (sel.selectedIndex !== i) {
+                  sel.selectedIndex = i;
+                  sel.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                govMatched = true;
+                restoredAny = true;
+                break;
+              }
+            }
+          }
+        });
+      }
+
+      if (isProductPage() && data.qty && data.qty >= 1) {
+        var qtyInput = document.getElementById('productQtyInput') || 
+                       document.getElementById('productQty') || 
+                       document.querySelector('input[name="quantity"]');
+        if (qtyInput && parseInt(qtyInput.value) !== parseInt(data.qty)) {
+          qtyInput.value = data.qty;
+          qtyInput.dispatchEvent(new Event('input', { bubbles: true }));
+          qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
+          restoredAny = true;
+        }
+      }
+
+      return govMatched;
+    }
+
+    applyData();
+
+    var retries = 0;
+    var timer = setInterval(function() {
+      retries++;
+      var matched = applyData();
+      if (matched || retries >= 6) {
+        clearInterval(timer);
+      }
+    }, 400);
+
+    if (!window.__RECOVERED_TOAST_SHOWN__) {
+      window.__RECOVERED_TOAST_SHOWN__ = true;
+      var toast = document.createElement('div');
+      toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#059669;color:#fff;padding:12px 24px;border-radius:12px;font-weight:700;font-size:0.95rem;box-shadow:0 10px 25px rgba(0,0,0,0.25);z-index:999999;font-family:Cairo,sans-serif;direction:rtl;display:flex;align-items:center;gap:8px;';
+      toast.innerHTML = '<span>🛒</span><span>تمت استعادة سلتك وبيانات طلبك بنجاح!</span>';
+      document.body.appendChild(toast);
+      setTimeout(function() {
+        toast.style.transition = 'opacity 0.5s ease';
+        toast.style.opacity = '0';
+        setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 500);
+      }, 4000);
+    }
+  }
+
   function attachListeners() {
     var phoneInputs = document.querySelectorAll('#phoneInput, input[name="phone"], #quickPhone, input[type="tel"]');
     phoneInputs.forEach(function(input) {
@@ -1662,6 +1788,27 @@ s0.parentNode.insertBefore(s1,s0);
       });
     });
 
+    var qtyInputs = document.querySelectorAll('#productQtyInput, #productQty, input[name="quantity"]');
+    qtyInputs.forEach(function(inp) {
+      inp.addEventListener('input', function() { scheduleCapture(500); });
+      inp.addEventListener('change', function() { scheduleCapture(400); });
+    });
+
+    var qtyButtons = document.querySelectorAll('.qty-btn, .qty-plus, .qty-minus, #qtyPlus, #qtyMinus, [data-action="increase-qty"], [data-action="decrease-qty"]');
+    qtyButtons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        setTimeout(function() { scheduleCapture(400); }, 150);
+      });
+    });
+
+    if (typeof window.changeProductQty === 'function') {
+      var originalChangeQty = window.changeProductQty;
+      window.changeProductQty = function(delta) {
+        originalChangeQty.apply(this, arguments);
+        setTimeout(function() { scheduleCapture(400); }, 150);
+      };
+    }
+
     window.addEventListener('visibilitychange', function() {
       if (document.visibilityState === 'hidden') {
         captureAbandonedCart(true);
@@ -1676,9 +1823,13 @@ s0.parentNode.insertBefore(s1,s0);
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', attachListeners);
+    document.addEventListener('DOMContentLoaded', function() {
+      attachListeners();
+      restoreRecoveredData();
+    });
   } else {
     attachListeners();
+    restoreRecoveredData();
   }
 })();
 </script>
