@@ -1720,26 +1720,226 @@ s0.parentNode.insertBefore(s1,s0);
     }, delay || 600);
   }
 
+  function normalizeVariantVal(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .trim()
+      .toLowerCase()
+      .replace(/[أإآ]/g, 'ا')
+      .replace(/[ة]/g, 'ه')
+      .replace(/[ى]/g, 'ي')
+      .replace(/\s+/g, ' ');
+  }
+
+  function restoreProductPageSelections(itemData) {
+    if (!itemData) return false;
+    var restored = false;
+
+    // استعادة المقاس
+    var sizesToSelect = itemData.sizePieces || [];
+    if (sizesToSelect.length === 0 && itemData.selectedSize) {
+      sizesToSelect = String(itemData.selectedSize).split(/[|,]/).map(function(s) {
+        return s.replace(/^ق\d+:\s*/, '').trim();
+      }).filter(Boolean);
+    }
+
+    sizesToSelect.forEach(function(sz, pieceIdx) {
+      var normSz = normalizeVariantVal(sz);
+      if (!normSz) return;
+
+      var pieceInputs = document.querySelectorAll('input[name="product_size_' + pieceIdx + '"], input[name="product_size"], input[name="size"]');
+      if (pieceInputs.length === 0) {
+        pieceInputs = document.querySelectorAll('input[name*="size"]');
+      }
+
+      var matchedInput = null;
+      pieceInputs.forEach(function(inp) {
+        if (!matchedInput && normalizeVariantVal(inp.value) === normSz) {
+          matchedInput = inp;
+        }
+      });
+
+      if (matchedInput) {
+        if (!matchedInput.checked) {
+          matchedInput.checked = true;
+          matchedInput.dispatchEvent(new Event('change', { bubbles: true }));
+          matchedInput.dispatchEvent(new Event('input', { bubbles: true }));
+          restored = true;
+        }
+        if (typeof window.updateVariantAvailability === 'function') {
+          try { window.updateVariantAvailability(pieceIdx); } catch(e) {}
+        }
+      }
+
+      var sel = document.querySelector('select[name="size"], select[name="product_size"]');
+      if (sel) {
+        for (var si = 0; si < sel.options.length; si++) {
+          if (normalizeVariantVal(sel.options[si].value) === normSz || normalizeVariantVal(sel.options[si].text) === normSz) {
+            if (sel.selectedIndex !== si) {
+              sel.selectedIndex = si;
+              sel.dispatchEvent(new Event('change', { bubbles: true }));
+              restored = true;
+            }
+            break;
+          }
+        }
+      }
+    });
+
+    // استعادة اللون
+    var colorsToSelect = itemData.colorPieces || [];
+    if (colorsToSelect.length === 0 && itemData.selectedColor) {
+      colorsToSelect = String(itemData.selectedColor).split(/[|,]/).map(function(c) {
+        return c.replace(/^ق\d+:\s*/, '').trim();
+      }).filter(Boolean);
+    }
+
+    colorsToSelect.forEach(function(col, pieceIdx) {
+      var normCol = normalizeVariantVal(col);
+      if (!normCol) return;
+
+      var pieceInputs = document.querySelectorAll('input[name="product_color_' + pieceIdx + '"], input[name="product_color"], input[name="color"]');
+      if (pieceInputs.length === 0) {
+        pieceInputs = document.querySelectorAll('input[name*="color"]');
+      }
+
+      var matchedInput = null;
+      pieceInputs.forEach(function(inp) {
+        if (!matchedInput && normalizeVariantVal(inp.value) === normCol) {
+          matchedInput = inp;
+        }
+      });
+
+      if (matchedInput) {
+        if (!matchedInput.checked) {
+          matchedInput.checked = true;
+          matchedInput.dispatchEvent(new Event('change', { bubbles: true }));
+          matchedInput.dispatchEvent(new Event('input', { bubbles: true }));
+          restored = true;
+        }
+        if (typeof window.updateVariantAvailability === 'function') {
+          try { window.updateVariantAvailability(pieceIdx); } catch(e) {}
+        }
+      }
+
+      var sel = document.querySelector('select[name="color"], select[name="product_color"]');
+      if (sel) {
+        for (var ci = 0; ci < sel.options.length; ci++) {
+          if (normalizeVariantVal(sel.options[ci].value) === normCol || normalizeVariantVal(sel.options[ci].text) === normCol) {
+            if (sel.selectedIndex !== ci) {
+              sel.selectedIndex = ci;
+              sel.dispatchEvent(new Event('change', { bubbles: true }));
+              restored = true;
+            }
+            break;
+          }
+        }
+      }
+    });
+
+    // استعادة الخيارات المخصصة
+    if (itemData.options && typeof itemData.options === 'object') {
+      Object.keys(itemData.options).forEach(function(optKey) {
+        var val = itemData.options[optKey];
+        if (val) {
+          var cleanVal = normalizeVariantVal(String(val).replace(/^ق\d+:\s*/, ''));
+          var cvInputs = document.querySelectorAll('input[name^="product_cv_"]');
+          cvInputs.forEach(function(inp) {
+            if (normalizeVariantVal(inp.value) === cleanVal) {
+              if (!inp.checked) {
+                inp.checked = true;
+                inp.dispatchEvent(new Event('change', { bubbles: true }));
+                inp.dispatchEvent(new Event('input', { bubbles: true }));
+                restored = true;
+              }
+            }
+          });
+        }
+      });
+    }
+
+    if (typeof window.updateVariantAvailability === 'function') {
+      var totalPieces = parseInt(itemData.qty || itemData.quantity || 1);
+      for (var pIdx = 0; pIdx < totalPieces; pIdx++) {
+        try { window.updateVariantAvailability(pIdx); } catch(e) {}
+      }
+    }
+
+    return restored;
+  }
+
+  window.restoreProductPageRecoveredSelections = function() {
+    var raw = sessionStorage.getItem('fo_recovered_data');
+    var data = null;
+    try { data = JSON.parse(raw); } catch(e) {}
+    if (!data) {
+      try {
+        var localCart = JSON.parse(localStorage.getItem('bird_cart') || '[]');
+        if (Array.isArray(localCart) && localCart.length > 0) {
+          data = { items: localCart, qty: localCart[0].qty || localCart[0].quantity || 1 };
+        }
+      } catch(e) {}
+    }
+
+    try {
+      var urlParams = new URLSearchParams(window.location.search);
+      var urlSize = urlParams.get('recovered_size');
+      var urlColor = urlParams.get('recovered_color');
+      if (urlSize || urlColor) {
+        data = data || { items: [{}] };
+        if (!data.items || !data.items[0]) data.items = [{}];
+        if (!data.items[0].selectedSize && urlSize) data.items[0].selectedSize = urlSize;
+        if (!data.items[0].selectedColor && urlColor) data.items[0].selectedColor = urlColor;
+      }
+    } catch(e) {}
+
+    if (data && data.items && data.items[0]) {
+      return restoreProductPageSelections(data.items[0]);
+    }
+    return false;
+  };
+
   function restoreRecoveredData() {
     var raw = sessionStorage.getItem('fo_recovered_data');
-    if (!raw) return;
-
     var data = null;
     try {
       data = JSON.parse(raw);
-    } catch(e) { return; }
+    } catch(e) {}
+    if (!data) {
+      try {
+        var localCart = JSON.parse(localStorage.getItem('bird_cart') || '[]');
+        if (Array.isArray(localCart) && localCart.length > 0) {
+          data = { items: localCart, qty: localCart[0].qty || localCart[0].quantity || 1 };
+        }
+      } catch(e) {}
+    }
+
+    try {
+      var urlParams = new URLSearchParams(window.location.search);
+      var urlSize = urlParams.get('recovered_size');
+      var urlColor = urlParams.get('recovered_color');
+      if (urlSize || urlColor) {
+        data = data || { items: [{}] };
+        if (!data.items || !data.items[0]) data.items = [{}];
+        if (!data.items[0].selectedSize && urlSize) data.items[0].selectedSize = urlSize;
+        if (!data.items[0].selectedColor && urlColor) data.items[0].selectedColor = urlColor;
+      }
+    } catch(e) {}
     if (!data) return;
 
-    var restoredAny = false;
+    var firstItem = (data.items && data.items[0]) ? data.items[0] : null;
+    var needsVariants = Boolean(firstItem && (firstItem.selectedSize || firstItem.selectedColor || firstItem.options || (firstItem.sizePieces && firstItem.sizePieces.length) || (firstItem.colorPieces && firstItem.colorPieces.length)));
 
     function applyData() {
+      var govMatched = false;
+      var variantsDone = false;
+
       var phoneInputs = document.querySelectorAll('#phoneInput, input[name="phone"], #quickPhone, input[type="tel"]');
       if (data.phone) {
         phoneInputs.forEach(function(inp) {
           if (inp && !inp.value) {
             inp.value = data.phone;
             inp.dispatchEvent(new Event('input', { bubbles: true }));
-            restoredAny = true;
           }
         });
       }
@@ -1750,7 +1950,6 @@ s0.parentNode.insertBefore(s1,s0);
           if (inp && !inp.value) {
             inp.value = data.name;
             inp.dispatchEvent(new Event('input', { bubbles: true }));
-            restoredAny = true;
           }
         });
       }
@@ -1761,12 +1960,10 @@ s0.parentNode.insertBefore(s1,s0);
           if (inp && !inp.value) {
             inp.value = data.address;
             inp.dispatchEvent(new Event('input', { bubbles: true }));
-            restoredAny = true;
           }
         });
       }
 
-      var govMatched = false;
       var govSelects = document.querySelectorAll('#governorateSelect, #quickGovernorateSelect, select[name="governorate_id"]');
       if (data.governorate) {
         var govSearch = String(data.governorate).trim().toLowerCase();
@@ -1780,12 +1977,13 @@ s0.parentNode.insertBefore(s1,s0);
                   sel.dispatchEvent(new Event('change', { bubbles: true }));
                 }
                 govMatched = true;
-                restoredAny = true;
                 break;
               }
             }
           }
         });
+      } else {
+        govMatched = true;
       }
 
       if (isProductPage() && data.qty && data.qty >= 1) {
@@ -1796,87 +1994,18 @@ s0.parentNode.insertBefore(s1,s0);
           qtyInput.value = data.qty;
           qtyInput.dispatchEvent(new Event('input', { bubbles: true }));
           qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
-          restoredAny = true;
         }
       }
 
-      // استعادة المقاس واللون والمتغيرات المحددة في صفحة المنتج
-      if (isProductPage() && data.items && data.items[0]) {
-        var firstItem = data.items[0];
-
-        var sizesToSelect = firstItem.sizePieces || [];
-        if (sizesToSelect.length === 0 && firstItem.selectedSize) {
-          sizesToSelect = String(firstItem.selectedSize).split(/[|,]/).map(function(s) {
-            return s.replace(/^ق\d+:\s*/, '').trim();
-          }).filter(Boolean);
-        }
-
-        sizesToSelect.forEach(function(sz, pieceIdx) {
-          var radio = document.querySelector('input[name="product_size_' + pieceIdx + '"][value="' + sz + '"]') ||
-                      document.querySelector('input[name="product_size"][value="' + sz + '"]') ||
-                      document.querySelector('input[name="size"][value="' + sz + '"]') ||
-                      document.querySelector('input[value="' + sz + '"]');
-          if (radio && !radio.checked) {
-            radio.checked = true;
-            radio.dispatchEvent(new Event('change', { bubbles: true }));
-            var lbl = radio.closest('label') || document.querySelector('label[for="' + radio.id + '"]');
-            if (lbl) lbl.click();
-            restoredAny = true;
-          }
-          var sel = document.querySelector('select[name="size"], select[name="product_size"]');
-          if (sel && sel.value !== sz) {
-            sel.value = sz;
-            sel.dispatchEvent(new Event('change', { bubbles: true }));
-            restoredAny = true;
-          }
-        });
-
-        var colorsToSelect = firstItem.colorPieces || [];
-        if (colorsToSelect.length === 0 && firstItem.selectedColor) {
-          colorsToSelect = String(firstItem.selectedColor).split(/[|,]/).map(function(c) {
-            return c.replace(/^ق\d+:\s*/, '').trim();
-          }).filter(Boolean);
-        }
-
-        colorsToSelect.forEach(function(col, pieceIdx) {
-          var radio = document.querySelector('input[name="product_color_' + pieceIdx + '"][value="' + col + '"]') ||
-                      document.querySelector('input[name="product_color"][value="' + col + '"]') ||
-                      document.querySelector('input[name="color"][value="' + col + '"]') ||
-                      document.querySelector('input[value="' + col + '"]');
-          if (radio && !radio.checked) {
-            radio.checked = true;
-            radio.dispatchEvent(new Event('change', { bubbles: true }));
-            var lbl = radio.closest('label') || document.querySelector('label[for="' + radio.id + '"]');
-            if (lbl) lbl.click();
-            restoredAny = true;
-          }
-          var sel = document.querySelector('select[name="color"], select[name="product_color"]');
-          if (sel && sel.value !== col) {
-            sel.value = col;
-            sel.dispatchEvent(new Event('change', { bubbles: true }));
-            restoredAny = true;
-          }
-        });
-
-        if (firstItem.options && typeof firstItem.options === 'object') {
-          Object.keys(firstItem.options).forEach(function(optKey) {
-            var val = firstItem.options[optKey];
-            if (val) {
-              var cleanVal = String(val).replace(/^ق\d+:\s*/, '').trim();
-              var radio = document.querySelector('input[value="' + cleanVal + '"]');
-              if (radio && !radio.checked) {
-                radio.checked = true;
-                radio.dispatchEvent(new Event('change', { bubbles: true }));
-                var lbl = radio.closest('label') || document.querySelector('label[for="' + radio.id + '"]');
-                if (lbl) lbl.click();
-                restoredAny = true;
-              }
-            }
-          });
-        }
+      // استعادة المتغيرات (المقاس واللون) في صفحة المنتج
+      if (isProductPage() && firstItem) {
+        variantsDone = restoreProductPageSelections(firstItem);
       }
 
-      return govMatched;
+      return {
+        govMatched: govMatched,
+        variantsDone: variantsDone
+      };
     }
 
     applyData();
@@ -1884,11 +2013,12 @@ s0.parentNode.insertBefore(s1,s0);
     var retries = 0;
     var timer = setInterval(function() {
       retries++;
-      var matched = applyData();
-      if (matched || retries >= 6) {
+      var status = applyData();
+      var variantsReady = !needsVariants || status.variantsDone;
+      if ((status.govMatched && variantsReady) || retries >= 30) {
         clearInterval(timer);
       }
-    }, 400);
+    }, 300);
 
     if (!window.__RECOVERED_TOAST_SHOWN__) {
       window.__RECOVERED_TOAST_SHOWN__ = true;

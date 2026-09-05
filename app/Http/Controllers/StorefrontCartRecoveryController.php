@@ -33,12 +33,17 @@ class StorefrontCartRecoveryController extends Controller
         $items = $abandonedCart->cart_data['items'] ?? [];
         $capturedFrom = $abandonedCart->cart_data['captured_from'] ?? 'checkout';
 
-        // تحديد الوجهة المناسبة لثيم المتجر
         $targetUrl = '/shop/checkout.html?recovered=1';
         if ($capturedFrom === 'product_page' && !empty($items)) {
             $prodId = $items[0]['product_id'] ?? ($items[0]['id'] ?? null);
             if ($prodId) {
                 $targetUrl = '/shop/product.html?id=' . $prodId . '&recovered=1';
+                if (!empty($items[0]['selectedSize'])) {
+                    $targetUrl .= '&recovered_size=' . urlencode($items[0]['selectedSize']);
+                }
+                if (!empty($items[0]['selectedColor'])) {
+                    $targetUrl .= '&recovered_color=' . urlencode($items[0]['selectedColor']);
+                }
             }
         }
 

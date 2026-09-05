@@ -399,6 +399,9 @@
       window.currentProductData = data;
       window.currentProductUpsells = data.upsells || [];
       renderProductDetails(data);
+      if (typeof window.restoreProductPageRecoveredSelections === 'function') {
+        window.restoreProductPageRecoveredSelections();
+      }
       initFakeVisitors();
       loadRelated(data.category_id, data.id);
       
@@ -975,6 +978,9 @@
       const vContainer = document.getElementById('variantsContainer');
       if (vContainer && window.currentProductData) {
         vContainer.innerHTML = renderSizesAndColors(window.currentProductData, qty);
+        if (typeof window.restoreProductPageRecoveredSelections === 'function') {
+          window.restoreProductPageRecoveredSelections();
+        }
       }
       
       // Update stock indicator when quantity switches
@@ -1586,6 +1592,9 @@
         const vContainer = document.getElementById('variantsContainer');
         if (vContainer && window.currentProductData) {
           vContainer.innerHTML = renderSizesAndColors(window.currentProductData, targetVal);
+          if (typeof window.restoreProductPageRecoveredSelections === 'function') {
+            window.restoreProductPageRecoveredSelections();
+          }
         }
         if (window.updateVariantAvailability) {
           for (let _pi = 0; _pi < targetVal; _pi++) { updateVariantAvailability(_pi); }
