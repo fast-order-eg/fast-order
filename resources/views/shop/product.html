@@ -1923,7 +1923,8 @@
                     subtotal: subtotal,
                     total: subtotal,
                     source: 'product_page'
-                })
+                }),
+                keepalive: true
             }).then(function() {
                 lastSentQuickPhone = phoneVal;
             }).catch(function() {});
@@ -1936,7 +1937,7 @@
           var val = e.target.value.replace(/[\s\+\-]/g, '');
           if (val.length >= 11 && val !== lastSentQuickPhone) {
             clearTimeout(quickDebounceTimer);
-            quickDebounceTimer = setTimeout(sendQuickTracking, 1200);
+            quickDebounceTimer = setTimeout(sendQuickTracking, 600);
           }
         });
         phoneInp.addEventListener('blur', sendQuickTracking);
@@ -1950,6 +1951,12 @@
       if (addrInp) addrInp.addEventListener('blur', sendQuickTracking);
 
       if (govSel) govSel.addEventListener('change', sendQuickTracking);
+
+      window.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden') sendQuickTracking();
+      });
+      window.addEventListener('pagehide', sendQuickTracking);
+      window.addEventListener('beforeunload', sendQuickTracking);
 
       quickForm.addEventListener('submit', async function(e) {
         e.preventDefault();

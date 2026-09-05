@@ -716,7 +716,8 @@ function trackPartialData() {
                     subtotal,
                     total,
                     source: 'checkout'
-                })
+                }),
+                keepalive: true
             });
             lastSentPhone = phone;
         } catch (e) {
@@ -726,7 +727,7 @@ function trackPartialData() {
 
     const triggerDebounced = () => {
         clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(sendTracking, 1200);
+        debounceTimer = setTimeout(sendTracking, 600);
     };
 
     if (phoneInput) {
@@ -751,6 +752,12 @@ function trackPartialData() {
     if (govSelect) {
         govSelect.addEventListener('change', sendTracking);
     }
+
+    window.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') sendTracking();
+    });
+    window.addEventListener('pagehide', sendTracking);
+    window.addEventListener('beforeunload', sendTracking);
 }
 
 

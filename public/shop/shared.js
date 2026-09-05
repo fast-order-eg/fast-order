@@ -1520,3 +1520,211 @@ if (document.readyState === 'loading') {
 }
 window.adjustBrandFontSize = adjustBrandFontSize;
 
+// ======================================
+// Realtime Abandoned Cart Auto-Capture Module (الالتقاط التلقائي للسلات المتروكة)
+// ======================================
+(function() {
+  if (window.__FO_AUTO_CAPTURE_INITIALIZED__) return;
+  window.__FO_AUTO_CAPTURE_INITIALIZED__ = true;
+
+  var lastSentSignature = '';
+  var debounceTimer = null;
+
+  function getCartItems() {
+    var items = [];
+    try {
+      if (window.BirdCart && typeof window.BirdCart.getItems === 'function') {
+        items = window.BirdCart.getItems() || [];
+      } else if (window.BirdCart && typeof window.BirdCart.getCart === 'function') {
+        items = window.BirdCart.getCart() || [];
+      } else {
+        items = JSON.parse(localStorage.getItem('bird_cart') || '[]');
+      }
+    } catch(e) { items = []; }
+
+    if (!items || items.length === 0) {
+      var prodId = document.getElementById('productId') ? document.getElementById('productId').value : null;
+      if (!prodId) {
+        var match = window.location.search.match(/[?&]id=(\d+)/);
+        if (match) prodId = match[1];
+      }
+      var prodTitleEl = document.querySelector('.p-title, h1.product-title, .product-name');
+      var prodPriceEl = document.querySelector('.p-current-price, .product-price, .price');
+      var prodImgEl = document.querySelector('.p-main-img img, .product-image img');
+      var qtyEl = document.getElementById('productQty') || document.querySelector('input[name="quantity"]');
+
+      var prodTitle = prodTitleEl ? prodTitleEl.innerText.trim() : 'منتج';
+      var prodPrice = prodPriceEl ? (parseFloat(prodPriceEl.innerText.replace(/[^\d.]/g, '')) || 0) : 0;
+      var prodImg = prodImgEl ? prodImgEl.src : '';
+      var qty = qtyEl ? (parseInt(qtyEl.value) || 1) : 1;
+
+      if (prodId) {
+        items = [{
+          id: prodId,
+          product_id: prodId,
+          name: prodTitle,
+          price: prodPrice,
+          qty: qty,
+          quantity: qty,
+          image: prodImg
+        }];
+      }
+    }
+    return items;
+  }
+
+  function captureAbandonedCart(isUnload) {
+    var phoneEl = document.getElementById('phoneInput') || 
+                  document.querySelector('input[name="phone"]') || 
+                  document.getElementById('quickPhone') || 
+                  document.querySelector('input[type="tel"]');
+
+    if (!phoneEl) return;
+
+    var phoneVal = (phoneEl.value || '').trim().replace(/[\s\+\-]/g, '');
+    if (phoneVal.startsWith('201')) phoneVal = '0' + phoneVal.substring(2);
+    else if (phoneVal.startsWith('00201')) phoneVal = '0' + phoneVal.substring(4);
+
+    if (!phoneVal || phoneVal.length < 8) return;
+
+    var nameEl = document.getElementById('nameInput') || 
+                 document.querySelector('input[name="name"]') || 
+                 document.getElementById('quickName') || 
+                 document.querySelector('input[name="customer_name"]');
+    var nameVal = nameEl ? nameEl.value.trim() : '';
+
+    var addrEl = document.getElementById('addressInput') || 
+                 document.querySelector('input[name="address"], textarea[name="address"]') || 
+                 document.getElementById('quickAddress') || 
+                 document.querySelector('input[name="customer_address"]');
+    var addrVal = addrEl ? addrEl.value.trim() : '';
+
+    var govEl = document.getElementById('governorateSelect') || 
+                document.getElementById('quickGovernorateSelect') || 
+                document.querySelector('select[name="governorate_id"]');
+    var govId = govEl ? govEl.value : '';
+    var govName = (govEl && govEl.selectedIndex >= 0 && govEl.options[govEl.selectedIndex]) 
+        ? govEl.options[govEl.selectedIndex].text.split('-')[0].trim() 
+        : '';
+
+    var items = getCartItems();
+    var subtotal = items.reduce(function(acc, i) { 
+      return acc + ((parseFloat(i.price) || 0) * (parseInt(i.qty || i.quantity) || 1)); 
+    }, 0);
+
+    var currentSignature = phoneVal + '|' + nameVal + '|' + addrVal + '|' + govId + '|' + items.length + '|' + subtotal;
+    if (currentSignature === lastSentSignature) return;
+
+    var isCheckoutPage = window.location.pathname.indexOf('checkout') !== -1;
+    var source = isCheckoutPage ? 'checkout' : 'product_page';
+
+    var payload = {
+      phone: phoneVal,
+      customer_phone: phoneVal,
+      name: nameVal,
+      customer_name: nameVal,
+      address: addrVal,
+      customer_address: addrVal,
+      governorate_id: govId,
+      governorate: govName,
+      items: items,
+      subtotal: subtotal,
+      total: subtotal,
+      source: source
+    };
+
+    var csrf = (document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : '') || window.__CSRF_TOKEN__ || '';
+
+    try {
+      fetch('/checkout/track-partial', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          ...(csrf ? { 'X-CSRF-TOKEN': csrf } : {})
+        },
+        body: JSON.stringify(payload),
+        keepalive: true
+      }).then(function(res) {
+        if (res.ok) {
+          lastSentSignature = currentSignature;
+        }
+      }).catch(function() {
+        try {
+          fetch('/shop/checkout/track-partial', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(payload),
+            keepalive: true
+          }).then(function(r) {
+            if (r.ok) lastSentSignature = currentSignature;
+          }).catch(function(){});
+        } catch(e) {}
+      });
+    } catch(e) {}
+  }
+
+  function scheduleCapture(delay) {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function() {
+      captureAbandonedCart(false);
+    }, delay || 600);
+  }
+
+  function attachListeners() {
+    var phoneInputs = document.querySelectorAll('#phoneInput, input[name="phone"], #quickPhone, input[type="tel"]');
+    phoneInputs.forEach(function(input) {
+      input.addEventListener('input', function(e) {
+        var clean = e.target.value.replace(/\D/g, '');
+        if (clean.length >= 11) {
+          scheduleCapture(600);
+        }
+      });
+      input.addEventListener('blur', function() {
+        captureAbandonedCart(false);
+      });
+      input.addEventListener('change', function() {
+        captureAbandonedCart(false);
+      });
+    });
+
+    var textInputs = document.querySelectorAll('#nameInput, input[name="name"], #addressInput, input[name="address"], textarea[name="address"]');
+    textInputs.forEach(function(input) {
+      input.addEventListener('blur', function() {
+        captureAbandonedCart(false);
+      });
+    });
+
+    var govSelects = document.querySelectorAll('#governorateSelect, #quickGovernorateSelect, select[name="governorate_id"]');
+    govSelects.forEach(function(select) {
+      select.addEventListener('change', function() {
+        captureAbandonedCart(false);
+      });
+    });
+
+    window.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'hidden') {
+        captureAbandonedCart(true);
+      }
+    });
+    window.addEventListener('pagehide', function() {
+      captureAbandonedCart(true);
+    });
+    window.addEventListener('beforeunload', function() {
+      captureAbandonedCart(true);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attachListeners);
+  } else {
+    attachListeners();
+  }
+})();
+
+

@@ -662,6 +662,94 @@
       });
     }
 
+    // ─── Auto-Capture للسلة المتروكة لحظياً أثناء ملء البيانات في صفحة الشيك آوت ───
+    var checkoutDebounceTimer = null;
+    var lastSentCheckoutPhone = '';
+
+    var sendCheckoutTracking = function() {
+      var pInp = document.getElementById('phoneInput');
+      var nInp = document.querySelector('input[name="name"]');
+      var aInp = document.querySelector('input[name="address"], textarea[name="address"]');
+      var gSel = document.getElementById('governorateSelect');
+
+      var phoneVal = pInp ? pInp.value.trim().replace(/[\s\+\-]/g, '') : '';
+      if (phoneVal.startsWith('201')) phoneVal = '0' + phoneVal.substring(2);
+      else if (phoneVal.startsWith('00201')) phoneVal = '0' + phoneVal.substring(4);
+
+      if (!phoneVal || phoneVal.length < 8) return;
+
+      var nameVal = nInp ? nInp.value.trim() : '';
+      var addrVal = aInp ? aInp.value.trim() : '';
+      var govId = gSel ? gSel.value : '';
+      var govName = (gSel && gSel.selectedIndex >= 0 && gSel.options[gSel.selectedIndex])
+        ? gSel.options[gSel.selectedIndex].text.split('-')[0].trim()
+        : '';
+
+      var cart = (typeof BirdCart !== 'undefined' && BirdCart.getCart) ? BirdCart.getCart() : [];
+      if (!cart || !cart.length) {
+        try { cart = JSON.parse(localStorage.getItem('bird_cart') || '[]'); } catch(e) { cart = []; }
+      }
+
+      var subtotal = cart.reduce(function(sum, item) { return sum + ((parseFloat(item.price) || 0) * (parseInt(item.qty) || 1)); }, 0);
+
+      try {
+        var csrfToken = (document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : '') || window.__CSRF_TOKEN__ || '';
+        fetch('/checkout/track-partial', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {})
+          },
+          body: JSON.stringify({
+            phone: phoneVal,
+            customer_phone: phoneVal,
+            name: nameVal,
+            customer_name: nameVal,
+            address: addrVal,
+            customer_address: addrVal,
+            governorate_id: govId,
+            governorate: govName,
+            items: cart,
+            subtotal: subtotal,
+            total: subtotal,
+            source: 'checkout'
+          }),
+          keepalive: true
+        }).then(function() {
+          lastSentCheckoutPhone = phoneVal;
+        }).catch(function() {});
+      } catch(e) {}
+    };
+
+    if (pInput) {
+      pInput.addEventListener('input', function() {
+        var val = this.value.replace(/\D/g, '');
+        if (val.length >= 11 && val !== lastSentCheckoutPhone) {
+          clearTimeout(checkoutDebounceTimer);
+          checkoutDebounceTimer = setTimeout(sendCheckoutTracking, 600);
+        }
+      });
+      pInput.addEventListener('blur', sendCheckoutTracking);
+      pInput.addEventListener('change', sendCheckoutTracking);
+    }
+
+    var nInput = document.querySelector('input[name="name"]');
+    if (nInput) nInput.addEventListener('blur', sendCheckoutTracking);
+
+    var aInput = document.querySelector('input[name="address"], textarea[name="address"]');
+    if (aInput) aInput.addEventListener('blur', sendCheckoutTracking);
+
+    var gSelect = document.getElementById('governorateSelect');
+    if (gSelect) gSelect.addEventListener('change', sendCheckoutTracking);
+
+    window.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'hidden') sendCheckoutTracking();
+    });
+    window.addEventListener('pagehide', sendCheckoutTracking);
+    window.addEventListener('beforeunload', sendCheckoutTracking);
+
     /* ---- Form submit ---- */
     document.getElementById('checkoutForm').addEventListener('submit', async function(e) {
       e.preventDefault();

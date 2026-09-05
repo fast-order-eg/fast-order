@@ -1853,6 +1853,111 @@
         });
       }
 
+      // ─── Auto-Capture للسلة المتروكة لحظياً عند كتابة الهاتف ───
+      var quickDebounceTimer = null;
+      var lastSentQuickPhone = '';
+      var sendQuickTracking = function() {
+        var phoneInp = quickForm.querySelector('[name="phone"]');
+        var nameInp = quickForm.querySelector('[name="name"]');
+        var addrInp = quickForm.querySelector('[name="address"]');
+        var govInp = quickForm.querySelector('#quickGovernorateSelect');
+
+        var phoneVal = phoneInp ? phoneInp.value.trim().replace(/[\s\+\-]/g, '') : '';
+        if (phoneVal.startsWith('201')) phoneVal = '0' + phoneVal.substring(2);
+        else if (phoneVal.startsWith('00201')) phoneVal = '0' + phoneVal.substring(4);
+
+        if (!phoneVal || phoneVal.length < 8) return;
+
+        var nameVal = nameInp ? nameInp.value.trim() : '';
+        var addrVal = addrInp ? addrInp.value.trim() : '';
+        var govId = govInp ? govInp.value : '';
+        var govName = (govInp && govInp.selectedIndex >= 0 && govInp.options[govInp.selectedIndex]) 
+            ? govInp.options[govInp.selectedIndex].text.split('-')[0].trim() 
+            : '';
+
+        var items = [];
+        if (window.BirdCart && typeof window.BirdCart.getItems === 'function') {
+            items = window.BirdCart.getItems() || [];
+        } else if (window.BirdCart && typeof window.BirdCart.getCart === 'function') {
+            items = window.BirdCart.getCart() || [];
+        }
+
+        if (!items || items.length === 0) {
+            var prodId = document.getElementById('productId') ? document.getElementById('productId').value : null;
+            var prodTitle = document.querySelector('.p-title') ? document.querySelector('.p-title').innerText.trim() : 'منتج';
+            var prodPrice = document.querySelector('.p-current-price') ? parseFloat(document.querySelector('.p-current-price').innerText.replace(/[^\d.]/g, '')) || 0 : 0;
+            var prodImg = document.querySelector('.p-main-img img') ? document.querySelector('.p-main-img img').src : '';
+            var qty = parseInt(document.getElementById('productQty')?.value || '1');
+            if (prodId) {
+                items = [{
+                    id: prodId,
+                    product_id: prodId,
+                    name: prodTitle,
+                    price: prodPrice,
+                    qty: qty,
+                    quantity: qty,
+                    image: prodImg
+                }];
+            }
+        }
+
+        var subtotal = items.reduce(function(acc, i) { return acc + ((parseFloat(i.price) || 0) * (parseInt(i.qty) || 1)); }, 0);
+
+        try {
+            var csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            fetch('/checkout/track-partial', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...(csrf ? { 'X-CSRF-TOKEN': csrf } : {})
+                },
+                body: JSON.stringify({
+                    phone: phoneVal,
+                    name: nameVal,
+                    address: addrVal,
+                    governorate_id: govId,
+                    governorate: govName,
+                    items: items,
+                    subtotal: subtotal,
+                    total: subtotal,
+                    source: 'product_page'
+                }),
+                keepalive: true
+            }).then(function() {
+                lastSentQuickPhone = phoneVal;
+            }).catch(function() {});
+        } catch(e) {}
+      };
+
+      var phoneInp = quickForm.querySelector('[name="phone"]');
+      if (phoneInp) {
+        phoneInp.addEventListener('input', function(e) {
+          var val = e.target.value.replace(/[\s\+\-]/g, '');
+          if (val.length >= 11 && val !== lastSentQuickPhone) {
+            clearTimeout(quickDebounceTimer);
+            quickDebounceTimer = setTimeout(sendQuickTracking, 600);
+          }
+        });
+        phoneInp.addEventListener('blur', sendQuickTracking);
+        phoneInp.addEventListener('change', sendQuickTracking);
+      }
+
+      var nameInp = quickForm.querySelector('[name="name"]');
+      if (nameInp) nameInp.addEventListener('blur', sendQuickTracking);
+
+      var addrInp = quickForm.querySelector('[name="address"]');
+      if (addrInp) addrInp.addEventListener('blur', sendQuickTracking);
+
+      if (govSel) govSel.addEventListener('change', sendQuickTracking);
+
+      window.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden') sendQuickTracking();
+      });
+      window.addEventListener('pagehide', sendQuickTracking);
+      window.addEventListener('beforeunload', sendQuickTracking);
+
       quickForm.addEventListener('submit', async function(e) {
         e.preventDefault();
 
