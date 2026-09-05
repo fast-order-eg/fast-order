@@ -151,7 +151,7 @@ function StatusBadge({ statusKey, color, text }) {
     const statusConfig = {
         pending:   { text: 'في الانتظار', color: 'bg-yellow-50 text-yellow-700 border-yellow-100' },
         confirmed: { text: 'مؤكد',        color: 'bg-blue-50 text-blue-700 border-blue-100' },
-        shipped:   { text: 'في التوصيل', color: 'bg-purple-50 text-purple-700 border-purple-100' },
+        shipped:   { text: 'مع شركة الشحن', color: 'bg-purple-50 text-purple-700 border-purple-100' },
         delivered: { text: 'تم التسليم', color: 'bg-green-50 text-green-700 border-green-100' },
         cancelled: { text: 'ملغي',        color: 'bg-red-50 text-red-700 border-red-100' },
     };
@@ -539,9 +539,9 @@ export default function Dashboard({ stats, recentOrders, chart, pendingReceiptsC
                     }
                 />
                 <StatCard
-                    title="في التوصيل"
+                    title="مع شركة الشحن"
                     value={stats.shipped_orders?.toLocaleString('en-US') ?? 0}
-                    subtitle="طلبات خرجت للتوصيل"
+                    subtitle="طلبات خرجت للشحن"
                     color="purple"
                     icon={
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -586,7 +586,7 @@ export default function Dashboard({ stats, recentOrders, chart, pendingReceiptsC
                     {[
                         { label: 'في الانتظار', value: stats.pending_orders,   bg: 'bg-yellow-50',   border: 'border-yellow-100',  text: 'text-yellow-600',   sub: 'text-yellow-700' },
                         { label: 'مؤكدة',       value: stats.completed_orders, bg: 'bg-blue-50',     border: 'border-blue-100',    text: 'text-blue-600',     sub: 'text-blue-700' },
-                        { label: 'في التوصيل',  value: stats.shipped_orders,   bg: 'bg-purple-50',   border: 'border-purple-100',  text: 'text-purple-600',   sub: 'text-purple-700' },
+                        { label: 'مع شركة الشحن', value: stats.shipped_orders, bg: 'bg-purple-50',   border: 'border-purple-100',  text: 'text-purple-600',   sub: 'text-purple-700' },
                         { label: 'تم التسليم',  value: stats.delivered_orders, bg: 'bg-emerald-50',  border: 'border-emerald-100', text: 'text-emerald-600',  sub: 'text-emerald-700' },
                         { label: 'ملغية',        value: stats.cancelled_orders, bg: 'bg-red-50',      border: 'border-red-100',      text: 'text-red-600',      sub: 'text-red-700' },
                     ].map((item, idx) => (

@@ -18,7 +18,7 @@ class OrderController extends Controller
      */
     public function index(Request $request): Response
     {
-        $query = Order::query();
+        $query = Order::with('shipment');
 
         // البحث
         if ($request->filled('search')) {
@@ -43,6 +43,17 @@ class OrderController extends Controller
             $query->where('status', $request->status);
         }
 
+        // الفلاتر السريعة (Quick Filter Tabs)
+        if ($request->filled('quick_filter')) {
+            match ($request->quick_filter) {
+                'confirmed_unprinted' => $query->where('status', 'confirmed')->where('is_printed', false),
+                'ready_to_ship'       => $query->where('status', 'confirmed'),
+                'sent_to_shipping'    => $query->where('status', 'shipped'),
+                'printed'             => $query->where('is_printed', true),
+                default               => null,
+            };
+        }
+
         // فلتر المنتج
         if ($request->filled('product_id')) {
             $pid = (int) $request->product_id;
@@ -54,7 +65,7 @@ class OrderController extends Controller
             });
         }
 
-        // إحصائيات الحالة (من نفس الفلتر بدون status filter)
+        // إحصائيات الحالة (من نفس الفلتر بدون status filter أو quick_filter)
         $statsQuery = Order::query();
         if ($request->filled('search')) {
             $search = $request->search;
@@ -81,12 +92,16 @@ class OrderController extends Controller
         }
 
         $statusCounts = [
-            'total'     => $statsQuery->count(),
-            'pending'   => (clone $statsQuery)->where('status', 'pending')->count(),
-            'confirmed' => (clone $statsQuery)->where('status', 'confirmed')->count(),
-            'shipped'   => (clone $statsQuery)->where('status', 'shipped')->count(),
-            'delivered' => (clone $statsQuery)->where('status', 'delivered')->count(),
-            'cancelled' => (clone $statsQuery)->where('status', 'cancelled')->count(),
+            'total'               => $statsQuery->count(),
+            'pending'             => (clone $statsQuery)->where('status', 'pending')->count(),
+            'confirmed'           => (clone $statsQuery)->where('status', 'confirmed')->count(),
+            'shipped'             => (clone $statsQuery)->where('status', 'shipped')->count(),
+            'delivered'           => (clone $statsQuery)->where('status', 'delivered')->count(),
+            'cancelled'           => (clone $statsQuery)->where('status', 'cancelled')->count(),
+            'confirmed_unprinted' => (clone $statsQuery)->where('status', 'confirmed')->where('is_printed', false)->count(),
+            'ready_to_ship'       => (clone $statsQuery)->where('status', 'confirmed')->count(),
+            'sent_to_shipping'    => (clone $statsQuery)->where('status', 'shipped')->count(),
+            'printed'             => (clone $statsQuery)->where('is_printed', true)->count(),
         ];
 
         // حساب المجموع الإجمالي للطلبات المفلترة
@@ -94,7 +109,7 @@ class OrderController extends Controller
 
         $orders = $query->orderBy('created_at', 'desc')
             ->orderBy('id', 'desc')
-            ->paginate(10)
+            ->paginate(15)
             ->withQueryString();
 
         // قائمة المنتجات للفلتر
@@ -112,14 +127,33 @@ class OrderController extends Controller
             }
         }
 
+        // شركات الشحن المفعلة لدى التاجر
+        $activeShippingGateways = \App\Models\ShippingGateway::withoutGlobalScopes()
+            ->where('tenant_id', $tenant->id)
+            ->where('is_active', true)
+            ->get(['id', 'provider'])
+            ->map(function ($gw) {
+                return [
+                    'id'       => $gw->id,
+                    'provider' => $gw->provider,
+                    'name'     => match ($gw->provider) {
+                        'bosta'  => 'بوسطة (Bosta)',
+                        'jnt'    => 'J&T Express (جي أند تي)',
+                        'aramex' => 'أرامكس (Aramex)',
+                        default  => $gw->provider,
+                    },
+                ];
+            })->values()->toArray();
+
         return Inertia::render('Merchant/Orders/Index', [
             'orders'                 => $orders,
             'totalAmount'            => round((float) $totalAmount, 2),
             'statusCounts'           => $statusCounts,
             'productsList'           => $productsList,
+            'activeShippingGateways' => $activeShippingGateways,
             'wallet_balance'         => (float) ($tenant->wallet_balance ?? 0),
             'isSubscriptionExpired'  => $isSubscriptionExpired,
-            'filters'                => $request->only(['search', 'status', 'date_from', 'date_to', 'product_id']),
+            'filters'                => $request->only(['search', 'status', 'quick_filter', 'date_from', 'date_to', 'product_id']),
         ]);
     }
 
@@ -291,9 +325,16 @@ class OrderController extends Controller
         $oldStatus = $order->status;
         $newStatus = $validated['status'];
 
-        // لو تحولت الحالة إلى ملغي ولم تكن ملغية من قبل → استرجاع المخزون
+        // لو تحولت الحالة إلى ملغي ولم تكن ملغية من قبل → استرجاع المخزون وإلغاء الشحنة
         if ($newStatus === 'cancelled' && $oldStatus !== 'cancelled') {
             $this->restoreOrderStock($order);
+            if ($order->shipment && $order->shipment->status !== 'cancelled') {
+                try {
+                    (new \App\Services\Shipping\ShippingManager())->cancelShipment($order->shipment);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning("Auto cancel shipment failed on status update for Order #{$order->id}: " . $e->getMessage());
+                }
+            }
         }
 
         $updateData = ['status' => $newStatus];
@@ -342,10 +383,168 @@ class OrderController extends Controller
     {
         if ($order->status !== 'cancelled') {
             $this->restoreOrderStock($order);
+            if ($order->shipment && $order->shipment->status !== 'cancelled') {
+                try {
+                    (new \App\Services\Shipping\ShippingManager())->cancelShipment($order->shipment);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning("Auto cancel shipment failed on cancel for Order #{$order->id}: " . $e->getMessage());
+                }
+            }
             $order->update(['status' => 'cancelled']);
         }
 
-        return redirect()->back()->with('success', 'تم إلغاء الطلب واسترجاع المخزون بنجاح ✓');
+        return redirect()->back()->with('success', 'تم إلغاء الطلب واسترجاع المخزون وإلغاء بوليصة الشحن بنجاح ✓');
+    }
+
+    /**
+     * إرسال مجموعة طلبات للشحن وتحديث حالتها إلى (مع شركة الشحن)
+     */
+    public function bulkShip(Request $request)
+    {
+        $validated = $request->validate([
+            'order_ids' => 'required|array|min:1',
+            'order_ids.*' => 'integer|exists:orders,id',
+            'provider' => 'nullable|string',
+        ]);
+
+        $orderIds = $validated['order_ids'];
+        $provider = $validated['provider'] ?? null;
+        $tenant = app(\App\Models\Tenant::class);
+
+        if (!$provider) {
+            $activeGateway = \App\Models\ShippingGateway::withoutGlobalScopes()
+                ->where('tenant_id', $tenant->id)
+                ->where('is_active', true)
+                ->first();
+            $provider = $activeGateway?->provider;
+        }
+
+        $orders = Order::with('shipment')->whereIn('id', $orderIds)->get();
+        $shippedCount = 0;
+        $apiSuccessCount = 0;
+        $shippingManager = new \App\Services\Shipping\ShippingManager();
+
+        foreach ($orders as $order) {
+            $order->update(['status' => 'shipped']);
+            $shippedCount++;
+
+            if ($provider && (!$order->shipment || $order->shipment->status === 'cancelled')) {
+                try {
+                    $shippingManager->createShipment($order, $provider);
+                    $apiSuccessCount++;
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning("Bulk ship API error for Order #{$order->id}: " . $e->getMessage());
+                }
+            }
+        }
+
+        $msg = "تم تحويل {$shippedCount} طلب إلى حالة (مع شركة الشحن) بنجاح ✓";
+        if ($apiSuccessCount > 0) {
+            $msg .= "، وتم إنشاء {$apiSuccessCount} بوليصة شحن عبر الـ API.";
+        }
+
+        return redirect()->back()->with('success', $msg);
+    }
+
+    /**
+     * تغيير حالة مجموعة طلبات دفعة واحدة
+     */
+    public function bulkStatus(Request $request)
+    {
+        $validated = $request->validate([
+            'order_ids' => 'required|array|min:1',
+            'order_ids.*' => 'integer|exists:orders,id',
+            'status' => 'required|in:pending,confirmed,shipped,delivered,cancelled',
+        ]);
+
+        $orderIds = $validated['order_ids'];
+        $newStatus = $validated['status'];
+        $orders = Order::with('shipment')->whereIn('id', $orderIds)->get();
+        $shippingManager = new \App\Services\Shipping\ShippingManager();
+
+        foreach ($orders as $order) {
+            $oldStatus = $order->status;
+
+            if ($newStatus === 'cancelled' && $oldStatus !== 'cancelled') {
+                $this->restoreOrderStock($order);
+                if ($order->shipment && $order->shipment->status !== 'cancelled') {
+                    try {
+                        $shippingManager->cancelShipment($order->shipment);
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::warning("Bulk cancel shipment failed for order #{$order->id}: " . $e->getMessage());
+                    }
+                }
+            }
+
+            $order->update(['status' => $newStatus]);
+
+            if (in_array($newStatus, ['confirmed', 'shipped']) && $oldStatus !== $newStatus) {
+                $this->handleAutoDispatchShipping($order);
+            }
+        }
+
+        $statusLabel = match ($newStatus) {
+            'pending'   => 'في الانتظار',
+            'confirmed' => 'مؤكد',
+            'shipped'   => 'مع شركة الشحن',
+            'delivered' => 'تم التسليم',
+            'cancelled' => 'ملغي',
+            default     => $newStatus,
+        };
+
+        return redirect()->back()->with('success', "تم تحديث حالة " . count($orders) . " طلب إلى ({$statusLabel}) بنجاح ✓");
+    }
+
+    /**
+     * وسم الطلبات المحددة كمطبوعة وتسجيل printed_at
+     */
+    public function bulkPrint(Request $request)
+    {
+        $validated = $request->validate([
+            'order_ids' => 'required|array|min:1',
+            'order_ids.*' => 'integer|exists:orders,id',
+        ]);
+
+        Order::whereIn('id', $validated['order_ids'])->update([
+            'is_printed' => true,
+            'printed_at' => now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'url' => route('orders.bulkInvoice', ['ids' => implode(',', $validated['order_ids'])]),
+        ]);
+    }
+
+    /**
+     * عرض صفحة الفواتير المجمعة للطباعة
+     */
+    public function bulkInvoice(Request $request)
+    {
+        $ids = $request->input('ids');
+        if (is_string($ids)) {
+            $ids = array_filter(explode(',', $ids));
+        }
+
+        if (empty($ids)) {
+            return redirect()->route('orders.index')->with('error', 'لم يتم تحديد أي طلبات للطباعة.');
+        }
+
+        $orders = Order::whereIn('id', $ids)->latest()->get();
+
+        // Mark as printed automatically
+        Order::whereIn('id', $ids)->update([
+            'is_printed' => true,
+            'printed_at' => now(),
+        ]);
+
+        $tenantId = app(\App\Models\Tenant::class)->id;
+        $storeName = \App\Models\Setting::get('store_name', null, $tenantId) ?: 'المتجر';
+        $storePhone = \App\Models\Setting::get('phone', null, $tenantId)
+            ?: (\App\Models\Setting::get('whatsapp', null, $tenantId)
+            ?: (auth()->user()?->phone ?: ''));
+
+        return view('orders.bulk-invoice', compact('orders', 'storeName', 'storePhone'));
     }
 
     /**
@@ -388,7 +587,7 @@ class OrderController extends Controller
     public function destroy(Order $order)
     {
         $order->delete();
-        return redirect()->route('merchant.orders.index')->with('success', 'تم حذف الطلب بنجاح ✓');
+        return redirect()->route('orders.index')->with('success', 'تم حذف الطلب بنجاح ✓');
     }
 
     /**
@@ -402,6 +601,12 @@ class OrderController extends Controller
         // إذا كان رصيد المحفظة غير كافٍ، قم بتصدير المفتوحة فقط
         if (($tenant->wallet_balance ?? 0) < 2) {
             $query->where('is_unlocked', true);
+        }
+
+        // إذا تم تحديد طلبات معينة
+        if ($request->filled('ids')) {
+            $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+            $query->whereIn('id', $ids);
         }
 
         if ($request->filled('search')) {

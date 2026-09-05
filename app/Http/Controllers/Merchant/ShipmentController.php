@@ -51,4 +51,19 @@ class ShipmentController extends Controller
 
         return response()->json($trackingData);
     }
+
+    /**
+     * Cancel a shipment.
+     */
+    public function cancel(Shipment $shipment): RedirectResponse
+    {
+        try {
+            $shippingManager = new ShippingManager();
+            $shippingManager->cancelShipment($shipment);
+
+            return redirect()->back()->with('success', 'تم إلغاء الشحنة مع شركة الشحن بنجاح ✓');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'فشل إلغاء الشحنة: ' . $e->getMessage());
+        }
+    }
 }

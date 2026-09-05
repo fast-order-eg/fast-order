@@ -70,7 +70,6 @@ class MetaWhatsAppService
         if (empty($recipientPhone) || strlen($recipientPhone) < 10) {
             $order->update([
                 'whatsapp_status' => 'no_whatsapp',
-                'notes' => trim(($order->notes ? $order->notes . "\n" : '') . '⚠️ [واتساب] رقم الهاتف غير صالح لإرسال رسالة واتساب.'),
             ]);
 
             return [
@@ -102,7 +101,6 @@ class MetaWhatsAppService
                 'whatsapp_message_id'    => $simulatedMsgId,
                 'whatsapp_sent_at'       => $sentTime,
                 'whatsapp_charge_amount' => $this->costPerOrder,
-                'notes'                  => trim(($order->notes ? $order->notes . "\n" : '') . "💬 [واتساب] تم إرسال رسالة التأكيد عبر الواتساب في {$sentTime->format('Y-m-d H:i:s')} (معرف الرسالة: {$simulatedMsgId})"),
             ]);
 
             Log::info("WhatsApp Confirmation simulated for Order #{$order->reference_number} to {$recipientPhone}");
@@ -175,7 +173,6 @@ class MetaWhatsAppService
                     'whatsapp_message_id'    => $messageId,
                     'whatsapp_sent_at'       => $sentTime,
                     'whatsapp_charge_amount' => $this->costPerOrder,
-                    'notes'                  => trim(($order->notes ? $order->notes . "\n" : '') . "💬 [واتساب] تم إرسال رسالة التأكيد عبر الواتساب في {$sentTime->format('Y-m-d H:i:s')} (معرف الرسالة: {$messageId})"),
                 ]);
 
                 return [
@@ -195,13 +192,8 @@ class MetaWhatsAppService
                 ? 'no_whatsapp'
                 : 'failed';
 
-            $statusText = $status === 'no_whatsapp' 
-                ? '⚠️ [واتساب] الرقم لا يمتلك حساب واتساب، يرجى الاتصال بالعميل هاتفياً للتأكيد.' 
-                : "⚠️ [واتساب] فشل إرسال رسالة الواتساب: {$errorMessage}";
-
             $order->update([
                 'whatsapp_status' => $status,
-                'notes'           => trim(($order->notes ? $order->notes . "\n" : '') . $statusText),
             ]);
 
             Log::error("Meta WhatsApp API Error for Order #{$order->reference_number}:", $errorBody ?: [$response->body()]);
@@ -217,7 +209,6 @@ class MetaWhatsAppService
 
             $order->update([
                 'whatsapp_status' => 'failed',
-                'notes'           => trim(($order->notes ? $order->notes . "\n" : '') . '⚠️ [واتساب] تعذر إرسال الرسالة نظراً لخطأ في الاتصال بالشبكة.'),
             ]);
 
             return [

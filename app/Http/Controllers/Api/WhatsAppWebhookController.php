@@ -176,7 +176,6 @@ class WhatsAppWebhookController extends Controller
             'status'               => 'confirmed',
             'whatsapp_status'      => 'confirmed',
             'whatsapp_response_at' => $nowTime,
-            'notes'                => trim(($order->notes ? $order->notes . "\n" : '') . "✅ [واتساب] تم التأكيد بواسطة الواتس من العميل في تمام {$timeStr}"),
         ]);
 
         Log::info("Order #{$order->reference_number} confirmed via WhatsApp Webhook.");
@@ -201,7 +200,6 @@ class WhatsAppWebhookController extends Controller
             'status'               => 'cancelled',
             'whatsapp_status'      => 'cancelled',
             'whatsapp_response_at' => $nowTime,
-            'notes'                => trim(($order->notes ? $order->notes . "\n" : '') . "❌ [واتساب] تم الإلغاء بواسطة الواتس من العميل في تمام {$timeStr}"),
         ]);
 
         Log::info("Order #{$order->reference_number} cancelled via WhatsApp Webhook.");
@@ -288,7 +286,6 @@ class WhatsAppWebhookController extends Controller
             if ($errorCode == 131026) {
                 $order->update([
                     'whatsapp_status' => 'no_whatsapp',
-                    'notes' => trim(($order->notes ? $order->notes . "\n" : '') . '⚠️ [واتساب] لا يوجد حساب واتساب لرقم العميل، يرجى الاتصال هاتفياً للتأكيد.'),
                 ]);
             }
         }

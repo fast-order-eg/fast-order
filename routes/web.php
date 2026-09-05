@@ -187,6 +187,10 @@ Route::prefix('admin')->group(function () {
             // Orders management (Inertia-powered)
             Route::get('/orders', [App\Http\Controllers\Merchant\OrderController::class, 'index'])->name('orders.index');
             Route::get('/orders/export', [App\Http\Controllers\Merchant\OrderController::class, 'export'])->name('orders.export');
+            Route::post('/orders/bulk-ship', [App\Http\Controllers\Merchant\OrderController::class, 'bulkShip'])->name('orders.bulkShip');
+            Route::post('/orders/bulk-status', [App\Http\Controllers\Merchant\OrderController::class, 'bulkStatus'])->name('orders.bulkStatus');
+            Route::post('/orders/bulk-print', [App\Http\Controllers\Merchant\OrderController::class, 'bulkPrint'])->name('orders.bulkPrint');
+            Route::get('/orders/bulk-invoice', [App\Http\Controllers\Merchant\OrderController::class, 'bulkInvoice'])->name('orders.bulkInvoice');
             Route::get('/orders/{order}', [App\Http\Controllers\Merchant\OrderController::class, 'show'])->name('orders.show');
             Route::post('/orders/{order}/unlock', [App\Http\Controllers\Merchant\OrderController::class, 'unlock'])->name('orders.unlock');
             Route::patch('/orders/{order}/status', [App\Http\Controllers\Merchant\OrderController::class, 'updateStatus'])->name('orders.updateStatus');
@@ -274,6 +278,7 @@ Route::prefix('admin')->group(function () {
             // Shipment actions for orders
             Route::post('/orders/{order}/shipment', [\App\Http\Controllers\Merchant\ShipmentController::class, 'store'])->name('merchant.orders.shipment.store');
             Route::get('/shipments/{shipment}/track', [\App\Http\Controllers\Merchant\ShipmentController::class, 'track'])->name('merchant.shipments.track');
+            Route::post('/shipments/{shipment}/cancel', [\App\Http\Controllers\Merchant\ShipmentController::class, 'cancel'])->name('merchant.shipments.cancel');
 
             // Payment Gateways management
             Route::prefix('payment-gateways')->name('merchant.payment-gateways')->group(function () {

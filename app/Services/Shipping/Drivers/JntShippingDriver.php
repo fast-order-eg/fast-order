@@ -69,19 +69,27 @@ class JntShippingDriver implements ShippingProviderInterface
                 ];
             }
 
-            // 3. Sender Info (Store / Merchant)
+            // 3. Sender Info (Store / Merchant) - Pulled dynamically from store settings
+            $tenantId = $order->tenant_id;
             $tenant = $order->tenant;
-            $storeName = Setting::get('store_name') ?: ($tenant?->name ?? 'متجر إلكتروني');
-            $storePhone = $this->formatPhone(Setting::get('phone') ?: ($tenant?->owner?->phone ?? '01000000000'));
-            $storeProv  = Setting::get('sender_governorate') ?: 'القاهرة';
-            $storeCity  = Setting::get('sender_city') ?: 'القاهرة';
-            $storeAddr  = Setting::get('pickup_address') ?: ($storeProv . ' - ' . $storeCity);
+            $storeName = Setting::get('store_name', null, $tenantId) ?: ($tenant?->name ?? 'متجر إلكتروني');
+            $rawStorePhone = Setting::get('phone', null, $tenantId) ?: ($tenant?->owner?->phone ?? '01000000000');
+            $storePhone = $this->formatPhone($rawStorePhone);
+            
+            $prefProv = Setting::get('sender_governorate', null, $tenantId);
+            $prefCity = Setting::get('sender_city', null, $tenantId);
+            $rawAddress = Setting::get('address', null, $tenantId) ?: Setting::get('pickup_address', null, $tenantId);
+            $senderLoc = $this->parseStoreLocation($rawAddress, $prefProv, $prefCity);
 
             // 4. Receiver Info (Customer)
             $receiverPhone = $this->formatPhone($order->customer_phone);
             $receiverProv  = $order->governorate ?: 'القاهرة';
             $receiverCity  = $order->city ?: $receiverProv;
             $receiverAddr  = $order->customer_address ?: ($order->shipping_address ?: 'العنوان بالتفصيل');
+            $receiverStreet = trim(str_replace([$receiverProv, $receiverCity], '', $receiverAddr), " -–—,،|/ \t\n\r\0\x0B");
+            if (empty($receiverStreet)) {
+                $receiverStreet = $receiverAddr;
+            }
 
             // 5. Unique Transaction Logistic ID
             $txlogisticId = 'ORD_' . $order->id . '_' . $order->reference_number;
@@ -94,33 +102,37 @@ class JntShippingDriver implements ShippingProviderInterface
                 'customerCode'         => (string) $customerCode,
                 'digest'               => $bodyDigest,
                 'serviceType'          => '01',
-                'orderType'            => '1',
+                'orderType'            => '2', // 2: Monthly settlement contract client
                 'deliveryType'         => '04',
-                'operateType'          => '1',
+                'operateType'          => '1', // 1: Add new order
                 'expressType'          => 'EZ',
                 'payType'              => $payType,
                 'priceCurrency'        => 'EGP',
                 'txlogisticId'         => $txlogisticId,
                 'goodsType'            => 'ITN1',
-                'totalQuantity'        => $totalQty,
+                'totalQuantity'        => 1,   // J&T requirement: exactly 1 parcel per waybill
                 'itemsValue'           => (float) $order->total,
                 'collectionOnDelivery' => $codAmount,
                 'sender' => [
                     'name'    => $storeName,
                     'mobile'  => $storePhone,
-                    'prov'    => $storeProv,
-                    'city'    => $storeCity,
-                    'address' => $storeAddr,
+                    'phone'   => '', // Left empty to avoid duplicate phone display
+                    'prov'    => $senderLoc['prov'],
+                    'city'    => $senderLoc['city'],
+                    'street'  => $senderLoc['street'],
+                    'address' => $senderLoc['address'],
                 ],
                 'receiver' => [
                     'name'    => $order->customer_name ?: 'عميل',
                     'mobile'  => $receiverPhone,
+                    'phone'   => '',
                     'prov'    => $receiverProv,
                     'city'    => $receiverCity,
-                    'address' => $receiverAddr,
+                    'street'  => mb_substr($receiverStreet, 0, 100),
+                    'address' => mb_substr($receiverAddr, 0, 150),
                 ],
                 'items'  => $items,
-                'remark' => $order->notes ?: "طلب رقم #{$order->reference_number}",
+                'remark' => $this->buildOrderRemark($order, $rawItems),
             ];
 
             $bizContent = json_encode($bizContentArray, JSON_UNESCAPED_UNICODE);
@@ -171,9 +183,7 @@ class JntShippingDriver implements ShippingProviderInterface
                     ?? $data['sortCode'] 
                     ?? null;
 
-                $airwayBillUrl = $data['airwayBillUrl'] 
-                    ?? $data['billUrl'] 
-                    ?? "https://www.jtexpress-eg.com/trajectoryQuery?bills={$trackingNumber}";
+                $airwayBillUrl = "https://www.jtjms-eg.com/track?bills={$trackingNumber}";
 
                 return [
                     'success'         => true,
@@ -302,7 +312,7 @@ class JntShippingDriver implements ShippingProviderInterface
     /**
      * Cancel shipment in J&T Express
      */
-    public function cancelShipment(string $trackingNumber, ShippingGateway $gateway): bool
+    public function cancelShipment(string $trackingNumber, ShippingGateway $gateway, ?string $txlogisticId = null): bool
     {
         $creds = $gateway->credentials ?? [];
         $customerCode = $creds['customer_code'] ?? null;
@@ -317,11 +327,23 @@ class JntShippingDriver implements ShippingProviderInterface
             return false;
         }
 
+        // If txlogisticId is not provided, look up shipment and order
+        if (empty($txlogisticId)) {
+            $shipment = \App\Models\Shipment::withoutGlobalScopes()
+                ->where('tracking_number', $trackingNumber)
+                ->first();
+            if ($shipment && $shipment->order) {
+                $txlogisticId = 'ORD_' . $shipment->order->id . '_' . $shipment->order->reference_number;
+            } else {
+                $txlogisticId = $trackingNumber;
+            }
+        }
+
         try {
             $bizContentArray = [
                 'customerCode' => (string) $customerCode,
-                'txlogisticId' => $trackingNumber,
-                'billCode'     => $trackingNumber,
+                'txlogisticId' => (string) $txlogisticId,
+                'billCode'     => (string) $trackingNumber,
                 'reason'       => 'طلب إلغاء من لوحة تحكم المتجر',
             ];
 
@@ -349,7 +371,7 @@ class JntShippingDriver implements ShippingProviderInterface
             $resJson = $response->json() ?? [];
             $code = (string) ($resJson['code'] ?? '');
 
-            Log::info("J&T Express Cancel Order [Tracking: {$trackingNumber}]", [
+            Log::info("J&T Express Cancel Order [BillCode: {$trackingNumber}, txlogisticId: {$txlogisticId}]", [
                 'response' => $resJson,
             ]);
 
@@ -358,6 +380,123 @@ class JntShippingDriver implements ShippingProviderInterface
             Log::error("J&T Express Cancel Exception [Tracking: {$trackingNumber}]: " . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Parse store location into prov, city, street without redundant text.
+     */
+    protected function parseStoreLocation(?string $address, ?string $prefProv = null, ?string $prefCity = null): array
+    {
+        $govList = [
+            'القاهرة', 'الجيزة', 'الإسكندرية', 'الدقهلية', 'الغربية', 'الشرقية', 'المنوفية', 
+            'القليوبية', 'البحيرة', 'كفر الشيخ', 'دمياط', 'بورسعيد', 'الإسماعيلية', 'السويس', 
+            'الفيوم', 'بني سويف', 'المنيا', 'أسيوط', 'سوهاج', 'قنا', 'الأقصر', 'أسوان', 
+            'البحر الأحمر', 'الوادي الجديد', 'مطروح', 'شمال سيناء', 'جنوب سيناء'
+        ];
+
+        $prov = $prefProv ?: 'الدقهلية';
+        $city = $prefCity ?: 'المنصورة';
+        $fullAddr = trim($address ?? '');
+
+        if (!empty($fullAddr)) {
+            foreach ($govList as $gov) {
+                if (mb_stripos($fullAddr, $gov) !== false) {
+                    $prov = $gov;
+                    break;
+                }
+            }
+        }
+
+        $parts = preg_split('/[-–—,،|\/]+/', $fullAddr);
+        $parts = array_values(array_filter(array_map('trim', $parts)));
+
+        if (count($parts) >= 3) {
+            if (mb_stripos($parts[0], $prov) !== false) {
+                $city = $parts[1];
+                $streetParts = array_slice($parts, 2);
+            } else {
+                $streetParts = $parts;
+            }
+        } elseif (count($parts) === 2) {
+            $city = $parts[0];
+            $streetParts = array_slice($parts, 1);
+        } else {
+            $streetParts = $parts;
+        }
+
+        $street = !empty($streetParts) ? implode(' - ', $streetParts) : ($fullAddr ?: 'المقر الرئيسي');
+        $cleanStreet = trim(str_replace([$prov, $city], '', $street), " -–—,،|/ \t\n\r\0\x0B");
+
+        if (empty($cleanStreet)) {
+            $cleanStreet = $fullAddr ?: ($prov . ' - ' . $city);
+        }
+
+        return [
+            'prov'    => $prov,
+            'city'    => $city,
+            'street'  => mb_substr($cleanStreet, 0, 100),
+            'address' => mb_substr($fullAddr ?: ($prov . ' - ' . $city), 0, 150),
+        ];
+    }
+
+    /**
+     * Build clean remark for shipping carrier with product options and sanitized customer note.
+     */
+    protected function buildOrderRemark(Order $order, array $rawItems): string
+    {
+        $itemDescriptions = [];
+
+        foreach ($rawItems as $item) {
+            $name = $item['name'] ?? $item['product_name'] ?? 'منتج';
+            $qty = max(1, (int) ($item['quantity'] ?? $item['qty'] ?? 1));
+            
+            $opts = [];
+            if (!empty($item['selectedSize']) || !empty($item['size'])) {
+                $opts[] = 'مقاس: ' . ($item['selectedSize'] ?? $item['size']);
+            }
+            if (!empty($item['selectedColor']) || !empty($item['color'])) {
+                $opts[] = 'لون: ' . ($item['selectedColor'] ?? $item['color']);
+            }
+            if (!empty($item['options']) && is_array($item['options'])) {
+                foreach ($item['options'] as $k => $v) {
+                    if ($v) {
+                        $opts[] = "{$k}: {$v}";
+                    }
+                }
+            }
+
+            $optStr = !empty($opts) ? ' (' . implode(', ', $opts) . ')' : '';
+            $itemDescriptions[] = "{$name} x{$qty}{$optStr}";
+        }
+
+        $itemsText = implode(' | ', $itemDescriptions);
+
+        // Sanitize customer notes: strip any line containing [واتساب] or [whatsapp]
+        $cleanNotes = '';
+        if (!empty($order->notes)) {
+            $lines = preg_split("/\r\n|\n|\r/", $order->notes);
+            $valid = [];
+            foreach ($lines as $line) {
+                $trimmed = trim($line);
+                if (empty($trimmed)) continue;
+                if (str_contains($trimmed, 'واتساب') || str_contains($trimmed, 'whatsapp') || str_contains($trimmed, 'WhatsApp')) {
+                    continue;
+                }
+                $valid[] = $trimmed;
+            }
+            $cleanNotes = implode(' - ', $valid);
+        }
+
+        $remark = $itemsText;
+        if (!empty($cleanNotes)) {
+            $remark .= ' | ملاحظة: ' . $cleanNotes;
+        }
+
+        if (empty(trim($remark))) {
+            $remark = "طلب رقم #{$order->reference_number}";
+        }
+
+        return mb_substr($remark, 0, 200);
     }
 
     /**

@@ -79,4 +79,39 @@ class ShippingManager
             'raw_response' => $result['raw_response'] ?? [],
         ]);
     }
+
+    /**
+     * Cancel shipment via provider driver and mark it cancelled.
+     */
+    public function cancelShipment(Shipment $shipment): bool
+    {
+        if ($shipment->status === 'cancelled') {
+            return true;
+        }
+
+        $gateway = ShippingGateway::withoutGlobalScopes()
+            ->where('tenant_id', $shipment->tenant_id)
+            ->where('provider', $shipment->provider)
+            ->first();
+
+        if (!$gateway) {
+            $shipment->update(['status' => 'cancelled']);
+            return true;
+        }
+
+        try {
+            $driver = $this->driver($shipment->provider);
+            $order = $shipment->order;
+            $txlogisticId = $order ? ('ORD_' . $order->id . '_' . $order->reference_number) : null;
+
+            $cancelled = $driver->cancelShipment($shipment->tracking_number, $gateway, $txlogisticId);
+
+            $shipment->update(['status' => 'cancelled']);
+            return (bool) $cancelled;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Cancel shipment failed for Shipment #{$shipment->id}: " . $e->getMessage());
+            $shipment->update(['status' => 'cancelled']);
+            return false;
+        }
+    }
 }

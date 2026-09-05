@@ -160,16 +160,24 @@
             padding-top: 20px;
         }
         
+        @page {
+            margin: 0mm !important;
+            size: auto;
+        }
+        
         @media print {
             body {
                 margin: 0;
-                padding: 0;
+                padding: 10mm 15mm;
+                background: white;
             }
             
             .invoice-container {
-                margin: 0;
+                margin: 0 auto;
                 border: none;
                 box-shadow: none;
+                padding: 0;
+                max-width: 100%;
             }
             
             .no-print {

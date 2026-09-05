@@ -22,7 +22,7 @@ export default function OrderShow({ order, active_shipping_gateways = [] }) {
         const statuses = {
             pending: 'في الانتظار',
             confirmed: 'مؤكد',
-            shipped: 'في التوصيل',
+            shipped: 'مع شركة الشحن',
             delivered: 'تم التسليم',
             cancelled: 'ملغي',
         };
@@ -161,7 +161,7 @@ ${totalsBlock}${shippingBlock}`;
                             >
                                 <option value="pending">في الانتظار</option>
                                 <option value="confirmed">مؤكد</option>
-                                <option value="shipped">في التوصيل</option>
+                                <option value="shipped">مع شركة الشحن</option>
                                 <option value="delivered">تم التسليم</option>
                                 <option value="cancelled">ملغي</option>
                             </select>

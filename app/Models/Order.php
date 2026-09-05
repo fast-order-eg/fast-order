@@ -28,6 +28,8 @@ class Order extends Model
         'subtotal',
         'total',
         'status',
+        'is_printed',
+        'printed_at',
         'is_unlocked',
         'unlocked_at',
         'notes'
@@ -39,6 +41,8 @@ class Order extends Model
         'discount' => 'float',
         'subtotal' => 'integer',
         'total' => 'integer',
+        'is_printed' => 'boolean',
+        'printed_at' => 'datetime',
         'is_unlocked' => 'boolean',
         'unlocked_at' => 'datetime',
         'created_at' => 'datetime:Y-m-d H:i:s',
@@ -61,11 +65,23 @@ class Order extends Model
             'discount' => 'float',
             'subtotal' => 'integer',
             'total' => 'integer',
+            'is_printed' => 'boolean',
+            'printed_at' => 'datetime',
             'is_unlocked' => 'boolean',
             'unlocked_at' => 'datetime',
             'created_at' => 'datetime:Y-m-d H:i:s',
             'updated_at' => 'datetime:Y-m-d H:i:s',
         ];
+    }
+
+    public function shipment()
+    {
+        return $this->hasOne(Shipment::class)->latestOfMany();
+    }
+
+    public function shipments()
+    {
+        return $this->hasMany(Shipment::class);
     }
 
     /**

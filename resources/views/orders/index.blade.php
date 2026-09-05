@@ -23,7 +23,7 @@
                             <p class="text-3xl font-bold">{{ $statusCounts['confirmed'] }}</p>
                         </div>
                         <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 p-4 rounded-xl shadow-lg text-white text-center">
-                            <p class="text-indigo-100 text-xs font-medium mb-1">في التوصيل</p>
+                            <p class="text-indigo-100 text-xs font-medium mb-1">مع شركة الشحن</p>
                             <p class="text-3xl font-bold">{{ $statusCounts['shipped'] }}</p>
                         </div>
                         <div class="bg-gradient-to-r from-purple-500 to-purple-600 p-4 rounded-xl shadow-lg text-white text-center">
@@ -68,7 +68,7 @@
                                     <option value="">كل الحالات</option>
                                     <option value="pending"   {{ request('status') == 'pending'   ? 'selected' : '' }}>قيد الانتظار</option>
                                     <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>مؤكد</option>
-                                    <option value="shipped"   {{ request('status') == 'shipped'   ? 'selected' : '' }}>في التوصيل</option>
+                                    <option value="shipped"   {{ request('status') == 'shipped'   ? 'selected' : '' }}>مع شركة الشحن</option>
                                     <option value="delivered" {{ request('status') == 'delivered' ? 'selected' : '' }}>تم التسليم</option>
                                     <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>ملغي</option>
                                 </select>
@@ -166,7 +166,7 @@
                                                         class="text-xs font-semibold rounded-full px-3 py-1 border-0 focus:ring-2 focus:ring-blue-500 status-select-{{ $order->status }}">
                                                     <option value="pending"   {{ $order->status == 'pending'   ? 'selected' : '' }}>قيد الانتظار</option>
                                                     <option value="confirmed" {{ $order->status == 'confirmed' ? 'selected' : '' }}>مؤكد</option>
-                                                    <option value="shipped"   {{ $order->status == 'shipped'   ? 'selected' : '' }}>في التوصيل</option>
+                                                    <option value="shipped"   {{ $order->status == 'shipped'   ? 'selected' : '' }}>مع شركة الشحن</option>
                                                     <option value="delivered" {{ $order->status == 'delivered' ? 'selected' : '' }}>تم التسليم</option>
                                                     <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>ملغي</option>
                                                 </select>
@@ -252,7 +252,7 @@
         function showOrderModal(order) {
             const modal = document.createElement('div');
             modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
-            const statusLabels = { pending:'في الانتظار', confirmed:'مؤكد', shipped:'في التوصيل', delivered:'تم التسليم', cancelled:'ملغي' };
+            const statusLabels = { pending:'في الانتظار', confirmed:'مؤكد', shipped:'مع شركة الشحن', delivered:'تم التسليم', cancelled:'ملغي' };
             const statusColors = { pending:'bg-yellow-100 text-yellow-800', confirmed:'bg-blue-100 text-blue-800', shipped:'bg-purple-100 text-purple-800', delivered:'bg-green-100 text-green-800', cancelled:'bg-red-100 text-red-800' };
             let itemsHtml = '';
             (order.items || []).forEach(item => {
