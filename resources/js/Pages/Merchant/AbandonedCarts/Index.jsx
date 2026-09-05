@@ -86,13 +86,26 @@ export default function AbandonedCartsIndex({ abandonedCarts, records, stats, st
             phone = '20' + phone;
         }
 
-        const storeName = tenant?.name || 'متجرنا';
+        let rawStoreName = tenant?.name || 'متجرنا';
+        let cleanStoreName = rawStoreName.replace(/^متجر\s+/i, '').trim();
+        let displayStoreName = cleanStoreName ? `متجر ${cleanStoreName}` : 'متجرنا';
+
         const customerName = cart.customer_name ? `أستاذ/ة ${cart.customer_name}` : 'يا فندم';
         const items = cart.cart_data?.items || [];
-        const itemsText = items.map(i => `${i.name} (${i.qty || i.quantity || 1} قطعة)`).join(' و ');
+        const itemsText = items.map(i => {
+            let variants = [];
+            if (i.selectedSize || i.size) variants.push(`مقاس: ${i.selectedSize || i.size}`);
+            if (i.selectedColor || i.color) variants.push(`لون: ${i.selectedColor || i.color}`);
+            if (i.options && typeof i.options === 'object') {
+                Object.entries(i.options).forEach(([k, v]) => variants.push(`${k}: ${v}`));
+            }
+            const variantStr = variants.length > 0 ? ` (${variants.join('، ')})` : '';
+            return `${i.name}${variantStr} [${i.qty || i.quantity || 1} قطعة]`;
+        }).join(' و ');
+
         const recoveryUrl = cart.recovery_token ? `${window.location.origin}/shop/cart/recover/${cart.recovery_token}` : '';
 
-        const message = `أهلاً بك ${customerName}، مع حضرتك خدمة عملاء متجر ${storeName} 🌸\nلاحظنا إنك بدأت طلب ${itemsText ? `[${itemsText}]` : 'من متجرنا'} ووقفت قبل تأكيد الطلب.\nهل واجهتك أي مشكلة أثناء الطلب أو حابب نساعدك في تأكيد شحنتك وتوصيلها؟${recoveryUrl ? `\n\nتقدر تكمل طلبك وتأكده مباشرة بضغطة واحدة من هنا:\n${recoveryUrl}` : ''}`;
+        const message = `أهلاً بك ${customerName}، مع حضرتك خدمة عملاء ${displayStoreName}.\nلاحظنا إنك بدأت طلب ${itemsText ? `[${itemsText}]` : 'من متجرنا'} ووقفت قبل تأكيد الطلب.\nهل واجهتك أي مشكلة أثناء الطلب أو حابب نساعدك في تأكيد شحنتك وتوصيلها؟${recoveryUrl ? `\n\nتقدر تكمل طلبك وتأكده مباشرة بضغطة واحدة من هنا:\n${recoveryUrl}` : ''}`;
 
         const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
         window.open(waUrl, '_blank');
@@ -145,14 +158,21 @@ export default function AbandonedCartsIndex({ abandonedCarts, records, stats, st
 
     const formatDate = (dateStr) => {
         if (!dateStr) return '—';
-        const d = new Date(dateStr);
-        return d.toLocaleDateString('ar-EG', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
+        const cleanStr = dateStr.includes(' ') && !dateStr.includes('T') ? dateStr.replace(' ', 'T') : dateStr;
+        const d = new Date(cleanStr);
+        if (isNaN(d.getTime())) return dateStr;
+
+        const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+        const day = d.getDate();
+        const month = months[d.getMonth()];
+        const year = d.getFullYear();
+        let hours = d.getHours();
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        const period = hours >= 12 ? 'م' : 'ص';
+        hours = hours % 12 || 12;
+        const hoursStr = String(hours).padStart(2, '0');
+
+        return `${day} ${month} ${year} - ${hoursStr}:${minutes} ${period}`;
     };
 
     const getStatusBadge = (cart) => {
@@ -395,17 +415,38 @@ export default function AbandonedCartsIndex({ abandonedCarts, records, stats, st
                                                 {/* Cart Items */}
                                                 <td className="px-5 py-4">
                                                     {items.length > 0 ? (
-                                                        <div className="space-y-1 max-w-[220px]">
-                                                            {items.slice(0, 2).map((item, iIdx) => (
-                                                                <div key={iIdx} className="text-xs text-gray-800 flex items-center gap-1.5">
-                                                                    <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0"></span>
-                                                                    <span className="font-medium truncate">{item.name}</span>
-                                                                    <span className="text-[10px] text-gray-500 font-bold shrink-0">×{item.qty || item.quantity || 1}</span>
+                                                        <div className="space-y-1.5 max-w-[240px]">
+                                                            {items.slice(0, 3).map((item, iIdx) => (
+                                                                <div key={iIdx} className="text-xs text-gray-800">
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0"></span>
+                                                                        <span className="font-medium truncate">{item.name}</span>
+                                                                        <span className="text-[10px] text-gray-500 font-bold shrink-0">×{item.qty || item.quantity || 1}</span>
+                                                                    </div>
+                                                                    {(item.selectedSize || item.size || item.selectedColor || item.color || item.options) && (
+                                                                        <div className="flex flex-wrap gap-1 pr-3.5 mt-0.5">
+                                                                            {(item.selectedSize || item.size) && (
+                                                                                <span className="text-[10px] bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded font-medium border border-indigo-100">
+                                                                                    مقاس: {item.selectedSize || item.size}
+                                                                                </span>
+                                                                            )}
+                                                                            {(item.selectedColor || item.color) && (
+                                                                                <span className="text-[10px] bg-pink-50 text-pink-700 px-1.5 py-0.5 rounded font-medium border border-pink-100">
+                                                                                    لون: {item.selectedColor || item.color}
+                                                                                </span>
+                                                                            )}
+                                                                            {item.options && typeof item.options === 'object' && Object.entries(item.options).map(([k, v], oIdx) => (
+                                                                                <span key={oIdx} className="text-[10px] bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-medium">
+                                                                                    {k}: {v}
+                                                                                </span>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             ))}
-                                                            {items.length > 2 && (
+                                                            {items.length > 3 && (
                                                                 <div className="text-[10px] text-indigo-600 font-bold">
-                                                                    +{items.length - 2} منتجات أخرى
+                                                                    +{items.length - 3} منتجات أخرى
                                                                 </div>
                                                             )}
                                                         </div>
@@ -546,11 +587,32 @@ export default function AbandonedCartsIndex({ abandonedCarts, records, stats, st
                                         </div>
 
                                         {items.length > 0 && (
-                                            <div className="p-2.5 bg-gray-50 rounded-lg text-xs space-y-1">
+                                            <div className="p-2.5 bg-gray-50 rounded-lg text-xs space-y-1.5">
                                                 {items.map((it, idx) => (
-                                                    <div key={idx} className="flex justify-between text-gray-700">
-                                                        <span className="truncate max-w-[200px]">{it.name}</span>
-                                                        <span className="font-bold shrink-0">×{it.qty || it.quantity || 1}</span>
+                                                    <div key={idx} className="text-gray-700 py-0.5 border-b border-gray-100 last:border-0">
+                                                        <div className="flex justify-between items-center">
+                                                            <span className="truncate max-w-[200px] font-medium">{it.name}</span>
+                                                            <span className="font-bold shrink-0">×{it.qty || it.quantity || 1}</span>
+                                                        </div>
+                                                        {(it.selectedSize || it.size || it.selectedColor || it.color || it.options) && (
+                                                            <div className="flex flex-wrap gap-1 mt-1">
+                                                                {(it.selectedSize || it.size) && (
+                                                                    <span className="text-[10px] bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-100">
+                                                                        مقاس: {it.selectedSize || it.size}
+                                                                    </span>
+                                                                )}
+                                                                {(it.selectedColor || it.color) && (
+                                                                    <span className="text-[10px] bg-pink-50 text-pink-700 px-1.5 py-0.5 rounded border border-pink-100">
+                                                                        لون: {it.selectedColor || it.color}
+                                                                    </span>
+                                                                )}
+                                                                {it.options && typeof it.options === 'object' && Object.entries(it.options).map(([k, v], oIdx) => (
+                                                                    <span key={oIdx} className="text-[10px] bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded">
+                                                                        {k}: {v}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 ))}
                                             </div>

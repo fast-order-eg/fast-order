@@ -1538,6 +1538,70 @@ window.adjustBrandFontSize = adjustBrandFontSize;
            /[?&]id=\d+/.test(window.location.search);
   }
 
+  function extractProductPageSelections(qty) {
+    var sizePieces = [];
+    var colorPieces = [];
+    var customOptions = {};
+
+    var finalQty = parseInt(qty) || 1;
+
+    for (var i = 0; i < finalQty; i++) {
+      var sInp = document.querySelector('input[name="product_size_' + i + '"]:checked') ||
+                 document.querySelector('input[name="product_size"]:checked') ||
+                 document.querySelector('input[name="size"]:checked');
+      if (sInp && sInp.value) {
+        sizePieces.push(sInp.value);
+      }
+
+      var cInp = document.querySelector('input[name="product_color_' + i + '"]:checked') ||
+                 document.querySelector('input[name="product_color"]:checked') ||
+                 document.querySelector('input[name="color"]:checked');
+      if (cInp && cInp.value) {
+        colorPieces.push(cInp.value);
+      }
+    }
+
+    var cvInputs = document.querySelectorAll('input[name^="product_cv_"]:checked');
+    cvInputs.forEach(function(inp) {
+      if (inp.value) {
+        var name = inp.getAttribute('data-name') || inp.name;
+        customOptions[name] = inp.value;
+      }
+    });
+
+    if (sizePieces.length === 0) {
+      var sizeSel = document.querySelector('select[name="size"], select[name="product_size"]');
+      if (sizeSel && sizeSel.value) sizePieces.push(sizeSel.value);
+    }
+    if (colorPieces.length === 0) {
+      var colorSel = document.querySelector('select[name="color"], select[name="product_color"]');
+      if (colorSel && colorSel.value) colorPieces.push(colorSel.value);
+    }
+
+    var combinedSize = null;
+    if (sizePieces.length > 0) {
+      combinedSize = sizePieces.length > 1 
+        ? sizePieces.map(function(s, idx) { return 'ق' + (idx + 1) + ': ' + s; }).join(' | ') 
+        : sizePieces[0];
+    }
+
+    var combinedColor = null;
+    if (colorPieces.length > 0) {
+      combinedColor = colorPieces.length > 1 
+        ? colorPieces.map(function(c, idx) { return 'ق' + (idx + 1) + ': ' + c; }).join(' | ') 
+        : colorPieces[0];
+    }
+
+    return {
+      selectedSize: combinedSize,
+      selectedColor: combinedColor,
+      options: Object.keys(customOptions).length > 0 ? customOptions : null,
+      sizePieces: sizePieces,
+      colorPieces: colorPieces
+    };
+  }
+  window.extractProductPageSelections = extractProductPageSelections;
+
   function getCartItems() {
     var items = [];
     var onProdPage = isProductPage();
@@ -1563,6 +1627,7 @@ window.adjustBrandFontSize = adjustBrandFontSize;
       }
       var prodImg = prodImgEl ? prodImgEl.src : '';
       var qty = qtyEl ? (parseInt(qtyEl.value) || 1) : 1;
+      var variantInfo = extractProductPageSelections(qty);
 
       if (prodId) {
         items = [{
@@ -1572,7 +1637,12 @@ window.adjustBrandFontSize = adjustBrandFontSize;
           price: prodPrice,
           qty: qty,
           quantity: qty,
-          image: prodImg
+          image: prodImg,
+          selectedSize: variantInfo.selectedSize,
+          selectedColor: variantInfo.selectedColor,
+          options: variantInfo.options,
+          sizePieces: variantInfo.sizePieces,
+          colorPieces: variantInfo.colorPieces
         }];
         return items;
       }
@@ -1630,7 +1700,8 @@ window.adjustBrandFontSize = adjustBrandFontSize;
       return acc + ((parseFloat(i.price) || 0) * (parseInt(i.qty || i.quantity) || 1)); 
     }, 0);
 
-    var currentSignature = phoneVal + '|' + nameVal + '|' + addrVal + '|' + govId + '|' + items.length + '|' + (items[0] ? (items[0].qty || 1) : 1) + '|' + subtotal;
+    var variantSig = (items[0] && ((items[0].selectedSize || '') + '|' + (items[0].selectedColor || ''))) || '';
+    var currentSignature = phoneVal + '|' + nameVal + '|' + addrVal + '|' + govId + '|' + items.length + '|' + (items[0] ? (items[0].qty || 1) : 1) + '|' + variantSig + '|' + subtotal;
     if (currentSignature === lastSentSignature) return;
 
     var onProdPage = isProductPage();
@@ -1779,12 +1850,90 @@ window.adjustBrandFontSize = adjustBrandFontSize;
         }
       }
 
+      // 6. استعادة المقاس واللون والمتغيرات المحددة في صفحة المنتج
+      if (isProductPage() && data.items && data.items[0]) {
+        var firstItem = data.items[0];
+
+        // استعادة المقاس
+        var sizesToSelect = firstItem.sizePieces || [];
+        if (sizesToSelect.length === 0 && firstItem.selectedSize) {
+          sizesToSelect = String(firstItem.selectedSize).split(/[|,]/).map(function(s) {
+            return s.replace(/^ق\d+:\s*/, '').trim();
+          }).filter(Boolean);
+        }
+
+        sizesToSelect.forEach(function(sz, pieceIdx) {
+          var radio = document.querySelector('input[name="product_size_' + pieceIdx + '"][value="' + sz + '"]') ||
+                      document.querySelector('input[name="product_size"][value="' + sz + '"]') ||
+                      document.querySelector('input[name="size"][value="' + sz + '"]') ||
+                      document.querySelector('input[value="' + sz + '"]');
+          if (radio && !radio.checked) {
+            radio.checked = true;
+            radio.dispatchEvent(new Event('change', { bubbles: true }));
+            var lbl = radio.closest('label') || document.querySelector('label[for="' + radio.id + '"]');
+            if (lbl) lbl.click();
+            restoredAny = true;
+          }
+          var sel = document.querySelector('select[name="size"], select[name="product_size"]');
+          if (sel && sel.value !== sz) {
+            sel.value = sz;
+            sel.dispatchEvent(new Event('change', { bubbles: true }));
+            restoredAny = true;
+          }
+        });
+
+        // استعادة اللون
+        var colorsToSelect = firstItem.colorPieces || [];
+        if (colorsToSelect.length === 0 && firstItem.selectedColor) {
+          colorsToSelect = String(firstItem.selectedColor).split(/[|,]/).map(function(c) {
+            return c.replace(/^ق\d+:\s*/, '').trim();
+          }).filter(Boolean);
+        }
+
+        colorsToSelect.forEach(function(col, pieceIdx) {
+          var radio = document.querySelector('input[name="product_color_' + pieceIdx + '"][value="' + col + '"]') ||
+                      document.querySelector('input[name="product_color"][value="' + col + '"]') ||
+                      document.querySelector('input[name="color"][value="' + col + '"]') ||
+                      document.querySelector('input[value="' + col + '"]');
+          if (radio && !radio.checked) {
+            radio.checked = true;
+            radio.dispatchEvent(new Event('change', { bubbles: true }));
+            var lbl = radio.closest('label') || document.querySelector('label[for="' + radio.id + '"]');
+            if (lbl) lbl.click();
+            restoredAny = true;
+          }
+          var sel = document.querySelector('select[name="color"], select[name="product_color"]');
+          if (sel && sel.value !== col) {
+            sel.value = col;
+            sel.dispatchEvent(new Event('change', { bubbles: true }));
+            restoredAny = true;
+          }
+        });
+
+        // استعادة الخيارات المخصصة (custom variants)
+        if (firstItem.options && typeof firstItem.options === 'object') {
+          Object.keys(firstItem.options).forEach(function(optKey) {
+            var val = firstItem.options[optKey];
+            if (val) {
+              var cleanVal = String(val).replace(/^ق\d+:\s*/, '').trim();
+              var radio = document.querySelector('input[value="' + cleanVal + '"]');
+              if (radio && !radio.checked) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change', { bubbles: true }));
+                var lbl = radio.closest('label') || document.querySelector('label[for="' + radio.id + '"]');
+                if (lbl) lbl.click();
+                restoredAny = true;
+              }
+            }
+          });
+        }
+      }
+
       return govMatched;
     }
 
     applyData();
 
-    // إعادة المحاولة لعدة مرات لضمان تعبئة المحافظات حتى لو تأخر تحميلها عبر الـ AJAX
     var retries = 0;
     var timer = setInterval(function() {
       retries++;
@@ -1794,7 +1943,6 @@ window.adjustBrandFontSize = adjustBrandFontSize;
       }
     }, 400);
 
-    // إشعار استعادة السلة
     if (!window.__RECOVERED_TOAST_SHOWN__) {
       window.__RECOVERED_TOAST_SHOWN__ = true;
       var toast = document.createElement('div');
@@ -1854,7 +2002,13 @@ window.adjustBrandFontSize = adjustBrandFontSize;
       });
     });
 
-    // اعتراض دالة changeProductQty العالمية لو كانت موجودة
+    // مراقبة تغيير المقاس أو اللون أو الخيارات في صفحة المنتج
+    var variantInputs = document.querySelectorAll('input[name*="size"], input[name*="color"], input[name^="product_cv_"], select[name*="size"], select[name*="color"], .variant-btn, .variant-option');
+    variantInputs.forEach(function(inp) {
+      inp.addEventListener('change', function() { scheduleCapture(300); });
+      inp.addEventListener('click', function() { setTimeout(function() { scheduleCapture(300); }, 150); });
+    });
+
     if (typeof window.changeProductQty === 'function') {
       var originalChangeQty = window.changeProductQty;
       window.changeProductQty = function(delta) {

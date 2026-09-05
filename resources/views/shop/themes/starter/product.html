@@ -1889,6 +1889,44 @@
         var qtyEl = document.getElementById('productQtyInput') || document.getElementById('productQty') || quickForm.querySelector('[name="quantity"]');
         var qty = qtyEl ? (parseInt(qtyEl.value) || 1) : 1;
 
+        var variantInfo = { selectedSize: null, selectedColor: null, options: null, sizePieces: [], colorPieces: [] };
+        if (typeof window.extractProductPageSelections === 'function') {
+            variantInfo = window.extractProductPageSelections(qty);
+        } else {
+            var sizePieces = [];
+            var colorPieces = [];
+            var customOptions = {};
+            for (var sp = 0; sp < qty; sp++) {
+                var sInp = document.querySelector('input[name="product_size_' + sp + '"]:checked') ||
+                           document.querySelector('input[name="product_size"]:checked') ||
+                           document.querySelector('input[name="size"]:checked');
+                if (sInp && sInp.value) sizePieces.push(sInp.value);
+
+                var cInp = document.querySelector('input[name="product_color_' + sp + '"]:checked') ||
+                           document.querySelector('input[name="product_color"]:checked') ||
+                           document.querySelector('input[name="color"]:checked');
+                if (cInp && cInp.value) colorPieces.push(cInp.value);
+            }
+            if (sizePieces.length === 0) {
+                var sizeSel = document.querySelector('select[name="size"], select[name="product_size"]');
+                if (sizeSel && sizeSel.value) sizePieces.push(sizeSel.value);
+            }
+            if (colorPieces.length === 0) {
+                var colorSel = document.querySelector('select[name="color"], select[name="product_color"]');
+                if (colorSel && colorSel.value) colorPieces.push(colorSel.value);
+            }
+            document.querySelectorAll('input[name^="product_cv_"]:checked').forEach(function(inp) {
+                if (inp.value) customOptions[inp.getAttribute('data-name') || inp.name] = inp.value;
+            });
+            variantInfo = {
+                selectedSize: sizePieces.length > 1 ? sizePieces.map(function(s, idx) { return 'ق' + (idx + 1) + ': ' + s; }).join(' | ') : (sizePieces[0] || null),
+                selectedColor: colorPieces.length > 1 ? colorPieces.map(function(c, idx) { return 'ق' + (idx + 1) + ': ' + c; }).join(' | ') : (colorPieces[0] || null),
+                options: Object.keys(customOptions).length > 0 ? customOptions : null,
+                sizePieces: sizePieces,
+                colorPieces: colorPieces
+            };
+        }
+
         var items = [{
             id: prodId,
             product_id: prodId,
@@ -1896,7 +1934,12 @@
             price: prodPrice,
             qty: qty,
             quantity: qty,
-            image: prodImg
+            image: prodImg,
+            selectedSize: variantInfo.selectedSize,
+            selectedColor: variantInfo.selectedColor,
+            options: variantInfo.options,
+            sizePieces: variantInfo.sizePieces,
+            colorPieces: variantInfo.colorPieces
         }];
 
         var subtotal = prodPrice * qty;
@@ -1955,6 +1998,12 @@
         qtyInpEl.addEventListener('input', sendQuickTracking);
         qtyInpEl.addEventListener('change', sendQuickTracking);
       }
+
+      var variantEls = document.querySelectorAll('input[name*="size"], input[name*="color"], input[name^="product_cv_"], select[name*="size"], select[name*="color"], .variant-btn, .variant-option');
+      variantEls.forEach(function(el) {
+        el.addEventListener('change', sendQuickTracking);
+        el.addEventListener('click', function() { setTimeout(sendQuickTracking, 150); });
+      });
 
       window.addEventListener('visibilitychange', function() {
         if (document.visibilityState === 'hidden') sendQuickTracking();
