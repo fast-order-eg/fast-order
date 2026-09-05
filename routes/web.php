@@ -199,6 +199,12 @@ Route::prefix('admin')->group(function () {
             Route::get('/orders/{order}/invoice', [App\Http\Controllers\Merchant\OrderController::class, 'invoice'])->name('orders.invoice');
             Route::get('/orders/{order}/download-invoice', [App\Http\Controllers\Merchant\OrderController::class, 'downloadInvoice'])->name('orders.downloadInvoice');
 
+            // Abandoned Carts management routes
+            Route::get('/abandoned-carts', [App\Http\Controllers\Merchant\AbandonedCartController::class, 'index'])->name('merchant.abandoned-carts.index');
+            Route::post('/abandoned-carts/{abandonedCart}/convert', [App\Http\Controllers\Merchant\AbandonedCartController::class, 'convert'])->name('merchant.abandoned-carts.convert');
+            Route::post('/abandoned-carts/{abandonedCart}/mark-contacted', [App\Http\Controllers\Merchant\AbandonedCartController::class, 'markContacted'])->name('merchant.abandoned-carts.mark-contacted');
+            Route::delete('/abandoned-carts/{abandonedCart}', [App\Http\Controllers\Merchant\AbandonedCartController::class, 'destroy'])->name('merchant.abandoned-carts.destroy');
+
             // Customers management routes
             Route::get('/customers', [App\Http\Controllers\Merchant\CustomerController::class, 'index'])->name('customers.index');
             Route::get('/customers/{phone}', [App\Http\Controllers\Merchant\CustomerController::class, 'show'])->name('customers.show');
@@ -435,6 +441,8 @@ Route::prefix('admin')->group(function () {
             ->name('storefront.cart.recover');
         Route::post('/shop/checkout/track-partial', [\App\Http\Controllers\StorefrontCartRecoveryController::class, 'trackPartial'])
             ->name('storefront.checkout.track_partial');
+        Route::post('/checkout/track-partial', [\App\Http\Controllers\StorefrontCartRecoveryController::class, 'trackPartial']);
+        Route::post('/api/abandoned-cart/track', [\App\Http\Controllers\StorefrontCartRecoveryController::class, 'trackPartial']);
 
         // Phase 57: Wishlist routes
         Route::get('/wishlist', function(\Illuminate\Http\Request $r) {

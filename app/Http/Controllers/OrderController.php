@@ -117,6 +117,32 @@ class OrderController extends Controller
             }
         }
 
+        // تحديث حالة السلة المتروكة إلى مستردة ومحولة (Converted)
+        try {
+            $tId = $order->tenant_id ?? optional($request->attributes->get('tenant'))->id;
+            $cleanPhone = preg_replace('/[\s\+\-]/', '', (string)($validated['customer_phone'] ?? ''));
+            if (str_starts_with($cleanPhone, '00201')) $cleanPhone = '0' . substr($cleanPhone, 4);
+            elseif (str_starts_with($cleanPhone, '201')) $cleanPhone = '0' . substr($cleanPhone, 2);
+
+            \App\Models\AbandonedCart::where('tenant_id', $tId)
+                ->whereNull('recovered_at')
+                ->where(function ($query) use ($validated, $cleanPhone) {
+                    $query->where('session_id', session()->getId());
+                    if (!empty($cleanPhone)) {
+                        $query->orWhere('phone', $cleanPhone)
+                              ->orWhere('phone', $validated['customer_phone']);
+                    }
+                    if (!empty($validated['customer_email'])) {
+                        $query->orWhere('email', $validated['customer_email']);
+                    }
+                })
+                ->update([
+                    'recovered_at'       => now(),
+                    'status'             => 'converted',
+                    'converted_order_id' => $order->id,
+                ]);
+        } catch (\Throwable $e) {}
+
         // Trigger Webhook order.created
         \App\Services\WebhookSender::trigger('order.created', $order->toArray(), $order->tenant_id);
 
@@ -278,6 +304,32 @@ class OrderController extends Controller
                 'status'           => 'pending',
                 'notes'            => $validated['notes'] ?? null
             ]);
+
+            // تحديث حالة السلة المتروكة إلى مستردة ومحولة (Converted)
+            try {
+                $tId = $order->tenant_id ?? optional($request->attributes->get('tenant'))->id;
+                $cleanPhone = preg_replace('/[\s\+\-]/', '', (string)($validated['customer_phone'] ?? ''));
+                if (str_starts_with($cleanPhone, '00201')) $cleanPhone = '0' . substr($cleanPhone, 4);
+                elseif (str_starts_with($cleanPhone, '201')) $cleanPhone = '0' . substr($cleanPhone, 2);
+
+                \App\Models\AbandonedCart::where('tenant_id', $tId)
+                    ->whereNull('recovered_at')
+                    ->where(function ($query) use ($validated, $cleanPhone) {
+                        $query->where('session_id', session()->getId());
+                        if (!empty($cleanPhone)) {
+                            $query->orWhere('phone', $cleanPhone)
+                                  ->orWhere('phone', $validated['customer_phone']);
+                        }
+                        if (!empty($validated['customer_email'])) {
+                            $query->orWhere('email', $validated['customer_email']);
+                        }
+                    })
+                    ->update([
+                        'recovered_at'       => now(),
+                        'status'             => 'converted',
+                        'converted_order_id' => $order->id,
+                    ]);
+            } catch (\Throwable $e) {}
 
             // تقليل المخزون
             foreach ($validated['items'] as $item) {

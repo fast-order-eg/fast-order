@@ -239,19 +239,30 @@ class CheckoutController extends Controller
             // تحديث حالة السلة المتروكة إلى مستردة (Recovered)
             try {
                 $tenantId = optional($request->attributes->get('tenant'))->id;
+                $cleanPhone = preg_replace('/[\s\+\-]/', '', (string)($validated['customer_phone'] ?? ''));
+                if (str_starts_with($cleanPhone, '00201')) $cleanPhone = '0' . substr($cleanPhone, 4);
+                elseif (str_starts_with($cleanPhone, '201')) $cleanPhone = '0' . substr($cleanPhone, 2);
+
                 \App\Models\AbandonedCart::where('tenant_id', $tenantId)
                     ->whereNull('recovered_at')
-                    ->where(function ($query) use ($validated) {
-                        $query->where('session_id', session()->getId())
-                            ->orWhere('email', $validated['customer_email'] ?? '___none___')
-                            ->orWhere('phone', $validated['customer_phone'] ?? '___none___')
-                            ->orWhere(function ($q) {
-                                if (auth()->check()) {
-                                    $q->where('user_id', auth()->id());
-                                }
-                            });
+                    ->where(function ($query) use ($validated, $cleanPhone) {
+                        $query->where('session_id', session()->getId());
+                        if (!empty($cleanPhone)) {
+                            $query->orWhere('phone', $cleanPhone)
+                                  ->orWhere('phone', $validated['customer_phone']);
+                        }
+                        if (!empty($validated['customer_email'])) {
+                            $query->orWhere('email', $validated['customer_email']);
+                        }
+                        if (auth()->check()) {
+                            $query->orWhere('user_id', auth()->id());
+                        }
                     })
-                    ->update(['recovered_at' => now()]);
+                    ->update([
+                        'recovered_at'       => now(),
+                        'status'             => 'converted',
+                        'converted_order_id' => $order->id,
+                    ]);
             } catch (\Exception $e) {
                 \Log::warning('Failed to mark abandoned cart as recovered: ' . $e->getMessage());
             }

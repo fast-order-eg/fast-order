@@ -662,37 +662,94 @@ function addCrossSellToCheckout(id, name, price, image) {
 }
 
 function trackPartialData() {
-    const emailInput = document.querySelector('input[name="customer_email"]');
+    const nameInput = document.querySelector('input[name="customer_name"]');
     const phoneInput = document.querySelector('input[name="customer_phone"]');
+    const emailInput = document.querySelector('input[name="customer_email"]');
+    const addressInput = document.querySelector('input[name="customer_address"]');
+    const govSelect = document.getElementById('governorate-select');
     
+    let debounceTimer = null;
+    let lastSentPhone = '';
+
     const sendTracking = async () => {
+        const phone = phoneInput ? phoneInput.value.trim().replace(/[\s\+\-]/g, '') : '';
         const email = emailInput ? emailInput.value.trim() : '';
-        const phone = phoneInput ? phoneInput.value.trim() : '';
+        const name = nameInput ? nameInput.value.trim() : '';
+        const address = addressInput ? addressInput.value.trim() : '';
+        const govId = govSelect ? govSelect.value : '';
+        const govName = (govSelect && govSelect.selectedIndex >= 0 && govSelect.options[govSelect.selectedIndex]) 
+            ? govSelect.options[govSelect.selectedIndex].text.split('-')[0].trim() 
+            : '';
         
-        if (!email && !phone) return;
-        
+        // لا تسجل إذا لم يكن هناك هاتف مكون من 8 أرقام على الأقل أو إيميل صالح
+        if ((!phone || phone.length < 8) && !email) return;
+
+        let items = [];
         try {
+            items = JSON.parse(localStorage.getItem('bird_cart') || '[]');
+        } catch (e) {
+            items = [];
+        }
+
+        const subtotal = items.reduce((sum, it) => sum + ((parseFloat(it.price) || 0) * (parseInt(it.qty) || 1)), 0);
+        const total = subtotal;
+
+        try {
+            const csrfMeta = document.querySelector('meta[name=csrf-token]');
+            const csrf = csrfMeta ? csrfMeta.content : '';
             await fetch('/checkout/track-partial', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...(csrf ? { 'X-CSRF-TOKEN': csrf } : {}),
                 },
-                body: JSON.stringify({ email, phone })
+                body: JSON.stringify({
+                    phone,
+                    customer_name: name,
+                    customer_email: email,
+                    customer_address: address,
+                    governorate_id: govId,
+                    governorate: govName,
+                    items,
+                    subtotal,
+                    total,
+                    source: 'checkout'
+                })
             });
+            lastSentPhone = phone;
         } catch (e) {
-            // Ignore background tracking errors
+            // تجاهل أخطاء التتبع بالخلفية
         }
     };
-    
-    if (emailInput) {
-        emailInput.addEventListener('blur', sendTracking);
-        emailInput.addEventListener('change', sendTracking);
-    }
+
+    const triggerDebounced = () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(sendTracking, 1200);
+    };
+
     if (phoneInput) {
+        phoneInput.addEventListener('input', (e) => {
+            const val = e.target.value.replace(/[\s\+\-]/g, '');
+            if (val.length >= 11 && val !== lastSentPhone) {
+                triggerDebounced();
+            }
+        });
         phoneInput.addEventListener('blur', sendTracking);
         phoneInput.addEventListener('change', sendTracking);
+    }
+    if (nameInput) {
+        nameInput.addEventListener('blur', sendTracking);
+    }
+    if (emailInput) {
+        emailInput.addEventListener('blur', sendTracking);
+    }
+    if (addressInput) {
+        addressInput.addEventListener('blur', sendTracking);
+    }
+    if (govSelect) {
+        govSelect.addEventListener('change', sendTracking);
     }
 }
 
