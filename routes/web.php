@@ -168,6 +168,7 @@ Route::prefix('admin')->group(function () {
             Route::get('/products/bulk/template', [App\Http\Controllers\Merchant\BulkUploadController::class, 'downloadTemplate'])->name('merchant.products.bulk.template');
             Route::post('/products/bulk', [App\Http\Controllers\Merchant\BulkUploadController::class, 'import'])->name('merchant.products.bulk.import');
 
+            Route::patch('products/{product}/toggle-status', [App\Http\Controllers\Merchant\ProductController::class, 'toggleStatus'])->name('merchant.products.toggle-status');
             Route::resource('products', App\Http\Controllers\Merchant\ProductController::class)
                 ->names('merchant.products')
                 ->except(['show']);
@@ -540,7 +541,7 @@ Route::prefix('admin')->group(function () {
                 // Ignore gracefully
             }
 
-            $q = Product::query()->with('category');
+            $q = Product::query()->where('is_active', true)->with('category');
             if ($catId = request('category_id')) {
                 $q->where('category_id', (int) $catId);
             }
@@ -626,7 +627,11 @@ Route::prefix('admin')->group(function () {
                 return asset('storage/' . ltrim($path, '/'));
             };
 
-            $p = Product::with(['category', 'images', 'upsells', 'crossSells'])->findOrFail($id);
+            $prodQuery = Product::with(['category', 'images', 'upsells', 'crossSells']);
+            if (!auth()->check()) {
+                $prodQuery->where('is_active', true);
+            }
+            $p = $prodQuery->findOrFail($id);
             $cat = $p->category;
             $catName = $cat ? ($cat->name_ar ?: ($cat->name ?: $cat->name_en)) : null;
             $images = $p->images ? $p->images->map(fn($img) => $formatImg($img->image_path))->values()->all() : [];
@@ -681,7 +686,7 @@ Route::prefix('admin')->group(function () {
                 ->with('recommendedProduct')
                 ->get()
                 ->map(fn($r) => $r->recommendedProduct)
-                ->filter(fn($p) => $p && !in_array($p->id, $ids) && $p->stock > 0)
+                ->filter(fn($p) => $p && $p->is_active && !in_array($p->id, $ids) && $p->stock > 0)
                 ->unique('id')
                 ->values()
                 ->map(fn($p) => [

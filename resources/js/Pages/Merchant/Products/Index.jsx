@@ -9,6 +9,30 @@ export default function ProductsIndex({ products, categories, filters }) {
     const [categoryId, setCategoryId] = useState(filters?.category_id || '');
     const [deletingId, setDeletingId] = useState(null);
     const [copiedId, setCopiedId] = useState(null);
+    const [togglingId, setTogglingId] = useState(null);
+    const [localStatus, setLocalStatus] = useState({});
+
+    const handleToggleStatus = (product) => {
+        const currentVal = localStatus[product.id] !== undefined
+            ? localStatus[product.id]
+            : (product.is_active !== undefined ? Boolean(product.is_active) : true);
+        const nextVal = !currentVal;
+
+        // Optimistic UI update
+        setLocalStatus(prev => ({ ...prev, [product.id]: nextVal }));
+        setTogglingId(product.id);
+
+        router.patch(`/admin/products/${product.id}/toggle-status`, {}, {
+            preserveScroll: true,
+            preserveState: true,
+            onError: () => {
+                setLocalStatus(prev => ({ ...prev, [product.id]: currentVal }));
+            },
+            onFinish: () => {
+                setTogglingId(null);
+            },
+        });
+    };
 
     const handleCopyLink = (productId) => {
         const url = `${window.location.origin}/shop/product.html?id=${productId}`;
@@ -46,6 +70,16 @@ export default function ProductsIndex({ products, categories, filters }) {
             <Head title="المنتجات" />
 
             <div className="space-y-5">
+                {/* Flash Success Message */}
+                {flash?.success && (
+                    <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl flex items-center gap-2 text-sm font-semibold animate-in fade-in duration-200 shadow-sm">
+                        <svg className="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>{flash.success}</span>
+                    </div>
+                )}
+
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
@@ -142,12 +176,19 @@ export default function ProductsIndex({ products, categories, filters }) {
                                         <th className="text-right px-4 py-3 font-semibold text-gray-700">السعر</th>
                                         <th className="text-right px-4 py-3 font-semibold text-gray-700">المخزون</th>
                                         <th className="text-right px-4 py-3 font-semibold text-gray-700">الشحن</th>
+                                        <th className="text-center px-4 py-3 font-semibold text-gray-700">ظهور بالمتجر</th>
                                         <th className="text-right px-4 py-3 font-semibold text-gray-700">إجراءات</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
-                                    {products.data.map((product, idx) => (
-                                        <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                                    {products.data.map((product, idx) => {
+                                        const isActive = localStatus[product.id] !== undefined
+                                            ? localStatus[product.id]
+                                            : (product.is_active !== undefined ? Boolean(product.is_active) : true);
+                                        const isToggling = togglingId === product.id;
+
+                                        return (
+                                        <tr key={product.id} className={`hover:bg-gray-50 transition-colors ${!isActive ? 'bg-gray-50/50 opacity-80' : ''}`}>
                                             <td className="px-4 py-3 text-gray-500">
                                                 {(products.current_page - 1) * products.per_page + idx + 1}
                                             </td>
@@ -196,6 +237,35 @@ export default function ProductsIndex({ products, categories, filters }) {
                                             </td>
                                             <td className="px-4 py-3 text-gray-600">
                                                 {product.shipping_type === 'free' ? 'شحن مجاني' : 'شحن مدفوع'}
+                                            </td>
+                                            {/* On / Off Toggle Column */}
+                                            <td className="px-4 py-3 text-center">
+                                                <div className="inline-flex items-center justify-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleToggleStatus(product)}
+                                                        disabled={isToggling}
+                                                        title={isActive ? "المنتج ظاهر في المتجر (انقر للإخفاء)" : "المنتج مخفي من المتجر (انقر للإظهار)"}
+                                                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 ${
+                                                            isActive ? 'bg-emerald-500' : 'bg-gray-300'
+                                                        } ${isToggling ? 'opacity-60 cursor-wait' : ''}`}
+                                                    >
+                                                        <span className="sr-only">حالة الظهور في المتجر</span>
+                                                        <span
+                                                            aria-hidden="true"
+                                                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                                                isActive ? '-translate-x-5' : 'translate-x-0'
+                                                            }`}
+                                                        />
+                                                    </button>
+                                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-md min-w-[44px] text-center ${
+                                                        isActive
+                                                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                                            : 'bg-gray-100 text-gray-500 border border-gray-200'
+                                                    }`}>
+                                                        {isActive ? 'ظاهر' : 'مخفي'}
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td className="px-4 py-3 text-left">
                                                 <div className="flex items-center justify-end gap-1.5 flex-wrap">
@@ -259,7 +329,8 @@ export default function ProductsIndex({ products, categories, filters }) {
                                                 </div>
                                             </td>
                                         </tr>
-                                    ))}
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>

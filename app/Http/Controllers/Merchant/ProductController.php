@@ -378,4 +378,27 @@ class ProductController extends Controller
 
         return redirect()->back()->with('success', 'تم حذف الصورة بنجاح ✓');
     }
+
+    /**
+     * تبديل حالة ظهور المنتج في المتجر (On / Off)
+     */
+    public function toggleStatus(Product $product)
+    {
+        $newStatus = !$product->is_active;
+        $product->update([
+            'is_active' => $newStatus,
+        ]);
+
+        $message = $newStatus ? 'تم إظهار المنتج في المتجر بنجاح ✓' : 'تم إخفاء المنتج من المتجر بنجاح ✓';
+
+        if (request()->wantsJson()) {
+            return response()->json([
+                'success'   => true,
+                'is_active' => (bool) $newStatus,
+                'message'   => $message,
+            ]);
+        }
+
+        return redirect()->back()->with('success', $message);
+    }
 }

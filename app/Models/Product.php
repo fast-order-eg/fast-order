@@ -28,6 +28,7 @@ class Product extends Model
         'colors',
         'custom_variants',
         'variants_stock',
+        'is_active',
     ];
 
     protected $casts = [
@@ -39,6 +40,7 @@ class Product extends Model
         'colors' => 'array',
         'custom_variants' => 'array',
         'variants_stock' => 'array',
+        'is_active' => 'boolean',
     ];
 
     protected $appends = ['image_display_url'];
@@ -103,6 +105,11 @@ class Product extends Model
             ->wherePivot('type', 'upsell')
             ->withPivot('type')
             ->withTimestamps();
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 
     protected static function booted()

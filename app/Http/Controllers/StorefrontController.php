@@ -2213,7 +2213,7 @@ HTML;
     public function sitemap(Request $request)
     {
         $categories = Category::all();
-        $products = Product::all();
+        $products = Product::where('is_active', true)->get();
         $host = $request->getSchemeAndHttpHost();
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
