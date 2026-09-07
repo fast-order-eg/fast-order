@@ -174,6 +174,26 @@ class AbandonedCartController extends Controller
         }
         unset($item);
 
+        // حساب تكلفة الشحن للمحافظة
+        $shippingCost = 0;
+        if (!empty($governorate)) {
+            $gov = ShippingGovernorate::where('tenant_id', $tenant->id)
+                ->where(function($q) use ($governorate) {
+                    $q->where('name', $governorate)
+                      ->orWhere('name', 'like', "%{$governorate}%");
+                })
+                ->first();
+            if (!$gov) {
+                $gov = ShippingGovernorate::where(function($q) use ($governorate) {
+                    $q->where('name', $governorate)
+                      ->orWhere('name', 'like', "%{$governorate}%");
+                })->first();
+            }
+            if ($gov) {
+                $shippingCost = (float) $gov->cost;
+            }
+        }
+
         $subtotal = (float) ($abandonedCart->subtotal ?: 0);
         if ($subtotal <= 0 && $recalculatedSubtotal > 0) {
             $subtotal = $recalculatedSubtotal;

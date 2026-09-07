@@ -192,7 +192,7 @@
     </div>
   </footer>
 
-  <script src="/shop/shared.js?v=20260714"></script>
+  <script src="/shop/shared.js?v=20260907_3"></script>
   <script>
     let currentShippingCost = 0;
     let governoratesData = [];
@@ -495,6 +495,11 @@
     let lastSentCheckoutPhone = '';
 
     const sendCheckoutTracking = function() {
+      if (window.__orderSubmitted) return;
+      if (typeof window.captureAbandonedCart === 'function') {
+        window.captureAbandonedCart(false);
+        return;
+      }
       const pInp = document.getElementById('phoneInput');
       const nInp = document.getElementById('nameInput');
       const aInp = document.querySelector('input[name="address"], textarea[name="address"]');
@@ -554,7 +559,7 @@
     if (pInput) {
       pInput.addEventListener('input', function() {
         const val = this.value.replace(/\D/g, '');
-        if (val.length >= 11 && val !== lastSentCheckoutPhone) {
+        if (val.length >= 10 && val !== lastSentCheckoutPhone) {
           clearTimeout(checkoutDebounceTimer);
           checkoutDebounceTimer = setTimeout(sendCheckoutTracking, 600);
         }
@@ -564,10 +569,22 @@
     }
 
     const nInput = document.getElementById('nameInput');
-    if (nInput) nInput.addEventListener('blur', sendCheckoutTracking);
+    if (nInput) {
+      nInput.addEventListener('blur', sendCheckoutTracking);
+      nInput.addEventListener('input', function() {
+        clearTimeout(checkoutDebounceTimer);
+        checkoutDebounceTimer = setTimeout(sendCheckoutTracking, 800);
+      });
+    }
 
     const aInput = document.querySelector('input[name="address"], textarea[name="address"]');
-    if (aInput) aInput.addEventListener('blur', sendCheckoutTracking);
+    if (aInput) {
+      aInput.addEventListener('blur', sendCheckoutTracking);
+      aInput.addEventListener('input', function() {
+        clearTimeout(checkoutDebounceTimer);
+        checkoutDebounceTimer = setTimeout(sendCheckoutTracking, 800);
+      });
+    }
 
     const gSelect = document.getElementById('governorateSelect');
     if (gSelect) gSelect.addEventListener('change', sendCheckoutTracking);
@@ -686,6 +703,7 @@
           const result = await response.json();
 
           if (result.success || result.reference_number) {
+            window.__orderSubmitted = true;
             const refNum = result.reference_number || (result.data ? result.data.reference_number : referenceNumber);
             const finalTotal = result.total || (result.data ? result.data.total : total);
             const orderId = result.order_id || (result.data ? result.data.order_id : null);

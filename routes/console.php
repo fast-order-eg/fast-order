@@ -12,5 +12,5 @@ Artisan::command('inspire', function () {
 Schedule::command('subscriptions:check-expired')->everyThirtyMinutes();
 
 // Schedule abandoned carts tracking every 30 minutes
-Schedule::command('abandoned-carts:track')->everyThirtyMinutes();
+Schedule::command('carts:track-abandoned')->everyThirtyMinutes();
 

@@ -681,6 +681,12 @@ function trackPartialData() {
             ? govSelect.options[govSelect.selectedIndex].text.split('-')[0].trim() 
             : '';
         
+        if (window.__orderSubmitted) return;
+        if (typeof window.captureAbandonedCart === 'function') {
+            window.captureAbandonedCart(false);
+            return;
+        }
+
         // لا تسجل إذا لم يكن هناك هاتف مكون من 8 أرقام على الأقل أو إيميل صالح
         if ((!phone || phone.length < 8) && !email) return;
 
@@ -1032,6 +1038,7 @@ async function placeOrder(e) {
         const result = await res.json();
 
         if (result.success) {
+            window.__orderSubmitted = true;
             // Clear cart
             localStorage.removeItem('bird_cart');
             window.location.href = result.redirect;
