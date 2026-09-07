@@ -236,17 +236,20 @@ class CheckoutController extends Controller
                 'notes'            => $notes ?: null,
             ]);
 
-            // تحديث حالة السلة المتروكة إلى مستردة (Recovered)
+            // حذف السلة المتروكة تلقائياً عند إتمام العميل للطلب بنجاح (سواء عبر الرابط أو مباشرة)
             try {
                 $tenantId = optional($request->attributes->get('tenant'))->id;
                 $cleanPhone = preg_replace('/[\s\+\-]/', '', (string)($validated['customer_phone'] ?? ''));
                 if (str_starts_with($cleanPhone, '00201')) $cleanPhone = '0' . substr($cleanPhone, 4);
                 elseif (str_starts_with($cleanPhone, '201')) $cleanPhone = '0' . substr($cleanPhone, 2);
 
+                $sessionId = session()->getId();
+
                 \App\Models\AbandonedCart::where('tenant_id', $tenantId)
-                    ->whereNull('recovered_at')
-                    ->where(function ($query) use ($validated, $cleanPhone) {
-                        $query->where('session_id', session()->getId());
+                    ->where(function ($query) use ($validated, $cleanPhone, $sessionId) {
+                        if ($sessionId) {
+                            $query->where('session_id', $sessionId);
+                        }
                         if (!empty($cleanPhone)) {
                             $query->orWhere('phone', $cleanPhone)
                                   ->orWhere('phone', $validated['customer_phone']);
@@ -258,13 +261,14 @@ class CheckoutController extends Controller
                             $query->orWhere('user_id', auth()->id());
                         }
                     })
-                    ->update([
-                        'recovered_at'       => now(),
-                        'status'             => 'converted',
-                        'converted_order_id' => $order->id,
-                    ]);
+                    ->where(function ($q) {
+                        $q->whereNull('converted_order_id')
+                          ->orWhereNull('notes')
+                          ->orWhere('notes', 'NOT LIKE', '%[تم الاسترجاع والتحويل من السلة المتروكة%');
+                    })
+                    ->delete();
             } catch (\Exception $e) {
-                \Log::warning('Failed to mark abandoned cart as recovered: ' . $e->getMessage());
+                \Log::warning('Failed to remove abandoned cart on order completion: ' . $e->getMessage());
             }
 
             // تقليل المخزون

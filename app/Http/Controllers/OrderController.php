@@ -117,17 +117,20 @@ class OrderController extends Controller
             }
         }
 
-        // تحديث حالة السلة المتروكة إلى مستردة ومحولة (Converted)
+        // حذف السلة المتروكة تلقائياً عند إتمام العميل للطلب بنجاح (سواء عبر الرابط أو مباشرة)
         try {
             $tId = $order->tenant_id ?? optional($request->attributes->get('tenant'))->id;
             $cleanPhone = preg_replace('/[\s\+\-]/', '', (string)($validated['customer_phone'] ?? ''));
             if (str_starts_with($cleanPhone, '00201')) $cleanPhone = '0' . substr($cleanPhone, 4);
             elseif (str_starts_with($cleanPhone, '201')) $cleanPhone = '0' . substr($cleanPhone, 2);
 
+            $sessionId = session()->getId();
+
             \App\Models\AbandonedCart::where('tenant_id', $tId)
-                ->whereNull('recovered_at')
-                ->where(function ($query) use ($validated, $cleanPhone) {
-                    $query->where('session_id', session()->getId());
+                ->where(function ($query) use ($validated, $cleanPhone, $sessionId) {
+                    if ($sessionId) {
+                        $query->where('session_id', $sessionId);
+                    }
                     if (!empty($cleanPhone)) {
                         $query->orWhere('phone', $cleanPhone)
                               ->orWhere('phone', $validated['customer_phone']);
@@ -136,11 +139,12 @@ class OrderController extends Controller
                         $query->orWhere('email', $validated['customer_email']);
                     }
                 })
-                ->update([
-                    'recovered_at'       => now(),
-                    'status'             => 'converted',
-                    'converted_order_id' => $order->id,
-                ]);
+                ->where(function ($q) {
+                    $q->whereNull('converted_order_id')
+                      ->orWhereNull('notes')
+                      ->orWhere('notes', 'NOT LIKE', '%[تم الاسترجاع والتحويل من السلة المتروكة%');
+                })
+                ->delete();
         } catch (\Throwable $e) {}
 
         // Trigger Webhook order.created
@@ -305,17 +309,20 @@ class OrderController extends Controller
                 'notes'            => $validated['notes'] ?? null
             ]);
 
-            // تحديث حالة السلة المتروكة إلى مستردة ومحولة (Converted)
+            // حذف السلة المتروكة تلقائياً عند إتمام العميل للطلب بنجاح (سواء عبر الرابط أو مباشرة)
             try {
                 $tId = $order->tenant_id ?? optional($request->attributes->get('tenant'))->id;
                 $cleanPhone = preg_replace('/[\s\+\-]/', '', (string)($validated['customer_phone'] ?? ''));
                 if (str_starts_with($cleanPhone, '00201')) $cleanPhone = '0' . substr($cleanPhone, 4);
                 elseif (str_starts_with($cleanPhone, '201')) $cleanPhone = '0' . substr($cleanPhone, 2);
 
+                $sessionId = session()->getId();
+
                 \App\Models\AbandonedCart::where('tenant_id', $tId)
-                    ->whereNull('recovered_at')
-                    ->where(function ($query) use ($validated, $cleanPhone) {
-                        $query->where('session_id', session()->getId());
+                    ->where(function ($query) use ($validated, $cleanPhone, $sessionId) {
+                        if ($sessionId) {
+                            $query->where('session_id', $sessionId);
+                        }
                         if (!empty($cleanPhone)) {
                             $query->orWhere('phone', $cleanPhone)
                                   ->orWhere('phone', $validated['customer_phone']);
@@ -324,11 +331,12 @@ class OrderController extends Controller
                             $query->orWhere('email', $validated['customer_email']);
                         }
                     })
-                    ->update([
-                        'recovered_at'       => now(),
-                        'status'             => 'converted',
-                        'converted_order_id' => $order->id,
-                    ]);
+                    ->where(function ($q) {
+                        $q->whereNull('converted_order_id')
+                          ->orWhereNull('notes')
+                          ->orWhere('notes', 'NOT LIKE', '%[تم الاسترجاع والتحويل من السلة المتروكة%');
+                    })
+                    ->delete();
             } catch (\Throwable $e) {}
 
             // تقليل المخزون

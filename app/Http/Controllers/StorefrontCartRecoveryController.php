@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\AbandonedCart;
 use App\Models\Cart;
+use App\Models\Order;
+use App\Models\Product;
 use App\Models\ShippingGovernorate;
 use App\Services\CartService;
 use Illuminate\Http\JsonResponse;
@@ -132,6 +134,31 @@ HTML;
             }
         }
 
+        // إذا كان هناك طلب مكتمل حديثاً لنفس الهاتف خلال آخر 30 دقيقة، لا نسجل سلة متروكة ونحذف أي سلة معلقة سابقة
+        if ($cleanPhone) {
+            $hasRecentOrder = Order::where('tenant_id', $tenantId)
+                ->where('customer_phone', $cleanPhone)
+                ->where('created_at', '>=', now()->subMinutes(30))
+                ->exists();
+
+            if ($hasRecentOrder) {
+                AbandonedCart::where('tenant_id', $tenantId)
+                    ->where('phone', $cleanPhone)
+                    ->where(function ($q) {
+                        $q->whereNull('converted_order_id')
+                          ->orWhereNull('notes')
+                          ->orWhere('notes', 'NOT LIKE', '%[تم الاسترجاع والتحويل من السلة المتروكة%');
+                    })
+                    ->delete();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'الطلب مكتمل بالفعل',
+                    'order_completed' => true
+                ]);
+            }
+        }
+
         // إذا لم يتم إدخال هاتف كافٍ (أقل من 8 خانات) ولا بريد إلكتروني، نتجاهل التسجيل حتى يكتب بيانات مفيدة
         if ((!$cleanPhone || strlen($cleanPhone) < 8) && (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL))) {
             return response()->json(['success' => false, 'message' => 'بيانات الاتصال غير مكتملة بعد'], 422);
@@ -152,9 +179,33 @@ HTML;
         if (is_array($rawItems) && count($rawItems) > 0) {
             foreach ($rawItems as $it) {
                 $pId = $it['id'] ?? ($it['product_id'] ?? null);
-                $pName = $it['name'] ?? 'منتج';
+                $pName = trim((string)($it['name'] ?? ''));
                 $pPrice = (float) ($it['price'] ?? 0);
                 $pQty = max(1, (int) ($it['qty'] ?? ($it['quantity'] ?? 1)));
+                $pImage = $it['image'] ?? null;
+
+                // إذا كان السعر 0 أو الاسم غير محدد، نجلب البيانات الحقيقية من قاعدة البيانات للمتجر
+                if ($pId) {
+                    $prodModel = Product::where('tenant_id', $tenantId)->find($pId);
+                    if ($prodModel) {
+                        if ($pPrice <= 0) {
+                            $pPrice = (float) ($prodModel->price_after ?? $prodModel->price ?? 0);
+                        }
+                        if (empty($pName) || $pName === 'منتج') {
+                            $pName = $prodModel->name;
+                        }
+                        if (empty($pImage)) {
+                            $pImage = $prodModel->main_image_path
+                                ? asset('storage/' . $prodModel->main_image_path)
+                                : ($prodModel->image_url ?? null);
+                        }
+                    }
+                }
+
+                if (empty($pName)) {
+                    $pName = 'منتج';
+                }
+
                 $pTotal = $pPrice * $pQty;
                 $calculatedSubtotal += $pTotal;
 
@@ -166,7 +217,7 @@ HTML;
                     'quantity' => $pQty,
                     'qty' => $pQty,
                     'total' => $pTotal,
-                    'image' => $it['image'] ?? null,
+                    'image' => $pImage,
                     'selectedSize' => $it['selectedSize'] ?? null,
                     'selectedColor' => $it['selectedColor'] ?? null,
                     'options' => $it['options'] ?? null,
@@ -196,8 +247,14 @@ HTML;
             } catch (\Throwable $e) {}
         }
 
-        $subtotal = (float) ($request->input('subtotal') ?: $calculatedSubtotal);
-        $total = (float) ($request->input('total') ?: $subtotal);
+        $subtotal = (float) ($request->input('subtotal') ?: 0);
+        if ($subtotal <= 0) {
+            $subtotal = $calculatedSubtotal;
+        }
+        $total = (float) ($request->input('total') ?: 0);
+        if ($total <= 0) {
+            $total = $subtotal;
+        }
 
         $cartData = [
             'items' => $itemsData,
@@ -268,8 +325,11 @@ HTML;
                     // تنظيف أي سجلات مكررة لنفس الهاتف أو الجلسة إن وُجدت سابقاً
                     AbandonedCart::where('tenant_id', $tenantId)
                         ->where('id', '!=', $abandonedCart->id)
-                        ->whereNull('recovered_at')
-                        ->where('status', '!=', 'converted')
+                        ->where(function ($q) {
+                            $q->whereNull('converted_order_id')
+                              ->orWhereNull('notes')
+                              ->orWhere('notes', 'NOT LIKE', '%[تم الاسترجاع والتحويل من السلة المتروكة%');
+                        })
                         ->where(function ($q) use ($sessionId, $cleanPhone) {
                             if ($cleanPhone) {
                                 $q->where('phone', $cleanPhone);
@@ -282,6 +342,20 @@ HTML;
 
                     $abandonedCart->update($updateData);
                 } else {
+                    if ($cleanPhone) {
+                        $hasRecent = Order::where('tenant_id', $tenantId)
+                            ->where('customer_phone', $cleanPhone)
+                            ->where('created_at', '>=', now()->subMinutes(30))
+                            ->exists();
+                        if ($hasRecent) {
+                            return response()->json([
+                                'success' => true,
+                                'message' => 'الطلب مكتمل بالفعل',
+                                'order_completed' => true
+                            ]);
+                        }
+                    }
+
                     $updateData['tenant_id'] = $tenantId;
                     $updateData['session_id'] = $sessionId;
                     $updateData['recovery_token'] = Str::random(40);

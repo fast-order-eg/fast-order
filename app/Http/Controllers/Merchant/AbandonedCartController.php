@@ -148,13 +148,36 @@ class AbandonedCartController extends Controller
         $customerAddress = $validated['customer_address'] ?? $abandonedCart->customer_address ?: 'غير محدد';
         $governorate = $validated['governorate'] ?? $abandonedCart->governorate ?: 'القاهرة';
 
-        // محاولة جلب تكلفة الشحن للمحافظة
-        $shippingGov = ShippingGovernorate::where('tenant_id', $tenant->id)
-            ->where('name', 'like', "%{$governorate}%")
-            ->first();
-        $shippingCost = $shippingGov ? (float) $shippingGov->price : 0;
+        // التحقق من أسعار المنتجات وحساب المجموع بدقة
+        $recalculatedSubtotal = 0;
+        foreach ($items as &$item) {
+            $pId = $item['product_id'] ?? ($item['id'] ?? null);
+            if ($pId) {
+                $prod = Product::where('tenant_id', $tenant->id)->find($pId);
+                if ($prod) {
+                    if (empty($item['price']) || (float)$item['price'] <= 0) {
+                        $item['price'] = (float) ($prod->price_after ?? $prod->price ?? 0);
+                    }
+                    if (empty($item['name']) || $item['name'] === 'منتج') {
+                        $item['name'] = $prod->name;
+                    }
+                    if (empty($item['image'])) {
+                        $item['image'] = $prod->main_image_path
+                            ? asset('storage/' . $prod->main_image_path)
+                            : ($prod->image_url ?? null);
+                    }
+                }
+            }
+            $qty = max(1, (int) ($item['quantity'] ?? ($item['qty'] ?? 1)));
+            $item['total'] = (float) ($item['price'] ?? 0) * $qty;
+            $recalculatedSubtotal += $item['total'];
+        }
+        unset($item);
 
         $subtotal = (float) ($abandonedCart->subtotal ?: 0);
+        if ($subtotal <= 0 && $recalculatedSubtotal > 0) {
+            $subtotal = $recalculatedSubtotal;
+        }
         $total = max(0, $subtotal + $shippingCost);
 
         DB::beginTransaction();

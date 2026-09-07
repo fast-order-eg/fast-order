@@ -1612,20 +1612,41 @@ window.adjustBrandFontSize = adjustBrandFontSize;
         var match = window.location.search.match(/[?&]id=(\d+)/);
         if (match) prodId = match[1];
       }
-      var prodTitleEl = document.querySelector('.p-title, h1.product-title, .product-name');
-      var prodPriceEl = document.querySelector('.p-current-price, .product-price, .price');
-      var prodImgEl = document.querySelector('.p-main-img img, .product-image img');
+      var pData = window.currentProductData || null;
+
+      var prodTitle = (pData && pData.name) || '';
+      if (!prodTitle) {
+        var prodTitleEl = document.querySelector('.p-info-card h1, .product-info h1, .p-title, h1.product-title, .product-name, h1');
+        prodTitle = prodTitleEl ? prodTitleEl.innerText.trim() : 'منتج';
+      }
+
+      var prodPrice = 0;
+      if (pData && (pData.price_after !== undefined || pData.price !== undefined)) {
+        prodPrice = parseFloat(pData.price_after !== undefined ? pData.price_after : pData.price) || 0;
+      }
+      if (!prodPrice) {
+        var prodPriceEl = document.querySelector('#mainPriceNow, .price-now, .p-current-price, .product-price, .price');
+        if (prodPriceEl) {
+          var cleanPrice = prodPriceEl.innerText.replace(/[^\d.]/g, '');
+          prodPrice = parseFloat(cleanPrice) || 0;
+        }
+      }
+      if (!prodPrice) {
+        var buyBtn = document.querySelector('.p-btn-buy-now, .p-btn-add');
+        if (buyBtn && buyBtn.dataset && buyBtn.dataset.price) {
+          prodPrice = parseFloat(buyBtn.dataset.price) || 0;
+        }
+      }
+
+      var prodImg = (pData && (pData.image_url || (pData.images && pData.images[0]))) || '';
+      if (!prodImg) {
+        var prodImgEl = document.querySelector('#pMain, .p-main img, .p-main-img img, .product-image img');
+        prodImg = prodImgEl ? prodImgEl.src : '';
+      }
+
       var qtyEl = document.getElementById('productQtyInput') || 
                   document.getElementById('productQty') || 
                   document.querySelector('input[name="quantity"]');
-
-      var prodTitle = prodTitleEl ? prodTitleEl.innerText.trim() : 'منتج';
-      var prodPrice = 0;
-      if (prodPriceEl) {
-        var cleanPrice = prodPriceEl.innerText.replace(/[^\d.]/g, '');
-        prodPrice = parseFloat(cleanPrice) || 0;
-      }
-      var prodImg = prodImgEl ? prodImgEl.src : '';
       var qty = qtyEl ? (parseInt(qtyEl.value) || 1) : 1;
       var variantInfo = extractProductPageSelections(qty);
 
@@ -1662,6 +1683,7 @@ window.adjustBrandFontSize = adjustBrandFontSize;
   }
 
   function captureAbandonedCart(isUnload) {
+    if (window.__orderSubmitted) return;
     var phoneEl = document.getElementById('phoneInput') || 
                   document.querySelector('input[name="phone"]') || 
                   document.getElementById('quickPhone') || 
@@ -2198,15 +2220,15 @@ window.adjustBrandFontSize = adjustBrandFontSize;
     }
 
     window.addEventListener('visibilitychange', function() {
-      if (document.visibilityState === 'hidden') {
+      if (document.visibilityState === 'hidden' && !window.__orderSubmitted) {
         captureAbandonedCart(true);
       }
     });
     window.addEventListener('pagehide', function() {
-      captureAbandonedCart(true);
+      if (!window.__orderSubmitted) captureAbandonedCart(true);
     });
     window.addEventListener('beforeunload', function() {
-      captureAbandonedCart(true);
+      if (!window.__orderSubmitted) captureAbandonedCart(true);
     });
   }
 
