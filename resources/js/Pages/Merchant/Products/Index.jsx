@@ -169,14 +169,13 @@ export default function ProductsIndex({ products, categories, filters }) {
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="bg-gray-50 border-b border-gray-200">
-                                        <th className="text-right px-4 py-3 font-semibold text-gray-700 w-12">#</th>
+                                        <th className="text-right px-4 py-3 font-semibold text-gray-700 w-16">#</th>
                                         <th className="text-right px-4 py-3 font-semibold text-gray-700">الصورة</th>
                                         <th className="text-right px-4 py-3 font-semibold text-gray-700">اسم المنتج</th>
                                         <th className="text-right px-4 py-3 font-semibold text-gray-700">التصنيف</th>
                                         <th className="text-right px-4 py-3 font-semibold text-gray-700">السعر</th>
                                         <th className="text-right px-4 py-3 font-semibold text-gray-700">المخزون</th>
                                         <th className="text-right px-4 py-3 font-semibold text-gray-700">الشحن</th>
-                                        <th className="text-center px-4 py-3 font-semibold text-gray-700">ظهور بالمتجر</th>
                                         <th className="text-right px-4 py-3 font-semibold text-gray-700">إجراءات</th>
                                     </tr>
                                 </thead>
@@ -189,9 +188,28 @@ export default function ProductsIndex({ products, categories, filters }) {
 
                                         return (
                                         <tr key={product.id} className={`hover:bg-gray-50 transition-colors ${!isActive ? 'bg-gray-50/50 opacity-80' : ''}`}>
-                                            <td className="px-4 py-3 text-gray-500">
-                                                {(products.current_page - 1) * products.per_page + idx + 1}
-                                            </td>
+                                            <td className="px-4 py-3 text-gray-500 text-center">
+                                            <div className="flex flex-col items-center gap-1">
+                                                <span>{(products.current_page - 1) * products.per_page + idx + 1}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleToggleStatus(product)}
+                                                    disabled={isToggling}
+                                                    title={isActive ? "المنتج ظاهر في المتجر (انقر للإخفاء)" : "المنتج مخفي من المتجر (انقر للإظهار)"}
+                                                    className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 ${
+                                                        isActive ? 'bg-emerald-500' : 'bg-gray-300'
+                                                    } ${isToggling ? 'opacity-60 cursor-wait' : ''}`}
+                                                >
+                                                    <span className="sr-only">حالة الظهور في المتجر</span>
+                                                    <span
+                                                        aria-hidden="true"
+                                                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                                            isActive ? '-translate-x-4' : 'translate-x-0'
+                                                        }`}
+                                                    />
+                                                </button>
+                                            </div>
+                                        </td>
                                             <td className="px-4 py-3">
                                                 {(() => {
                                                     const imgSrc = product.image_display_url || 
@@ -237,35 +255,6 @@ export default function ProductsIndex({ products, categories, filters }) {
                                             </td>
                                             <td className="px-4 py-3 text-gray-600">
                                                 {product.shipping_type === 'free' ? 'شحن مجاني' : 'شحن مدفوع'}
-                                            </td>
-                                            {/* On / Off Toggle Column */}
-                                            <td className="px-4 py-3 text-center">
-                                                <div className="inline-flex items-center justify-center gap-2">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleToggleStatus(product)}
-                                                        disabled={isToggling}
-                                                        title={isActive ? "المنتج ظاهر في المتجر (انقر للإخفاء)" : "المنتج مخفي من المتجر (انقر للإظهار)"}
-                                                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 ${
-                                                            isActive ? 'bg-emerald-500' : 'bg-gray-300'
-                                                        } ${isToggling ? 'opacity-60 cursor-wait' : ''}`}
-                                                    >
-                                                        <span className="sr-only">حالة الظهور في المتجر</span>
-                                                        <span
-                                                            aria-hidden="true"
-                                                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                                                                isActive ? '-translate-x-5' : 'translate-x-0'
-                                                            }`}
-                                                        />
-                                                    </button>
-                                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-md min-w-[44px] text-center ${
-                                                        isActive
-                                                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                                            : 'bg-gray-100 text-gray-500 border border-gray-200'
-                                                    }`}>
-                                                        {isActive ? 'ظاهر' : 'مخفي'}
-                                                    </span>
-                                                </div>
                                             </td>
                                             <td className="px-4 py-3 text-left">
                                                 <div className="flex items-center justify-end gap-1.5 flex-wrap">
