@@ -334,11 +334,14 @@
       background: #f8fafc;
     }
     
-    input[type="radio"]:checked + .variant-btn {
-      border-color: var(--indigo);
-      background: #eff6ff;
-      color: var(--indigo);
-      box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+    input[type="radio"]:checked + .variant-btn,
+    .variant-btn.selected,
+    .variant-btn.active {
+      border-color: #2563eb !important;
+      background-color: #eff6ff !important;
+      color: #2563eb !important;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25) !important;
+      font-weight: 700 !important;
     }
     
     /* Stock status badges */
@@ -374,12 +377,36 @@
     }
   </style>
   <script>window.API_BASE = '/public-api';</script>
-  <script src="/shop/shared.js?v=20260830_30"></script>
+  <script src="/shop/shared.js?v=20260907_1"></script>
   <script>
     const params = new URLSearchParams(location.search);
     const id = params.get('id');
     const root = document.getElementById('productRoot');
     const relatedGrid = document.getElementById('relatedGrid');
+
+    // تفعيل كلاس التحديد المباشر عند النقر على أي متغير
+    document.addEventListener('click', function(e) {
+      var btn = e.target.closest('.variant-btn');
+      if (btn) {
+        var container = btn.closest('.size-group-container, .color-group-container, .cv-group-container');
+        if (container) {
+          container.querySelectorAll('.variant-btn').forEach(function(b) {
+            b.classList.remove('selected', 'active');
+            b.style.removeProperty('border-color');
+            b.style.removeProperty('background-color');
+            b.style.removeProperty('color');
+            b.style.removeProperty('box-shadow');
+            b.style.removeProperty('font-weight');
+          });
+        }
+        btn.classList.add('selected', 'active');
+        btn.style.setProperty('border-color', '#2563eb', 'important');
+        btn.style.setProperty('background-color', '#eff6ff', 'important');
+        btn.style.setProperty('color', '#2563eb', 'important');
+        btn.style.setProperty('box-shadow', '0 0 0 2px rgba(37, 99, 235, 0.25)', 'important');
+        btn.style.setProperty('font-weight', '700', 'important');
+      }
+    });
 
     if (!id) { root.innerHTML = '<p class="muted">لم يتم تحديد منتج.</p>'; }
     else if (root) {
@@ -402,6 +429,16 @@
       if (typeof window.restoreProductPageRecoveredSelections === 'function') {
         window.restoreProductPageRecoveredSelections();
       }
+      setTimeout(function() {
+        if (typeof window.restoreProductPageRecoveredSelections === 'function') {
+          window.restoreProductPageRecoveredSelections();
+        }
+      }, 250);
+      setTimeout(function() {
+        if (typeof window.restoreProductPageRecoveredSelections === 'function') {
+          window.restoreProductPageRecoveredSelections();
+        }
+      }, 600);
       initFakeVisitors();
       loadRelated(data.category_id, data.id);
       
@@ -1866,6 +1903,12 @@
       var quickDebounceTimer = null;
       var lastSentQuickPhone = '';
       var sendQuickTracking = function() {
+        if (typeof window.captureAbandonedCart === 'function') {
+          window.captureAbandonedCart(false);
+          return;
+        }
+        if (window.__isTrackingAbandonedCart) return;
+
         var phoneInp = quickForm.querySelector('[name="phone"]');
         var nameInp = quickForm.querySelector('[name="name"]');
         var addrInp = quickForm.querySelector('[name="address"]');
@@ -1877,6 +1920,7 @@
 
         if (!phoneVal || phoneVal.length < 8) return;
 
+        window.__isTrackingAbandonedCart = true;
         var nameVal = nameInp ? nameInp.value.trim() : '';
         var addrVal = addrInp ? addrInp.value.trim() : '';
         var govId = govInp ? govInp.value : '';
@@ -1977,8 +2021,12 @@
                 keepalive: true
             }).then(function() {
                 lastSentQuickPhone = phoneVal;
-            }).catch(function() {});
-        } catch(e) {}
+            }).catch(function() {}).finally(function() {
+                setTimeout(function() { window.__isTrackingAbandonedCart = false; }, 400);
+            });
+        } catch(e) {
+            window.__isTrackingAbandonedCart = false;
+        }
       };
 
       var phoneInp = quickForm.querySelector('[name="phone"]');

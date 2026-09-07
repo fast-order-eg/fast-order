@@ -1767,6 +1767,7 @@ window.adjustBrandFontSize = adjustBrandFontSize;
 
   function normalizeVariantVal(str) {
     if (str === null || str === undefined) return '';
+    try { str = decodeURIComponent(String(str)); } catch(e) {}
     return String(str)
       .trim()
       .toLowerCase()
@@ -1779,6 +1780,31 @@ window.adjustBrandFontSize = adjustBrandFontSize;
   function restoreProductPageSelections(itemData) {
     if (!itemData) return false;
     var restored = false;
+
+    function highlightVariantBtn(inputEl) {
+      if (!inputEl) return;
+      var parent = inputEl.parentElement;
+      var btn = parent ? parent.querySelector('.variant-btn') : null;
+      var container = inputEl.closest('.size-group-container, .color-group-container, .cv-group-container') || (parent ? parent.parentElement : null);
+      if (container) {
+        container.querySelectorAll('.variant-btn').forEach(function(b) {
+          b.classList.remove('selected', 'active');
+          b.style.removeProperty('border-color');
+          b.style.removeProperty('background-color');
+          b.style.removeProperty('color');
+          b.style.removeProperty('box-shadow');
+          b.style.removeProperty('font-weight');
+        });
+      }
+      if (btn) {
+        btn.classList.add('selected', 'active');
+        btn.style.setProperty('border-color', '#2563eb', 'important');
+        btn.style.setProperty('background-color', '#eff6ff', 'important');
+        btn.style.setProperty('color', '#2563eb', 'important');
+        btn.style.setProperty('box-shadow', '0 0 0 2px rgba(37, 99, 235, 0.25)', 'important');
+        btn.style.setProperty('font-weight', '700', 'important');
+      }
+    }
 
     // استعادة المقاس
     var sizesToSelect = itemData.sizePieces || [];
@@ -1805,12 +1831,15 @@ window.adjustBrandFontSize = adjustBrandFontSize;
       });
 
       if (matchedInput) {
-        if (!matchedInput.checked) {
-          matchedInput.checked = true;
-          matchedInput.dispatchEvent(new Event('change', { bubbles: true }));
-          matchedInput.dispatchEvent(new Event('input', { bubbles: true }));
-          restored = true;
-        }
+        matchedInput.checked = true;
+        highlightVariantBtn(matchedInput);
+        var sizeLbl = document.getElementById('sizeSelectedLabel_' + pieceIdx);
+        if (sizeLbl) sizeLbl.textContent = sz;
+
+        matchedInput.dispatchEvent(new Event('change', { bubbles: true }));
+        matchedInput.dispatchEvent(new Event('input', { bubbles: true }));
+        restored = true;
+
         if (typeof window.updateVariantAvailability === 'function') {
           try { window.updateVariantAvailability(pieceIdx); } catch(e) {}
         }
@@ -1856,12 +1885,15 @@ window.adjustBrandFontSize = adjustBrandFontSize;
       });
 
       if (matchedInput) {
-        if (!matchedInput.checked) {
-          matchedInput.checked = true;
-          matchedInput.dispatchEvent(new Event('change', { bubbles: true }));
-          matchedInput.dispatchEvent(new Event('input', { bubbles: true }));
-          restored = true;
-        }
+        matchedInput.checked = true;
+        highlightVariantBtn(matchedInput);
+        var colLbl = document.getElementById('colorSelectedLabel_' + pieceIdx);
+        if (colLbl) colLbl.textContent = col;
+
+        matchedInput.dispatchEvent(new Event('change', { bubbles: true }));
+        matchedInput.dispatchEvent(new Event('input', { bubbles: true }));
+        restored = true;
+
         if (typeof window.updateVariantAvailability === 'function') {
           try { window.updateVariantAvailability(pieceIdx); } catch(e) {}
         }
@@ -1891,12 +1923,11 @@ window.adjustBrandFontSize = adjustBrandFontSize;
           var cvInputs = document.querySelectorAll('input[name^="product_cv_"]');
           cvInputs.forEach(function(inp) {
             if (normalizeVariantVal(inp.value) === cleanVal) {
-              if (!inp.checked) {
-                inp.checked = true;
-                inp.dispatchEvent(new Event('change', { bubbles: true }));
-                inp.dispatchEvent(new Event('input', { bubbles: true }));
-                restored = true;
-              }
+              inp.checked = true;
+              highlightVariantBtn(inp);
+              inp.dispatchEvent(new Event('change', { bubbles: true }));
+              inp.dispatchEvent(new Event('input', { bubbles: true }));
+              restored = true;
             }
           });
         }
@@ -1908,6 +1939,10 @@ window.adjustBrandFontSize = adjustBrandFontSize;
       for (var pIdx = 0; pIdx < totalPieces; pIdx++) {
         try { window.updateVariantAvailability(pIdx); } catch(e) {}
       }
+    }
+
+    if (typeof window.updateStockIndicator === 'function') {
+      try { window.updateStockIndicator(); } catch(e) {}
     }
 
     return restored;
@@ -1930,11 +1965,20 @@ window.adjustBrandFontSize = adjustBrandFontSize;
       var urlParams = new URLSearchParams(window.location.search);
       var urlSize = urlParams.get('recovered_size');
       var urlColor = urlParams.get('recovered_color');
+      if (urlSize) { try { urlSize = decodeURIComponent(urlSize); } catch(e) {} }
+      if (urlColor) { try { urlColor = decodeURIComponent(urlColor); } catch(e) {} }
+
       if (urlSize || urlColor) {
         data = data || { items: [{}] };
         if (!data.items || !data.items[0]) data.items = [{}];
-        if (!data.items[0].selectedSize && urlSize) data.items[0].selectedSize = urlSize;
-        if (!data.items[0].selectedColor && urlColor) data.items[0].selectedColor = urlColor;
+        if (urlSize) {
+          data.items[0].selectedSize = urlSize;
+          data.items[0].sizePieces = [urlSize];
+        }
+        if (urlColor) {
+          data.items[0].selectedColor = urlColor;
+          data.items[0].colorPieces = [urlColor];
+        }
       }
     } catch(e) {}
 
@@ -1963,11 +2007,20 @@ window.adjustBrandFontSize = adjustBrandFontSize;
       var urlParams = new URLSearchParams(window.location.search);
       var urlSize = urlParams.get('recovered_size');
       var urlColor = urlParams.get('recovered_color');
+      if (urlSize) { try { urlSize = decodeURIComponent(urlSize); } catch(e) {} }
+      if (urlColor) { try { urlColor = decodeURIComponent(urlColor); } catch(e) {} }
+
       if (urlSize || urlColor) {
         data = data || { items: [{}] };
         if (!data.items || !data.items[0]) data.items = [{}];
-        if (!data.items[0].selectedSize && urlSize) data.items[0].selectedSize = urlSize;
-        if (!data.items[0].selectedColor && urlColor) data.items[0].selectedColor = urlColor;
+        if (urlSize) {
+          data.items[0].selectedSize = urlSize;
+          data.items[0].sizePieces = [urlSize];
+        }
+        if (urlColor) {
+          data.items[0].selectedColor = urlColor;
+          data.items[0].colorPieces = [urlColor];
+        }
       }
     } catch(e) {}
     if (!data) return;

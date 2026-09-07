@@ -8,6 +8,8 @@ use App\Models\ShippingGovernorate;
 use App\Services\CartService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class StorefrontCartRecoveryController extends Controller
@@ -207,52 +209,100 @@ HTML;
             'updated_at' => now()->toIso8601String(),
         ];
 
-        // البحث عن سلة متروكة نشطة لنفس المتجر والجلسة أو الهاتف في آخر 48 ساعة
+        // البحث عن سلة متروكة نشطة لنفس المتجر والجلسة أو الهاتف في آخر 48 ساعة مع قفل ذري لمنع التكرار
         $sessionId = session()->getId();
-        $abandonedCart = AbandonedCart::where('tenant_id', $tenantId)
-            ->whereNull('recovered_at')
-            ->where('status', '!=', 'converted')
-            ->where(function ($q) use ($sessionId, $cleanPhone, $email) {
-                $q->where('session_id', $sessionId);
-                if ($cleanPhone) {
-                    $q->orWhere('phone', $cleanPhone);
+        $lockKey = 'abandoned_cart_lock_' . $tenantId . '_' . ($cleanPhone ?: $sessionId);
+        $lock = Cache::lock($lockKey, 6);
+
+        try {
+            // محاولة الحصول على القفل لمدة تصل إلى ثانيتين للطلبات المتزامنة
+            $lock->block(2);
+
+            return DB::transaction(function () use (
+                $tenantId, $sessionId, $cleanPhone, $email, $name, $governorate, $address, $subtotal, $total, $cartData, $request, $itemsData
+            ) {
+                $abandonedCart = AbandonedCart::where('tenant_id', $tenantId)
+                    ->whereNull('recovered_at')
+                    ->where('status', '!=', 'converted')
+                    ->where(function ($q) use ($sessionId, $cleanPhone, $email) {
+                        if ($cleanPhone) {
+                            $q->where('phone', $cleanPhone);
+                            if ($sessionId) {
+                                $q->orWhere('session_id', $sessionId);
+                            }
+                        } else {
+                            $q->where('session_id', $sessionId);
+                        }
+                        if ($email) {
+                            $q->orWhere('email', $email);
+                        }
+                    })
+                    ->where('created_at', '>=', now()->subHours(48))
+                    ->latest('id')
+                    ->lockForUpdate()
+                    ->first();
+
+                // في حال عدم إرسال منتجات في الطلب اللحظي وكانت هناك منتجات سابقة، نحتفظ بالمنتجات السابقة
+                $finalCartData = $cartData;
+                if (empty($itemsData) && $abandonedCart && !empty($abandonedCart->cart_data['items'])) {
+                    $finalCartData['items'] = $abandonedCart->cart_data['items'];
+                    $finalCartData['subtotal'] = $abandonedCart->subtotal;
+                    $finalCartData['total'] = $abandonedCart->total;
                 }
-                if ($email) {
-                    $q->orWhere('email', $email);
+
+                $updateData = [
+                    'user_id' => auth()->id(),
+                    'cart_data' => $finalCartData,
+                    'subtotal' => $finalCartData['subtotal'] ?? $subtotal,
+                    'total' => $finalCartData['total'] ?? $total,
+                    'status' => 'abandoned',
+                ];
+
+                if ($cleanPhone) $updateData['phone'] = $cleanPhone;
+                if ($name) $updateData['customer_name'] = $name;
+                if ($email) $updateData['email'] = $email;
+                if ($governorate) $updateData['governorate'] = $governorate;
+                if ($address) $updateData['customer_address'] = $address;
+
+                if ($abandonedCart) {
+                    // تنظيف أي سجلات مكررة لنفس الهاتف أو الجلسة إن وُجدت سابقاً
+                    AbandonedCart::where('tenant_id', $tenantId)
+                        ->where('id', '!=', $abandonedCart->id)
+                        ->whereNull('recovered_at')
+                        ->where('status', '!=', 'converted')
+                        ->where(function ($q) use ($sessionId, $cleanPhone) {
+                            if ($cleanPhone) {
+                                $q->where('phone', $cleanPhone);
+                            }
+                            if ($sessionId) {
+                                $q->orWhere('session_id', $sessionId);
+                            }
+                        })
+                        ->delete();
+
+                    $abandonedCart->update($updateData);
+                } else {
+                    $updateData['tenant_id'] = $tenantId;
+                    $updateData['session_id'] = $sessionId;
+                    $updateData['recovery_token'] = Str::random(40);
+                    $abandonedCart = AbandonedCart::create($updateData);
                 }
-            })
-            ->where('created_at', '>=', now()->subHours(48))
-            ->latest('id')
-            ->first();
 
-        $updateData = [
-            'user_id' => auth()->id(),
-            'cart_data' => $cartData,
-            'subtotal' => $subtotal,
-            'total' => $total,
-            'status' => 'abandoned',
-        ];
-
-        if ($cleanPhone) $updateData['phone'] = $cleanPhone;
-        if ($name) $updateData['customer_name'] = $name;
-        if ($email) $updateData['email'] = $email;
-        if ($governorate) $updateData['governorate'] = $governorate;
-        if ($address) $updateData['customer_address'] = $address;
-
-        if ($abandonedCart) {
-            $abandonedCart->update($updateData);
-        } else {
-            $updateData['tenant_id'] = $tenantId;
-            $updateData['session_id'] = $sessionId;
-            $updateData['recovery_token'] = Str::random(40);
-            $abandonedCart = AbandonedCart::create($updateData);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم حفظ مسودة السلة المتروكة بنجاح',
+                    'cart_id' => $abandonedCart->id,
+                    'token' => $abandonedCart->recovery_token,
+                ]);
+            });
+        } catch (\Illuminate\Contracts\Cache\LockTimeoutException $e) {
+            // في حال وجود عملية متزامنة قيد التنفيذ
+            return response()->json([
+                'success' => true,
+                'message' => 'طلب التتبع قيد المعالجة مسبقاً',
+            ]);
+        } finally {
+            optional($lock)->release();
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'تم حفظ مسودة السلة المتروكة بنجاح',
-            'cart_id' => $abandonedCart->id,
-            'token' => $abandonedCart->recovery_token,
-        ]);
     }
 }
