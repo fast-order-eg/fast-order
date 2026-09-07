@@ -282,8 +282,16 @@ HTML;
                     $finalCartData['total'] = $abandonedCart->total;
                 }
 
+                $validUserId = null;
+                if (auth()->check()) {
+                    $candId = auth()->id();
+                    if ($candId && DB::table('users')->where('id', $candId)->exists()) {
+                        $validUserId = $candId;
+                    }
+                }
+
                 $updateData = [
-                    'user_id' => auth()->id(),
+                    'user_id' => $validUserId,
                     'cart_data' => $finalCartData,
                     'subtotal' => $finalCartData['subtotal'] ?? $subtotal,
                     'total' => $finalCartData['total'] ?? $total,
@@ -336,6 +344,12 @@ HTML;
                 'success' => true,
                 'message' => 'طلب التتبع قيد المعالجة مسبقاً',
             ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('trackPartial error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'تعذر حفظ بيانات السلة',
+            ], 500);
         } finally {
             optional($lock)->release();
         }

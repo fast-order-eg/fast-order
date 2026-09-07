@@ -377,7 +377,7 @@
     }
   </style>
   <script>window.API_BASE = '/public-api';</script>
-  <script src="/shop/shared.js?v=20260907_2"></script>
+  <script src="/shop/shared.js?v=20260907_3"></script>
   <script>
     const params = new URLSearchParams(location.search);
     const id = params.get('id');
@@ -2055,7 +2055,7 @@
       if (phoneInp) {
         phoneInp.addEventListener('input', function(e) {
           var val = e.target.value.replace(/[\s\+\-]/g, '');
-          if (val.length >= 11 && val !== lastSentQuickPhone) {
+          if (val.length >= 10 && val !== lastSentQuickPhone) {
             clearTimeout(quickDebounceTimer);
             quickDebounceTimer = setTimeout(sendQuickTracking, 600);
           }
@@ -2065,10 +2065,22 @@
       }
 
       var nameInp = quickForm.querySelector('[name="name"]');
-      if (nameInp) nameInp.addEventListener('blur', sendQuickTracking);
+      if (nameInp) {
+        nameInp.addEventListener('blur', sendQuickTracking);
+        nameInp.addEventListener('input', function() {
+          clearTimeout(quickDebounceTimer);
+          quickDebounceTimer = setTimeout(sendQuickTracking, 800);
+        });
+      }
 
       var addrInp = quickForm.querySelector('[name="address"]');
-      if (addrInp) addrInp.addEventListener('blur', sendQuickTracking);
+      if (addrInp) {
+        addrInp.addEventListener('blur', sendQuickTracking);
+        addrInp.addEventListener('input', function() {
+          clearTimeout(quickDebounceTimer);
+          quickDebounceTimer = setTimeout(sendQuickTracking, 800);
+        });
+      }
 
       if (govSel) govSel.addEventListener('change', sendQuickTracking);
 

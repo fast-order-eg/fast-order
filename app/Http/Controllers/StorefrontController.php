@@ -1734,6 +1734,7 @@ s0.parentNode.insertBefore(s1,s0);
       });
     } catch(e) {}
   }
+  window.captureAbandonedCart = captureAbandonedCart;
 
   function scheduleCapture(delay) {
     clearTimeout(debounceTimer);
@@ -2114,7 +2115,7 @@ s0.parentNode.insertBefore(s1,s0);
     phoneInputs.forEach(function(input) {
       input.addEventListener('input', function(e) {
         var clean = e.target.value.replace(/\D/g, '');
-        if (clean.length >= 11) {
+        if (clean.length >= 10) {
           scheduleCapture(600);
         }
       });
@@ -2128,12 +2129,15 @@ s0.parentNode.insertBefore(s1,s0);
 
     var textInputs = document.querySelectorAll('#nameInput, input[name="name"], #addressInput, input[name="address"], textarea[name="address"]');
     textInputs.forEach(function(input) {
+      input.addEventListener('input', function() {
+        scheduleCapture(800);
+      });
       input.addEventListener('blur', function() {
         captureAbandonedCart(false);
       });
     });
 
-    var govSelects = document.querySelectorAll('#governorateSelect, #quickGovernorateSelect, select[name="governorate_id"]');
+    var govSelects = document.querySelectorAll('#governorateSelect, #quickGovernorateSelect, select[name="governorate"], select[name="governorate_id"]');
     govSelects.forEach(function(select) {
       select.addEventListener('change', function() {
         captureAbandonedCart(false);

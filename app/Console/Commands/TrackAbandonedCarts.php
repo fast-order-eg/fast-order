@@ -101,10 +101,15 @@ class TrackAbandonedCarts extends Command
                     'phone' => $phone ?: $abandonedCart->phone,
                 ]);
             } else {
+                $validUserId = null;
+                if ($cart->user_id && DB::table('users')->where('id', $cart->user_id)->exists()) {
+                    $validUserId = $cart->user_id;
+                }
+
                 // إنشاء سجل جديد مع رمز استعادة فريد
                 AbandonedCart::create([
                     'tenant_id' => $cart->tenant_id,
-                    'user_id' => $cart->user_id,
+                    'user_id' => $validUserId,
                     'session_id' => $cart->session_id,
                     'email' => $email,
                     'phone' => $phone,
