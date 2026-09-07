@@ -134,31 +134,6 @@ HTML;
             }
         }
 
-        // إذا كان هناك طلب مكتمل حديثاً لنفس الهاتف خلال آخر 30 دقيقة، لا نسجل سلة متروكة ونحذف أي سلة معلقة سابقة
-        if ($cleanPhone) {
-            $hasRecentOrder = Order::where('tenant_id', $tenantId)
-                ->where('customer_phone', $cleanPhone)
-                ->where('created_at', '>=', now()->subMinutes(30))
-                ->exists();
-
-            if ($hasRecentOrder) {
-                AbandonedCart::where('tenant_id', $tenantId)
-                    ->where('phone', $cleanPhone)
-                    ->where(function ($q) {
-                        $q->whereNull('converted_order_id')
-                          ->orWhereNull('notes')
-                          ->orWhere('notes', 'NOT LIKE', '%[تم الاسترجاع والتحويل من السلة المتروكة%');
-                    })
-                    ->delete();
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'الطلب مكتمل بالفعل',
-                    'order_completed' => true
-                ]);
-            }
-        }
-
         // إذا لم يتم إدخال هاتف كافٍ (أقل من 8 خانات) ولا بريد إلكتروني، نتجاهل التسجيل حتى يكتب بيانات مفيدة
         if ((!$cleanPhone || strlen($cleanPhone) < 8) && (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL))) {
             return response()->json(['success' => false, 'message' => 'بيانات الاتصال غير مكتملة بعد'], 422);
@@ -342,20 +317,6 @@ HTML;
 
                     $abandonedCart->update($updateData);
                 } else {
-                    if ($cleanPhone) {
-                        $hasRecent = Order::where('tenant_id', $tenantId)
-                            ->where('customer_phone', $cleanPhone)
-                            ->where('created_at', '>=', now()->subMinutes(30))
-                            ->exists();
-                        if ($hasRecent) {
-                            return response()->json([
-                                'success' => true,
-                                'message' => 'الطلب مكتمل بالفعل',
-                                'order_completed' => true
-                            ]);
-                        }
-                    }
-
                     $updateData['tenant_id'] = $tenantId;
                     $updateData['session_id'] = $sessionId;
                     $updateData['recovery_token'] = Str::random(40);
