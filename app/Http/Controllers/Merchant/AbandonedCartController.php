@@ -64,6 +64,55 @@ class AbandonedCartController extends Controller
 
         $abandonedCarts = $query->paginate(20)->withQueryString();
 
+        // تنظيف ومطابقة أسماء المتغيرات المخصصة custom_variants في السلات المتروكة
+        $allProdIds = [];
+        foreach ($abandonedCarts->items() as $c) {
+            if (!empty($c->cart_data['items']) && is_array($c->cart_data['items'])) {
+                foreach ($c->cart_data['items'] as $it) {
+                    $pId = $it['product_id'] ?? ($it['id'] ?? null);
+                    if ($pId) $allProdIds[] = $pId;
+                }
+            }
+        }
+        $productsMap = !empty($allProdIds)
+            ? Product::where('tenant_id', $tenantId)->whereIn('id', array_unique($allProdIds))->get()->keyBy('id')
+            : collect();
+
+        $abandonedCarts->through(function ($c) use ($productsMap) {
+            $cartData = $c->cart_data;
+            if (!empty($cartData['items']) && is_array($cartData['items'])) {
+                foreach ($cartData['items'] as &$it) {
+                    if (!empty($it['options']) && is_array($it['options'])) {
+                        $pId = $it['product_id'] ?? ($it['id'] ?? null);
+                        $prod = $productsMap->get($pId);
+                        $cvMap = [];
+                        if ($prod && !empty($prod->custom_variants) && is_array($prod->custom_variants)) {
+                            foreach ($prod->custom_variants as $idx => $cvItem) {
+                                if (!empty($cvItem['name'])) $cvMap[$idx] = $cvItem['name'];
+                            }
+                        }
+
+                        $cleanOpts = [];
+                        foreach ($it['options'] as $ok => $ov) {
+                            if (str_starts_with((string)$ok, 'product_cv_')) {
+                                if (preg_match('/product_cv_(\d+)_/', (string)$ok, $m) && isset($cvMap[(int)$m[1]])) {
+                                    $cleanOpts[$cvMap[(int)$m[1]]] = $ov;
+                                } else {
+                                    $cleanOpts['خيار إضافي'] = $ov;
+                                }
+                            } else {
+                                $cleanOpts[$ok] = $ov;
+                            }
+                        }
+                        $it['options'] = $cleanOpts;
+                    }
+                }
+                unset($it);
+                $c->cart_data = $cartData;
+            }
+            return $c;
+        });
+
         // حساب الإحصائيات الشاملة
         $totalCarts = AbandonedCart::where('tenant_id', $tenantId)->count();
         $abandonedCount = AbandonedCart::where('tenant_id', $tenantId)
@@ -148,10 +197,11 @@ class AbandonedCartController extends Controller
         $customerAddress = $validated['customer_address'] ?? $abandonedCart->customer_address ?: 'غير محدد';
         $governorate = $validated['governorate'] ?? $abandonedCart->governorate ?: 'القاهرة';
 
-        // التحقق من أسعار المنتجات وحساب المجموع بدقة
+        // التحقق من أسعار المنتجات وحساب المجموع بدقة وتنظيف المتغيرات المخصصة
         $recalculatedSubtotal = 0;
         foreach ($items as &$item) {
             $pId = $item['product_id'] ?? ($item['id'] ?? null);
+            $prod = null;
             if ($pId) {
                 $prod = Product::where('tenant_id', $tenant->id)->find($pId);
                 if ($prod) {
@@ -167,6 +217,27 @@ class AbandonedCartController extends Controller
                             : ($prod->image_url ?? null);
                     }
                 }
+            }
+            if (!empty($item['options']) && is_array($item['options'])) {
+                $cvMap = [];
+                if ($prod && !empty($prod->custom_variants) && is_array($prod->custom_variants)) {
+                    foreach ($prod->custom_variants as $idx => $cvItem) {
+                        if (!empty($cvItem['name'])) $cvMap[$idx] = $cvItem['name'];
+                    }
+                }
+                $cleanOpts = [];
+                foreach ($item['options'] as $ok => $ov) {
+                    if (str_starts_with((string)$ok, 'product_cv_')) {
+                        if (preg_match('/product_cv_(\d+)_/', (string)$ok, $m) && isset($cvMap[(int)$m[1]])) {
+                            $cleanOpts[$cvMap[(int)$m[1]]] = $ov;
+                        } else {
+                            $cleanOpts['خيار إضافي'] = $ov;
+                        }
+                    } else {
+                        $cleanOpts[$ok] = $ov;
+                    }
+                }
+                $item['options'] = $cleanOpts;
             }
             $qty = max(1, (int) ($item['quantity'] ?? ($item['qty'] ?? 1)));
             $item['total'] = (float) ($item['price'] ?? 0) * $qty;

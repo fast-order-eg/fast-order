@@ -1145,7 +1145,7 @@
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;" class="cv-group-container" data-piece="${i}" data-cv-idx="${cvIdx}">
                   ${cv.values.map(val => `
                     <label class="cv-option" style="cursor: pointer; position: relative;">
-                      <input type="radio" name="product_cv_${cvIdx}_${i}" value="${val}" style="display: none;" onchange="updateVariantAvailability(${i})">
+                      <input type="radio" name="product_cv_${cvIdx}_${i}" value="${val}" data-name="${cv.name}" data-piece="${i}" style="display: none;" onchange="updateVariantAvailability(${i})">
                       <span class="variant-btn" data-type="cv_${cvIdx}" data-val="${val}">${val}</span>
                     </label>
                   `).join('')}
@@ -1990,8 +1990,36 @@
                 var colorSel = document.querySelector('select[name="color"], select[name="product_color"]');
                 if (colorSel && colorSel.value) colorPieces.push(colorSel.value);
             }
+            var cvPiecesMap = {};
             document.querySelectorAll('input[name^="product_cv_"]:checked').forEach(function(inp) {
-                if (inp.value) customOptions[inp.getAttribute('data-name') || inp.name] = inp.value;
+                if (inp.value) {
+                    var cvName = inp.getAttribute('data-name');
+                    if (!cvName || cvName.startsWith('product_cv_')) {
+                        var cGroup = inp.closest('.cv-group-container');
+                        if (cGroup && cGroup.previousElementSibling) {
+                            cvName = (cGroup.previousElementSibling.textContent || '').replace(/[*:\s]+$/, '').trim();
+                        }
+                    }
+                    if (!cvName || cvName.startsWith('product_cv_')) {
+                        cvName = 'خيار إضافي';
+                    }
+                    var pieceIdx = inp.getAttribute('data-piece');
+                    if (pieceIdx === null || pieceIdx === undefined) {
+                        var parts = inp.name.split('_');
+                        pieceIdx = parts.length >= 4 ? parts[3] : '0';
+                    }
+                    if (!cvPiecesMap[cvName]) cvPiecesMap[cvName] = [];
+                    cvPiecesMap[cvName].push({ piece: parseInt(pieceIdx) || 0, val: inp.value });
+                }
+            });
+            Object.keys(cvPiecesMap).forEach(function(cvName) {
+                var pieces = cvPiecesMap[cvName];
+                if (pieces.length > 1) {
+                    pieces.sort(function(a, b) { return a.piece - b.piece; });
+                    customOptions[cvName] = pieces.map(function(p) { return 'ق' + (p.piece + 1) + ': ' + p.val; }).join(' | ');
+                } else if (pieces.length === 1) {
+                    customOptions[cvName] = pieces[0].val;
+                }
             });
             variantInfo = {
                 selectedSize: sizePieces.length > 1 ? sizePieces.map(function(s, idx) { return 'ق' + (idx + 1) + ': ' + s; }).join(' | ') : (sizePieces[0] || null),

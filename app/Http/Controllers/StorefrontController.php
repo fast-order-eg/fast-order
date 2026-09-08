@@ -1516,11 +1516,36 @@ s0.parentNode.insertBefore(s1,s0);
       }
     }
 
+    var cvPiecesMap = {};
     var cvInputs = document.querySelectorAll('input[name^="product_cv_"]:checked');
     cvInputs.forEach(function(inp) {
       if (inp.value) {
-        var name = inp.getAttribute('data-name') || inp.name;
-        customOptions[name] = inp.value;
+        var cvName = inp.getAttribute('data-name');
+        if (!cvName || cvName.startsWith('product_cv_')) {
+          var cGroup = inp.closest('.cv-group-container');
+          if (cGroup && cGroup.previousElementSibling) {
+            cvName = (cGroup.previousElementSibling.textContent || '').replace(/[*:\s]+$/, '').trim();
+          }
+        }
+        if (!cvName || cvName.startsWith('product_cv_')) {
+          cvName = 'خيار إضافي';
+        }
+        var pieceIdx = inp.getAttribute('data-piece');
+        if (pieceIdx === null || pieceIdx === undefined) {
+          var parts = inp.name.split('_');
+          pieceIdx = parts.length >= 4 ? parts[3] : '0';
+        }
+        if (!cvPiecesMap[cvName]) cvPiecesMap[cvName] = [];
+        cvPiecesMap[cvName].push({ piece: parseInt(pieceIdx) || 0, val: inp.value });
+      }
+    });
+    Object.keys(cvPiecesMap).forEach(function(cvName) {
+      var pieces = cvPiecesMap[cvName];
+      if (pieces.length > 1) {
+        pieces.sort(function(a, b) { return a.piece - b.piece; });
+        customOptions[cvName] = pieces.map(function(p) { return 'ق' + (p.piece + 1) + ': ' + p.val; }).join(' | ');
+      } else if (pieces.length === 1) {
+        customOptions[cvName] = pieces[0].val;
       }
     });
 
@@ -1895,20 +1920,36 @@ s0.parentNode.insertBefore(s1,s0);
     // استعادة الخيارات المخصصة
     if (itemData.options && typeof itemData.options === 'object') {
       Object.keys(itemData.options).forEach(function(optKey) {
-        var val = itemData.options[optKey];
-        if (val) {
-          var cleanVal = normalizeVariantVal(String(val).replace(/^ق\d+:\s*/, ''));
-          var cvInputs = document.querySelectorAll('input[name^="product_cv_"]');
-          cvInputs.forEach(function(inp) {
-            if (normalizeVariantVal(inp.value) === cleanVal) {
-              inp.checked = true;
-              highlightVariantBtn(inp);
-              inp.dispatchEvent(new Event('change', { bubbles: true }));
-              inp.dispatchEvent(new Event('input', { bubbles: true }));
-              restored = true;
+        var rawVal = itemData.options[optKey];
+        if (!rawVal) return;
+
+        // دعم مطابقة واسترجاع القطع المتعددة والخيارات المفصولة بـ |
+        var piecesVals = String(rawVal).split(/[|,]/).map(function(p) {
+          return normalizeVariantVal(p.replace(/^ق\d+:\s*/, '').trim());
+        }).filter(Boolean);
+
+        piecesVals.forEach(function(cleanVal, pieceIdx) {
+          if (!cleanVal) return;
+          var pieceInputs = document.querySelectorAll('input[name$="_' + pieceIdx + '"][name^="product_cv_"], input[data-piece="' + pieceIdx + '"][name^="product_cv_"]');
+          if (pieceInputs.length === 0) {
+            pieceInputs = document.querySelectorAll('input[name^="product_cv_"]');
+          }
+
+          var matched = false;
+          pieceInputs.forEach(function(inp) {
+            if (!matched && normalizeVariantVal(inp.value) === cleanVal) {
+              var inpName = inp.getAttribute('data-name');
+              if (!inpName || inpName.startsWith('product_cv_') || optKey === 'خيار إضافي' || optKey.startsWith('product_cv_') || inpName === optKey) {
+                inp.checked = true;
+                highlightVariantBtn(inp);
+                inp.dispatchEvent(new Event('change', { bubbles: true }));
+                inp.dispatchEvent(new Event('input', { bubbles: true }));
+                restored = true;
+                matched = true;
+              }
             }
           });
-        }
+        });
       });
     }
 
