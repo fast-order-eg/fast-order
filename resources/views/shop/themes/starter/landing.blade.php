@@ -353,6 +353,8 @@
             position: absolute;
             top: 20px;
             right: 20px;
+            z-index: 30;
+            pointer-events: none;
             background: #ef4444;
             color: #fff;
             font-weight: 900;
@@ -360,6 +362,11 @@
             padding: 8px 18px;
             border-radius: 50px;
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .product-image-wrap:hover .discount-ribbon {
+            transform: scale(1.05);
         }
 
         .product-details h3 {
@@ -764,10 +771,10 @@
 
                 <div class="product-card">
                     <div class="product-image-wrap">
-                        @if ($discountPercent > 0)
-                            <div class="discount-ribbon">??? {{ $discountPercent }}%</div>
-                        @endif
                         <img src="{{ $pImg }}" alt="{{ $pName }}" class="product-img">
+                        @if ($discountPercent > 0)
+                            <div class="discount-ribbon">وفر {{ $discountPercent }}%</div>
+                        @endif
                     </div>
 
                     <div class="product-details">
