@@ -41,9 +41,20 @@ class LandingPageController extends Controller
      */
     public function create()
     {
+        $products = \App\Models\Product::select('id', 'name', 'price', 'price_after', 'image_url', 'main_image_path', 'description')
+            ->latest()
+            ->get()
+            ->map(fn($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'price' => $p->price_after ?: $p->price,
+                'image_url' => $p->image_display_url,
+                'description' => $p->description,
+            ]);
+
         return Inertia::render('Merchant/LandingPages/Create', [
             'defaultSections' => LandingPage::getDefaultSections(),
-            'products' => \App\Models\Product::select('id', 'name', 'price', 'image_url')->latest()->get(),
+            'products' => $products,
             'templates' => LandingPage::getAvailableTemplates(),
         ]);
     }
@@ -76,12 +87,14 @@ class LandingPageController extends Controller
         if ($request->filled('product_id')) {
             $product = \App\Models\Product::find($request->product_id);
             if ($product) {
+                $imgUrl = $product->image_display_url ?: ($product->main_image_path ? asset('storage/' . $product->main_image_path) : $product->image_url);
                 foreach ($sections as &$sec) {
                     if (($sec['type'] ?? '') === 'product_showcase') {
                         $sec['product_id'] = $product->id;
                         $sec['product_name'] = $product->name;
-                        $sec['product_price'] = $product->price;
-                        $sec['product_image'] = $product->image_url;
+                        $sec['product_price'] = $product->price_after ?: $product->price;
+                        $sec['product_image'] = $imgUrl;
+                        $sec['image'] = $imgUrl;
                         if (!empty($product->description)) {
                             // Extract paragraphs or lines from description
                             $lines = array_filter(array_map('trim', explode("\n", strip_tags($product->description))));
@@ -135,7 +148,16 @@ class LandingPageController extends Controller
                 'is_active' => (bool) $landingPage->is_active,
             ],
             'defaultSections' => LandingPage::getDefaultSections(),
-            'products' => \App\Models\Product::select('id', 'name', 'price', 'image_url', 'description')->latest()->get(),
+            'products' => \App\Models\Product::select('id', 'name', 'price', 'price_after', 'image_url', 'main_image_path', 'description')
+                ->latest()
+                ->get()
+                ->map(fn($p) => [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'price' => $p->price_after ?: $p->price,
+                    'image_url' => $p->image_display_url,
+                    'description' => $p->description,
+                ]),
             'templates' => LandingPage::getAvailableTemplates(),
         ]);
     }

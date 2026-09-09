@@ -74,7 +74,11 @@ class LandingPageController extends Controller
                     // Fetch product secondary images
                     $secondaryImages = $product->images->map(function($img) {
                         return $img->image_path ? (str_starts_with($img->image_path, 'http') ? $img->image_path : asset('storage/' . $img->image_path)) : null;
-                    })->filter()->toArray();
+                    })->filter()->values()->toArray();
+
+                    $mainImage = $product->image_display_url ?: ($product->main_image_path ? asset('storage/' . $product->main_image_path) : ($product->image_url ? (str_starts_with($product->image_url, 'http') ? $product->image_url : asset('storage/' . $product->image_url)) : null));
+
+                    $allImages = array_values(array_unique(array_filter(array_merge([$mainImage], $secondaryImages))));
 
                     $section['product_data'] = [
                         'id' => $product->id,
@@ -82,13 +86,18 @@ class LandingPageController extends Controller
                         'description' => $product->description,
                         'price' => $product->price,
                         'original_price' => $product->price_before ?? ($product->price * 1.5),
-                        'image_url' => $product->image_url,
-                        'images' => array_merge(array_filter([$product->image_url]), $secondaryImages),
+                        'image_url' => $mainImage,
+                        'images' => $allImages,
                         'sizes' => $product->sizes ?? [],
                         'colors' => $product->colors ?? [],
                         'price_tiers' => $product->price_tiers ?? [],
                         'shipping_type' => $product->shipping_type ?? 'free',
                     ];
+
+                    if ($mainImage) {
+                        $section['image'] = $mainImage;
+                        $section['product_image'] = $mainImage;
+                    }
                 }
             }
         }

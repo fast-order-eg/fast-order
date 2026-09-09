@@ -197,6 +197,7 @@ export default function SectionEditor({ section, onChange, products }) {
                     product_name: selectedProd.name,
                     product_price: selectedProd.price,
                     product_image: selectedProd.image_url,
+                    image: selectedProd.image_url,
                     features: features,
                 });
             }

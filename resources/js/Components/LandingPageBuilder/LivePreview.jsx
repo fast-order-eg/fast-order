@@ -73,8 +73,8 @@ export default function LivePreview({ sections, products, template }) {
                                 <div className="bg-slate-950 rounded-2xl border border-white/5 overflow-hidden p-4 space-y-3">
                                     {/* Mock Product Image */}
                                     <div className="aspect-[4/3] rounded-xl bg-slate-800/80 overflow-hidden relative flex items-center justify-center border border-white/5">
-                                        {section.product_image ? (
-                                            <img src={section.product_image} alt={section.product_name} className="w-full h-full object-cover" />
+                                        {(section.product_image || section.image) ? (
+                                            <img src={section.product_image || section.image} alt={section.product_name} className="w-full h-full object-cover" />
                                         ) : (
                                             <svg className="w-12 h-12 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />

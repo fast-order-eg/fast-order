@@ -1342,7 +1342,7 @@
                 $pDesc = $pData['description'] ?? ($section['subtitle'] ?? '');
                 $pPrice = $pData['price'] ?? ($section['custom_price'] ?? 0);
                 $pOldPrice = $pData['original_price'] ?? ($section['original_price'] ?? 0);
-                $pImg = $pData['image_url'] ?? ($section['image'] ?? '');
+                $pImg = !empty($pData['image_url']) ? $pData['image_url'] : (!empty($section['product_image']) ? $section['product_image'] : ($section['image'] ?? ''));
                 $curr = $section['currency'] ?? 'ج.م';
                 $features = $section['features'] ?? [];
                 
