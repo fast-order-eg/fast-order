@@ -150,7 +150,7 @@
         }
 
         html {
-            scroll-behavior: smooth;
+            scroll-behavior: auto;
         }
 
         *:focus-visible {
@@ -173,7 +173,6 @@
                     radial-gradient(at 10% 10%, rgba(108, 99, 255, 0.03) 0px, transparent 50%),
                     radial-gradient(at 90% 90%, rgba(255, 101, 132, 0.02) 0px, transparent 50%);
             @endif
-            background-attachment: fixed;
         }
 
         a {
@@ -1766,7 +1765,7 @@
         function handleOrderClick(slug, productId) {
             const formSection = document.getElementById('checkout-form-section') || document.getElementById('checkout-form-container');
             if (formSection) {
-                formSection.scrollIntoView({ behavior: 'smooth' });
+                formSection.scrollIntoView({ behavior: 'auto' });
             } else if (productId && productId !== '') {
                 window.location.href = `/shop/checkout.html?product_id=${productId}`;
             } else {
@@ -2092,7 +2091,7 @@
                     document.getElementById('checkout-form-container').style.display = 'none';
                     document.getElementById('success-ref-num').innerText = data.reference_number;
                     document.getElementById('checkout-success-container').style.display = 'block';
-                    document.getElementById('checkout-success-container').scrollIntoView({ behavior: 'smooth' });
+                    document.getElementById('checkout-success-container').scrollIntoView({ behavior: 'auto' });
                 } else {
                     alert(data.message || 'حدث خطأ أثناء معالجة الطلب، يرجى المحاولة مرة أخرى.');
                     submitBtn.disabled = false;

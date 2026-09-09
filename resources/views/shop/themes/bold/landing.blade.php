@@ -37,7 +37,7 @@
         }
 
         html {
-            scroll-behavior: smooth;
+            scroll-behavior: auto;
         }
 
         /* Focus indicators for accessibility */
@@ -55,7 +55,6 @@
             background-image: 
                 radial-gradient(at 10% 10%, rgba(108, 99, 255, 0.15) 0px, transparent 50%),
                 radial-gradient(at 90% 90%, rgba(255, 101, 132, 0.12) 0px, transparent 50%);
-            background-attachment: fixed;
         }
 
         a {
@@ -1000,7 +999,7 @@
                 // التوجيه لصفحة الشراء العامة أو التمرير للمنتج
                 const showcase = document.getElementById('product-showcase');
                 if (showcase && window.location.hash !== '#product-showcase') {
-                    showcase.scrollIntoView({ behavior: 'smooth' });
+                    showcase.scrollIntoView({ behavior: 'auto' });
                 } else {
                     window.location.href = `/shop/checkout.html`;
                 }
