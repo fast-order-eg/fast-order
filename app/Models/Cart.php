@@ -33,6 +33,11 @@ class Cart extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function getSubtotalAttribute(): float
     {
         return $this->activeItems->sum(fn($item) => $item->price * $item->quantity);

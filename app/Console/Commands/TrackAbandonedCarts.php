@@ -7,6 +7,7 @@ use App\Models\Cart;
 use App\Models\AbandonedCart;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class TrackAbandonedCarts extends Command
 {
