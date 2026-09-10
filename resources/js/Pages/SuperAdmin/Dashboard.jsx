@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import SuperAdminLayout from '@/Layouts/SuperAdminLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 
 const formatCurrency = (amount) =>
     new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(Math.round(amount || 0)) + ' ج.م';
@@ -8,7 +8,58 @@ const formatNumber = (num) =>
     new Intl.NumberFormat('en-US').format(num || 0);
 
 // ========================================================
-// Alerts Components
+// Date Range Filter Bar
+// ========================================================
+const DATE_FILTERS = [
+    { key: 'today',         label: 'اليوم' },
+    { key: 'yesterday',     label: 'أمس' },
+    { key: 'last_7_days',   label: 'آخر 7 أيام' },
+    { key: 'current_month', label: 'الشهر الحالي' },
+    { key: 'last_month',    label: 'الشهر السابق' },
+    { key: 'all',           label: 'الكل' },
+];
+
+function DateFilterBar({ current }) {
+    const [loading, setLoading] = useState(false);
+
+    const handleClick = (key) => {
+        if (key === current || loading) return;
+        setLoading(true);
+        router.get(route('superadmin.dashboard'), { date_range: key }, {
+            preserveScroll: true,
+            onFinish: () => setLoading(false),
+        });
+    };
+
+    return (
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+            <span className="text-xs font-bold text-slate-500 ml-1">فلتر سريع:</span>
+            {DATE_FILTERS.map((f) => {
+                const isActive = current === f.key;
+                return (
+                    <button
+                        key={f.key}
+                        onClick={() => handleClick(f.key)}
+                        disabled={loading}
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border shadow-sm
+                            ${isActive
+                                ? 'bg-indigo-600 text-white border-indigo-700 shadow-indigo-200'
+                                : 'bg-white text-slate-600 border-slate-200 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200'
+                            } ${loading && !isActive ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                        {f.label}
+                    </button>
+                );
+            })}
+            {loading && (
+                <span className="text-xs text-indigo-500 font-medium animate-pulse">جارٍ التحديث...</span>
+            )}
+        </div>
+    );
+}
+
+// ========================================================
+// Pending Receipts Alert
 // ========================================================
 function PendingReceiptsAlert({ count, receipts }) {
     const [expanded, setExpanded] = useState(true);
@@ -106,10 +157,19 @@ function PendingReceiptsAlert({ count, receipts }) {
 }
 
 // ========================================================
-// Expiring Subscriptions Alert Component
+// Expiring Subscriptions Alert (4 days, copy phone, clickable tenant)
 // ========================================================
 function ExpiringSubscriptionsAlert({ subscriptions }) {
+    const [copiedId, setCopiedId] = useState(null);
+
     if (!subscriptions || subscriptions.length === 0) return null;
+
+    const handleCopyPhone = (phone, id) => {
+        if (!phone) return;
+        navigator.clipboard.writeText(phone);
+        setCopiedId(id);
+        setTimeout(() => setCopiedId(null), 2000);
+    };
 
     return (
         <div className="bg-white rounded-2xl border border-amber-200 shadow-sm overflow-hidden mb-6">
@@ -117,7 +177,7 @@ function ExpiringSubscriptionsAlert({ subscriptions }) {
                 <div className="flex items-center gap-2">
                     <span className="text-amber-600 font-bold text-lg">⚠️</span>
                     <div>
-                        <h3 className="font-bold text-amber-950 text-sm">اشتراكات تنتهي قريباً (خلال 7 أيام)</h3>
+                        <h3 className="font-bold text-amber-950 text-sm">اشتراكات تنتهي قريباً (خلال 4 أيام)</h3>
                         <p className="text-[11px] text-amber-800 mt-0.5">يرجى متابعتهم للتجديد قبل التوقف التلقائي</p>
                     </div>
                 </div>
@@ -125,14 +185,44 @@ function ExpiringSubscriptionsAlert({ subscriptions }) {
                     {subscriptions.length}
                 </span>
             </div>
-            <div className="p-3 divide-y divide-gray-50 max-h-64 overflow-y-auto">
+            <div className="p-3 divide-y divide-gray-50 max-h-80 overflow-y-auto">
                 {subscriptions.map((sub) => (
-                    <div key={sub.id} className="py-2.5 px-2 flex items-center justify-between text-xs hover:bg-slate-50 rounded-xl transition-colors">
-                        <div>
-                            <p className="text-sm font-bold text-gray-900">{sub.tenant_name}</p>
-                            <p className="text-xs text-gray-500 font-mono mt-0.5">{sub.tenant_phone || 'لا يوجد هاتف'}</p>
+                    <div key={sub.id} className="py-2.5 px-2 flex items-center justify-between text-xs hover:bg-slate-50 rounded-xl transition-colors gap-2">
+                        <div className="flex-1 min-w-0">
+                            <Link
+                                href={route('superadmin.tenants.show', sub.tenant_id)}
+                                className="text-sm font-bold text-indigo-700 hover:text-indigo-900 hover:underline block truncate"
+                            >
+                                {sub.tenant_name}
+                            </Link>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                                <span className="text-xs text-gray-500 font-mono">
+                                    {sub.tenant_phone || 'لا يوجد هاتف'}
+                                </span>
+                                {sub.tenant_phone && (
+                                    <button
+                                        onClick={() => handleCopyPhone(sub.tenant_phone, sub.id)}
+                                        title="نسخ الرقم"
+                                        className={`p-0.5 rounded transition-colors ${
+                                            copiedId === sub.id
+                                                ? 'text-emerald-600'
+                                                : 'text-gray-400 hover:text-indigo-600'
+                                        }`}
+                                    >
+                                        {copiedId === sub.id ? (
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        ) : (
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                            </svg>
+                                        )}
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                        <div className="text-left">
+                        <div className="text-left shrink-0">
                             <p className="text-xs font-semibold text-gray-700">{sub.plan_name}</p>
                             <span className={`inline-block mt-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${
                                 Math.round(Number(sub.days_left)) <= 2 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
@@ -180,13 +270,13 @@ function StatCard({ title, value, sub, icon, color }) {
 // ========================================================
 // Dashboard Page
 // ========================================================
-export default function Dashboard({ stats, pendingReceipts, expiringSubscriptions, topStores, recentStores, graphs }) {
+export default function Dashboard({ stats, currentDateRange, pendingReceipts, expiringSubscriptions, topStores, recentStores, graphs }) {
     return (
         <SuperAdminLayout>
             <Head title="مركز القيادة - لوحة تحكم الإدارة" />
 
             <div className="p-2 sm:p-4 md:p-6 max-w-[1600px] mx-auto bg-[#F8FAFC] min-h-screen">
-                
+
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-4">
                     <div>
@@ -200,36 +290,39 @@ export default function Dashboard({ stats, pendingReceipts, expiringSubscription
                     </div>
                 </div>
 
+                {/* Date Filter Bar */}
+                <DateFilterBar current={currentDateRange || 'all'} />
+
                 {/* Main Alert */}
                 <PendingReceiptsAlert count={stats.pending_payments} receipts={pendingReceipts} />
 
                 {/* Health Metrics Grid */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
-                    <StatCard 
-                        title="إجمالي المتاجر" 
-                        value={formatNumber(stats.total_stores)} 
+                    <StatCard
+                        title="إجمالي المتاجر"
+                        value={formatNumber(stats.total_stores)}
                         sub={`${formatNumber(stats.active_stores)} نشط | ${formatNumber(stats.suspended_stores)} موقوف`}
                         color="indigo"
                         icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
                     />
-                    <StatCard 
-                        title="الاشتراكات النشطة" 
-                        value={formatNumber(stats.total_subscriptions)} 
-                        sub="متاجر تعمل حالياً ببااقات مفعلة"
+                    <StatCard
+                        title="الاشتراكات النشطة"
+                        value={formatNumber(stats.total_subscriptions)}
+                        sub="متاجر تعمل حالياً بباقات مفعلة"
                         color="emerald"
                         icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
                     />
-                    <StatCard 
-                        title="أرباح المنصة" 
-                        value={formatCurrency(stats.platform_revenue)} 
-                        sub="إجمالي الإيصالات المعتمدة تاريخياً"
+                    <StatCard
+                        title="أرباح المنصة"
+                        value={formatCurrency(stats.platform_revenue)}
+                        sub={currentDateRange && currentDateRange !== 'all' ? `(${DATE_FILTERS.find(f => f.key === currentDateRange)?.label || ''})` : 'إجمالي الإيصالات المعتمدة'}
                         color="orange"
                         icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
                     />
-                    <StatCard 
-                        title="طلبات المنصة" 
-                        value={formatNumber(stats.platform_orders)} 
-                        sub="إجمالي الطلبات عبر جميع المتاجر"
+                    <StatCard
+                        title="طلبات المنصة"
+                        value={formatNumber(stats.platform_orders)}
+                        sub={currentDateRange && currentDateRange !== 'all' ? `(${DATE_FILTERS.find(f => f.key === currentDateRange)?.label || ''})` : 'إجمالي الطلبات عبر جميع المتاجر'}
                         color="purple"
                         icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>}
                     />
@@ -237,18 +330,16 @@ export default function Dashboard({ stats, pendingReceipts, expiringSubscription
 
                 {/* Complex Data Layout */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                    
-                    {/* Left Column (Lists) */}
+
+                    {/* Left Column */}
                     <div className="lg:col-span-1 space-y-6">
                         <ExpiringSubscriptionsAlert subscriptions={expiringSubscriptions} />
 
                         {/* Top Stores */}
                         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
-                            <div className="p-5 border-b border-gray-50 flex items-center justify-between">
-                                <div>
-                                    <h3 className="font-bold text-gray-900 text-sm">أفضل المتاجر أداءً 🏆</h3>
-                                    <p className="text-[11px] text-gray-400 mt-0.5">الأعلى من حيث حجم الطلبات الإجمالي</p>
-                                </div>
+                            <div className="p-5 border-b border-gray-50">
+                                <h3 className="font-bold text-gray-900 text-sm">أفضل المتاجر أداءً 🏆</h3>
+                                <p className="text-[11px] text-gray-400 mt-0.5">الأعلى من حيث حجم الطلبات الإجمالي</p>
                             </div>
                             <div className="p-2">
                                 {topStores && topStores.length > 0 ? (
@@ -275,10 +366,8 @@ export default function Dashboard({ stats, pendingReceipts, expiringSubscription
 
                         {/* Recent Onboarding */}
                         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
-                            <div className="p-5 border-b border-gray-50 flex items-center justify-between">
-                                <div>
-                                    <h3 className="font-bold text-gray-900 text-sm">أحدث المتاجر المنضمة 🚀</h3>
-                                </div>
+                            <div className="p-5 border-b border-gray-50">
+                                <h3 className="font-bold text-gray-900 text-sm">أحدث المتاجر المنضمة 🚀</h3>
                             </div>
                             <div className="p-0">
                                 {recentStores && recentStores.length > 0 ? (
@@ -305,9 +394,9 @@ export default function Dashboard({ stats, pendingReceipts, expiringSubscription
 
                     {/* Right Column (Graphs) */}
                     <div className="lg:col-span-2 space-y-6">
-                        
-                        {/* Registrations Chart/List */}
-                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-auto lg:h-[48%] flex flex-col justify-center">
+
+                        {/* Registrations Chart */}
+                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-center">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm border border-indigo-100">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
@@ -317,19 +406,16 @@ export default function Dashboard({ stats, pendingReceipts, expiringSubscription
                                     <p className="text-xs text-gray-500 font-medium mt-0.5">عدد المتاجر الجديدة المسجلة كل شهر</p>
                                 </div>
                             </div>
-                            
                             {graphs.registrations && graphs.registrations.length > 0 ? (
                                 <div className="space-y-4">
                                     {graphs.registrations.map((item, idx) => (
                                         <div key={idx} className="flex items-center justify-between group">
                                             <span className="text-sm text-gray-600 font-bold w-20">{item.month}</span>
                                             <div className="flex-1 mx-4 bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200">
-                                                <div 
-                                                    className="bg-indigo-500 h-full rounded-full transition-all duration-1000 group-hover:bg-indigo-400 relative" 
+                                                <div
+                                                    className="bg-indigo-500 h-full rounded-full transition-all duration-1000 group-hover:bg-indigo-400"
                                                     style={{ width: `${Math.max(2, Math.min(100, (item.count / Math.max(1, ...graphs.registrations.map(r => r.count))) * 100))}%` }}
-                                                >
-                                                    <div className="absolute top-0 right-0 bottom-0 left-0 bg-white/20" style={{ backgroundImage: 'linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)', backgroundSize: '1rem 1rem' }}></div>
-                                                </div>
+                                                />
                                             </div>
                                             <span className="text-sm font-black text-indigo-700 w-16 text-left">{formatNumber(item.count)} متجر</span>
                                         </div>
@@ -342,8 +428,8 @@ export default function Dashboard({ stats, pendingReceipts, expiringSubscription
                             )}
                         </div>
 
-                        {/* Revenue List */}
-                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-auto lg:h-[48%] flex flex-col justify-center">
+                        {/* Revenue Chart */}
+                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-center">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -353,19 +439,16 @@ export default function Dashboard({ stats, pendingReceipts, expiringSubscription
                                     <p className="text-xs text-gray-500 font-medium mt-0.5">إجمالي إيصالات الدفع المعتمدة كل شهر</p>
                                 </div>
                             </div>
-
                             {graphs.revenue && graphs.revenue.length > 0 ? (
                                 <div className="space-y-4">
                                     {graphs.revenue.map((item, idx) => (
                                         <div key={idx} className="flex items-center justify-between group">
                                             <span className="text-sm text-gray-600 font-bold w-20">{item.month}</span>
                                             <div className="flex-1 mx-4 bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200">
-                                                <div 
-                                                    className="bg-emerald-500 h-full rounded-full transition-all duration-1000 group-hover:bg-emerald-400 relative" 
+                                                <div
+                                                    className="bg-emerald-500 h-full rounded-full transition-all duration-1000 group-hover:bg-emerald-400"
                                                     style={{ width: `${Math.max(2, Math.min(100, (item.total_amount / Math.max(1, ...graphs.revenue.map(r => r.total_amount))) * 100))}%` }}
-                                                >
-                                                     <div className="absolute top-0 right-0 bottom-0 left-0 bg-white/20" style={{ backgroundImage: 'linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)', backgroundSize: '1rem 1rem' }}></div>
-                                                </div>
+                                                />
                                             </div>
                                             <span className="text-sm font-black text-emerald-700 w-24 text-left">{formatCurrency(item.total_amount)}</span>
                                         </div>

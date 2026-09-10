@@ -10,12 +10,17 @@ use App\Models\Order;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        // ====== Date Range Filter ======
+        $range = $request->query('date_range', 'all');
+        [$dateFrom, $dateTo] = $this->resolveDateRange($range);
+
         // 1. Platform Health Metrics
         $totalStores = Tenant::count();
         $activeStores = Tenant::where('is_active', true)->count();
@@ -24,8 +29,17 @@ class DashboardController extends Controller
         $totalSubscriptions = Subscription::where('status', 'active')->count();
         $pendingPaymentsCount = SubscriptionReceipt::where('status', 'pending')->count();
         
-        $platformOrdersCount = Order::withoutGlobalScopes()->count();
-        $platformRevenue = SubscriptionReceipt::where('status', 'approved')->sum('amount');
+        // Filter orders & revenue by date range
+        $ordersQuery = Order::withoutGlobalScopes();
+        $revenueQuery = SubscriptionReceipt::where('status', 'approved');
+
+        if ($dateFrom && $dateTo) {
+            $ordersQuery->whereBetween('created_at', [$dateFrom, $dateTo]);
+            $revenueQuery->whereBetween('approved_at', [$dateFrom, $dateTo]);
+        }
+
+        $platformOrdersCount = $ordersQuery->count();
+        $platformRevenue = $revenueQuery->sum('amount');
 
         // 2. Pending Receipts List
         $pendingReceiptsList = SubscriptionReceipt::with(['tenant', 'plan'])
@@ -49,12 +63,12 @@ class DashboardController extends Controller
                 ];
             });
 
-        // 3. Expiring Subscriptions (Next 7 Days) - Exclude permanent commission plans
-        $sevenDaysFromNow = Carbon::now()->addDays(7);
+        // 3. Expiring Subscriptions (Next 4 Days) - Exclude permanent commission plans
+        $fourDaysFromNow = Carbon::now()->addDays(4);
         $expiringSubscriptions = Subscription::with(['tenant', 'plan'])
             ->where('status', 'active')
             ->whereNotNull('ends_at')
-            ->where('ends_at', '<=', $sevenDaysFromNow)
+            ->where('ends_at', '<=', $fourDaysFromNow)
             ->where('ends_at', '>=', Carbon::now())
             ->whereDoesntHave('plan', function ($q) {
                 $q->where('slug', 'commission')
@@ -62,12 +76,13 @@ class DashboardController extends Controller
             })
             ->where('billing_cycle', '!=', 'commission')
             ->orderBy('ends_at', 'asc')
-            ->take(5)
+            ->take(10)
             ->get()
             ->map(function ($sub) {
                 $days = Carbon::now()->diffInDays(Carbon::parse($sub->ends_at), false);
                 return [
                     'id' => $sub->id,
+                    'tenant_id' => $sub->tenant_id,
                     'tenant_name' => $sub->tenant ? $sub->tenant->name : 'غير معروف',
                     'tenant_phone' => $sub->tenant ? $sub->tenant->phone : null,
                     'plan_name' => $sub->plan ? $sub->plan->name : 'غير محدد',
@@ -156,6 +171,7 @@ class DashboardController extends Controller
                 'platform_orders' => $platformOrdersCount,
                 'platform_revenue' => $platformRevenue,
             ],
+            'currentDateRange' => $range,
             'pendingReceipts' => $pendingReceiptsList,
             'expiringSubscriptions' => $expiringSubscriptions,
             'topStores' => $topStores,
@@ -165,5 +181,19 @@ class DashboardController extends Controller
                 'revenue' => $revenueOverTime,
             ]
         ]);
+    }
+
+    // ====== Helper: resolve date range ======
+    private function resolveDateRange(string $range): array
+    {
+        $now = Carbon::now();
+        return match($range) {
+            'today'        => [$now->copy()->startOfDay(),   $now->copy()->endOfDay()],
+            'yesterday'    => [$now->copy()->subDay()->startOfDay(), $now->copy()->subDay()->endOfDay()],
+            'last_7_days'  => [$now->copy()->subDays(6)->startOfDay(), $now->copy()->endOfDay()],
+            'current_month'=> [$now->copy()->startOfMonth(), $now->copy()->endOfMonth()],
+            'last_month'   => [$now->copy()->subMonth()->startOfMonth(), $now->copy()->subMonth()->endOfMonth()],
+            default        => [null, null], // all
+        };
     }
 }
