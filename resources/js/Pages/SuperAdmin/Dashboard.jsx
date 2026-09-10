@@ -301,14 +301,18 @@ export default function Dashboard({ stats, currentDateRange, pendingReceipts, ex
                     <StatCard
                         title="إجمالي المتاجر"
                         value={formatNumber(stats.total_stores)}
-                        sub={`${formatNumber(stats.active_stores)} نشط | ${formatNumber(stats.suspended_stores)} موقوف`}
+                        sub={currentDateRange && currentDateRange !== 'all'
+                            ? `المتاجر الجديدة (${formatNumber(stats.active_stores)} نشط | ${formatNumber(stats.suspended_stores)} موقوف)`
+                            : `${formatNumber(stats.active_stores)} نشط | ${formatNumber(stats.suspended_stores)} موقوف`}
                         color="indigo"
                         icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
                     />
                     <StatCard
                         title="الاشتراكات النشطة"
                         value={formatNumber(stats.total_subscriptions)}
-                        sub="متاجر تعمل حالياً بباقات مفعلة"
+                        sub={currentDateRange && currentDateRange !== 'all'
+                            ? `اشتراكات مفعلة (${DATE_FILTERS.find(f => f.key === currentDateRange)?.label || ''})`
+                            : "متاجر تعمل حالياً بباقات مفعلة"}
                         color="emerald"
                         icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
                     />
@@ -339,7 +343,11 @@ export default function Dashboard({ stats, currentDateRange, pendingReceipts, ex
                         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
                             <div className="p-5 border-b border-gray-50">
                                 <h3 className="font-bold text-gray-900 text-sm">أفضل المتاجر أداءً 🏆</h3>
-                                <p className="text-[11px] text-gray-400 mt-0.5">الأعلى من حيث حجم الطلبات الإجمالي</p>
+                                <p className="text-[11px] text-gray-400 mt-0.5">
+                                    {currentDateRange && currentDateRange !== 'all'
+                                        ? `الأعلى طلباً (${DATE_FILTERS.find(f => f.key === currentDateRange)?.label || ''})`
+                                        : 'الأعلى من حيث حجم الطلبات الإجمالي'}
+                                </p>
                             </div>
                             <div className="p-2">
                                 {topStores && topStores.length > 0 ? (

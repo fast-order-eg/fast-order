@@ -22,21 +22,27 @@ class DashboardController extends Controller
         [$dateFrom, $dateTo] = $this->resolveDateRange($range);
 
         // 1. Platform Health Metrics
-        $totalStores = Tenant::count();
-        $activeStores = Tenant::where('is_active', true)->count();
-        $suspendedStores = $totalStores - $activeStores;
-        
-        $totalSubscriptions = Subscription::where('status', 'active')->count();
-        $pendingPaymentsCount = SubscriptionReceipt::where('status', 'pending')->count();
-        
-        // Filter orders & revenue by date range
+        $storesQuery = Tenant::query();
+        $subscriptionsQuery = Subscription::where('status', 'active');
         $ordersQuery = Order::withoutGlobalScopes();
         $revenueQuery = SubscriptionReceipt::where('status', 'approved');
 
         if ($dateFrom && $dateTo) {
+            $storesQuery->whereBetween('created_at', [$dateFrom, $dateTo]);
+            $subscriptionsQuery->where(function ($q) use ($dateFrom, $dateTo) {
+                $q->whereBetween('starts_at', [$dateFrom, $dateTo])
+                  ->orWhereBetween('created_at', [$dateFrom, $dateTo]);
+            });
             $ordersQuery->whereBetween('created_at', [$dateFrom, $dateTo]);
             $revenueQuery->whereBetween('approved_at', [$dateFrom, $dateTo]);
         }
+
+        $totalStores = (clone $storesQuery)->count();
+        $activeStores = (clone $storesQuery)->where('is_active', true)->count();
+        $suspendedStores = $totalStores - $activeStores;
+        
+        $totalSubscriptions = $subscriptionsQuery->count();
+        $pendingPaymentsCount = SubscriptionReceipt::where('status', 'pending')->count();
 
         $platformOrdersCount = $ordersQuery->count();
         $platformRevenue = $revenueQuery->sum('amount');
@@ -92,9 +98,14 @@ class DashboardController extends Controller
             });
 
         // 4. Top Performing Stores (by Orders Count)
-        // Grouping orders by tenant_id without global scopes
-        $topTenantsIds = Order::withoutGlobalScopes()
-            ->select('tenant_id', DB::raw('count(*) as total_orders'))
+        $topOrdersQuery = Order::withoutGlobalScopes()
+            ->select('tenant_id', DB::raw('count(*) as total_orders'));
+            
+        if ($dateFrom && $dateTo) {
+            $topOrdersQuery->whereBetween('created_at', [$dateFrom, $dateTo]);
+        }
+
+        $topTenantsIds = $topOrdersQuery
             ->groupBy('tenant_id')
             ->orderByDesc('total_orders')
             ->limit(5)
