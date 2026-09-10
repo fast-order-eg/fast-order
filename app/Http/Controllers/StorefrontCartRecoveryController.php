@@ -38,7 +38,9 @@ class StorefrontCartRecoveryController extends Controller
         $capturedFrom = $abandonedCart->cart_data['captured_from'] ?? 'checkout';
 
         $targetUrl = '/shop/checkout.html?recovered=1';
-        if ($capturedFrom === 'product_page' && !empty($items)) {
+        if ($capturedFrom === 'landing_page' && !empty($abandonedCart->cart_data['landing_page_slug'])) {
+            $targetUrl = '/lp/' . $abandonedCart->cart_data['landing_page_slug'] . '?recovered=1';
+        } elseif ($capturedFrom === 'product_page' && !empty($items)) {
             $prodId = $items[0]['product_id'] ?? ($items[0]['id'] ?? null);
             if ($prodId) {
                 $targetUrl = '/shop/product.html?id=' . $prodId . '&recovered=1';
@@ -122,6 +124,7 @@ HTML;
         $governorateId = $request->input('governorate_id');
         $address = $request->input('address') ?? $request->input('customer_address');
         $rawItems = $request->input('items', []);
+        $landingPageSlug = $request->input('landing_page_slug') ?? $request->input('slug');
 
         // تنظيف رقم الهاتف
         $cleanPhone = null;
@@ -134,9 +137,9 @@ HTML;
             }
         }
 
-        // إذا لم يتم إدخال هاتف كافٍ (أقل من 8 خانات) ولا بريد إلكتروني، نتجاهل التسجيل حتى يكتب بيانات مفيدة
-        if ((!$cleanPhone || strlen($cleanPhone) < 8) && (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL))) {
-            return response()->json(['success' => false, 'message' => 'بيانات الاتصال غير مكتملة بعد'], 422);
+        // السلة المتروكة تتطلب رقم هاتف صحيح للتواصل واستعادة السلة
+        if (!$cleanPhone || strlen($cleanPhone) < 8) {
+            return response()->json(['success' => false, 'message' => 'رقم الهاتف مطلوب لتتبع السلة المتروكة'], 422);
         }
 
         // حل اسم المحافظة لو أُرسلت كمعرف
@@ -238,6 +241,7 @@ HTML;
             'governorate' => $governorate,
             'address' => $address,
             'captured_from' => $request->input('source', 'checkout'),
+            'landing_page_slug' => $landingPageSlug,
             'updated_at' => now()->toIso8601String(),
         ];
 

@@ -396,8 +396,14 @@ export default function AbandonedCartsIndex({ abandonedCarts, records, stats, st
 
                                                 {/* Customer */}
                                                 <td className="px-5 py-4">
-                                                    <div className="font-bold text-gray-900">
-                                                        {cart.customer_name || 'عميل (بدون اسم)'}
+                                                    <div className="font-bold text-gray-900 flex items-center gap-1.5">
+                                                        <span>{cart.customer_name || 'عميل'}</span>
+                                                        {cart.cart_data?.captured_from === 'landing_page' && (
+                                                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200" title="تم التقاط البيانات من صفحة هبوط">
+                                                                <span>🚀</span>
+                                                                <span>صفحة هبوط</span>
+                                                            </span>
+                                                        )}
                                                     </div>
                                                     <div className="text-xs text-indigo-600 font-mono font-bold mt-0.5" dir="ltr">
                                                         {cart.phone || '—'}
@@ -582,8 +588,14 @@ export default function AbandonedCartsIndex({ abandonedCarts, records, stats, st
                                 return (
                                     <div key={cart.id} className="p-4 bg-white space-y-3">
                                         <div className="flex justify-between items-center gap-2">
-                                            <div className="font-bold text-gray-900 text-sm">
-                                                {cart.customer_name || 'عميل (بدون اسم)'}
+                                            <div className="font-bold text-gray-900 text-sm flex items-center gap-1.5 flex-wrap">
+                                                <span>{cart.customer_name || 'عميل'}</span>
+                                                {cart.cart_data?.captured_from === 'landing_page' && (
+                                                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                                                        <span>🚀</span>
+                                                        <span>صفحة هبوط</span>
+                                                    </span>
+                                                )}
                                             </div>
                                             <div>{getStatusBadge(cart)}</div>
                                         </div>

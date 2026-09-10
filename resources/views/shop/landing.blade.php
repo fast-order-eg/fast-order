@@ -1695,6 +1695,10 @@
         window.productShippingType = '{{ $showcaseProduct['shipping_type'] ?? 'free' }}';
         window.shippingGovernoratePrice = 0;
         window.hasSelectedGovernorate = false;
+        window.productId = {{ $showcaseProduct['id'] ?? 0 }};
+        window.productName = @json($showcaseProduct['name'] ?? 'منتج');
+        window.productImage = @json($showcaseProduct['image_url'] ?? ($showcaseProduct['image'] ?? ''));
+        window.landingSlug = @json($landingPage->slug);
 
         // 1. Live Viewers Simulation
         setInterval(() => {
@@ -2170,6 +2174,164 @@
                 img.src = window.galleryImages[currentLightboxIndex];
             }
         }
+
+        // ─── Abandoned Cart Real-Time Auto-Capture for Landing Pages ───
+        let lastTrackedPhone = '';
+        let landingTrackingTimer = null;
+
+        function sendLandingPartialTracking() {
+            const phoneInput = document.getElementById('customer_phone');
+            if (!phoneInput) return;
+
+            let rawPhone = phoneInput.value.trim().replace(/[\s\+\-]/g, '');
+            if (rawPhone.startsWith('00201')) rawPhone = '0' + rawPhone.substring(4);
+            else if (rawPhone.startsWith('201')) rawPhone = '0' + rawPhone.substring(2);
+
+            // Require at least 8 digits to track
+            if (!rawPhone || rawPhone.length < 8) return;
+
+            const nameInput = document.getElementById('customer_name');
+            const govSelect = document.getElementById('governorate_id');
+            const addrInput = document.getElementById('customer_address');
+
+            const name = nameInput ? nameInput.value.trim() : '';
+            const govId = govSelect ? govSelect.value : '';
+            const govName = govSelect && govSelect.selectedIndex > 0 ? govSelect.options[govSelect.selectedIndex].text.split('(')[0].trim() : '';
+            const address = addrInput ? addrInput.value.trim() : '';
+
+            const finalQty = parseInt(window.selectedTierQty || 1);
+            const totalItemPrice = parseFloat(window.selectedTierPrice !== null ? window.selectedTierPrice : window.productPrice);
+            const unitPrice = parseFloat(totalItemPrice / finalQty);
+
+            const form = document.getElementById('landing-checkout-form');
+            const items = [];
+            for (let i = 1; i <= finalQty; i++) {
+                const colorRadio = form ? form.querySelector(`input[name="item_${i}_color"]:checked`) : null;
+                const sizeRadio = form ? form.querySelector(`input[name="item_${i}_size"]:checked`) : null;
+
+                items.push({
+                    id: parseInt(window.productId || 0),
+                    product_id: parseInt(window.productId || 0),
+                    name: `${window.productName || 'منتج'} (القطعة ${i})`,
+                    price: unitPrice,
+                    qty: 1,
+                    quantity: 1,
+                    image: window.productImage || null,
+                    selectedColor: colorRadio ? colorRadio.value : null,
+                    selectedSize: sizeRadio ? sizeRadio.value : null
+                });
+            }
+
+            const subtotal = totalItemPrice;
+            const shipping = parseFloat(window.shippingGovernoratePrice || 0);
+            const total = subtotal + shipping;
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
+            fetch('/checkout/track-partial', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {})
+                },
+                body: JSON.stringify({
+                    phone: rawPhone,
+                    customer_phone: rawPhone,
+                    name: name,
+                    customer_name: name,
+                    address: address,
+                    customer_address: address,
+                    governorate_id: govId,
+                    governorate: govName,
+                    items: items,
+                    subtotal: subtotal,
+                    total: total,
+                    source: 'landing_page',
+                    landing_page_slug: window.landingSlug || ''
+                }),
+                keepalive: true
+            }).then(() => {
+                lastTrackedPhone = rawPhone;
+            }).catch(() => {});
+        }
+
+        function debounceLandingTracking() {
+            clearTimeout(landingTrackingTimer);
+            landingTrackingTimer = setTimeout(sendLandingPartialTracking, 600);
+        }
+
+        // Attach listeners for abandoned cart capture
+        document.addEventListener('DOMContentLoaded', () => {
+            const phoneInput = document.getElementById('customer_phone');
+            const nameInput = document.getElementById('customer_name');
+            const govSelect = document.getElementById('governorate_id');
+            const addrInput = document.getElementById('customer_address');
+
+            if (phoneInput) {
+                phoneInput.addEventListener('input', (e) => {
+                    const val = e.target.value.replace(/[\s\+\-]/g, '');
+                    if (val.length >= 10 && val !== lastTrackedPhone) {
+                        debounceLandingTracking();
+                    }
+                });
+                phoneInput.addEventListener('blur', () => {
+                    const val = phoneInput.value.replace(/[\s\+\-]/g, '');
+                    if (val.length >= 8 && val !== lastTrackedPhone) {
+                        sendLandingPartialTracking();
+                    }
+                });
+            }
+
+            if (nameInput) {
+                nameInput.addEventListener('blur', () => {
+                    const phoneVal = phoneInput ? phoneInput.value.replace(/[\s\+\-]/g, '') : '';
+                    if (phoneVal.length >= 8) sendLandingPartialTracking();
+                });
+            }
+
+            if (govSelect) {
+                govSelect.addEventListener('change', () => {
+                    const phoneVal = phoneInput ? phoneInput.value.replace(/[\s\+\-]/g, '') : '';
+                    if (phoneVal.length >= 8) sendLandingPartialTracking();
+                });
+            }
+
+            if (addrInput) {
+                addrInput.addEventListener('blur', () => {
+                    const phoneVal = phoneInput ? phoneInput.value.replace(/[\s\+\-]/g, '') : '';
+                    if (phoneVal.length >= 8) sendLandingPartialTracking();
+                });
+            }
+
+            // Auto-fill form if customer recovered from an abandoned cart link
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('recovered') === '1') {
+                    const recDataStr = sessionStorage.getItem('fo_recovered_data');
+                    if (recDataStr) {
+                        const rec = JSON.parse(recDataStr);
+                        if (rec.phone && phoneInput) phoneInput.value = rec.phone;
+                        if (rec.name && nameInput) nameInput.value = rec.name;
+                        if (rec.address && addrInput) addrInput.value = rec.address;
+                        if (rec.governorate && govSelect) {
+                            for (let i = 0; i < govSelect.options.length; i++) {
+                                if (govSelect.options[i].text.includes(rec.governorate)) {
+                                    govSelect.selectedIndex = i;
+                                    if (typeof handleGovernorateChange === 'function') {
+                                        handleGovernorateChange(govSelect);
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        const formSec = document.getElementById('checkout-form-section');
+                        if (formSec) formSec.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            } catch(e) {}
+        });
     </script>
 
     <!-- Lightbox Fullscreen Modal -->

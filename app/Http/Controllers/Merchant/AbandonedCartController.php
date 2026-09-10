@@ -28,6 +28,9 @@ class AbandonedCartController extends Controller
         $dateTo = $request->input('date_to');
 
         $query = AbandonedCart::where('tenant_id', $tenantId)
+            ->whereNotNull('phone')
+            ->where('phone', '!=', '')
+            ->whereRaw('LENGTH(TRIM(phone)) >= 8')
             ->with(['order:id,reference_number,total,status'])
             ->latest('updated_at');
 
@@ -113,27 +116,32 @@ class AbandonedCartController extends Controller
             return $c;
         });
 
-        // حساب الإحصائيات الشاملة
-        $totalCarts = AbandonedCart::where('tenant_id', $tenantId)->count();
-        $abandonedCount = AbandonedCart::where('tenant_id', $tenantId)
+        // حساب الإحصائيات الشاملة (للسلات التي تحتوي على رقم هاتف فقط)
+        $baseStatsQuery = fn() => AbandonedCart::where('tenant_id', $tenantId)
+            ->whereNotNull('phone')
+            ->where('phone', '!=', '')
+            ->whereRaw('LENGTH(TRIM(phone)) >= 8');
+
+        $totalCarts = $baseStatsQuery()->count();
+        $abandonedCount = $baseStatsQuery()
             ->where('status', 'abandoned')
             ->whereNull('recovered_at')
             ->count();
-        $contactedCount = AbandonedCart::where('tenant_id', $tenantId)
+        $contactedCount = $baseStatsQuery()
             ->where('status', 'contacted')
             ->whereNull('recovered_at')
             ->count();
-        $convertedCount = AbandonedCart::where('tenant_id', $tenantId)
+        $convertedCount = $baseStatsQuery()
             ->where(function ($q) {
                 $q->where('status', 'converted')->orWhereNotNull('recovered_at');
             })
             ->count();
 
-        $lostRevenue = (float) AbandonedCart::where('tenant_id', $tenantId)
+        $lostRevenue = (float) $baseStatsQuery()
             ->whereNull('recovered_at')
             ->sum('total');
 
-        $recoveredRevenue = (float) AbandonedCart::where('tenant_id', $tenantId)
+        $recoveredRevenue = (float) $baseStatsQuery()
             ->whereNotNull('recovered_at')
             ->sum('total');
 

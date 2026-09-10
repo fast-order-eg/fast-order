@@ -51,6 +51,11 @@ class TrackAbandonedCarts extends Command
             $email = $cart->user?->email;
             $phone = $cart->user?->phone; // إذا كان متوفراً في جدول المستخدمين
 
+            // استبعاد أي سلة لا تحتوي على رقم هاتف صالح للتواصل
+            if (empty($phone) || strlen(trim((string)$phone)) < 8) {
+                continue;
+            }
+
             // تحضير بيانات السلة بصيغة JSON
             $itemsData = $cart->activeItems->map(fn($item) => [
                 'id' => $item->id,
