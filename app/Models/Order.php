@@ -143,6 +143,12 @@ class Order extends Model
                 } catch (\Exception $e) {
                     \Illuminate\Support\Facades\Log::warning('Order auto unlock fee failed: ' . $e->getMessage());
                 }
+
+                try {
+                    \App\Console\Commands\SyncAbandonedCartsWithOrders::syncForTenant($order->tenant_id);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Sync abandoned carts failed on order created: ' . $e->getMessage());
+                }
             }
         });
 

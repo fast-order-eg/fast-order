@@ -139,12 +139,11 @@ class OrderController extends Controller
                         $query->orWhere('email', $validated['customer_email']);
                     }
                 })
-                ->where(function ($q) {
-                    $q->whereNull('converted_order_id')
-                      ->orWhereNull('notes')
-                      ->orWhere('notes', 'NOT LIKE', '%[تم الاسترجاع والتحويل من السلة المتروكة%');
-                })
                 ->delete();
+
+            if ($tId) {
+                \App\Console\Commands\SyncAbandonedCartsWithOrders::syncForTenant($tId);
+            }
         } catch (\Throwable $e) {}
 
         // Trigger Webhook order.created

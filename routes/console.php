@@ -14,3 +14,5 @@ Schedule::command('subscriptions:check-expired')->everyThirtyMinutes();
 // Schedule abandoned carts tracking every 30 minutes
 Schedule::command('carts:track-abandoned')->everyThirtyMinutes();
 
+// Schedule abandoned carts sync with orders every 30 minutes
+Schedule::command('carts:sync-orders')->everyThirtyMinutes();

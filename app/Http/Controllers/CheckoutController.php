@@ -261,12 +261,11 @@ class CheckoutController extends Controller
                             $query->orWhere('user_id', auth()->id());
                         }
                     })
-                    ->where(function ($q) {
-                        $q->whereNull('converted_order_id')
-                          ->orWhereNull('notes')
-                          ->orWhere('notes', 'NOT LIKE', '%[تم الاسترجاع والتحويل من السلة المتروكة%');
-                    })
                     ->delete();
+
+                if ($tenantId) {
+                    \App\Console\Commands\SyncAbandonedCartsWithOrders::syncForTenant($tenantId);
+                }
             } catch (\Exception $e) {
                 \Log::warning('Failed to remove abandoned cart on order completion: ' . $e->getMessage());
             }

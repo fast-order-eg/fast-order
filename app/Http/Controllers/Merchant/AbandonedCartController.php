@@ -22,6 +22,11 @@ class AbandonedCartController extends Controller
         $tenant = $request->attributes->get('tenant') ?? auth()->user()?->tenant;
         $tenantId = $tenant?->id;
 
+        // تنظيف ومزامنة السلات المتروكة تلقائياً: حذف أي سلة تحولت لطلب أو يمتلك صاحبها طلباً فعلياً
+        if ($tenantId) {
+            \App\Console\Commands\SyncAbandonedCartsWithOrders::syncForTenant($tenantId);
+        }
+
         $search = trim((string) $request->input('search', ''));
         $status = trim((string) $request->input('status', ''));
         $dateFrom = $request->input('date_from');
@@ -320,15 +325,13 @@ class AbandonedCartController extends Controller
                 }
             }
 
-            // تحديث السلة المتروكة
-            $abandonedCart->update([
-                'status'             => 'converted',
-                'recovered_at'       => now(),
-                'converted_order_id' => $order->id,
-                'customer_name'      => $customerName,
-                'customer_address'   => $customerAddress,
-                'governorate'        => $governorate,
-            ]);
+            // حذف السلة المتروكة لأنها تحولت لطلب فعلي
+            $abandonedCart->delete();
+
+            // مزامنة وتنظيف أي سلات أخرى لنفس العميل أو المتجر
+            if ($tenant?->id) {
+                \App\Console\Commands\SyncAbandonedCartsWithOrders::syncForTenant($tenant->id);
+            }
 
             DB::commit();
 
