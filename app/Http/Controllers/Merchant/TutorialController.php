@@ -23,11 +23,19 @@ class TutorialController extends Controller
                     'youtube_id' => $t->youtube_id,
                     'embed_url' => $t->embed_url,
                     'description' => $t->description,
-                    'duration' => $t->duration ?: 'فيديو تعليمي',
+                    'duration' => $t->duration ?: 'ريلز تعليمي',
+                    'is_reel' => str_contains($t->youtube_url, '/shorts/'),
+                    'sort_order' => $t->sort_order,
                 ];
             });
 
-        $categories = array_values(array_unique(array_merge(['الكل'], $tutorials->pluck('category')->toArray())));
+        $preferredOrder = ['الكل', 'البداية والسريعة', 'إضافة منتجات', 'المنتجات والأقسام', 'إعدادات المتجر والتصميم', 'الطلبات والمبيعات', 'عام'];
+        $existingCategories = $tutorials->pluck('category')->unique()->values()->toArray();
+        $sortedCategories = array_values(array_unique(array_merge($preferredOrder, $existingCategories)));
+        // Keep only categories that exist in tutorials or 'الكل'
+        $categories = array_values(array_filter($sortedCategories, function($cat) use ($existingCategories) {
+            return $cat === 'الكل' || in_array($cat, $existingCategories);
+        }));
 
         return Inertia::render('Merchant/Tutorials/Index', [
             'tutorials' => $tutorials,

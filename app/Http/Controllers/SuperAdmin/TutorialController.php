@@ -27,7 +27,7 @@ class TutorialController extends Controller
             ];
         });
 
-        $categories = ['الكل', 'البداية والسريعة', 'المنتجات والأقسام', 'الطلبات والمبيعات', 'صفحات الهبوط', 'إعدادات المتجر والتصميم', 'عام'];
+        $categories = ['الكل', 'البداية والسريعة', 'إضافة منتجات', 'المنتجات والأقسام', 'إعدادات المتجر والتصميم', 'الطلبات والمبيعات', 'صفحات الهبوط', 'عام'];
 
         return Inertia::render('SuperAdmin/Tutorials/Index', [
             'tutorials' => $tutorials,

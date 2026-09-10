@@ -106,7 +106,7 @@ class TutorialSeeder extends Seeder
             ],
             [
                 'title'        => 'الفيديو العاشر: كيفية تنزيل المنتجات',
-                'category'     => 'المنتجات والأقسام',
+                'category'     => 'إضافة منتجات',
                 'youtube_url'  => 'https://youtube.com/shorts/tjeDdpg5n4g?si=EBnp5zBCke994hQ4',
                 'youtube_id'   => 'tjeDdpg5n4g',
                 'description'  => 'إضافة منتج جديد وتحديد السعر والصور والوصف والمخزون خطوة بخطوة.',
@@ -116,7 +116,7 @@ class TutorialSeeder extends Seeder
             ],
             [
                 'title'        => 'الفيديو الحادي عشر: طريقة تعديل المنتج',
-                'category'     => 'المنتجات والأقسام',
+                'category'     => 'إضافة منتجات',
                 'youtube_url'  => 'https://youtube.com/shorts/Y4FWEtpyACU?si=2RAJi8PAV3cx6kEs',
                 'youtube_id'   => 'Y4FWEtpyACU',
                 'description'  => 'تحديث بيانات المنتجات، الأسعار، العروض، والصور في أي وقت بسهولة.',
@@ -126,7 +126,7 @@ class TutorialSeeder extends Seeder
             ],
             [
                 'title'        => 'الفيديو الثاني عشر: شرح زرار المتغير (خصائص المنتج)',
-                'category'     => 'المنتجات والأقسام',
+                'category'     => 'إضافة منتجات',
                 'youtube_url'  => 'https://youtube.com/shorts/nNO3On-3H54?si=thBWH41buE0fY685',
                 'youtube_id'   => 'nNO3On-3H54',
                 'description'  => 'طريقة تفعيل خيارات المقاسات والألوان والمتغيرات داخل صفحة المنتج.',
