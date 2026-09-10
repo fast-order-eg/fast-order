@@ -36,7 +36,7 @@ class Tutorial extends Model
      */
     public static function extractYoutubeId(string $url): ?string
     {
-        $pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i';
+        $pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i';
         if (preg_match($pattern, $url, $matches)) {
             return $matches[1];
         }
