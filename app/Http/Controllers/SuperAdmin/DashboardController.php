@@ -19,11 +19,15 @@ class DashboardController extends Controller
     {
         // ====== Date Range Filter ======
         $range = $request->query('date_range', 'all');
-        [$dateFrom, $dateTo] = $this->resolveDateRange($range);
+        $customDate = $request->query('custom_date');
+        [$dateFrom, $dateTo] = $this->resolveDateRange($range, $customDate);
 
         // 1. Platform Health Metrics
         $storesQuery = Tenant::query();
-        $subscriptionsQuery = Subscription::where('status', 'active');
+        $subscriptionsQuery = Subscription::where('status', 'active')
+            ->whereHas('plan', function ($q) {
+                $q->whereIn('slug', ['monthly', 'yearly', 'commission']);
+            });
         $ordersQuery = Order::withoutGlobalScopes();
         $revenueQuery = SubscriptionReceipt::where('status', 'approved');
 
@@ -158,7 +162,7 @@ class DashboardController extends Controller
             DB::raw("count(*) as count")
         )
         ->groupBy('month')
-        ->orderBy('month', 'asc')
+        ->orderBy('month', 'desc')
         ->take(12)
         ->get();
 
@@ -168,7 +172,7 @@ class DashboardController extends Controller
         )
         ->where('status', 'approved')
         ->groupBy('month')
-        ->orderBy('month', 'asc')
+        ->orderBy('month', 'desc')
         ->take(12)
         ->get();
 
@@ -183,6 +187,7 @@ class DashboardController extends Controller
                 'platform_revenue' => $platformRevenue,
             ],
             'currentDateRange' => $range,
+            'currentCustomDate' => $customDate,
             'pendingReceipts' => $pendingReceiptsList,
             'expiringSubscriptions' => $expiringSubscriptions,
             'topStores' => $topStores,
@@ -195,9 +200,19 @@ class DashboardController extends Controller
     }
 
     // ====== Helper: resolve date range ======
-    private function resolveDateRange(string $range): array
+    private function resolveDateRange(string $range, ?string $customDate = null): array
     {
         $now = Carbon::now();
+
+        if ($range === 'custom_day' && $customDate) {
+            try {
+                $target = Carbon::parse($customDate);
+                return [$target->copy()->startOfDay(), $target->copy()->endOfDay()];
+            } catch (\Exception $e) {
+                return [null, null];
+            }
+        }
+
         return match($range) {
             'today'        => [$now->copy()->startOfDay(),   $now->copy()->endOfDay()],
             'yesterday'    => [$now->copy()->subDay()->startOfDay(), $now->copy()->subDay()->endOfDay()],

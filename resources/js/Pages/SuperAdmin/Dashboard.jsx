@@ -19,7 +19,13 @@ const DATE_FILTERS = [
     { key: 'all',           label: 'الكل' },
 ];
 
-function DateFilterBar({ current }) {
+const getFilterLabel = (key, customDate) => {
+    if (key === 'custom_day') return customDate ? `يوم ${customDate}` : 'يوم محدد';
+    const f = DATE_FILTERS.find((x) => x.key === key);
+    return f ? f.label : '';
+};
+
+function DateFilterBar({ current, customDate }) {
     const [loading, setLoading] = useState(false);
 
     const handleClick = (key) => {
@@ -31,10 +37,24 @@ function DateFilterBar({ current }) {
         });
     };
 
+    const handleCustomDate = (val) => {
+        if (!val || loading) return;
+        setLoading(true);
+        router.get(route('superadmin.dashboard'), {
+            date_range: 'custom_day',
+            custom_date: val
+        }, {
+            preserveScroll: true,
+            onFinish: () => setLoading(false),
+        });
+    };
+
+    const isCustom = current === 'custom_day';
+
     return (
         <div className="flex flex-wrap items-center gap-2 mb-6">
             <span className="text-xs font-bold text-slate-500 ml-1">فلتر سريع:</span>
-            {DATE_FILTERS.map((f) => {
+            {DATE_FILTERS.slice(0, 5).map((f) => {
                 const isActive = current === f.key;
                 return (
                     <button
@@ -51,6 +71,51 @@ function DateFilterBar({ current }) {
                     </button>
                 );
             })}
+
+            {/* خيار يوم محدد */}
+            <div className="relative inline-flex items-center">
+                <button
+                    type="button"
+                    disabled={loading}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border shadow-sm flex items-center gap-1.5
+                        ${isCustom
+                            ? 'bg-indigo-600 text-white border-indigo-700 shadow-indigo-200 ring-2 ring-indigo-200'
+                            : 'bg-white text-slate-600 border-slate-200 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200'
+                        } ${loading && !isCustom ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>{isCustom && customDate ? `يوم: ${customDate}` : 'يوم محدد'}</span>
+                </button>
+                <input
+                    type="date"
+                    value={customDate || ''}
+                    onChange={(e) => handleCustomDate(e.target.value)}
+                    className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10"
+                    title="اختر يوماً محدداً"
+                />
+            </div>
+
+            {/* الكل */}
+            {DATE_FILTERS.slice(5).map((f) => {
+                const isActive = current === f.key;
+                return (
+                    <button
+                        key={f.key}
+                        onClick={() => handleClick(f.key)}
+                        disabled={loading}
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border shadow-sm
+                            ${isActive
+                                ? 'bg-indigo-600 text-white border-indigo-700 shadow-indigo-200'
+                                : 'bg-white text-slate-600 border-slate-200 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200'
+                            } ${loading && !isActive ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                        {f.label}
+                    </button>
+                );
+            })}
+
             {loading && (
                 <span className="text-xs text-indigo-500 font-medium animate-pulse">جارٍ التحديث...</span>
             )}
@@ -270,7 +335,7 @@ function StatCard({ title, value, sub, icon, color }) {
 // ========================================================
 // Dashboard Page
 // ========================================================
-export default function Dashboard({ stats, currentDateRange, pendingReceipts, expiringSubscriptions, topStores, recentStores, graphs }) {
+export default function Dashboard({ stats, currentDateRange, currentCustomDate, pendingReceipts, expiringSubscriptions, topStores, recentStores, graphs }) {
     return (
         <SuperAdminLayout>
             <Head title="مركز القيادة - لوحة تحكم الإدارة" />
@@ -291,7 +356,7 @@ export default function Dashboard({ stats, currentDateRange, pendingReceipts, ex
                 </div>
 
                 {/* Date Filter Bar */}
-                <DateFilterBar current={currentDateRange || 'all'} />
+                <DateFilterBar current={currentDateRange || 'all'} customDate={currentCustomDate} />
 
                 {/* Main Alert */}
                 <PendingReceiptsAlert count={stats.pending_payments} receipts={pendingReceipts} />
@@ -308,25 +373,25 @@ export default function Dashboard({ stats, currentDateRange, pendingReceipts, ex
                         icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
                     />
                     <StatCard
-                        title="الاشتراكات النشطة"
+                        title="المشتركين"
                         value={formatNumber(stats.total_subscriptions)}
                         sub={currentDateRange && currentDateRange !== 'all'
-                            ? `اشتراكات مفعلة (${DATE_FILTERS.find(f => f.key === currentDateRange)?.label || ''})`
-                            : "متاجر تعمل حالياً بباقات مفعلة"}
+                            ? `مشتركين (${getFilterLabel(currentDateRange, currentCustomDate)})`
+                            : "اشتراك شهري أو سنوي أو باقة العمولة"}
                         color="emerald"
                         icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
                     />
                     <StatCard
                         title="أرباح المنصة"
                         value={formatCurrency(stats.platform_revenue)}
-                        sub={currentDateRange && currentDateRange !== 'all' ? `(${DATE_FILTERS.find(f => f.key === currentDateRange)?.label || ''})` : 'إجمالي الإيصالات المعتمدة'}
+                        sub={currentDateRange && currentDateRange !== 'all' ? `(${getFilterLabel(currentDateRange, currentCustomDate)})` : 'إجمالي الإيصالات المعتمدة'}
                         color="orange"
                         icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
                     />
                     <StatCard
                         title="طلبات المنصة"
                         value={formatNumber(stats.platform_orders)}
-                        sub={currentDateRange && currentDateRange !== 'all' ? `(${DATE_FILTERS.find(f => f.key === currentDateRange)?.label || ''})` : 'إجمالي الطلبات عبر جميع المتاجر'}
+                        sub={currentDateRange && currentDateRange !== 'all' ? `(${getFilterLabel(currentDateRange, currentCustomDate)})` : 'إجمالي الطلبات عبر جميع المتاجر'}
                         color="purple"
                         icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>}
                     />
@@ -345,7 +410,7 @@ export default function Dashboard({ stats, currentDateRange, pendingReceipts, ex
                                 <h3 className="font-bold text-gray-900 text-sm">أفضل المتاجر أداءً 🏆</h3>
                                 <p className="text-[11px] text-gray-400 mt-0.5">
                                     {currentDateRange && currentDateRange !== 'all'
-                                        ? `الأعلى طلباً (${DATE_FILTERS.find(f => f.key === currentDateRange)?.label || ''})`
+                                        ? `الأعلى طلباً (${getFilterLabel(currentDateRange, currentCustomDate)})`
                                         : 'الأعلى من حيث حجم الطلبات الإجمالي'}
                                 </p>
                             </div>

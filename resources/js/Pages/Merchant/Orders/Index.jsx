@@ -666,6 +666,25 @@ export default function OrdersIndex({ orders, totalAmount, statusCounts, product
                                         <div className="flex items-center gap-1.5 flex-wrap justify-end">
                                             {getPaymentBadge(order)}
                                             {getStatusBadge(order.status)}
+                                            {order.whatsapp_status && order.whatsapp_status !== 'none' && (
+                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                                                    order.whatsapp_status === 'confirmed'
+                                                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                                        : (order.whatsapp_status === 'cancelled'
+                                                            ? 'bg-red-50 text-red-700 border border-red-200'
+                                                            : (order.whatsapp_status === 'pending'
+                                                                ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                                                                : 'bg-gray-100 text-gray-600'))
+                                                }`}>
+                                                    <span>💬</span>
+                                                    <span>
+                                                        {order.whatsapp_status === 'confirmed' && 'مؤكد واتس'}
+                                                        {order.whatsapp_status === 'cancelled' && 'ملغي واتس'}
+                                                        {order.whatsapp_status === 'pending' && 'بانتظار الواتس'}
+                                                        {order.whatsapp_status === 'no_whatsapp' && 'بدون واتس'}
+                                                    </span>
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 flex-wrap text-xs pt-0.5">

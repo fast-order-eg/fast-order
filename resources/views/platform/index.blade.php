@@ -48,7 +48,7 @@
             'color' => 'from-rose-500 to-pink-500',
         ],
         [
-            'icon' => 'shield-check',
+            'icon' => 'shield-halved',
             'title_ar' => 'أمان عالي ودفع متعدد',
             'title_en' => 'High Security & Multi-Payment',
             'description_ar' => 'حماية متقدمة لمتجرك وعملائك، مع دعم الدفع عند الاستلام (COD) وربط بوابات الدفع الإلكتروني.',
@@ -278,8 +278,107 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>فاست أوردر (Fast Order) | أنشئ متجرك الإلكتروني المتكامل في ثوانٍ</title>
-    <meta name="description" content="المنصة الأسرع والأذكى في الوطن العربي لإدارة تجارتك الإلكترونية دون تعقيد برمجيات، مع عمولة 0% وباقات تناسب نمو عملك.">
+    
+    <!-- Primary SEO Meta Tags -->
+    <title>فاست اوردر | Fast Order — أفضل منصة لإنشاء متجر إلكتروني وستور أونلاين في مصر</title>
+    <meta name="title" content="فاست اوردر | Fast Order — أفضل منصة لإنشاء متجر إلكتروني وستور أونلاين في مصر">
+    <meta name="description" content="أنشئ متجرك الإلكتروني وصفحة الهبوط في دقائق مع فاست اوردر (Fast Order). أسرع شيك أوت لزيادة مبيعات الدفع عند الاستلام، ربط فوري لبكسل تيك توك وفيسبوك، عمولة 0%، وبدون تعقيد برمجي.">
+    <meta name="keywords" content="فاست اوردر, fast order, انشاء متجر الكتروني, ستور اونلاين, متجر الكتروني, عمل متجر الكتروني في مصر, انشاء ستور, منصة تجارة الكترونية, الدفع عند الاستلام, COD, بديل شوبيفاي في مصر, بيكسل تيك توك, بيكسل فيسبوك">
+    <meta name="author" content="Fast Order">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://fast-order-eg.tech">
+    <link rel="alternate" hreflang="ar" href="https://fast-order-eg.tech">
+
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://fast-order-eg.tech">
+    <meta property="og:title" content="فاست اوردر | Fast Order — أنشئ متجرك الإلكتروني واستقبل أوردراتك في دقائق">
+    <meta property="og:description" content="المنصة الأسرع في مصر لمبيعات الدفع عند الاستلام. شيك أوت فائق السرعة، 0% عمولة، وتأكيد فوري للطلبات عبر الواتساب.">
+    <meta property="og:image" content="{{ asset('images/logo.png') }}">
+    <meta property="og:site_name" content="فاست اوردر - Fast Order">
+    <meta property="og:locale" content="ar_EG">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://fast-order-eg.tech">
+    <meta name="twitter:title" content="فاست اوردر | Fast Order — أنشئ متجرك الإلكتروني في دقائق">
+    <meta name="twitter:description" content="أسرع منصة لإنشاء المتاجر الإلكترونية في مصر وصفحات الهبوط. عمولة 0% وأداء فائق لمبيعات الدفع عند الاستلام.">
+    <meta name="twitter:image" content="{{ asset('images/logo.png') }}">
+
+    <!-- Schema.org Structured Data (JSON-LD) for Search Engines & AI Models (ChatGPT, Gemini, Perplexity) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://fast-order-eg.tech/#software",
+          "name": "Fast Order",
+          "alternateName": ["فاست اوردر", "فاست أوردر", "FastOrder"],
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "All (Web-based SaaS)",
+          "url": "https://fast-order-eg.tech",
+          "description": "منصة برمجية سحابية (SaaS) رائدة في مصر لإنشاء وإدارة المتاجر الإلكترونية وصفحات الهبوط فائقة السرعة لمبيعات الدفع عند الاستلام بعمولة 0% وباقات مرنة.",
+          "offers": [
+            {
+              "@type": "Offer",
+              "name": "تجربة مجانية لمدة 7 أيام",
+              "price": "0",
+              "priceCurrency": "EGP",
+              "availability": "https://schema.org/InStock"
+            },
+            {
+              "@type": "Offer",
+              "name": "باقة الدفع على الطلب",
+              "price": "2",
+              "priceCurrency": "EGP",
+              "description": "2 جنيه مصري فقط لكل أوردر مستلم بدون اشتراك شهري ثابت",
+              "availability": "https://schema.org/InStock"
+            }
+          ],
+          "featureList": [
+            "أسرع شيك أوت صفحة واحدة للمنتجات في مصر",
+            "ربط بيكسل فيسبوك وتيك توك بضغطة زر",
+            "0% عمولة على المبيعات",
+            "دعم كامل للدفع عند الاستلام وتخصيص أسعار 27 محافظة",
+            "تأكيد الأوردرات السريع عبر الواتساب"
+          ]
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://fast-order-eg.tech/#organization",
+          "name": "Fast Order",
+          "url": "https://fast-order-eg.tech",
+          "logo": "{{ asset('images/logo.png') }}",
+          "sameAs": [
+            "https://www.youtube.com/@RadyEmam-x4z"
+          ],
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "availableLanguage": ["Arabic", "English"],
+            "areaServed": "EG"
+          }
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://fast-order-eg.tech/#faq",
+          "mainEntity": [
+            @foreach($faqs as $i => $faqItem)
+            {
+              "@type": "Question",
+              "name": {!! json_encode($faqItem['question_ar']) !!},
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": {!! json_encode($faqItem['answer_ar']) !!}
+              }
+            }{{ $loop->last ? '' : ',' }}
+            @endforeach
+          ]
+        }
+      ]
+    }
+    </script>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -498,92 +597,92 @@
         window.translations = {
             ar: {
                 features: 'المميزات',
-                howItWorks: 'كيف تبدأ',
+                howItWorks: 'إزاي تبدأ',
                 pricing: 'الباقات والأسعار',
-                partners: 'شركاء النجاح',
+                partners: 'آراء التجار',
                 faq: 'الأسئلة الشائعة',
                 dashboard: 'لوحة التحكم',
                 login: 'تسجيل الدخول',
-                startNow: 'ابدأ',
+                startNow: 'ابدأ مجاناً',
                 startFree: 'ابدأ مجاناً',
                 browseFeatures: 'تصفح المميزات',
-                heroBadge: '🎉 إطلاق محرك الثيمات الذكي وربط بكسل Meta و TikTok بضغطة زر!',
-                heroTitle: 'أنشئ متجرك الإلكتروني المتكامل',
-                heroTitleGradient: 'واطلق مبيعاتك في دقائق!',
-                heroDesc: 'المنصة الأسرع والأذكى في الوطن العربي لإدارة تجارتك الإلكترونية دون تعقيد برمجيات، مع عمولة 0% وباقات مرنة تناسب نمو عملك وتطلعاتك.',
+                heroBadge: '🚀 أسرع منصة لزيادة مبيعات الدفع عند الاستلام وبكسل تيك توك وفيسبوك!',
+                heroTitle: 'أنشئ متجرك الإلكتروني في دقائق',
+                heroTitleGradient: 'وابدأ بيع واستلام أوردراتك فوراً!',
+                heroDesc: 'أسرع منصة في مصر لمبيعات الدفع عند الاستلام (COD). شيك أوت مباشر وسريع في خطوة واحدة، ربط فوري لبكسل فيسبوك وتيك توك، وعمولة 0% على كل أرباحك وبدون أي وجع دماغ برمجة.',
                 heroCtaStart: 'ابدأ متجرك الآن مجاناً',
                 heroCtaFeatures: 'تصفح المميزات',
-                heroCheckFree: '7 أيام تجربة مجانية',
-                heroCheckNoCard: 'بدون بطاقة ائتمان',
-                heroCheckZeroComm: '0% عمولة على المبيعات',
-                heroCheckSupport: 'دعم فني وتدريب 24/7',
+                heroCheckFree: '7 أيام تجربة مجانية كاملة',
+                heroCheckNoCard: 'بدون أي بطاقة ائتمان',
+                heroCheckZeroComm: '0% عمولة على مبيعاتك',
+                heroCheckSupport: 'دعم فني وتدريب مصري 24/7',
                 
-                mockupDailySales: 'المبيعات اليومية',
-                mockupNewOrders: 'الطلبات الجديدة',
-                mockupInProcessing: '🕒 8 طلبات في التجهيز',
-                mockupLatestOrders: 'أحدث الطلبات المستلمة',
-                mockupLive: 'مباشر 🔥',
+                mockupDailySales: 'مبيعات اليوم',
+                mockupNewOrders: 'الأوردرات الجديدة',
+                mockupInProcessing: '🕒 8 طلبات قيد التجهيز',
+                mockupLatestOrders: 'أحدث الأوردرات المستلمة',
+                mockupLive: 'لايف 🔥',
                 mockupCairo: 'القاهرة، مدينة نصر • منذ دقيقة',
                 mockupAlex: 'الإسكندرية، سموحة • منذ 4 دقائق',
                 mockupCod: 'الدفع عند الاستلام',
-                mockupOnline: 'فيزا / أونلاين',
+                mockupOnline: 'إنستاباي / كاش',
                 mockupActiveTheme: 'الثيم النشط:',
-                mockupPixelConnected: '● متصل بالبكسل',
-                mockupNewSaleNotif: 'إشعار مبيعات جديد!',
+                mockupPixelConnected: '● البكسل متصل ويعمل',
+                mockupNewSaleNotif: 'أوردر جديد مستلم!',
                 mockupConvRate: 'معدل تحويل المتجر',
                 mockupAboveAvg: '4.8% (أعلى 3x من المتوسط)',
                 
-                featuresSub: 'لماذا تختار Fast Order؟',
-                featuresTitle: 'كل ما تحتاجه للنجاح في التجارة الإلكترونية في منصة واحدة',
-                featuresDesc: 'تم تصميم منصتنا بأحدث التقنيات العالمية لتوفير أقصى سرعة وأعلى معدل تحويل، مع أدوات تسويق وإدارة ذكية تغنيك عن عشرات الإضافات والاشتراكات.',
+                featuresSub: 'ليه تختار فاست اوردر؟',
+                featuresTitle: 'كل اللي محتاجه عشان تضاعف مبيعاتك وأرباحك في منصة واحدة',
+                featuresDesc: 'صممنا فاست اوردر عشان تحل مشاكل التاجر في السوق المصري: شيك أوت سريع يقلل السلات المتروكة، وتأكيد بالواتساب يقلل المرتجعات، وتتبع إعلانات دقيق 100%.',
                 
-                transferBadge: 'تحديث جديد 🚀',
-                transferTitle: 'هل تمتلك متجراً حالياً وتريد نقله إلى فاست أوردر؟',
-                transferDesc: 'فريقنا الفني متخصص في نقل متجرك، منتجاتك، وبيانات عملائك مجاناً وبدون أي توقف لعملياتك البيعية في أقل من 24 ساعة!',
-                transferCta: 'تواصل مع فريق الانتقال المجاني',
+                transferBadge: 'نقل متجرك مجاناً 🚀',
+                transferTitle: 'عندك متجر حالياً وعايز تنقل لفاست اوردر؟',
+                transferDesc: 'فريقنا الفني بينقلك متجرك ومنتجاتك وبيانات عملائك مجاناً وبدون أي توقف لإعلاناتك أو مبيعاتك في أقل من 24 ساعة!',
+                transferCta: 'تواصل مع فريق النقل المجاني',
                 
                 howSub: 'خطوات البداية',
-                howTitle: 'انطلاقتك نحو التجارة الإلكترونية أسهل مما تتخيل',
-                howDesc: 'تخلص من التعقيدات التقنية وانتظر دقائق فقط لتصبح مالك متجر إلكتروني متكامل جاهز لاستقبال الطلبات وتحقيق الأرباح.',
+                howTitle: 'انطلاقتك في البيع أونلاين أسهل مما تتخيل',
+                howDesc: 'في 3 خطوات بس، متجرك هيكون جاهز ومتاح على النت لاستقبال مئات الأوردرات يومياً وتحقيق أعلى أرباح.',
                 howCta: 'ابدأ خطوتك الأولى الآن مجاناً',
                 
-                pricingSub: 'باقات شفافة وبدون عمولات',
-                pricingTitle: 'باقات مصممة لنمو أعمالك بدون رسوم خفية',
-                pricingDesc: 'ابدأ مجاناً لمدة 7 أيام أو اختر الدفع على الطلب (2ج لكل أوردر) أو الاشتراك الشهري بخصم 50% (500ج بدلاً من 1000ج) بدون عمولات!',
-                pricingIncluded: 'المميزات المشمولة:',
-                pricingGuarantee: 'جميع الباقات تشمل استضافة سحابية فائقة الأمان، شهادة SSL مجانية، ونسخ احتياطي يومي تلقائي.',
+                pricingSub: 'باقات واضحة وبدون عمولات',
+                pricingTitle: 'اختار الباقة اللي تناسب حجم شغلك بدون أي مصاريف خفية',
+                pricingDesc: 'ابدأ مجاناً لمدة 7 أيام أو اختار باقة الدفع على الطلب (2 جنيه فقط مع كل أوردر مفتوح) أو الاشتراك الشهري الشامل بدون عمولات نهائياً!',
+                pricingIncluded: 'المميزات المشمولة في الباقة:',
+                pricingGuarantee: 'جميع الباقات تشمل استضافة سحابية سريعة جداً، شهادة أمان SSL مجانية، ونسخ احتياطي يومي تلقائي.',
                 
-                testimSub: 'قصص نجاح ملهمة',
-                testimTitle: 'ماذا يقول التجار عن تجربة Fast Order؟',
-                testimDesc: 'انضم لأكثر من 1,500 تاجر ورائد أعمال يثقون في منصتنا لتنمية مبيعاتهم وتحقيق أحلامهم يومياً.',
-                trustStripTitle: 'شركاء حلول الدفع والشحن المتكاملة',
+                testimSub: 'تجار فاست اوردر',
+                testimTitle: 'إيه اللي بيقوله التجار عن تجربتهم مع فاست اوردر؟',
+                testimDesc: 'انضم لرواد الأعمال وأصحاب المتاجر اللي بيعتمدوا على فاست اوردر يومياً لمضاعفة مبيعاتهم وتطوير تجارتهم.',
+                trustStripTitle: 'متوافق مع جميع حلول الدفع والشحن في مصر',
                 
-                faqSub: 'إجابات واضحة',
-                faqTitle: 'الأسئلة الشائعة حول منصة Fast Order',
-                faqDesc: 'هل لديك استفسار آخر؟ يمكنك التواصل مع فريق الدعم الفني المتاح لخدمتك على مدار الساعة.',
-                faqContactTitle: 'لم تجد إجابة لسؤالك؟',
-                faqContactDesc: 'فريقنا جاهز للإجابة على جميع استفساراتك ومساعدتك في اختيار الباقة الأنسب لمتجرك.',
+                faqSub: 'إجابات مباشرة',
+                faqTitle: 'الأسئلة الشائعة حول منصة فاست اوردر (Fast Order)',
+                faqDesc: 'إجابات على أهم الاستفسارات اللي بتهمك قبل ما تبدأ، وفريق الدعم الفني معاك خطوة بخطوة.',
+                faqContactTitle: 'عندك سؤال أو استفسار تاني؟',
+                faqContactDesc: 'فريقنا متاح دايماً على مدار الساعة لمساعدتك في أي وقت وبأسرع رد.',
                 faqContactCta: 'تواصل معنا عبر واتساب',
                 
-                finalCtaSub: '🚀 انطلق نحو النجاح اليوم',
-                finalCtaTitle: 'هل أنت مستعد لنقل تجارتك الإلكترونية إلى المستوى التالي؟',
-                finalCtaDesc: 'أنشئ متجرك الآن في أقل من 3 دقائق، استمتع بـ 7 أيام مجاناً، ولا تدفع أي عمولات على مبيعاتك أبداً!',
+                finalCtaSub: '🚀 ابدأ رحلة نجاحك النهاردة',
+                finalCtaTitle: 'جاهز تنقل تجارتك الإلكترونية لمستوى تاني من المبيعات؟',
+                finalCtaDesc: 'أنشئ متجرك في أقل من 3 دقايق، استمتع بتجربة 7 أيام مجاناً، وابدأ استلم أوردراتك بعمولة 0% على كل المبيعات!',
                 finalCtaSupport: 'تواصل مع الدعم الفني',
                 
-                footerDesc: 'فاست أوردر هي المنصة المتكاملة لبناء وتطوير المتاجر الإلكترونية في الوطن العربي بسرعات فائقة وتقنيات ذكية، مصممة لتمكين التجار من النمو بدون عمولات أو قيود تقنية.',
+                footerDesc: 'فاست اوردر هي المنصة الأسرع والأسهل لإنشاء المتاجر الإلكترونية وصفحات الهبوط لمبيعات الدفع عند الاستلام في مصر، بدون عمولات أو تعقيدات تقنية.',
                 footerQuickLinks: 'روابط سريعة',
                 footerHelpSupport: 'المساعدة والدعم الفني',
                 footerHelpCenter: 'مركز المساعدة والشروحات',
-                footerVideoAcademy: 'أكاديمية الفيديو والتطوير',
-                footerContactUs: 'تواصل مباشرة',
+                footerVideoAcademy: 'شروحات الفيديو وأكاديمية فاست اوردر',
+                footerContactUs: 'تواصل معنا',
                 footerPhoneLabel: 'رقم الهاتف / الدعم',
                 footerEmailLabel: 'البريد الإلكتروني',
                 footerHoursLabel: 'ساعات العمل',
                 footerHoursValue: 'دعم فني متواصل 24/7',
-                footerCopyright: 'جميع الحقوق محفوظة © 2026 فاست أوردر (Fast Order). صُنع بشغف لتمكين التجارة الإلكترونية العربية.',
+                footerCopyright: 'جميع الحقوق محفوظة © 2026 فاست اوردر (Fast Order). صُنعت خصيصاً لتمكين التجارة الإلكترونية المصرية.',
                 footerTerms: 'شروط الاستخدام',
                 footerPrivacy: 'سياسة الخصوصية',
-                footerRefund: 'سياسة الاسترجاع والأمان',
+                footerRefund: 'سياسة الاسترجاع والخدمة',
             },
             en: {
                 features: 'Features',
@@ -699,10 +798,10 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
                 
                 <!-- Brand Logo -->
-                <a href="/" class="flex items-center gap-3 group">
-                    <img src="{{ asset('images/logo.png') }}" alt="فاست أوردر" class="h-11 w-auto max-h-11 object-contain group-hover:scale-105 transition-transform duration-300">
-                    <span class="text-2xl font-black tracking-tight text-slate-900 dark:text-white font-sans">
-                        <span x-show="lang === 'ar'">فاست أوردر</span>
+                <a href="/" class="flex items-center gap-2.5 group">
+                    <img src="{{ asset('images/logo.png') }}" alt="فاست اوردر" class="h-9 sm:h-11 w-auto max-h-11 object-contain group-hover:scale-105 transition-transform duration-300">
+                    <span class="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white font-sans whitespace-nowrap">
+                        <span x-show="lang === 'ar'">فاست اوردر</span>
                         <span x-show="lang === 'en'">Fast Order</span>
                     </span>
                 </a>
@@ -748,8 +847,8 @@
                 </div>
 
                 <!-- Mobile Header Control Center (Direct Start Now button + Menu Toggle) -->
-                <div class="flex items-center gap-2.5 md:hidden">
-                    <a href="{{ Route::has('register') ? route('register') : url('/register') }}" class="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-brand-600 via-indigo-600 to-pink-600 shadow-md shadow-brand-500/20 active:scale-95 transition-all">
+                <div class="flex items-center gap-2 md:hidden">
+                    <a href="{{ Route::has('register') ? route('register') : url('/register') }}" class="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-brand-600 via-indigo-600 to-pink-600 shadow-md shadow-brand-500/20 active:scale-95 transition-all whitespace-nowrap">
                         <i class="fa-solid fa-rocket ml-1"></i> <span x-text="trans('startNow')"></span>
                     </a>
                     <button @click="mobileMenuOpen = !mobileMenuOpen" class="p-2 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-gray-300 focus:outline-none" aria-label="Toggle Menu">
@@ -965,7 +1064,7 @@
                                 </div>
 
                                 <!-- Floating Element 1 (Top Left) -->
-                                <div class="absolute -top-6 -left-6 z-20 bg-white/95 dark:bg-dark-card/90 backdrop-blur-xl border border-slate-200 dark:border-white/15 p-3.5 rounded-2xl shadow-xl flex items-center gap-3 animate-float-delayed">
+                                <div class="hidden sm:flex absolute -top-6 -left-6 z-20 bg-white/95 dark:bg-dark-card/90 backdrop-blur-xl border border-slate-200 dark:border-white/15 p-3.5 rounded-2xl shadow-xl items-center gap-3 animate-float-delayed">
                                     <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 to-rose-500 flex items-center justify-center text-white text-lg shadow-md shadow-pink-500/30">
                                         <i class="fa-solid fa-bell animate-bounce" style="animation-duration: 3s;"></i>
                                     </div>
@@ -976,7 +1075,7 @@
                                 </div>
 
                                 <!-- Floating Element 2 (Bottom Right) -->
-                                <div class="absolute -bottom-6 -right-6 z-20 bg-white/95 dark:bg-dark-card/90 backdrop-blur-xl border border-slate-200 dark:border-white/15 p-3.5 rounded-2xl shadow-xl flex items-center gap-3">
+                                <div class="hidden sm:flex absolute -bottom-6 -right-6 z-20 bg-white/95 dark:bg-dark-card/90 backdrop-blur-xl border border-slate-200 dark:border-white/15 p-3.5 rounded-2xl shadow-xl items-center gap-3">
                                     <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white text-lg shadow-md shadow-brand-500/30">
                                         <i class="fa-solid fa-chart-line"></i>
                                     </div>
@@ -1502,9 +1601,9 @@
                     <div class="lg:col-span-3 space-y-4">
                         <h4 class="text-base font-bold text-slate-900 dark:text-white tracking-wide" x-text="trans('footerHelpSupport')"></h4>
                         <ul class="space-y-2.5 text-sm font-medium text-slate-500 dark:text-gray-400">
-                            <li><a href="#" class="hover:text-brand-600 dark:hover:text-white transition-colors flex items-center gap-2"><i class="fa-solid fa-book text-pink-500 text-xs"></i> <span x-text="trans('footerHelpCenter')"></span></a></li>
-                            <li><a href="https://laracasts.com" target="_blank" class="hover:text-brand-600 dark:hover:text-white transition-colors flex items-center gap-2"><i class="fa-solid fa-video text-amber-500 text-xs"></i> <span x-text="trans('footerVideoAcademy')"></span></a></li>
-                            <li><a href="#contact" class="hover:text-brand-600 dark:hover:text-white transition-colors flex items-center gap-2"><i class="fa-solid fa-headset text-emerald-500 text-xs"></i> <span x-text="trans('finalCtaSupport')"></span></a></li>
+                            <li><a href="{{ route('main.help') }}" class="hover:text-brand-600 dark:hover:text-white transition-colors flex items-center gap-2"><i class="fa-solid fa-book text-pink-500 text-xs"></i> <span x-text="trans('footerHelpCenter')"></span></a></li>
+                            <li><a href="https://www.youtube.com/@RadyEmam-x4z" target="_blank" rel="noopener noreferrer" class="hover:text-brand-600 dark:hover:text-white transition-colors flex items-center gap-2"><i class="fa-brands fa-youtube text-red-500 text-xs"></i> <span x-text="trans('footerVideoAcademy')"></span></a></li>
+                            <li><a href="{{ $whatsappContact?->action_url ?? '#contact' }}" target="_blank" class="hover:text-brand-600 dark:hover:text-white transition-colors flex items-center gap-2"><i class="fa-solid fa-headset text-emerald-500 text-xs"></i> <span x-text="trans('finalCtaSupport')"></span></a></li>
                         </ul>
                     </div>
 
@@ -1549,9 +1648,9 @@
                     <div x-text="trans('footerCopyright')">
                     </div>
                     <div class="flex items-center gap-6">
-                        <a href="#" class="hover:text-slate-900 dark:hover:text-white transition-colors" x-text="trans('footerTerms')"></a>
-                        <a href="#" class="hover:text-slate-900 dark:hover:text-white transition-colors" x-text="trans('footerPrivacy')"></a>
-                        <a href="#" class="hover:text-slate-900 dark:hover:text-white transition-colors" x-text="trans('footerRefund')"></a>
+                        <a href="{{ route('main.terms') }}" class="hover:text-slate-900 dark:hover:text-white transition-colors" x-text="trans('footerTerms')"></a>
+                        <a href="{{ route('main.privacy') }}" class="hover:text-slate-900 dark:hover:text-white transition-colors" x-text="trans('footerPrivacy')"></a>
+                        <a href="{{ route('main.sla') }}" class="hover:text-slate-900 dark:hover:text-white transition-colors" x-text="trans('footerRefund')"></a>
                     </div>
                 </div>
 
