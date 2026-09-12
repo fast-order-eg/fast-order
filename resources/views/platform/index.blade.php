@@ -533,15 +533,15 @@
                 faq: 'الأسئلة الشائعة',
                 dashboard: 'لوحة التحكم',
                 login: 'تسجيل الدخول',
-                startNow: 'ابدأ مجاناً',
+                startNow: 'ابدأ',
                 startFree: 'ابدأ مجاناً',
-                browseFeatures: 'تصفح المميزات',
-                heroBadge: '🚀 أسرع منصة لزيادة مبيعات الدفع عند الاستلام وبكسل تيك توك وفيسبوك!',
+                browseFeatures: 'المميزات',
+                heroBadge: '⚡ أسرع منصة شيك أوت ومبيعات COD في مصر',
                 heroTitle: 'أنشئ متجرك الإلكتروني في دقائق',
-                heroTitleGradient: 'وابدأ بيع واستلام أوردراتك فوراً!',
-                heroDesc: 'أسرع منصة في مصر لمبيعات الدفع عند الاستلام (COD). شيك أوت مباشر وسريع في خطوة واحدة، ربط فوري لبكسل فيسبوك وتيك توك، وعمولة 0% على كل أرباحك وبدون أي وجع دماغ برمجة.',
-                heroCtaStart: 'ابدأ متجرك الآن مجاناً',
-                heroCtaFeatures: 'تصفح المميزات',
+                heroTitleGradient: 'واستقبل أوردراتك فوراً!',
+                heroDesc: 'المنصة الأسرع في مصر لمبيعات الدفع عند الاستلام (COD). شيك أوت سريع في خطوة واحدة، وعمولة 0% على كل أرباحك.',
+                heroCtaStart: 'ابدأ متجرك الآن',
+                heroCtaFeatures: 'المميزات',
                 heroCheckFree: '7 أيام تجربة مجانية كاملة',
                 heroCheckNoCard: 'بدون أي بطاقة ائتمان',
                 heroCheckZeroComm: '0% عمولة على مبيعاتك',
@@ -624,13 +624,13 @@
                 login: 'Login',
                 startNow: 'Start',
                 startFree: 'Start Free',
-                browseFeatures: 'Browse Features',
-                heroBadge: '🎉 Smart Theme Engine and Meta/TikTok Pixel Integration released!',
-                heroTitle: 'Create Your Integrated E-Commerce Store',
-                heroTitleGradient: 'And Launch Sales in Minutes!',
-                heroDesc: 'The fastest and smartest platform in the Arab world to manage your e-commerce without coding complexity, with 0% commission and flexible plans to suit your growth.',
-                heroCtaStart: 'Start Your Store Free',
-                heroCtaFeatures: 'Browse Features',
+                browseFeatures: 'Features',
+                heroBadge: '⚡ The Fastest COD & Checkout Platform in Egypt',
+                heroTitle: 'Launch Your Online Store in Minutes',
+                heroTitleGradient: 'And Receive Orders Instantly!',
+                heroDesc: 'The fastest COD platform in Egypt. Ultra-fast one-page checkout and 0% commission on your profits.',
+                heroCtaStart: 'Start Store Now',
+                heroCtaFeatures: 'Features',
                 heroCheckFree: '7-Day Free Trial',
                 heroCheckNoCard: 'No Credit Card Required',
                 heroCheckZeroComm: '0% Sales Commission',
@@ -728,8 +728,14 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
                 
                 <!-- Brand Logo -->
-                <a href="/" class="flex items-center gap-2.5 group">
-                    <img src="{{ asset('images/logo.png') }}" alt="فاست اوردر" class="h-9 sm:h-11 w-auto max-h-11 object-contain group-hover:scale-105 transition-transform duration-300">
+                <a href="/" class="flex items-center gap-2.5 sm:gap-3 group">
+                    <div class="relative flex items-center justify-center shrink-0">
+                        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full p-0.5 bg-gradient-to-tr from-brand-500 via-pink-500 to-indigo-500 ring-2 ring-brand-500/20 dark:ring-brand-400/20 group-hover:ring-brand-500/50 group-hover:scale-105 transition-all duration-300 shadow-sm flex items-center justify-center">
+                            <div class="w-full h-full rounded-full bg-white dark:bg-slate-900 p-1 flex items-center justify-center overflow-hidden">
+                                <img src="{{ asset('images/logo.png') }}" alt="فاست اوردر" class="w-full h-full object-contain rounded-full">
+                            </div>
+                        </div>
+                    </div>
                     <span class="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white font-sans whitespace-nowrap">
                         <span x-show="lang === 'ar'">فاست اوردر</span>
                         <span x-show="lang === 'en'">Fast Order</span>
@@ -778,11 +784,11 @@
 
                 <!-- Mobile Header Control Center (Direct Start Now button + Menu Toggle) -->
                 <div class="flex items-center gap-2 md:hidden">
-                    <a href="{{ Route::has('register') ? route('register') : url('/register') }}" class="px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-brand-600 via-indigo-600 to-pink-600 shadow-md shadow-brand-500/20 active:scale-95 transition-all whitespace-nowrap">
-                        <i class="fa-solid fa-rocket ml-1"></i> <span x-text="trans('startNow')"></span>
+                    <a href="{{ Route::has('register') ? route('register') : url('/register') }}" class="h-10 px-3.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-brand-600 via-indigo-600 to-pink-600 shadow-md shadow-brand-500/20 active:scale-95 transition-all whitespace-nowrap flex items-center justify-center gap-1.5 shrink-0">
+                        <i class="fa-solid fa-rocket text-xs"></i> <span x-text="trans('startNow')"></span>
                     </a>
-                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="p-2 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-gray-300 focus:outline-none" aria-label="Toggle Menu">
-                        <i class="fa-solid text-base" :class="mobileMenuOpen ? 'fa-xmark' : 'fa-bars'"></i>
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="w-10 h-10 aspect-square flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-gray-300 focus:outline-none shrink-0 transition-all" aria-label="Toggle Menu">
+                        <i class="fa-solid text-base leading-none" :class="mobileMenuOpen ? 'fa-xmark' : 'fa-bars'"></i>
                     </button>
                 </div>
             </div>
@@ -841,16 +847,16 @@
         <main class="relative z-10">
 
             <!-- Hero Section -->
-            <section class="relative pt-12 pb-24 lg:pt-20 lg:pb-32 overflow-hidden bg-grid-pattern">
+            <section class="relative pt-8 pb-16 sm:pt-14 sm:pb-24 lg:pt-20 lg:pb-32 overflow-hidden bg-grid-pattern">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
                         
                         <!-- Hero Content -->
-                        <div class="lg:col-span-7 text-center lg:text-right space-y-8 animate-slide-up">
+                        <div class="lg:col-span-7 text-center lg:text-right space-y-4 sm:space-y-6 animate-slide-up">
                             
                             <!-- Badge -->
-                            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-500/10 border border-brand-500/25 text-brand-600 dark:text-brand-300 text-sm font-semibold shadow-inner">
-                                <span class="flex h-2 w-2 relative">
+                            <div class="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-brand-500/10 border border-brand-500/25 text-brand-600 dark:text-brand-300 text-xs sm:text-sm font-semibold shadow-inner">
+                                <span class="flex h-2 w-2 relative shrink-0">
                                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
                                     <span class="relative inline-flex rounded-full h-2 w-2 bg-pink-500"></span>
                                 </span>
@@ -858,43 +864,43 @@
                             </div>
 
                             <!-- Heading -->
-                            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight sm:leading-tight lg:leading-tight text-slate-900 dark:text-white">
+                            <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight sm:leading-tight lg:leading-tight text-slate-900 dark:text-white">
                                 <span x-text="trans('heroTitle')"></span> <br class="hidden sm:block">
                                 <span class="text-gradient" x-text="trans('heroTitleGradient')"></span>
                             </h1>
 
                             <!-- Description -->
-                            <p class="text-lg sm:text-xl text-slate-600 dark:text-gray-300 font-normal leading-relaxed max-w-2xl mx-auto lg:mx-0" x-text="trans('heroDesc')">
+                            <p class="text-sm sm:text-lg text-slate-600 dark:text-gray-300 font-normal leading-relaxed max-w-xl mx-auto lg:mx-0" x-text="trans('heroDesc')">
                             </p>
 
                             <!-- CTA Buttons -->
-                            <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
-                                <a href="{{ Route::has('register') ? route('register') : '#pricing' }}" class="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-base text-white bg-gradient-to-r from-brand-600 via-indigo-600 to-pink-600 hover:from-brand-500 hover:to-pink-500 shadow-xl shadow-brand-500/30 hover:shadow-brand-500/50 hover:-translate-y-1 transition-all duration-300 text-center flex items-center justify-center gap-2.5 group">
+                            <div class="flex flex-row items-center justify-center lg:justify-start gap-3 pt-1 sm:pt-2">
+                                <a href="{{ Route::has('register') ? route('register') : '#pricing' }}" class="flex-1 sm:flex-none px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-bold text-xs sm:text-base text-white bg-gradient-to-r from-brand-600 via-indigo-600 to-pink-600 hover:from-brand-500 hover:to-pink-500 shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 active:scale-95 transition-all text-center flex items-center justify-center gap-2 group whitespace-nowrap">
                                     <span x-text="trans('heroCtaStart')"></span>
-                                    <i class="fa-solid" :class="lang === 'ar' ? 'fa-arrow-left group-hover:-translate-x-1.5' : 'fa-arrow-right group-hover:translate-x-1.5' + ' transition-transform duration-300 text-pink-300'"></i>
+                                    <i class="fa-solid fa-rocket text-xs"></i>
                                 </a>
-                                <a href="#features" class="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-base text-slate-700 dark:text-gray-300 bg-white dark:bg-dark-card hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 transition-all text-center flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-layer-group text-brand-500 dark:text-brand-400"></i>
+                                <a href="#features" class="px-5 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-bold text-xs sm:text-base text-slate-700 dark:text-gray-300 bg-white dark:bg-dark-card hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-white/10 transition-all text-center flex items-center justify-center gap-1.5 whitespace-nowrap">
+                                    <i class="fa-solid fa-layer-group text-brand-500 dark:text-brand-400 text-xs"></i>
                                     <span x-text="trans('heroCtaFeatures')"></span>
                                 </a>
                             </div>
 
                             <!-- Trust Checkmarks -->
-                            <div class="pt-6 border-t border-slate-200 dark:border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs font-semibold text-slate-500 dark:text-gray-400">
-                                <div class="flex items-center justify-center lg:justify-start gap-2">
-                                    <i class="fa-solid fa-check-circle text-emerald-500 dark:text-emerald-400 text-sm"></i>
+                            <div class="pt-3 sm:pt-6 border-t border-slate-200/80 dark:border-white/10 flex flex-wrap items-center justify-center lg:justify-start gap-x-4 gap-y-2 text-xs font-semibold text-slate-500 dark:text-gray-400">
+                                <div class="inline-flex items-center gap-1.5">
+                                    <i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i>
                                     <span x-text="trans('heroCheckFree')"></span>
                                 </div>
-                                <div class="flex items-center justify-center lg:justify-start gap-2">
-                                    <i class="fa-solid fa-check-circle text-emerald-500 dark:text-emerald-400 text-sm"></i>
-                                    <span x-text="trans('heroCheckNoCard')"></span>
-                                </div>
-                                <div class="flex items-center justify-center lg:justify-start gap-2">
-                                    <i class="fa-solid fa-check-circle text-emerald-500 dark:text-emerald-400 text-sm"></i>
+                                <div class="inline-flex items-center gap-1.5">
+                                    <i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i>
                                     <span x-text="trans('heroCheckZeroComm')"></span>
                                 </div>
-                                <div class="flex items-center justify-center lg:justify-start gap-2">
-                                    <i class="fa-solid fa-check-circle text-emerald-500 dark:text-emerald-400 text-sm"></i>
+                                <div class="inline-flex items-center gap-1.5">
+                                    <i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i>
+                                    <span x-text="trans('heroCheckNoCard')"></span>
+                                </div>
+                                <div class="inline-flex items-center gap-1.5 hidden sm:inline-flex">
+                                    <i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i>
                                     <span x-text="trans('heroCheckSupport')"></span>
                                 </div>
                             </div>
@@ -964,7 +970,7 @@
                                                 <div class="text-[9px] text-slate-500 dark:text-gray-400 bg-slate-100 dark:bg-white/5 px-1.5 py-0.5 rounded mt-0.5" x-text="trans('mockupCod')"></div>
                                             </div>
                                         </div>
-                                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-all">
+                                        <div class="hidden sm:flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-all">
                                             <div class="flex items-center gap-3">
                                                 <div class="w-8 h-8 rounded-lg bg-brand-500/20 border border-brand-500/30 flex items-center justify-center text-brand-500 dark:text-brand-400 text-xs font-bold font-mono">
                                                     #841
@@ -1490,8 +1496,14 @@
                     
                     <!-- Col 1: Brand & Bio -->
                     <div class="lg:col-span-4 space-y-6">
-                        <a href="/" class="flex items-center gap-3">
-                            <img src="{{ asset('images/logo.png') }}" alt="فاست أوردر" class="h-10 w-auto max-h-10 object-contain">
+                        <a href="/" class="flex items-center gap-3 group">
+                            <div class="relative flex items-center justify-center shrink-0">
+                                <div class="w-11 h-11 rounded-full p-0.5 bg-gradient-to-tr from-brand-500 via-pink-500 to-indigo-500 ring-2 ring-brand-500/20 dark:ring-brand-400/20 group-hover:ring-brand-500/50 transition-all duration-300 shadow-sm flex items-center justify-center">
+                                    <div class="w-full h-full rounded-full bg-white dark:bg-slate-900 p-1 flex items-center justify-center overflow-hidden">
+                                        <img src="{{ asset('images/logo.png') }}" alt="فاست أوردر" class="w-full h-full object-contain rounded-full">
+                                    </div>
+                                </div>
+                            </div>
                             <span class="text-2xl font-black tracking-tight text-slate-900 dark:text-white font-sans">
                                 <span x-show="lang === 'ar'">فاست أوردر</span>
                                 <span x-show="lang === 'en'">Fast Order</span>
@@ -1593,13 +1605,11 @@
     <a href="{{ $whatsappContact?->action_url ?? '#' }}" 
        target="_blank" 
        rel="noopener noreferrer" 
-       class="fixed bottom-6 left-6 z-50 group flex items-center p-3.5 rounded-full text-white shadow-2xl hover:scale-105 transition-all duration-300 shadow-emerald-500/40"
+       class="fixed bottom-6 left-6 z-50 w-14 h-14 rounded-full aspect-square flex items-center justify-center text-white shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 shadow-emerald-500/50 group"
        style="background-color: #25D366;"
-       title="تواصل معنا عبر الواتساب">
-        <i class="fa-brands fa-whatsapp text-3xl animate-pulse shrink-0"></i>
-        <span class="max-w-0 opacity-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs group-hover:opacity-100 group-hover:px-2 transition-all duration-500 ease-in-out text-sm font-bold">
-            تواصل معنا عبر الواتساب
-        </span>
+       title="تواصل معنا عبر الواتساب"
+       aria-label="WhatsApp">
+        <i class="fa-brands fa-whatsapp text-3xl leading-none transition-transform group-hover:scale-110"></i>
     </a>
 
     <!-- Scroll Reveal Animation Observer Script -->

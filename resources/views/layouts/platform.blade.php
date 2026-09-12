@@ -246,12 +246,12 @@
             </div>
 
             <!-- Mobile Header Control Center -->
-            <div class="flex items-center gap-2.5 md:hidden">
-                <a href="{{ Route::has('register') ? route('register') : url('/register') }}" class="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-brand-600 via-indigo-600 to-pink-600 shadow-md shadow-brand-500/20 active:scale-95 transition-all">
-                    <i class="fa-solid fa-rocket ml-1"></i> ابدأ
+            <div class="flex items-center gap-2 md:hidden">
+                <a href="{{ Route::has('register') ? route('register') : url('/register') }}" class="h-10 px-3.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-brand-600 via-indigo-600 to-pink-600 shadow-md shadow-brand-500/20 active:scale-95 transition-all whitespace-nowrap flex items-center justify-center gap-1.5 shrink-0">
+                    <i class="fa-solid fa-rocket text-xs"></i> ابدأ
                 </a>
-                <button @click="mobileMenuOpen = !mobileMenuOpen" class="p-2.5 rounded-xl bg-dark-card border border-white/10 text-gray-300 hover:text-white focus:outline-none" aria-label="{{ __('القائمة الرئيسية') }}" :aria-expanded="mobileMenuOpen.toString()">
-                    <i class="fa-solid text-lg" :class="mobileMenuOpen ? 'fa-xmark' : 'fa-bars'" aria-hidden="true"></i>
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="w-10 h-10 aspect-square flex items-center justify-center rounded-xl bg-dark-card border border-white/10 text-gray-300 hover:text-white focus:outline-none shrink-0 transition-all" aria-label="{{ __('القائمة الرئيسية') }}" :aria-expanded="mobileMenuOpen.toString()">
+                    <i class="fa-solid text-base leading-none" :class="mobileMenuOpen ? 'fa-xmark' : 'fa-bars'" aria-hidden="true"></i>
                 </button>
             </div>
         </div>
@@ -421,13 +421,11 @@
     <a href="{{ $whatsappContact?->action_url ?? '#' }}" 
        target="_blank" 
        rel="noopener noreferrer" 
-       class="fixed bottom-6 left-6 z-50 group flex items-center p-3.5 rounded-full text-white shadow-2xl hover:scale-105 transition-all duration-300 shadow-emerald-500/40"
+       class="fixed bottom-6 left-6 z-50 w-14 h-14 rounded-full aspect-square flex items-center justify-center text-white shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 shadow-emerald-500/50 group"
        style="background-color: #25D366;"
-       title="تواصل معنا عبر الواتساب">
-        <i class="fa-brands fa-whatsapp text-3xl animate-pulse shrink-0"></i>
-        <span class="max-w-0 opacity-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs group-hover:opacity-100 group-hover:px-2 transition-all duration-500 ease-in-out text-sm font-bold">
-            تواصل معنا عبر الواتساب
-        </span>
+       title="تواصل معنا عبر الواتساب"
+       aria-label="WhatsApp">
+        <i class="fa-brands fa-whatsapp text-3xl leading-none transition-transform group-hover:scale-110"></i>
     </a>
 
 </body>
