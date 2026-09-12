@@ -307,77 +307,7 @@
 
     <!-- Schema.org Structured Data (JSON-LD) for Search Engines & AI Models (ChatGPT, Gemini, Perplexity) -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "SoftwareApplication",
-          "@id": "https://fast-order-eg.tech/#software",
-          "name": "Fast Order",
-          "alternateName": ["فاست اوردر", "فاست أوردر", "FastOrder"],
-          "applicationCategory": "BusinessApplication",
-          "operatingSystem": "All (Web-based SaaS)",
-          "url": "https://fast-order-eg.tech",
-          "description": "منصة برمجية سحابية (SaaS) رائدة في مصر لإنشاء وإدارة المتاجر الإلكترونية وصفحات الهبوط فائقة السرعة لمبيعات الدفع عند الاستلام بعمولة 0% وباقات مرنة.",
-          "offers": [
-            {
-              "@type": "Offer",
-              "name": "تجربة مجانية لمدة 7 أيام",
-              "price": "0",
-              "priceCurrency": "EGP",
-              "availability": "https://schema.org/InStock"
-            },
-            {
-              "@type": "Offer",
-              "name": "باقة الدفع على الطلب",
-              "price": "2",
-              "priceCurrency": "EGP",
-              "description": "2 جنيه مصري فقط لكل أوردر مستلم بدون اشتراك شهري ثابت",
-              "availability": "https://schema.org/InStock"
-            }
-          ],
-          "featureList": [
-            "أسرع شيك أوت صفحة واحدة للمنتجات في مصر",
-            "ربط بيكسل فيسبوك وتيك توك بضغطة زر",
-            "0% عمولة على المبيعات",
-            "دعم كامل للدفع عند الاستلام وتخصيص أسعار 27 محافظة",
-            "تأكيد الأوردرات السريع عبر الواتساب"
-          ]
-        },
-        {
-          "@type": "Organization",
-          "@id": "https://fast-order-eg.tech/#organization",
-          "name": "Fast Order",
-          "url": "https://fast-order-eg.tech",
-          "logo": "{{ asset('images/logo.png') }}",
-          "sameAs": [
-            "https://www.youtube.com/@RadyEmam-x4z"
-          ],
-          "contactPoint": {
-            "@type": "ContactPoint",
-            "contactType": "customer support",
-            "availableLanguage": ["Arabic", "English"],
-            "areaServed": "EG"
-          }
-        },
-        {
-          "@type": "FAQPage",
-          "@id": "https://fast-order-eg.tech/#faq",
-          "mainEntity": [
-            @foreach($faqs as $i => $faqItem)
-            {
-              "@type": "Question",
-              "name": {!! json_encode($faqItem['question_ar']) !!},
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": {!! json_encode($faqItem['answer_ar']) !!}
-              }
-            }{{ $loop->last ? '' : ',' }}
-            @endforeach
-          ]
-        }
-      ]
-    }
+    {!! json_encode($schemaData ?? [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
     </script>
     
     <!-- Fonts -->
