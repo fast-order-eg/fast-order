@@ -6,4 +6,4 @@
 - [x] إضافة وسوم السيو الشاملة (Meta Tags, OpenGraph, Canonical) وبيانات Schema.org المنظمة للذكاء الاصطناعي (SoftwareApplication + FAQPage) <!-- id: 3 -->
 - [x] إنشاء ملفات تهيئة الروبوتات والذكاء الاصطناعي (`llms.txt`, `robots.txt`, `sitemap.xml`) في مسار `public` <!-- id: 4 -->
 - [x] الفحص المحلي والتأكد من سلامة الكود والفيو بدون أي أخطاء <!-- id: 5 -->
-- [ ] بناء الأصول، الرفع على GitHub، والنشر على السيرفر الحي بنظام Zero-Downtime <!-- id: 6 -->
+- [x] بناء الأصول، الرفع على GitHub، والنشر على السيرفر الحي بنظام Zero-Downtime <!-- id: 6 -->
