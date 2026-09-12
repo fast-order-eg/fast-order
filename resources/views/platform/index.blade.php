@@ -283,7 +283,7 @@
     <title>فاست اوردر | Fast Order — أفضل منصة لإنشاء متجر إلكتروني وستور أونلاين في مصر</title>
     <meta name="title" content="فاست اوردر | Fast Order — أفضل منصة لإنشاء متجر إلكتروني وستور أونلاين في مصر">
     <meta name="description" content="أنشئ متجرك الإلكتروني وصفحة الهبوط في دقائق مع فاست اوردر (Fast Order). أسرع شيك أوت لزيادة مبيعات الدفع عند الاستلام، ربط فوري لبكسل تيك توك وفيسبوك، عمولة 0%، وبدون تعقيد برمجي.">
-    <meta name="keywords" content="فاست اوردر, fast order, انشاء متجر الكتروني, ستور اونلاين, متجر الكتروني, عمل متجر الكتروني في مصر, انشاء ستور, منصة تجارة الكترونية, الدفع عند الاستلام, COD, بديل شوبيفاي في مصر, بيكسل تيك توك, بيكسل فيسبوك">
+    <meta name="keywords" content="فاست اوردر, fast order, انشاء متجر الكتروني, ستور اونلاين, متجر الكتروني, عمل متجر الكتروني في مصر, انشاء ستور, منصة تجارة الكترونية, الدفع عند الاستلام, مبيعات الدفع عند الاستلام, بديل شوبيفاي في مصر, بيكسل تيك توك, بيكسل فيسبوك">
     <meta name="author" content="Fast Order">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="https://fast-order-eg.tech">
@@ -536,12 +536,12 @@
                 startNow: 'ابدأ',
                 startFree: 'ابدأ مجاناً',
                 browseFeatures: 'المميزات',
-                heroBadge: '⚡ أسرع منصة شيك أوت ومبيعات COD في مصر',
+                heroBadge: '⚡ المنصة الأسرع لزيادة مبيعات الدفع عند الاستلام في مصر',
                 heroTitle: 'أنشئ متجرك الإلكتروني في دقائق',
-                heroTitleGradient: 'واستقبل أوردراتك فوراً!',
-                heroDesc: 'المنصة الأسرع في مصر لمبيعات الدفع عند الاستلام (COD). شيك أوت سريع في خطوة واحدة، وعمولة 0% على كل أرباحك.',
-                heroCtaStart: 'ابدأ متجرك الآن',
-                heroCtaFeatures: 'المميزات',
+                heroTitleGradient: 'واستقبل أوردرات الدفع عند الاستلام فوراً!',
+                heroDesc: 'المنصة الأسرع في مصر لمبيعات الدفع عند الاستلام، مع شيك أوت سريع وعمولة 0% على كل أرباحك.',
+                heroCtaStart: 'ابدأ متجرك الآن مجاناً',
+                heroCtaFeatures: 'كل المميزات',
                 heroCheckFree: '7 أيام تجربة مجانية كاملة',
                 heroCheckNoCard: 'بدون أي بطاقة ائتمان',
                 heroCheckZeroComm: '0% عمولة على مبيعاتك',
@@ -625,12 +625,12 @@
                 startNow: 'Start',
                 startFree: 'Start Free',
                 browseFeatures: 'Features',
-                heroBadge: '⚡ The Fastest COD & Checkout Platform in Egypt',
+                heroBadge: '⚡ The Fastest Platform for Cash on Delivery in Egypt',
                 heroTitle: 'Launch Your Online Store in Minutes',
-                heroTitleGradient: 'And Receive Orders Instantly!',
-                heroDesc: 'The fastest COD platform in Egypt. Ultra-fast one-page checkout and 0% commission on your profits.',
-                heroCtaStart: 'Start Store Now',
-                heroCtaFeatures: 'Features',
+                heroTitleGradient: 'And Receive Cash on Delivery Orders Instantly!',
+                heroDesc: 'The fastest platform in Egypt for Cash on Delivery sales, featuring ultra-fast checkout and 0% sales commission.',
+                heroCtaStart: 'Start Your Store Free',
+                heroCtaFeatures: 'All Features',
                 heroCheckFree: '7-Day Free Trial',
                 heroCheckNoCard: 'No Credit Card Required',
                 heroCheckZeroComm: '0% Sales Commission',
@@ -730,7 +730,7 @@
                 <!-- Brand Logo -->
                 <a href="/" class="flex items-center gap-2.5 sm:gap-3 group">
                     <div class="relative flex items-center justify-center shrink-0">
-                        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full p-0.5 bg-gradient-to-tr from-brand-500 via-pink-500 to-indigo-500 ring-2 ring-brand-500/20 dark:ring-brand-400/20 group-hover:ring-brand-500/50 group-hover:scale-105 transition-all duration-300 shadow-sm flex items-center justify-center">
+                        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full p-1 bg-gradient-to-tr from-brand-500 via-pink-500 to-indigo-500 ring-[3px] ring-brand-500/25 dark:ring-brand-400/25 group-hover:ring-brand-500/50 group-hover:scale-105 transition-all duration-300 shadow-md flex items-center justify-center">
                             <div class="w-full h-full rounded-full bg-white dark:bg-slate-900 p-1 flex items-center justify-center overflow-hidden">
                                 <img src="{{ asset('images/logo.png') }}" alt="فاست اوردر" class="w-full h-full object-contain rounded-full">
                             </div>
@@ -852,10 +852,10 @@
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
                         
                         <!-- Hero Content -->
-                        <div class="lg:col-span-7 text-center lg:text-right space-y-4 sm:space-y-6 animate-slide-up">
+                        <div class="lg:col-span-7 text-center lg:text-right space-y-5 sm:space-y-6 animate-slide-up">
                             
                             <!-- Badge -->
-                            <div class="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-brand-500/10 border border-brand-500/25 text-brand-600 dark:text-brand-300 text-xs sm:text-sm font-semibold shadow-inner">
+                            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 sm:py-2 rounded-full bg-brand-500/10 border border-brand-500/25 text-brand-600 dark:text-brand-300 text-xs sm:text-sm font-semibold shadow-inner">
                                 <span class="flex h-2 w-2 relative shrink-0">
                                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
                                     <span class="relative inline-flex rounded-full h-2 w-2 bg-pink-500"></span>
@@ -864,17 +864,47 @@
                             </div>
 
                             <!-- Heading -->
-                            <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight sm:leading-tight lg:leading-tight text-slate-900 dark:text-white">
+                            <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-snug sm:leading-tight text-slate-900 dark:text-white">
                                 <span x-text="trans('heroTitle')"></span> <br class="hidden sm:block">
                                 <span class="text-gradient" x-text="trans('heroTitleGradient')"></span>
                             </h1>
 
-                            <!-- Description -->
-                            <p class="text-sm sm:text-lg text-slate-600 dark:text-gray-300 font-normal leading-relaxed max-w-xl mx-auto lg:mx-0" x-text="trans('heroDesc')">
-                            </p>
+                            <!-- Feature Points (متقسمة نقاط وتوزيعة أسلس وأبعد بدون دش) -->
+                            <div class="space-y-3 max-w-xl mx-auto lg:mx-0 pt-1 pb-1">
+                                <!-- Point 1 -->
+                                <div class="flex items-start gap-3.5 bg-white/75 dark:bg-white/[0.04] backdrop-blur-md p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 dark:border-white/10 text-right shadow-xs hover:border-brand-500/40 transition-all">
+                                    <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                                        <i class="fa-solid fa-bolt text-base"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">شيك أوت سريع في خطوة واحدة</div>
+                                        <div class="text-[11px] sm:text-xs text-slate-500 dark:text-gray-400 mt-0.5 leading-relaxed">يسهل على عميلك الشراء في ثواني بدون تعقيد ليضاعف نسبة المبيعات ويقلل السلات المتروكة.</div>
+                                    </div>
+                                </div>
+                                <!-- Point 2 -->
+                                <div class="flex items-start gap-3.5 bg-white/75 dark:bg-white/[0.04] backdrop-blur-md p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 dark:border-white/10 text-right shadow-xs hover:border-brand-500/40 transition-all">
+                                    <div class="w-9 h-9 rounded-xl bg-brand-500/10 text-brand-500 dark:text-brand-400 flex items-center justify-center shrink-0 mt-0.5">
+                                        <i class="fa-solid fa-truck-fast text-base"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">مخصص بالكامل للدفع عند الاستلام</div>
+                                        <div class="text-[11px] sm:text-xs text-slate-500 dark:text-gray-400 mt-0.5 leading-relaxed">تخصيص أسعار شحن الـ 27 محافظة مصرية، مع تأكيد وتتبع فوري للأوردرات عبر الواتساب.</div>
+                                    </div>
+                                </div>
+                                <!-- Point 3 -->
+                                <div class="flex items-start gap-3.5 bg-white/75 dark:bg-white/[0.04] backdrop-blur-md p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 dark:border-white/10 text-right shadow-xs hover:border-brand-500/40 transition-all">
+                                    <div class="w-9 h-9 rounded-xl bg-pink-500/10 text-pink-500 dark:text-pink-400 flex items-center justify-center shrink-0 mt-0.5">
+                                        <i class="fa-solid fa-shield-halved text-base"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">0% عمولة مبيعات + ربط بيكسل فوري</div>
+                                        <div class="text-[11px] sm:text-xs text-slate-500 dark:text-gray-400 mt-0.5 leading-relaxed">أرباحك ملكك بالكامل بدون نسب مقتطعة، مع ربط بيكسل تيك توك وفيسبوك وسناب شات بدون كود.</div>
+                                    </div>
+                                </div>
+                            </div>
 
                             <!-- CTA Buttons -->
-                            <div class="flex flex-row items-center justify-center lg:justify-start gap-3 pt-1 sm:pt-2">
+                            <div class="flex flex-row items-center justify-center lg:justify-start gap-3 pt-2">
                                 <a href="{{ Route::has('register') ? route('register') : '#pricing' }}" class="flex-1 sm:flex-none px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-bold text-xs sm:text-base text-white bg-gradient-to-r from-brand-600 via-indigo-600 to-pink-600 hover:from-brand-500 hover:to-pink-500 shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 active:scale-95 transition-all text-center flex items-center justify-center gap-2 group whitespace-nowrap">
                                     <span x-text="trans('heroCtaStart')"></span>
                                     <i class="fa-solid fa-rocket text-xs"></i>
@@ -886,7 +916,7 @@
                             </div>
 
                             <!-- Trust Checkmarks -->
-                            <div class="pt-3 sm:pt-6 border-t border-slate-200/80 dark:border-white/10 flex flex-wrap items-center justify-center lg:justify-start gap-x-4 gap-y-2 text-xs font-semibold text-slate-500 dark:text-gray-400">
+                            <div class="pt-3 sm:pt-4 border-t border-slate-200/70 dark:border-white/10 flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-2 text-xs font-semibold text-slate-500 dark:text-gray-400">
                                 <div class="inline-flex items-center gap-1.5">
                                     <i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i>
                                     <span x-text="trans('heroCheckFree')"></span>
@@ -1498,7 +1528,7 @@
                     <div class="lg:col-span-4 space-y-6">
                         <a href="/" class="flex items-center gap-3 group">
                             <div class="relative flex items-center justify-center shrink-0">
-                                <div class="w-11 h-11 rounded-full p-0.5 bg-gradient-to-tr from-brand-500 via-pink-500 to-indigo-500 ring-2 ring-brand-500/20 dark:ring-brand-400/20 group-hover:ring-brand-500/50 transition-all duration-300 shadow-sm flex items-center justify-center">
+                                <div class="w-14 h-14 rounded-full p-1 bg-gradient-to-tr from-brand-500 via-pink-500 to-indigo-500 ring-[3px] ring-brand-500/25 dark:ring-brand-400/25 group-hover:ring-brand-500/50 transition-all duration-300 shadow-md flex items-center justify-center">
                                     <div class="w-full h-full rounded-full bg-white dark:bg-slate-900 p-1 flex items-center justify-center overflow-hidden">
                                         <img src="{{ asset('images/logo.png') }}" alt="فاست أوردر" class="w-full h-full object-contain rounded-full">
                                     </div>
