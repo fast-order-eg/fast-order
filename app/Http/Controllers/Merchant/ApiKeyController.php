@@ -62,8 +62,8 @@ class ApiKeyController extends Controller
         $tenant = app(\App\Models\Tenant::class);
         abort_unless($apiKey->tenant_id === $tenant->id, 403);
 
-        $apiKey->revoke();
+        $apiKey->delete();
 
-        return back()->with('success', 'تم إلغاء مفتاح API.');
+        return back()->with('success', 'تم حذف مفتاح API بنجاح.');
     }
 }

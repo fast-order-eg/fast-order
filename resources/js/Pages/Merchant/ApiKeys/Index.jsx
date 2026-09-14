@@ -34,8 +34,8 @@ export default function ApiKeysIndex({ apiKeys }) {
         });
     };
 
-    const handleRevoke = (id) => {
-        if (confirm('هل أنت متأكد من إلغاء هذا المفتاح؟ التطبيق المرتبط لن يتمكن من سحب الأوردرات بعد الإلغاء.')) {
+    const handleDeleteKey = (id) => {
+        if (confirm('هل أنت متأكد من حذف هذا المفتاح نهائياً؟')) {
             router.delete(route('merchant.api-keys.destroy', id));
         }
     };
@@ -259,15 +259,15 @@ export default function ApiKeysIndex({ apiKeys }) {
                                             <span>{copiedKeyId === item.id ? 'تم نسخ المفتاح!' : 'نسخ المفتاح'}</span>
                                         </button>
 
-                                        {item.is_active && (
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRevoke(item.id)}
-                                                className="px-3.5 py-2 text-red-600 border border-red-200 rounded-xl hover:bg-red-50 text-xs font-semibold transition-colors cursor-pointer"
-                                            >
-                                                إلغاء المفتاح
-                                            </button>
-                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => handleDeleteKey(item.id)}
+                                            className="px-3.5 py-2 text-red-600 border border-red-200 rounded-xl hover:bg-red-50 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                                            title="حذف هذا المفتاح نهائياً"
+                                        >
+                                            <span>🗑️</span>
+                                            <span>حذف المفتاح</span>
+                                        </button>
                                     </div>
                                 </div>
                             ))}
@@ -275,65 +275,30 @@ export default function ApiKeysIndex({ apiKeys }) {
                     )}
                 </div>
 
-                {/* دليل استخدام الـ API للطلبات فقط (Orders API) */}
-                <div className="bg-gradient-to-br from-indigo-50/70 via-blue-50/50 to-white rounded-2xl border border-indigo-150 p-6 space-y-4">
-                    <div className="flex items-center gap-2.5">
-                        <span className="text-xl">📦</span>
-                        <div>
-                            <h3 className="font-bold text-indigo-950 text-base">
-                                دليل ربط وسحب الطلبات (Orders API)
-                            </h3>
-                            <p className="text-xs text-indigo-800/80 mt-0.5">
-                                البيانات التي يحتاجها المبرمج الخاص بتطبيقك لتنزيل الأوردرات تلقائياً:
-                            </p>
-                        </div>
-                    </div>
+                {/* رابط سحب الطلبات المباشر */}
+                <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-2">
+                    <h3 className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
+                        <span>🔗</span>
+                        <span>رابط سحب الأوردرات للتطبيق:</span>
+                    </h3>
+                    <p className="text-xs text-gray-500">
+                        المبرمج بيستخدم الرابط ده مع المفتاح اللي نسخته من فوق عشان كل الأوردرات تنزله في تطبيقه مباشرة:
+                    </p>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-                        {/* رابط سحب الطلبات */}
-                        <div className="bg-white rounded-xl border border-indigo-100 p-4 space-y-1.5 shadow-xs">
-                            <span className="text-xs font-bold text-indigo-900 block">1. رابط سحب الطلبات (GET Request):</span>
-                            <div className="flex items-center gap-2">
-                                <code className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs font-mono text-gray-800 text-left truncate select-all">
-                                    {ordersApiUrl}
-                                </code>
-                                <button
-                                    type="button"
-                                    onClick={() => copyText(ordersApiUrl, () => {
-                                        setCopiedUrl(true);
-                                        setTimeout(() => setCopiedUrl(false), 2000);
-                                    })}
-                                    className="px-3 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg text-xs font-semibold transition-colors flex-shrink-0 cursor-pointer"
-                                >
-                                    {copiedUrl ? '✓ تم' : 'نسخ 📋'}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* ترويسة التوثيق */}
-                        <div className="bg-white rounded-xl border border-indigo-100 p-4 space-y-1.5 shadow-xs">
-                            <span className="text-xs font-bold text-indigo-900 block">2. ترويسة التوثيق (Authorization Header):</span>
-                            <div className="flex items-center gap-2">
-                                <code className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-2 text-xs font-mono text-gray-800 text-left truncate select-all">
-                                    Authorization: Bearer YOUR_API_KEY
-                                </code>
-                                <button
-                                    type="button"
-                                    onClick={() => copyText('Authorization: Bearer YOUR_API_KEY', () => {
-                                        setCopiedHeader(true);
-                                        setTimeout(() => setCopiedHeader(false), 2000);
-                                    })}
-                                    className="px-3 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg text-xs font-semibold transition-colors flex-shrink-0 cursor-pointer"
-                                >
-                                    {copiedHeader ? '✓ تم' : 'نسخ 📋'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white/80 rounded-xl p-3 border border-indigo-100/60 text-xs text-indigo-900 leading-relaxed">
-                        <span className="font-bold">✨ تفاصيل البيانات المسترجعة:</span>
-                        {' '}يقوم هذا الرابط بإرجاع كل الطلبات بتفاصيلها الكاملة: (اسم العميل، رقم الهاتف، العنوان والمحافظة، قايمة المنتجات المطلوبة والكميات والأسعار، مصاريف الشحن، الإجمالي، وحالة الطلب).
+                    <div className="flex items-center gap-2 pt-1">
+                        <code className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs font-mono text-gray-800 text-left truncate select-all">
+                            {ordersApiUrl}
+                        </code>
+                        <button
+                            type="button"
+                            onClick={() => copyText(ordersApiUrl, () => {
+                                setCopiedUrl(true);
+                                setTimeout(() => setCopiedUrl(false), 2000);
+                            })}
+                            className="px-4 py-2.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-bold transition-colors flex-shrink-0 cursor-pointer"
+                        >
+                            {copiedUrl ? '✓ تم النسخ' : 'نسخ الرابط 📋'}
+                        </button>
                     </div>
                 </div>
             </div>
