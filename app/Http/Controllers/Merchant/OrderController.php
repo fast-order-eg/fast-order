@@ -302,14 +302,41 @@ class OrderController extends Controller
                 'is_unlocked'      => (bool) $order->is_unlocked,
                 'items'            => $items,
                 'notes'            => $order->notes,
-                'whatsapp_status'      => $order->whatsapp_status,
-                'whatsapp_sent_at'     => $order->whatsapp_sent_at ? \Carbon\Carbon::parse($order->whatsapp_sent_at)->format('Y-m-d H:i') : null,
-                'whatsapp_response_at' => $order->whatsapp_response_at ? \Carbon\Carbon::parse($order->whatsapp_response_at)->format('Y-m-d H:i') : null,
-                'whatsapp_message_id'  => $order->whatsapp_message_id,
-                'created_at'           => $order->created_at ? \Carbon\Carbon::parse($order->created_at)->format('Y-m-d H:i') : null,
+                'whatsapp_status'        => $order->whatsapp_status,
+                'whatsapp_charge_amount' => (float) ($order->whatsapp_charge_amount ?? 0),
+                'whatsapp_sent_at'       => $order->whatsapp_sent_at ? \Carbon\Carbon::parse($order->whatsapp_sent_at)->format('Y-m-d H:i') : null,
+                'whatsapp_response_at'   => $order->whatsapp_response_at ? \Carbon\Carbon::parse($order->whatsapp_response_at)->format('Y-m-d H:i') : null,
+                'whatsapp_message_id'    => $order->whatsapp_message_id,
+                'created_at'             => $order->created_at ? \Carbon\Carbon::parse($order->created_at)->format('Y-m-d H:i') : null,
             ],
             'active_shipping_gateways' => $activeShippingGateways,
+            'is_auto_confirm_enabled'  => (bool) \App\Models\Setting::get('auto_confirm_enabled', false, $order->tenant_id),
+            'wallet_balance'           => (float) ($tenant->wallet_balance ?? 0),
         ]);
+    }
+
+    /**
+     * إرسال / إعادة إرسال رسالة التأكيد التلقائي عبر الواتساب يدوياً للطلب
+     */
+    public function sendWhatsAppConfirmation(Order $order)
+    {
+        $tenant = app(\App\Models\Tenant::class);
+        if ($order->tenant_id !== $tenant->id) {
+            abort(403);
+        }
+
+        if (($tenant->wallet_balance ?? 0) < 1) {
+            return redirect()->back()->with('error', 'رصيد محفظتك الحالي أقل من 1 ج.م. يرجى شحن المحفظة أولاً لتتمكن من إرسال رسالة التأكيد.');
+        }
+
+        $whatsAppService = new \App\Services\MetaWhatsAppService();
+        $result = $whatsAppService->sendOrderConfirmation($order);
+
+        if ($result['success']) {
+            return redirect()->back()->with('success', 'تم إرسال رسالة التأكيد التلقائي للعميل عبر الواتساب بنجاح 🚀');
+        }
+
+        return redirect()->back()->with('error', 'تعذر إرسال رسالة الواتساب: ' . ($result['error'] ?? 'حدث خطأ أثناء الإرسال'));
     }
 
     /**

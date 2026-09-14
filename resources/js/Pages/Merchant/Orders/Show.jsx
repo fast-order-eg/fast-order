@@ -2,8 +2,18 @@ import React from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import MerchantLayout from '@/Layouts/MerchantLayout';
 
-export default function OrderShow({ order, active_shipping_gateways = [] }) {
+export default function OrderShow({ order, active_shipping_gateways = [], is_auto_confirm_enabled = false, wallet_balance = 0 }) {
     const { flash } = usePage().props;
+    const [isSendingWa, setIsSendingWa] = React.useState(false);
+
+    const handleSendAutoConfirm = () => {
+        if (!confirm('هل تريد إرسال رسالة التأكيد التلقائي للعميل عبر الواتساب الآن؟ (تكلفة الرسالة 1 ج.م تُخصم من رصيد المحفظة)')) return;
+        setIsSendingWa(true);
+        router.post(`/admin/orders/${order.id}/send-whatsapp-confirm`, {}, {
+            preserveScroll: true,
+            onFinish: () => setIsSendingWa(false),
+        });
+    };
 
     const handleStatusChange = (newStatus) => {
         router.patch(`/admin/orders/${order.id}/status`, { status: newStatus }, {
@@ -298,21 +308,15 @@ ${totalsBlock}${shippingBlock}`;
                                 <div className="flex items-center gap-2">
                                     <span className="text-xl">💬</span>
                                     <h4 className="font-bold text-gray-900 text-sm">حالة وتأكيد الواتساب التلقائي</h4>
+                                    {!is_auto_confirm_enabled && (
+                                        <span className="text-[11px] font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md border border-amber-200">
+                                            متوقفة بالمتجر
+                                        </span>
+                                    )}
                                 </div>
 
-                                {(!order.whatsapp_status || order.whatsapp_status === 'none' || order.whatsapp_status === 'failed') ? (
-                                    <div className="flex items-center gap-2">
-                                        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700">
-                                            غير مفعل
-                                        </span>
-                                        <Link
-                                            href="/admin/auto-confirm"
-                                            className="inline-flex items-center justify-center px-3.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer"
-                                        >
-                                            تفعيل
-                                        </Link>
-                                    </div>
-                                ) : (
+                                <div className="flex flex-wrap items-center gap-2">
+                                    {/* شارة الحالة */}
                                     <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
                                         order.whatsapp_status === 'confirmed'
                                             ? 'bg-emerald-600 text-white'
@@ -322,35 +326,78 @@ ${totalsBlock}${shippingBlock}`;
                                                     ? 'bg-amber-100 text-amber-900 border border-amber-300'
                                                     : (order.whatsapp_status === 'no_whatsapp'
                                                         ? 'bg-blue-100 text-blue-900 border border-blue-300'
-                                                        : 'bg-gray-100 text-gray-600'))
-                                            )
+                                                        : (order.whatsapp_status === 'failed'
+                                                            ? 'bg-red-100 text-red-800 border border-red-200'
+                                                            : 'bg-gray-100 text-gray-700'))))
                                     }`}>
                                         {order.whatsapp_status === 'confirmed' && 'تم التأكيد عبر الواتس ✅'}
                                         {order.whatsapp_status === 'cancelled' && 'تم الإلغاء عبر الواتس ❌'}
-                                        {order.whatsapp_status === 'pending' && 'بانتظار رد العميل ⏳'}
-                                        {order.whatsapp_status === 'no_whatsapp' && 'لا يوجد واتساب ⚠️'}
+                                        {order.whatsapp_status === 'pending' && 'تم الإرسال (بانتظار رد العميل) ⏳'}
+                                        {order.whatsapp_status === 'no_whatsapp' && 'الرقم غير مسجل بالواتساب ⚠️'}
+                                        {order.whatsapp_status === 'failed' && 'فشل الإرسال ❌'}
+                                        {(!order.whatsapp_status || order.whatsapp_status === 'none') && 'لم تُرسل بعد'}
                                     </span>
-                                )}
+
+                                    {/* أزرار الإجراءات */}
+                                    {(!order.whatsapp_status || order.whatsapp_status === 'none' || order.whatsapp_status === 'failed') && (
+                                        <button
+                                            type="button"
+                                            onClick={handleSendAutoConfirm}
+                                            disabled={isSendingWa}
+                                            className="inline-flex items-center justify-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer"
+                                            title="إرسال رسالة التأكيد عبر بوابة Meta WhatsApp وخصم 1 ج.م من المحفظة"
+                                        >
+                                            {isSendingWa ? (
+                                                <span>جاري الإرسال...</span>
+                                            ) : (
+                                                <span>{order.whatsapp_status === 'failed' ? 'إعادة المحاولة 🔄' : 'إرسال الآن 💬'}</span>
+                                            )}
+                                        </button>
+                                    )}
+
+                                    {order.whatsapp_status === 'pending' && (
+                                        <button
+                                            type="button"
+                                            onClick={handleSendAutoConfirm}
+                                            disabled={isSendingWa}
+                                            className="inline-flex items-center justify-center gap-1 px-2.5 py-1 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-300 disabled:opacity-50 rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer"
+                                            title="إعادة إرسال رسالة التأكيد للعميل"
+                                        >
+                                            {isSendingWa ? 'جاري الإرسال...' : 'إعادة الإرسال 🔄'}
+                                        </button>
+                                    )}
+
+                                    {!is_auto_confirm_enabled && (
+                                        <Link
+                                            href="/admin/auto-confirm"
+                                            className="inline-flex items-center justify-center px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition-all shadow-sm"
+                                        >
+                                            إعدادات الخدمة ⚙️
+                                        </Link>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                                 <div className="bg-white/80 p-2.5 rounded-xl border border-emerald-100 space-y-1">
                                     <span className="text-gray-500 font-medium block">وقت وتاريخ الإرسال:</span>
                                     <span className="font-bold text-gray-800">
-                                        {order.whatsapp_sent_at ? order.whatsapp_sent_at : 'لم ترسل بعد'}
+                                        {order.whatsapp_sent_at ? order.whatsapp_sent_at : 'لم تُرسل بعد'}
                                     </span>
                                 </div>
 
                                 <div className="bg-white/80 p-2.5 rounded-xl border border-emerald-100 space-y-1">
-                                    <span className="text-gray-500 font-medium block">وقت وتاريخ استجابة العميل:</span>
+                                    <span className="text-gray-500 font-medium block">استجابة العميل:</span>
                                     <span className="font-bold text-gray-800">
-                                        {order.whatsapp_response_at ? order.whatsapp_response_at : 'في انتظار الرد'}
+                                        {order.whatsapp_response_at 
+                                            ? order.whatsapp_response_at 
+                                            : (order.whatsapp_status === 'pending' ? 'في انتظار رد العميل' : '—')}
                                     </span>
                                 </div>
 
                                 {order.whatsapp_message_id && (
                                     <div className="bg-white/80 p-2.5 rounded-xl border border-emerald-100 space-y-1 sm:col-span-2">
-                                        <span className="text-gray-500 font-medium block">معرّف الرسالة الرسمي من واتساب:</span>
+                                        <span className="text-gray-500 font-medium block">معرّف الرسالة الرسمي من واتساب (WAMID):</span>
                                         <span className="font-mono text-[11px] font-bold text-indigo-700 select-all break-all dir-ltr text-left block">
                                             {order.whatsapp_message_id}
                                         </span>
@@ -358,12 +405,14 @@ ${totalsBlock}${shippingBlock}`;
                                 )}
                             </div>
 
-                            {order.whatsapp_charge_amount > 0 && (
-                                <div className="text-[11px] text-emerald-800 font-semibold flex items-center justify-between pt-1 border-t border-emerald-200/50">
-                                    <span>رسوم الخدمة المسجلة على هذا الطلب:</span>
-                                    <span className="font-bold">{order.whatsapp_charge_amount} ج.م</span>
-                                </div>
-                            )}
+                            <div className="text-[11px] text-emerald-800 font-semibold flex items-center justify-between pt-1 border-t border-emerald-200/50">
+                                <span>رسوم خدمة التأكيد التلقائي:</span>
+                                <span className="font-bold">
+                                    {order.whatsapp_charge_amount > 0 
+                                        ? `${order.whatsapp_charge_amount} ج.م (تم الخصم من المحفظة ✓)` 
+                                        : '1 ج.م (تُخصم عند إرسال الرسالة بنجاح)'}
+                                </span>
+                            </div>
                         </div>
 
                         {/* 7. إرسال الشحنة لشركة الشحن وتوليد البوليسة */}

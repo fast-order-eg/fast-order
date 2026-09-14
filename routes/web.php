@@ -194,6 +194,7 @@ Route::prefix('admin')->group(function () {
             Route::get('/orders/bulk-invoice', [App\Http\Controllers\Merchant\OrderController::class, 'bulkInvoice'])->name('orders.bulkInvoice');
             Route::get('/orders/{order}', [App\Http\Controllers\Merchant\OrderController::class, 'show'])->name('orders.show');
             Route::post('/orders/{order}/unlock', [App\Http\Controllers\Merchant\OrderController::class, 'unlock'])->name('orders.unlock');
+            Route::post('/orders/{order}/send-whatsapp-confirm', [App\Http\Controllers\Merchant\OrderController::class, 'sendWhatsAppConfirmation'])->name('orders.sendWhatsAppConfirmation');
             Route::patch('/orders/{order}/status', [App\Http\Controllers\Merchant\OrderController::class, 'updateStatus'])->name('orders.updateStatus');
             Route::patch('/orders/{order}/cancel', [App\Http\Controllers\Merchant\OrderController::class, 'cancel'])->name('orders.cancel');
             Route::delete('/orders/{order}', [App\Http\Controllers\Merchant\OrderController::class, 'destroy'])->name('orders.destroy');

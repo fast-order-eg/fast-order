@@ -21,7 +21,11 @@ class Order extends Model
         'customer_address',
         'governorate',
         'payment_method',
+        'payment_status',
+        'transaction_id',
+        'payment_details',
         'shipping_cost',
+        'fee_amount',
         'coupon_code',
         'discount',
         'items',
@@ -32,11 +36,17 @@ class Order extends Model
         'printed_at',
         'is_unlocked',
         'unlocked_at',
-        'notes'
+        'notes',
+        'whatsapp_status',
+        'whatsapp_message_id',
+        'whatsapp_sent_at',
+        'whatsapp_response_at',
+        'whatsapp_charge_amount',
     ];
 
     protected $casts = [
         'items' => 'array',
+        'payment_details' => 'array',
         'shipping_cost' => 'integer',
         'discount' => 'float',
         'subtotal' => 'integer',
@@ -45,6 +55,9 @@ class Order extends Model
         'printed_at' => 'datetime',
         'is_unlocked' => 'boolean',
         'unlocked_at' => 'datetime',
+        'whatsapp_sent_at' => 'datetime',
+        'whatsapp_response_at' => 'datetime',
+        'whatsapp_charge_amount' => 'float',
         'created_at' => 'datetime:Y-m-d H:i:s',
         'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
@@ -61,6 +74,7 @@ class Order extends Model
     {
         return [
             'items' => 'array',
+            'payment_details' => 'array',
             'shipping_cost' => 'integer',
             'discount' => 'float',
             'subtotal' => 'integer',
@@ -69,6 +83,9 @@ class Order extends Model
             'printed_at' => 'datetime',
             'is_unlocked' => 'boolean',
             'unlocked_at' => 'datetime',
+            'whatsapp_sent_at' => 'datetime',
+            'whatsapp_response_at' => 'datetime',
+            'whatsapp_charge_amount' => 'float',
             'created_at' => 'datetime:Y-m-d H:i:s',
             'updated_at' => 'datetime:Y-m-d H:i:s',
         ];

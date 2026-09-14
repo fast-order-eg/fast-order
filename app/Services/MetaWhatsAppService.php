@@ -61,6 +61,55 @@ class MetaWhatsAppService
     }
 
     /**
+     * Clean and sanitize template parameter for Meta Cloud API.
+     * Meta rejects parameters containing newlines, tabs, or >= 4 consecutive spaces.
+     */
+    protected function sanitizeParam(?string $text, string $fallback = '-'): string
+    {
+        if ($text === null || trim($text) === '') {
+            return $fallback;
+        }
+
+        // Replace carriage returns, newlines and tabs with single space
+        $clean = str_replace(["\r\n", "\r", "\n", "\t"], ' ', $text);
+
+        // Collapse multiple spaces into single space
+        $clean = preg_replace('/ {2,}/', ' ', $clean);
+
+        $clean = trim($clean);
+
+        return !empty($clean) ? mb_substr($clean, 0, 1000) : $fallback;
+    }
+
+    /**
+     * Deduct order confirmation fee from tenant wallet and record transaction.
+     */
+    protected function chargeTenantFee(Order $order, \App\Models\Tenant $tenant): void
+    {
+        if (($order->whatsapp_charge_amount ?? 0) <= 0 && $this->costPerOrder > 0) {
+            $cost = $this->costPerOrder;
+            $tenant->decrement('wallet_balance', $cost);
+
+            \App\Models\WalletTransaction::create([
+                'tenant_id'   => $tenant->id,
+                'amount'      => $cost,
+                'type'        => 'debit',
+                'description' => 'رسوم رسالة تأكيد واتساب للطلب رقم (' . $order->reference_number . ')',
+            ]);
+
+            $order->update([
+                'whatsapp_charge_amount' => $cost,
+            ]);
+
+            // If remaining wallet balance is now below minimum required (3 EGP), auto-disable the service
+            if ($tenant->fresh()->wallet_balance < 3) {
+                Setting::set('auto_confirm_enabled', false, 'auto_confirm', $tenant->id);
+                Log::info("Auto-confirm disabled automatically for Tenant #{$tenant->id} due to low balance (< 3 EGP).");
+            }
+        }
+    }
+
+    /**
      * Send interactive Order Confirmation message via Meta WhatsApp API.
      */
     public function sendOrderConfirmation(Order $order): array
@@ -79,17 +128,36 @@ class MetaWhatsAppService
             ];
         }
 
-        // Format Items list
-        $itemsText = '';
+        // Check Tenant Wallet Balance
+        $cost = $this->costPerOrder;
+        $tenant = \App\Models\Tenant::find($order->tenant_id);
+
+        if (!$tenant || ($tenant->wallet_balance ?? 0) < $cost) {
+            Log::warning("WhatsApp auto-confirmation skipped for Order #{$order->reference_number}: Tenant #{$order->tenant_id} wallet balance ({$tenant?->wallet_balance}) is less than cost ({$cost} EGP)");
+            $order->update([
+                'whatsapp_status' => 'failed',
+            ]);
+
+            return [
+                'success' => false,
+                'status'  => 'failed',
+                'error'   => 'رصيد محفظة المتجر غير كافٍ لإرسال رسالة التأكيد التلقائي (أقل من ' . $cost . ' ج.م).',
+            ];
+        }
+
+        // Format Items list (Meta requires NO newlines/tabs in template parameters)
+        $itemsList = [];
         if (is_array($order->items)) {
             foreach ($order->items as $item) {
                 $name = $item['name'] ?? $item['product_name'] ?? 'منتج';
                 $qty = $item['quantity'] ?? $item['qty'] ?? 1;
-                $price = $item['price'] ?? 0;
-                $itemsText .= "• {$name} (العدد: {$qty}) - " . number_format($price * $qty) . " ج.م\n";
+                $price = (float) ($item['price'] ?? 0);
+                $cleanName = $this->sanitizeParam($name, 'منتج');
+                $itemsList[] = "• {$cleanName} (×{$qty}) - " . number_format($price * $qty) . " ج.م";
             }
         }
-        $itemsText = trim($itemsText) ?: 'تفاصيل الطلب';
+        $itemsText = !empty($itemsList) ? implode(' | ', $itemsList) : 'تفاصيل الطلب';
+        $itemsText = $this->sanitizeParam($itemsText, 'تفاصيل الطلب');
 
         // Check if in Test/Simulated Mode
         if (!$this->isConfigured()) {
@@ -100,8 +168,10 @@ class MetaWhatsAppService
                 'whatsapp_status'        => 'pending',
                 'whatsapp_message_id'    => $simulatedMsgId,
                 'whatsapp_sent_at'       => $sentTime,
-                'whatsapp_charge_amount' => $this->costPerOrder,
             ]);
+
+            // Deduct service fee from wallet
+            $this->chargeTenantFee($order, $tenant);
 
             Log::info("WhatsApp Confirmation simulated for Order #{$order->reference_number} to {$recipientPhone}");
 
@@ -112,6 +182,13 @@ class MetaWhatsAppService
                 'phone'      => $recipientPhone,
             ];
         }
+
+        // Sanitize all parameters for Meta Cloud API
+        $customerName = $this->sanitizeParam($order->customer_name, 'عميلنا العزيز');
+        $refNumber    = $this->sanitizeParam((string) $order->reference_number, (string) $order->id);
+        $shippingText = $this->sanitizeParam(number_format($order->shipping_cost) . ' ج.م (' . ($order->governorate ?: 'شحن عادي') . ')', '0 ج.م');
+        $totalText    = $this->sanitizeParam(number_format($order->total) . ' ج.م', '0 ج.م');
+        $addressText  = $this->sanitizeParam($order->customer_address, ($order->governorate ?: 'العنوان المسجل بالطلب'));
 
         // Real Meta Cloud API Call
         $url = "https://graph.facebook.com/{$this->apiVersion}/{$this->phoneNumberId}/messages";
@@ -130,12 +207,12 @@ class MetaWhatsAppService
                         [
                             'type'       => 'body',
                             'parameters' => [
-                                ['type' => 'text', 'text' => $order->customer_name ?: 'عميلنا العزيز'],
-                                ['type' => 'text', 'text' => $order->reference_number],
+                                ['type' => 'text', 'text' => $customerName],
+                                ['type' => 'text', 'text' => $refNumber],
                                 ['type' => 'text', 'text' => $itemsText],
-                                ['type' => 'text', 'text' => (string) number_format($order->shipping_cost) . ' ج.م (' . $order->governorate . ')'],
-                                ['type' => 'text', 'text' => (string) number_format($order->total) . ' ج.م'],
-                                ['type' => 'text', 'text' => $order->customer_address],
+                                ['type' => 'text', 'text' => $shippingText],
+                                ['type' => 'text', 'text' => $totalText],
+                                ['type' => 'text', 'text' => $addressText],
                             ]
                         ],
                         [
@@ -172,8 +249,10 @@ class MetaWhatsAppService
                     'whatsapp_status'        => 'pending',
                     'whatsapp_message_id'    => $messageId,
                     'whatsapp_sent_at'       => $sentTime,
-                    'whatsapp_charge_amount' => $this->costPerOrder,
                 ]);
+
+                // Deduct service fee from wallet
+                $this->chargeTenantFee($order, $tenant);
 
                 return [
                     'success'    => true,

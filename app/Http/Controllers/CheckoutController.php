@@ -335,7 +335,7 @@ class CheckoutController extends Controller
 
             // إرسال رسالة التأكيد التلقائي عبر الواتساب (WhatsApp Meta Cloud API)
             try {
-                $isAutoConfirmEnabled = (bool) \App\Models\Setting::get('auto_confirm_enabled', false);
+                $isAutoConfirmEnabled = (bool) \App\Models\Setting::get('auto_confirm_enabled', false, $order->tenant_id);
                 if ($isAutoConfirmEnabled && !$isOnlinePayment) {
                     $whatsAppService = new \App\Services\MetaWhatsAppService();
                     $whatsAppService->sendOrderConfirmation($order);
@@ -346,8 +346,8 @@ class CheckoutController extends Controller
 
             // التحويل التلقائي لشركة الشحن في حال تفعيل الشحن الفوري عند إنشاء الطلب
             try {
-                if (\App\Models\Setting::get('auto_dispatch_shipping', false) && \App\Models\Setting::get('auto_dispatch_trigger', 'on_confirm') === 'on_create') {
-                    $provider = \App\Models\Setting::get('auto_dispatch_provider', 'bosta');
+                if (\App\Models\Setting::get('auto_dispatch_shipping', false, $order->tenant_id) && \App\Models\Setting::get('auto_dispatch_trigger', 'on_confirm', $order->tenant_id) === 'on_create') {
+                    $provider = \App\Models\Setting::get('auto_dispatch_provider', 'bosta', $order->tenant_id);
                     $shippingManager = new \App\Services\Shipping\ShippingManager();
                     $shippingManager->createShipment($order, $provider);
                 }
@@ -473,7 +473,7 @@ class CheckoutController extends Controller
 
             // إرسال رسالة التأكيد عبر الواتس بعد نجاح الدفع
             try {
-                $isAutoConfirmEnabled = (bool) \App\Models\Setting::get('auto_confirm_enabled', false);
+                $isAutoConfirmEnabled = (bool) \App\Models\Setting::get('auto_confirm_enabled', false, $order->tenant_id);
                 if ($isAutoConfirmEnabled) {
                     $whatsAppService = new \App\Services\MetaWhatsAppService();
                     $whatsAppService->sendOrderConfirmation($order);
