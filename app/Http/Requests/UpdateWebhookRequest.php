@@ -24,7 +24,7 @@ class UpdateWebhookRequest extends FormRequest
             'url' => ['required', 'url', 'max:255'],
             'secret' => ['required', 'string', 'max:100'],
             'events' => ['required', 'array'],
-            'events.*' => ['string', Rule::in(['order.created', 'product.created', 'customer.created'])],
+            'events.*' => ['string', Rule::in(['order.created', 'order.status_updated', 'product.created', 'customer.created'])],
             'is_active' => ['boolean']
         ];
     }

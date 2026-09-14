@@ -11,6 +11,15 @@ export default function WebhooksIndex({ webhooks, stats, filters }) {
     const [selectedWebhookForLogs, setSelectedWebhookForLogs] = useState(null);
     const [logs, setLogs] = useState([]);
     const [loadingLogs, setLoadingLogs] = useState(false);
+    const [testingWebhookId, setTestingWebhookId] = useState(null);
+
+    const handleTestWebhook = (webhook) => {
+        setTestingWebhookId(webhook.id);
+        router.post(`/admin/webhooks/${webhook.id}/test`, {}, {
+            preserveScroll: true,
+            onFinish: () => setTestingWebhookId(null),
+        });
+    };
 
     // Form hook
     const { data, setData, post, put, processing, errors, reset, clearErrors } = useForm({
@@ -114,7 +123,8 @@ export default function WebhooksIndex({ webhooks, stats, filters }) {
     };
 
     const availableEvents = [
-        { id: 'order.created', label: 'إنشاء طلب جديد (order.created)', desc: 'يتم إرساله عند قيام العميل بتأكيد طلب جديد بنجاح.' },
+        { id: 'order.created', label: 'إنشاء طلب جديد (order.created)', desc: 'يتم إرساله فوراً عند قيام العميل بتأكيد طلب جديد بنجاح.' },
+        { id: 'order.status_updated', label: 'تحديث حالة الطلب (order.status_updated)', desc: 'يتم إرساله عند تغيير حالة الطلب (تأكيد، شحن، تسليم، إلغاء).' },
         { id: 'product.created', label: 'إضافة منتج جديد (product.created)', desc: 'يتم إرساله عند إضافة منتج جديد في لوحة التحكم.' },
         { id: 'customer.created', label: 'إنشاء حساب عميل (customer.created)', desc: 'يتم إرساله عند تسجيل عميل جديد بالمتجر.' }
     ];
@@ -129,18 +139,33 @@ export default function WebhooksIndex({ webhooks, stats, filters }) {
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900">الـ Webhooks والتكاملات</h2>
                         <p className="text-sm text-gray-500 mt-0.5">
-                            اربط متجرك بالأنظمة الخارجية واحصل على إشعارات فورية عند حدوث تغييرات
+                            اربط متجرك بالتطبيقات والأنظمة الخارجية واحصل على بيانات الطلبات فورياً في نفس الثانية
                         </p>
                     </div>
                     <button
                         onClick={openCreateModal}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-all duration-200 shadow-lg shadow-indigo-150 hover:-translate-y-0.5"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-all duration-200 shadow-lg shadow-indigo-150 hover:-translate-y-0.5 cursor-pointer"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                         </svg>
                         إضافة Webhook جديد
                     </button>
+                </div>
+
+                {/* Explain Banner */}
+                <div className="bg-gradient-to-r from-indigo-50 via-blue-50 to-purple-50 border border-indigo-150 rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-xs">
+                    <div className="flex items-start gap-3">
+                        <div className="p-2.5 bg-indigo-600 text-white rounded-xl flex-shrink-0 text-xl shadow-xs">
+                            ⚡
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-indigo-950 text-sm">ربط تلقائي وفوري للأوردرات مع تطبيقات الموبايل وبرامج الكاشير</h4>
+                            <p className="text-xs text-indigo-900/80 mt-1 leading-relaxed">
+                                ضع رابط الـ Webhook الخاص بتطبيقك وسيقوم فاست أوردر بإرسال بيانات الطلب كاملة (العميل، المنتجات، العنوان، الإجمالي) لتطبيقك لحظياً فور حدوثه بدون أي تأخير.
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Stats Cards */}
@@ -317,8 +342,18 @@ export default function WebhooksIndex({ webhooks, stats, filters }) {
                                             <td className="px-6 py-4 text-left">
                                                 <div className="flex items-center justify-end gap-2">
                                                     <button
+                                                        type="button"
+                                                        onClick={() => handleTestWebhook(webhook)}
+                                                        disabled={testingWebhookId === webhook.id}
+                                                        className="px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-semibold hover:bg-emerald-100 transition-colors flex items-center gap-1 disabled:opacity-50 cursor-pointer"
+                                                        title="إرسال طلب وهمي لتجربة استجابة سيرفر/تطبيق العميل فوراً"
+                                                    >
+                                                        <span>🚀</span>
+                                                        <span>{testingWebhookId === webhook.id ? 'جاري الإرسال...' : 'تجربة الإرسال'}</span>
+                                                    </button>
+                                                    <button
                                                         onClick={() => openLogsModal(webhook)}
-                                                        className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100 transition-colors flex items-center gap-1"
+                                                        className="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100 transition-colors flex items-center gap-1 cursor-pointer"
                                                     >
                                                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -327,13 +362,13 @@ export default function WebhooksIndex({ webhooks, stats, filters }) {
                                                     </button>
                                                     <button
                                                         onClick={() => openEditModal(webhook)}
-                                                        className="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-semibold hover:bg-indigo-100 transition-colors"
+                                                        className="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-semibold hover:bg-indigo-100 transition-colors cursor-pointer"
                                                     >
                                                         تعديل
                                                     </button>
                                                     <button
                                                         onClick={() => handleDelete(webhook)}
-                                                        className="px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-xs font-semibold hover:bg-red-100 transition-colors"
+                                                        className="px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-xs font-semibold hover:bg-red-100 transition-colors cursor-pointer"
                                                     >
                                                         حذف
                                                     </button>
@@ -422,7 +457,7 @@ export default function WebhooksIndex({ webhooks, stats, filters }) {
                                     <button
                                         type="button"
                                         onClick={generateSecret}
-                                        className="px-4 py-2 bg-gray-150 text-gray-700 border border-gray-300 rounded-xl text-xs font-semibold hover:bg-gray-250 transition-colors"
+                                        className="px-4 py-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-xl text-xs font-semibold hover:bg-gray-200 transition-colors cursor-pointer"
                                     >
                                         توليد عشوائي
                                     </button>

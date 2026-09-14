@@ -236,6 +236,7 @@ Route::prefix('admin')->group(function () {
 
             // Webhooks management routes
             Route::patch('/webhooks/{webhook}/toggle', [App\Http\Controllers\Merchant\WebhookController::class, 'toggle'])->name('merchant.webhooks.toggle');
+            Route::post('/webhooks/{webhook}/test', [App\Http\Controllers\Merchant\WebhookController::class, 'test'])->name('merchant.webhooks.test');
             Route::resource('/webhooks', App\Http\Controllers\Merchant\WebhookController::class)->names('merchant.webhooks');
             Route::get('/webhooks/{webhook}/logs', [App\Http\Controllers\Merchant\WebhookController::class, 'logs'])->name('merchant.webhooks.logs');
 

@@ -116,4 +116,47 @@ class WebhookController extends Controller
 
         return response()->json($logs);
     }
+
+    /**
+     * تجربة إرسال حدث وهمي للتأكد من ربط سيرفر/تطبيق العميل
+     */
+    public function test(Webhook $webhook)
+    {
+        $tenant = app(\App\Models\Tenant::class);
+        abort_unless($webhook->tenant_id === $tenant->id, 403);
+
+        $mockPayload = [
+            'id' => 99999,
+            'reference_number' => 'TEST-' . rand(1000, 9999),
+            'customer_name' => 'عميل تجريبي (فاست أوردر)',
+            'customer_phone' => '01012345678',
+            'customer_address' => 'شارع التحرير، الدقي',
+            'governorate' => 'الجيزة',
+            'payment_method' => 'الدفع عند الاستلام (COD)',
+            'payment_status' => 'pending',
+            'subtotal' => 350,
+            'shipping_cost' => 50,
+            'total' => 400,
+            'status' => 'pending',
+            'notes' => 'طلب تجريبي للتأكد من نجاح ربط تطبيق العميل مع فاست أوردر',
+            'items' => [
+                [
+                    'id' => 1,
+                    'name' => 'منتج تجريبي للتكامل',
+                    'quantity' => 1,
+                    'price' => 350,
+                ]
+            ],
+            'created_at' => now()->toDateTimeString(),
+        ];
+
+        $result = \App\Services\WebhookSender::sendSingleWebhook($webhook, 'order.created', $mockPayload);
+
+        $statusText = $result['status'] ? "كود الاستجابة: {$result['status']}" : "فشل الاتصال بالسيرفر";
+        if ($result['status'] >= 200 && $result['status'] < 300) {
+            return back()->with('success', "تم إرسال الحدث التجريبي بنجاح! ({$statusText}) ✓");
+        } else {
+            return back()->with('error', "تم إرسال الحدث لكن السيرفر رد بالخطأ ({$statusText})، يرجى مراجعة سجل الـ Logs.");
+        }
+    }
 }

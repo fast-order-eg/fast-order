@@ -344,6 +344,18 @@ class OrderController extends Controller
 
         $order->update($updateData);
 
+        // إرسال إشعار الـ Webhook عند تحديث حالة الطلب
+        if ($oldStatus !== $newStatus) {
+            try {
+                \App\Services\WebhookSender::trigger('order.status_updated', array_merge($order->toArray(), [
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus,
+                ]), $order->tenant_id);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Webhook order.status_updated failed: " . $e->getMessage());
+            }
+        }
+
         // التحويل التلقائي لشركة الشحن عند تأكيد الطلب
         if (in_array($newStatus, ['confirmed', 'shipped']) && $oldStatus !== $newStatus) {
             $this->handleAutoDispatchShipping($order);
@@ -391,6 +403,15 @@ class OrderController extends Controller
                 }
             }
             $order->update(['status' => 'cancelled']);
+
+            try {
+                \App\Services\WebhookSender::trigger('order.status_updated', array_merge($order->toArray(), [
+                    'old_status' => 'pending',
+                    'new_status' => 'cancelled',
+                ]), $order->tenant_id);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Webhook order.status_updated on cancel failed: " . $e->getMessage());
+            }
         }
 
         return redirect()->back()->with('success', 'تم إلغاء الطلب واسترجاع المخزون وإلغاء بوليصة الشحن بنجاح ✓');
