@@ -22,10 +22,11 @@ class ApiKeyController extends Controller
             ->map(fn ($key) => [
                 'id' => $key->id,
                 'name' => $key->name,
+                'key' => $key->key,
                 'key_preview' => substr($key->key, 0, 12) . '...' . substr($key->key, -4),
                 'is_active' => $key->isActive(),
                 'last_used_at' => $key->last_used_at?->diffForHumans(),
-                'created_at' => $key->created_at->format('Y-m-d'),
+                'created_at' => $key->created_at->format('Y-m-d H:i'),
             ]);
 
         return Inertia::render('Merchant/ApiKeys/Index', [
