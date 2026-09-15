@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductImage;
+use App\Models\Setting;
 use App\Models\StockMovement;
 use App\Models\Tenant;
 use App\Models\User;
@@ -17,26 +18,29 @@ use Illuminate\Support\Str;
 class ProductDraftController extends Controller
 {
     /**
-     * Look up a store/tenant by slug or phone number.
+     * Look up store/tenant details by slug or phone number.
      */
-    public function lookupStore(Request $request): JsonResponse
+    public function storeLookup(Request $request): JsonResponse
     {
-        $query = trim((string) ($request->input('store') ?? $request->input('query') ?? ''));
+        $query = trim((string) $request->query('store', ''));
 
         if (empty($query)) {
             return response()->json([
                 'success' => false,
-                'message' => 'اسم المتجر أو رقم الهاتف مطلوب.',
-            ], 422);
+                'message' => 'يرجى تقديم كود المتجر أو رقم الهاتف للبحث.',
+            ], 400);
         }
 
-        $cleanPhone = preg_replace('/[^0-9]/', '', $query);
-
         $tenant = Tenant::where('slug', $query)
-            ->orWhere('id', is_numeric($query) ? (int)$query : 0)
+            ->orWhere('id', is_numeric($query) ? (int) $query : 0)
             ->first();
 
-        if (!$tenant && !empty($cleanPhone)) {
+        if (!$tenant) {
+            $cleanPhone = preg_replace('/[^0-9]/', '', $query);
+            if (str_starts_with($cleanPhone, '20') && strlen($cleanPhone) === 12) {
+                $cleanPhone = '0' . substr($cleanPhone, 2);
+            }
+
             $tenant = Tenant::where(function ($q) use ($cleanPhone) {
                 $q->where('phone', 'like', "%{$cleanPhone}%")
                   ->orWhere('phone', $cleanPhone);
@@ -75,6 +79,7 @@ class ProductDraftController extends Controller
                 'phone' => $tenant->phone,
                 'store_url' => $tenant->getStoreUrl(),
                 'products_count' => $productsCount,
+                'main_categories' => Category::getMainCategories(),
                 'categories' => $categories,
             ],
         ]);
@@ -109,17 +114,31 @@ class ProductDraftController extends Controller
             'price_before' => 'nullable|numeric|min:0',
             'sizes' => 'nullable',
             'colors' => 'nullable',
+            'custom_variants' => 'nullable',
+            'price_tiers' => 'nullable',
             'stock' => 'nullable|integer|min:0',
             'category_id' => 'nullable|integer',
             'category_name' => 'nullable|string',
+            'main_category' => 'nullable|string',
             'images_base64' => 'nullable|array',
             'images_base64.*' => 'nullable|string',
         ]);
 
-        // Resolve Category
+        // Resolve Category & Main Category
         $categoryId = $validated['category_id'] ?? null;
-        if (!$categoryId && !empty($validated['category_name'])) {
-            $catName = trim($validated['category_name']);
+        $mainCat = trim((string) ($request->input('main_category') ?? ''));
+        $catName = trim((string) ($validated['category_name'] ?? ''));
+
+        // If main_category is provided, ensure it exists in system main categories setting
+        if (!empty($mainCat)) {
+            $allMain = Category::getMainCategories();
+            if (!in_array($mainCat, $allMain)) {
+                $allMain[] = $mainCat;
+                Category::saveMainCategories($allMain);
+            }
+        }
+
+        if (!$categoryId && !empty($catName)) {
             $existingCat = Category::where('tenant_id', $tenant->id)
                 ->where(function ($q) use ($catName) {
                     $q->where('name', $catName)
@@ -128,11 +147,15 @@ class ProductDraftController extends Controller
 
             if ($existingCat) {
                 $categoryId = $existingCat->id;
+                if (!empty($mainCat) && empty($existingCat->main_category)) {
+                    $existingCat->update(['main_category' => $mainCat]);
+                }
             } else {
                 $newCat = Category::create([
                     'tenant_id' => $tenant->id,
                     'name' => $catName,
                     'name_ar' => $catName,
+                    'main_category' => $mainCat ?: $catName,
                 ]);
                 $categoryId = $newCat->id;
             }
@@ -142,11 +165,15 @@ class ProductDraftController extends Controller
             $firstCat = Category::where('tenant_id', $tenant->id)->first();
             if ($firstCat) {
                 $categoryId = $firstCat->id;
+                if (!empty($mainCat) && empty($firstCat->main_category)) {
+                    $firstCat->update(['main_category' => $mainCat]);
+                }
             } else {
                 $defaultCat = Category::create([
                     'tenant_id' => $tenant->id,
-                    'name' => 'عام',
-                    'name_ar' => 'عام',
+                    'name' => $mainCat ?: 'عام',
+                    'name_ar' => $mainCat ?: 'عام',
+                    'main_category' => $mainCat ?: 'عام',
                 ]);
                 $categoryId = $defaultCat->id;
             }
@@ -155,6 +182,48 @@ class ProductDraftController extends Controller
         // Format sizes & colors
         $sizes = $this->normalizeArray($request->input('sizes'));
         $colors = $this->normalizeArray($request->input('colors'));
+
+        // Format custom variants (e.g. [{"name": "الحجم", "values": ["30 جرام"]}])
+        $customVariants = null;
+        if ($request->has('custom_variants')) {
+            $rawCv = $request->input('custom_variants');
+            $cvArr = is_string($rawCv) ? json_decode($rawCv, true) : $rawCv;
+            if (is_array($cvArr) && count($cvArr) > 0) {
+                $filteredCv = [];
+                foreach ($cvArr as $cv) {
+                    $cName = trim((string) ($cv['name'] ?? ''));
+                    $cValues = is_array($cv['values'] ?? null) ? array_values(array_filter($cv['values'])) : [];
+                    if (!empty($cName) && count($cValues) > 0) {
+                        $filteredCv[] = [
+                            'name' => $cName,
+                            'values' => $cValues,
+                        ];
+                    }
+                }
+                $customVariants = count($filteredCv) > 0 ? $filteredCv : null;
+            }
+        }
+
+        // Format price tiers (e.g. [{"min_qty": 3, "price": "50"}])
+        $priceTiers = null;
+        if ($request->has('price_tiers')) {
+            $rawTiers = $request->input('price_tiers');
+            $tiersArr = is_string($rawTiers) ? json_decode($rawTiers, true) : $rawTiers;
+            if (is_array($tiersArr) && count($tiersArr) > 0) {
+                $filteredTiers = [];
+                foreach ($tiersArr as $tier) {
+                    $minQty = (int) ($tier['min_qty'] ?? $tier['quantity'] ?? $tier['qty'] ?? 0);
+                    $tierPrice = (float) ($tier['price'] ?? 0);
+                    if ($minQty >= 2 && $tierPrice > 0) {
+                        $filteredTiers[] = [
+                            'min_qty' => $minQty,
+                            'price' => (string) $tierPrice,
+                        ];
+                    }
+                }
+                $priceTiers = count($filteredTiers) > 0 ? $filteredTiers : null;
+            }
+        }
 
         // Generate variant stock combinations
         $variantsStock = [];
@@ -171,11 +240,23 @@ class ProductDraftController extends Controller
                     ];
                 }
             }
+        } elseif (!empty($customVariants)) {
+            foreach ($customVariants as $cv) {
+                foreach ($cv['values'] as $val) {
+                    $variantsStock[] = [
+                        'size' => null,
+                        'color' => null,
+                        'options' => [$cv['name'] => $val],
+                        'price' => '',
+                        'qty' => 100,
+                    ];
+                }
+            }
         }
 
         $stock = isset($validated['stock']) && $validated['stock'] !== '' 
             ? (int) $validated['stock'] 
-            : ($hasVariants ? (count($variantsStock) * 100) : 100);
+            : (count($variantsStock) > 0 ? (count($variantsStock) * 100) : 100);
 
         $previewToken = Str::random(32);
 
@@ -192,6 +273,8 @@ class ProductDraftController extends Controller
             'shipping_type' => 'free',
             'sizes' => count($sizes) > 0 ? $sizes : null,
             'colors' => count($colors) > 0 ? $colors : null,
+            'custom_variants' => $customVariants,
+            'price_tiers' => $priceTiers,
             'variants_stock' => count($variantsStock) > 0 ? $variantsStock : null,
             'is_active' => false,
             'preview_token' => $previewToken,
@@ -236,26 +319,12 @@ class ProductDraftController extends Controller
             }
         }
 
-        $previewUrl = $tenant->getStoreUrl() . "/shop/product.html?id={$product->id}&preview_token={$previewToken}";
+        $product->load(['category', 'images']);
 
         return response()->json([
             'success' => true,
             'message' => 'تم إنشاء مسودة المنتج بنجاح (مخفية عن الزوار).',
-            'data' => [
-                'id' => $product->id,
-                'name' => $product->name,
-                'price_after' => $product->price_after,
-                'price_before' => $product->price_before,
-                'sizes' => $product->sizes ?: [],
-                'colors' => $product->colors ?: [],
-                'stock' => $product->stock,
-                'category_id' => $product->category_id,
-                'category_name' => $product->category?->name_ar ?: $product->category?->name,
-                'images_count' => count($savedImagePaths),
-                'preview_token' => $previewToken,
-                'preview_url' => $previewUrl,
-                'is_active' => false,
-            ],
+            'data' => $this->formatProductResponse($product, $tenant, $previewToken, count($savedImagePaths)),
         ], 201);
     }
 
@@ -294,7 +363,16 @@ class ProductDraftController extends Controller
             $fieldsToUpdate['stock'] = (int) $request->input('stock');
         }
 
-        // Category update
+        // Main Category & Category update
+        $mainCat = trim((string) ($request->input('main_category') ?? ''));
+        if (!empty($mainCat)) {
+            $allMain = Category::getMainCategories();
+            if (!in_array($mainCat, $allMain)) {
+                $allMain[] = $mainCat;
+                Category::saveMainCategories($allMain);
+            }
+        }
+
         if ($request->filled('category_name') && $tenant) {
             $catName = trim((string) $request->input('category_name'));
             $cat = Category::where('tenant_id', $tenant->id)
@@ -307,7 +385,12 @@ class ProductDraftController extends Controller
                     'tenant_id' => $tenant->id,
                     'name' => $catName,
                     'name_ar' => $catName,
+                    'main_category' => $mainCat ?: $catName,
                 ]);
+            } else {
+                if (!empty($mainCat) && empty($cat->main_category)) {
+                    $cat->update(['main_category' => $mainCat]);
+                }
             }
             $fieldsToUpdate['category_id'] = $cat->id;
         } elseif ($request->filled('category_id')) {
@@ -330,6 +413,46 @@ class ProductDraftController extends Controller
             $fieldsToUpdate['colors'] = count($colors) > 0 ? $colors : null;
         } else {
             $colors = is_array($product->colors) ? $product->colors : [];
+        }
+
+        // Custom Variants update
+        if ($request->has('custom_variants')) {
+            $rawCv = $request->input('custom_variants');
+            $cvArr = is_string($rawCv) ? json_decode($rawCv, true) : $rawCv;
+            if (is_array($cvArr)) {
+                $filteredCv = [];
+                foreach ($cvArr as $cv) {
+                    $cName = trim((string) ($cv['name'] ?? ''));
+                    $cValues = is_array($cv['values'] ?? null) ? array_values(array_filter($cv['values'])) : [];
+                    if (!empty($cName) && count($cValues) > 0) {
+                        $filteredCv[] = [
+                            'name' => $cName,
+                            'values' => $cValues,
+                        ];
+                    }
+                }
+                $fieldsToUpdate['custom_variants'] = count($filteredCv) > 0 ? $filteredCv : null;
+            }
+        }
+
+        // Price Tiers update
+        if ($request->has('price_tiers')) {
+            $rawTiers = $request->input('price_tiers');
+            $tiersArr = is_string($rawTiers) ? json_decode($rawTiers, true) : $rawTiers;
+            if (is_array($tiersArr)) {
+                $filteredTiers = [];
+                foreach ($tiersArr as $tier) {
+                    $minQty = (int) ($tier['min_qty'] ?? $tier['quantity'] ?? $tier['qty'] ?? 0);
+                    $tierPrice = (float) ($tier['price'] ?? 0);
+                    if ($minQty >= 2 && $tierPrice > 0) {
+                        $filteredTiers[] = [
+                            'min_qty' => $minQty,
+                            'price' => (string) $tierPrice,
+                        ];
+                    }
+                }
+                $fieldsToUpdate['price_tiers'] = count($filteredTiers) > 0 ? $filteredTiers : null;
+            }
         }
 
         if ($sizesUpdated || $colorsUpdated) {
@@ -370,26 +493,12 @@ class ProductDraftController extends Controller
 
         $product->update($fieldsToUpdate);
         $product->refresh();
-
-        $previewUrl = $tenant 
-            ? ($tenant->getStoreUrl() . "/shop/product.html?id={$product->id}&preview_token={$product->preview_token}")
-            : null;
+        $product->load(['category', 'images']);
 
         return response()->json([
             'success' => true,
             'message' => 'تم تحديث بيانات مسودة المنتج بنجاح.',
-            'data' => [
-                'id' => $product->id,
-                'name' => $product->name,
-                'price_after' => $product->price_after,
-                'price_before' => $product->price_before,
-                'sizes' => $product->sizes ?: [],
-                'colors' => $product->colors ?: [],
-                'stock' => $product->stock,
-                'category_name' => $product->category?->name_ar ?: $product->category?->name,
-                'preview_url' => $previewUrl,
-                'is_active' => false,
-            ],
+            'data' => $this->formatProductResponse($product, $tenant),
         ]);
     }
 
@@ -472,46 +581,82 @@ class ProductDraftController extends Controller
     }
 
     /**
+     * Format consistent product draft response payload.
+     */
+    protected function formatProductResponse(Product $product, ?Tenant $tenant = null, ?string $previewToken = null, int $imagesCount = 0): array
+    {
+        $token = $previewToken ?: $product->preview_token;
+        $previewUrl = ($tenant && $token) 
+            ? ($tenant->getStoreUrl() . "/shop/product.html?id={$product->id}&preview_token={$token}") 
+            : null;
+
+        return [
+            'id' => $product->id,
+            'name' => $product->name,
+            'description' => $product->description,
+            'price_after' => (int) $product->price_after,
+            'price_before' => (int) $product->price_before,
+            'sizes' => $product->sizes ?: [],
+            'colors' => $product->colors ?: [],
+            'custom_variants' => $product->custom_variants ?: [],
+            'price_tiers' => $product->price_tiers ?: [],
+            'stock' => (int) $product->stock,
+            'category_id' => $product->category_id,
+            'category_name' => $product->category?->name_ar ?: $product->category?->name,
+            'main_category' => $product->category?->main_category,
+            'images_count' => $imagesCount > 0 ? $imagesCount : ($product->images ? $product->images->count() : 0),
+            'preview_token' => $token,
+            'preview_url' => $previewUrl,
+            'is_active' => (bool) $product->is_active,
+        ];
+    }
+
+    /**
      * Helper to decode/normalize array inputs (sizes, colors).
      */
-    private function normalizeArray($input): array
+    protected function normalizeArray($input): array
     {
-        if (empty($input)) return [];
-        if (is_array($input)) return array_values(array_filter(array_map('trim', $input)));
+        if (empty($input)) {
+            return [];
+        }
+
         if (is_string($input)) {
             $decoded = json_decode($input, true);
             if (is_array($decoded)) {
-                return array_values(array_filter(array_map('trim', $decoded)));
+                return array_values(array_filter($decoded));
             }
-            $parts = preg_split('/[,،\-\/\s]+/', $input);
-            return array_values(array_filter(array_map('trim', $parts)));
+            return array_values(array_filter(array_map('trim', explode(',', $input))));
         }
+
+        if (is_array($input)) {
+            return array_values(array_filter($input));
+        }
+
         return [];
     }
 
     /**
-     * Helper to save base64 image data to public storage.
+     * Helper to save a Base64-encoded image string to disk.
      */
-    private function saveBase64Image(string $base64Data, string $folder): ?string
+    protected function saveBase64Image(string $b64, string $directory): ?string
     {
         try {
-            $cleanBase64 = $base64Data;
-            $extension = 'jpg';
-
-            if (preg_match('/^data:image\/(\w+);base64,/', $base64Data, $type)) {
-                $cleanBase64 = substr($base64Data, strpos($base64Data, ',') + 1);
-                $ext = strtolower($type[1]);
-                $extension = ($ext === 'jpeg') ? 'jpg' : $ext;
+            if (str_contains($b64, ';base64,')) {
+                [$meta, $b64Data] = explode(';base64,', $b64, 2);
+            } else {
+                $b64Data = $b64;
             }
 
-            $decoded = base64_decode($cleanBase64);
-            if (!$decoded) return null;
+            $decoded = base64_decode($b64Data);
+            if (!$decoded) {
+                return null;
+            }
 
-            $filename = $folder . '/' . Str::random(40) . '.' . $extension;
+            $filename = $directory . '/' . Str::random(40) . '.jpg';
             Storage::disk('public')->put($filename, $decoded);
+
             return $filename;
-        } catch (\Throwable $e) {
-            \Log::error('Error saving base64 image: ' . $e->getMessage());
+        } catch (\Exception $e) {
             return null;
         }
     }
