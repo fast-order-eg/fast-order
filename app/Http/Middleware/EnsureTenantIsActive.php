@@ -44,7 +44,8 @@ class EnsureTenantIsActive
             $isSuspended = !$tenant->is_active;
 
             $isAdminRoute = $request->is('admin*') || $request->is('*/admin*');
-            $canBypass = $isSuperAdmin && $isAdminRoute;
+            $hasPreviewToken = $request->filled('preview_token');
+            $canBypass = ($isSuperAdmin && $isAdminRoute) || $hasPreviewToken;
 
             // Block access if store is suspended or expired
             if (($isSuspended || $isExpired) && !$canBypass) {
