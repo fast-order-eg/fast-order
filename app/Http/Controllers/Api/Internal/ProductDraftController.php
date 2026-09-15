@@ -138,6 +138,20 @@ class ProductDraftController extends Controller
             }
         }
 
+        if (!$categoryId) {
+            $firstCat = Category::where('tenant_id', $tenant->id)->first();
+            if ($firstCat) {
+                $categoryId = $firstCat->id;
+            } else {
+                $defaultCat = Category::create([
+                    'tenant_id' => $tenant->id,
+                    'name' => 'عام',
+                    'name_ar' => 'عام',
+                ]);
+                $categoryId = $defaultCat->id;
+            }
+        }
+
         // Format sizes & colors
         $sizes = $this->normalizeArray($request->input('sizes'));
         $colors = $this->normalizeArray($request->input('colors'));
