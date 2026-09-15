@@ -145,10 +145,16 @@ export default function AbandonedCartsIndex({ abandonedCarts, records, stats, st
         setIsConverting(true);
         router.post(`/admin/abandoned-carts/${selectedCart.id}/convert`, convertForm, {
             preserveScroll: true,
-            onFinish: () => {
-                setIsConverting(false);
+            onSuccess: () => {
                 setShowConvertModal(false);
                 setSelectedCart(null);
+            },
+            onError: (errors) => {
+                const msg = Object.values(errors).flat().join('\n');
+                alert(msg || 'حدث خطأ أثناء حفظ الطلب');
+            },
+            onFinish: () => {
+                setIsConverting(false);
             }
         });
     };
