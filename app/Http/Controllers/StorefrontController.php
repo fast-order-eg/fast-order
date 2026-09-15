@@ -2245,6 +2245,18 @@ HTML;
             $html .= "\n" . $autoCaptureScript;
         }
 
+        // إظهار شريط تنبيه واضح إذا كانت الصفحة معاينة مسودة خاصة
+        if ($request->filled('preview_token')) {
+            $previewBanner = <<<HTML
+<div id="draftPreviewBanner" style="position: sticky; top: 0; z-index: 999999; background: linear-gradient(90deg, #f59e0b, #d97706); color: #ffffff; padding: 10px 16px; font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; gap: 8px;">
+  <span>⚠️ هذه مسودة معاينة خاصة لـ فاست اوردر - المنتج غير معروض للجمهور حتى الآن</span>
+</div>
+HTML;
+            if (stripos($html, '<body') !== false) {
+                $html = preg_replace('/(<body[^>]*>)/i', '$1' . "\n" . $previewBanner, $html, 1);
+            }
+        }
+
         return response($html)->header('Content-Type', 'text/html');
     }
 

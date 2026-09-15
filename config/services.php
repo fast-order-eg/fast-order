@@ -48,4 +48,9 @@ return [
         'private_key' => env('VAPID_PRIVATE_KEY', ''),
     ],
 
+    // Internal Services (Fast Order CRM Bot)
+    'internal' => [
+        'api_key' => env('INTERNAL_API_KEY', 'fastorder_secret_api_key_2026'),
+    ],
+
 ];

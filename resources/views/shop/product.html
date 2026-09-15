@@ -422,7 +422,7 @@
       `;
     }
 
-    fetch(`${window.API_BASE}/products/${id}`).then(r => r.json()).then(({ data }) => {
+    fetch(`${window.API_BASE}/products/${id}${location.search}`).then(r => r.json()).then(({ data }) => {
       window.currentProductData = data;
       window.currentProductUpsells = data.upsells || [];
       renderProductDetails(data);

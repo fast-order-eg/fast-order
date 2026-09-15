@@ -29,6 +29,7 @@ class Product extends Model
         'custom_variants',
         'variants_stock',
         'is_active',
+        'preview_token',
     ];
 
     protected $casts = [

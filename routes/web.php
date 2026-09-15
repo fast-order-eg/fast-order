@@ -630,8 +630,17 @@ Route::prefix('admin')->group(function () {
             };
 
             $prodQuery = Product::with(['category', 'images', 'upsells', 'crossSells']);
+            $previewToken = request('preview_token') ?: request('token');
             if (!auth()->check()) {
-                $prodQuery->where('is_active', true);
+                $prodQuery->where(function($q) use ($previewToken) {
+                    $q->where('is_active', true);
+                    if ($previewToken) {
+                        $q->orWhere(function($sub) use ($previewToken) {
+                            $sub->where('is_active', false)
+                                ->where('preview_token', $previewToken);
+                        });
+                    }
+                });
             }
             $p = $prodQuery->findOrFail($id);
             $cat = $p->category;

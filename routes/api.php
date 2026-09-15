@@ -46,3 +46,16 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth.apikey', 'throttle:api']
     Route::apiResource('categories', CategoryController::class);
     Route::apiResource('customers', CustomerController::class);
 });
+
+// ============================================================
+// Internal Services API (Fast Order CRM WhatsApp Bot)
+// ============================================================
+use App\Http\Controllers\Api\Internal\ProductDraftController;
+
+Route::prefix('internal')->name('api.internal.')->middleware(['auth.internal'])->group(function () {
+    Route::get('/store-lookup', [ProductDraftController::class, 'lookupStore'])->name('store.lookup');
+    Route::post('/products/draft', [ProductDraftController::class, 'createDraft'])->name('products.draft.create');
+    Route::patch('/products/draft/{id}', [ProductDraftController::class, 'updateDraft'])->name('products.draft.update');
+    Route::post('/products/draft/{id}/publish', [ProductDraftController::class, 'publishDraft'])->name('products.draft.publish');
+    Route::delete('/products/draft/{id}', [ProductDraftController::class, 'discardDraft'])->name('products.draft.discard');
+});

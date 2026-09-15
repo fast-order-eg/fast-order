@@ -178,4 +178,21 @@ class Tenant extends Model
     {
         return Setting::get('store_name', $this->name ?: 'متجري', $this->id);
     }
+
+    /**
+     * Get the full public store URL
+     */
+    public function getStoreUrl(): string
+    {
+        if (!empty($this->custom_domain)) {
+            return (str_starts_with($this->custom_domain, 'http') ? '' : 'https://') . $this->custom_domain;
+        }
+        $appUrl = config('app.url', 'https://fast-order-eg.tech');
+        $baseHost = parse_url($appUrl, PHP_URL_HOST) ?: 'fast-order-eg.tech';
+        if (str_starts_with($baseHost, 'app.')) {
+            $baseHost = substr($baseHost, 4);
+        }
+        $scheme = parse_url($appUrl, PHP_URL_SCHEME) ?: 'https';
+        return "{$scheme}://{$this->slug}.{$baseHost}";
+    }
 }
