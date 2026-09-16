@@ -115,7 +115,7 @@ class ProductDraftController extends Controller
 
             // 1.b) Check if path contains product ID or slug (e.g. /products/1346 or /p/some-slug)
             if (!empty($path)) {
-                if (preg_match('#/(?:product|products|p)/([^/?#]+)#i', $path, $pathMatches)) {
+                if (preg_match('~/(?:product|products|p)/([^/?#]+)~i', $path, $pathMatches)) {
                     $param = $pathMatches[1];
                     if (is_numeric($param)) {
                         $product = Product::find((int) $param);
@@ -131,7 +131,7 @@ class ProductDraftController extends Controller
                 }
 
                 // Path might contain store slug (e.g. /store/{slug} or /shop/{slug})
-                if (preg_match('#/(?:store|shop|m)/([^/?#.]+)(?:\.html)?#i', $path, $storeMatches)) {
+                if (preg_match('~/(?:store|shop|m)/([^/?#.]+)(?:\.html)?~i', $path, $storeMatches)) {
                     $candidateSlug = $storeMatches[1];
                     if (!in_array(strtolower($candidateSlug), ['product', 'products', 'cart', 'checkout', 'index'])) {
                         $tenant = Tenant::where('slug', $candidateSlug)->first();
