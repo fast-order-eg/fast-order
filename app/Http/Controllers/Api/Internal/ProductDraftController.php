@@ -235,10 +235,12 @@ class ProductDraftController extends Controller
 
             $phoneVariants = array_unique($phoneVariants);
 
-            // Search Tenant phone
+            // Search Tenant phone (both direct LIKE and digits-only REGEXP_REPLACE)
             $tenant = Tenant::where(function ($q) use ($phoneVariants) {
                 foreach ($phoneVariants as $pv) {
-                    $q->orWhere('phone', $pv)->orWhere('phone', 'like', "%{$pv}%");
+                    $q->orWhere('phone', $pv)
+                      ->orWhere('phone', 'like', "%{$pv}%")
+                      ->orWhereRaw("REGEXP_REPLACE(phone, '[^0-9]', '') LIKE ?", ["%{$pv}%"]);
                 }
             })->first();
 
@@ -246,10 +248,12 @@ class ProductDraftController extends Controller
                 return $tenant;
             }
 
-            // Search User phone
+            // Search User phone (both direct LIKE and digits-only REGEXP_REPLACE)
             $user = User::where(function ($q) use ($phoneVariants) {
                 foreach ($phoneVariants as $pv) {
-                    $q->orWhere('phone', $pv)->orWhere('phone', 'like', "%{$pv}%");
+                    $q->orWhere('phone', $pv)
+                      ->orWhere('phone', 'like', "%{$pv}%")
+                      ->orWhereRaw("REGEXP_REPLACE(phone, '[^0-9]', '') LIKE ?", ["%{$pv}%"]);
                 }
             })->first();
 
