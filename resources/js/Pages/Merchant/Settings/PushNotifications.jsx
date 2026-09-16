@@ -11,6 +11,21 @@ export default function PushNotifications({ vapidPublicKey, deviceCount, setting
     const [testLoading, setTestLoading] = useState(false);
     const [message, setMessage] = useState(null);
     const [supported, setSupported] = useState(true);
+    const [showUnblockModal, setShowUnblockModal] = useState(false);
+    const [activeHelpTab, setActiveHelpTab] = useState('android');
+
+    useEffect(() => {
+        if (typeof navigator !== 'undefined') {
+            const ua = navigator.userAgent;
+            if (/iPhone|iPad|iPod/.test(ua)) {
+                setActiveHelpTab('ios');
+            } else if (/Android/.test(ua)) {
+                setActiveHelpTab('android');
+            } else {
+                setActiveHelpTab('desktop');
+            }
+        }
+    }, []);
 
     useEffect(() => {
         if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
@@ -19,7 +34,42 @@ export default function PushNotifications({ vapidPublicKey, deviceCount, setting
         }
         setPermission(Notification.permission);
         checkSubscription();
+
+        const handleVisibilityChange = () => {
+            if ('Notification' in window) {
+                const currentPerm = Notification.permission;
+                setPermission(currentPerm);
+                if (currentPerm === 'granted') {
+                    checkSubscription();
+                }
+            }
+        };
+
+        window.addEventListener('focus', handleVisibilityChange);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            window.removeEventListener('focus', handleVisibilityChange);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, []);
+
+    const handleRecheckPermission = () => {
+        if ('Notification' in window) {
+            const currentPerm = Notification.permission;
+            setPermission(currentPerm);
+            if (currentPerm === 'granted') {
+                showMessage('success', 'رائع! تم السماح بالإشعارات بنجاح ✓');
+                setShowUnblockModal(false);
+                checkSubscription();
+            } else if (currentPerm === 'denied') {
+                showMessage('error', 'الإشعارات لا تزال محظورة في المتصفح. يرجى تطبيق الخطوات الموضحة.');
+            } else {
+                showMessage('info', 'الإشعارات بانتظار الإذن. اضغط على زر تفعيل بالأسفل.');
+                setShowUnblockModal(false);
+            }
+        }
+    };
 
     const checkSubscription = async () => {
         try {
@@ -57,6 +107,11 @@ export default function PushNotifications({ vapidPublicKey, deviceCount, setting
     const handleToggleSubscription = async () => {
         if (loading) return;
 
+        if (permission === 'denied') {
+            setShowUnblockModal(true);
+            return;
+        }
+
         if (isSubscribed) {
             // Unsubscribe
             setLoading(true);
@@ -91,6 +146,9 @@ export default function PushNotifications({ vapidPublicKey, deviceCount, setting
                 const perm = await Notification.requestPermission();
                 setPermission(perm);
                 if (perm !== 'granted') {
+                    if (perm === 'denied') {
+                        setShowUnblockModal(true);
+                    }
                     showMessage('error', 'لم يتم السماح بالإشعارات من المتصفح.');
                     return;
                 }
@@ -284,7 +342,7 @@ export default function PushNotifications({ vapidPublicKey, deviceCount, setting
                 {/* فحص حالة إذن المتصفح */}
                 <div className={`rounded-2xl p-4 border flex items-center justify-between gap-3 ${permInfo.badgeBg} shadow-sm`}>
                     <div className="flex items-center gap-3">
-                        <div className="relative flex h-3 w-3">
+                        <div className="relative flex h-3 w-3 shrink-0">
                             <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${permInfo.dotBg}`}></span>
                             <span className={`relative inline-flex rounded-full h-3 w-3 ${permInfo.dotBg}`}></span>
                         </div>
@@ -293,6 +351,16 @@ export default function PushNotifications({ vapidPublicKey, deviceCount, setting
                             <div className="text-xs opacity-80 mt-0.5">{permInfo.desc}</div>
                         </div>
                     </div>
+                    {permission === 'denied' && (
+                        <button
+                            type="button"
+                            onClick={() => setShowUnblockModal(true)}
+                            className="shrink-0 px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-sm flex items-center gap-1.5 cursor-pointer"
+                        >
+                            <span>طريقة فك الحظر</span>
+                            <span>🔓</span>
+                        </button>
+                    )}
                 </div>
 
                 {/* بطاقة السويتش ON/OFF للجهاز الحالي */}
@@ -310,6 +378,16 @@ export default function PushNotifications({ vapidPublicKey, deviceCount, setting
                                     ? 'الإشعارات مفعلة حالياً — ستصلك فوراً عند وصول أي طلب'
                                     : 'الإشعارات متوقفة على هذا الجهاز'}
                             </p>
+                            {permission === 'denied' && (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowUnblockModal(true)}
+                                    className="text-[11px] text-rose-600 hover:text-rose-700 font-bold underline flex items-center gap-1 cursor-pointer pt-0.5"
+                                >
+                                    <span>المتصفح يحظر التفعيل — اضغط هنا لفك الحظر في ثوانٍ</span>
+                                    <span>↗</span>
+                                </button>
+                            )}
                         </div>
 
                         {/* Switch ON/OFF */}
@@ -317,7 +395,7 @@ export default function PushNotifications({ vapidPublicKey, deviceCount, setting
                             type="button"
                             role="switch"
                             aria-checked={isSubscribed}
-                            disabled={loading || permission === 'denied'}
+                            disabled={loading}
                             onClick={handleToggleSubscription}
                             className={`relative inline-flex h-8 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed ${
                                 isSubscribed ? 'bg-indigo-600' : 'bg-gray-200'
@@ -375,6 +453,207 @@ export default function PushNotifications({ vapidPublicKey, deviceCount, setting
                         <span className="text-xs text-indigo-700 font-medium">أجهزة</span>
                     </div>
                 </div>
+
+                {/* Modal طريقة فك حظر الإشعارات */}
+                {showUnblockModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200" dir="rtl">
+                        <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh]">
+                            {/* رأس النافذة */}
+                            <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-rose-50 to-orange-50">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-2xl bg-rose-500 text-white flex items-center justify-center text-xl shadow-md">
+                                        🔓
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-900 text-base">فك حظر الإشعارات في المتصفح</h3>
+                                        <p className="text-xs text-gray-500 mt-0.5">خطوات بسيطة لتشغيل الإشعارات على جهازك</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowUnblockModal(false)}
+                                    className="w-8 h-8 rounded-full bg-white/80 hover:bg-white text-gray-400 hover:text-gray-600 flex items-center justify-center transition cursor-pointer"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+
+                            {/* التبويبات حسب نوع الجهاز */}
+                            <div className="flex border-b border-gray-100 bg-gray-50/70 p-1.5 gap-1.5">
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveHelpTab('android')}
+                                    className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                                        activeHelpTab === 'android'
+                                            ? 'bg-white text-indigo-600 shadow-xs'
+                                            : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                                >
+                                    <span>📱</span>
+                                    <span>أندرويد (Chrome)</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveHelpTab('ios')}
+                                    className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                                        activeHelpTab === 'ios'
+                                            ? 'bg-white text-indigo-600 shadow-xs'
+                                            : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                                >
+                                    <span>🍏</span>
+                                    <span>آيفون (iOS)</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveHelpTab('desktop')}
+                                    className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                                        activeHelpTab === 'desktop'
+                                            ? 'bg-white text-indigo-600 shadow-xs'
+                                            : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                                >
+                                    <span>💻</span>
+                                    <span>كمبيوتر (PC/Mac)</span>
+                                </button>
+                            </div>
+
+                            {/* محتوى الشرح */}
+                            <div className="p-5 overflow-y-auto space-y-4 text-xs sm:text-sm text-gray-700 leading-relaxed">
+                                {activeHelpTab === 'android' && (
+                                    <div className="space-y-3">
+                                        <div className="flex items-start gap-3 bg-amber-50/80 p-3.5 rounded-2xl border border-amber-200/70">
+                                            <span className="text-xl shrink-0">💡</span>
+                                            <div className="text-xs text-amber-900 leading-normal">
+                                                متصفح Google Chrome يحظر إرسال التنبيهات حالياً لأن الإذن تم رفضه مسبقاً. يمكنك فك الحظر في ثوانٍ:
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start gap-3 bg-gray-50 p-3.5 rounded-2xl border border-gray-100">
+                                            <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0">1</span>
+                                            <div>
+                                                <span className="font-bold text-gray-900">اضغط على أيقونة الإعدادات أو القفل بجانب الرابط:</span>
+                                                <p className="text-gray-500 text-xs mt-1">
+                                                    في شريط العنوان أعلى المتصفح، اضغط على أيقونة الإعدادات <strong className="text-indigo-600">🎛️</strong> أو القفل <strong className="text-indigo-600">🔒</strong> بجانب عنوان الموقع.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start gap-3 bg-gray-50 p-3.5 rounded-2xl border border-gray-100">
+                                            <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0">2</span>
+                                            <div>
+                                                <span className="font-bold text-gray-900">افتح الأذونات (Permissions):</span>
+                                                <p className="text-gray-500 text-xs mt-1">
+                                                    اختر «الأذونات» أو «إعدادات الموقع»، ثم اضغط على خيار <strong className="text-rose-600">«الإشعارات» (Notifications)</strong>.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start gap-3 bg-gray-50 p-3.5 rounded-2xl border border-gray-100">
+                                            <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0">3</span>
+                                            <div>
+                                                <span className="font-bold text-gray-900">اختر «السماح» (Allow):</span>
+                                                <p className="text-gray-500 text-xs mt-1">
+                                                    قم بتغيير الإذن إلى <strong className="text-emerald-600">«السماح»</strong> أو اضغط زر <strong className="text-indigo-600">«إعادة ضبط الأذونات»</strong>.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="p-3 bg-indigo-50/80 rounded-2xl border border-indigo-100 text-xs text-indigo-900 flex items-center gap-2 font-medium">
+                                            <span>⚡</span>
+                                            <span>بمجرد تعديل الإذن والرجوع لهذه الصفحة، سيكتشف المتصفح الإذن وتتحول الحالة للأخضر فوراً!</span>
+                                        </div>
+
+                                        <div className="p-3 bg-gray-100/80 rounded-2xl text-[11px] text-gray-600 leading-normal">
+                                            📌 <strong>ملاحظة لأندرويد 13 فما فوق:</strong> إذا لم تجد خيار الإشعارات في المتصفح، تأكد من ضبط الهاتف ➔ التطبيقات ➔ Chrome ➔ الإشعارات ➔ تفعيل «السماح بالإشعارات».
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeHelpTab === 'ios' && (
+                                    <div className="space-y-3">
+                                        <div className="flex items-start gap-3 bg-indigo-50/80 p-3.5 rounded-2xl border border-indigo-200/70">
+                                            <span className="text-xl shrink-0">🍏</span>
+                                            <div className="text-xs text-indigo-950 leading-normal">
+                                                أجهزة <strong>Apple iPhone (iOS)</strong> تشترط إضافة لوحة التحكم للشاشة الرئيسية لتشغيل الإشعارات الفورية:
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start gap-3 bg-gray-50 p-3.5 rounded-2xl border border-gray-100">
+                                            <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0">1</span>
+                                            <div>
+                                                <span className="font-bold text-gray-900">افتح الرابط في Safari:</span>
+                                                <p className="text-gray-500 text-xs mt-1">تأكد من فتح الرابط في متصفح Safari الرئيسي وليس متصفح داخلي.</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start gap-3 bg-gray-50 p-3.5 rounded-2xl border border-gray-100">
+                                            <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0">2</span>
+                                            <div>
+                                                <span className="font-bold text-gray-900">اضغط زر المشاركة (Share):</span>
+                                                <p className="text-gray-500 text-xs mt-1">اضغط على زر المشاركة أسفل الشاشة (مربع بسهم لأعلى ⎋).</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start gap-3 bg-gray-50 p-3.5 rounded-2xl border border-gray-100">
+                                            <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0">3</span>
+                                            <div>
+                                                <span className="font-bold text-gray-900">إضافة إلى الشاشة الرئيسية:</span>
+                                                <p className="text-gray-500 text-xs mt-1">مرر واختر «إضافة إلى الصفحة الرئيسية» (Add to Home Screen) ثم اضغط إضافة.</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start gap-3 bg-gray-50 p-3.5 rounded-2xl border border-gray-100">
+                                            <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0">4</span>
+                                            <div>
+                                                <span className="font-bold text-gray-900">افتح التطبيق من شاشتك وفعل التنبيه:</span>
+                                                <p className="text-gray-500 text-xs mt-1">افتح الأيقونة المضافة على شاشة الموبايل وادخل صفحة الإشعارات واضغط تفعيل.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeHelpTab === 'desktop' && (
+                                    <div className="space-y-3">
+                                        <div className="flex items-start gap-3 bg-gray-50 p-3.5 rounded-2xl border border-gray-100">
+                                            <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0">1</span>
+                                            <div>
+                                                <span className="font-bold text-gray-900">اضغط على أيقونة القفل أو الإعدادات 🎛️:</span>
+                                                <p className="text-gray-500 text-xs mt-1">على يسار أو يمين شريط العنوان في المتصفح بجانب الرابط.</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start gap-3 bg-gray-50 p-3.5 rounded-2xl border border-gray-100">
+                                            <span className="w-6 h-6 rounded-xl bg-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0">2</span>
+                                            <div>
+                                                <span className="font-bold text-gray-900">الإشعارات (Notifications):</span>
+                                                <p className="text-gray-500 text-xs mt-1">قم بتغيير خيار الإشعارات من «محظور» إلى «سماح / Allow» ثم اضغط زر إعادة تحميل الصفحة.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* الأزرار بالأسفل */}
+                            <div className="p-4 border-t border-gray-100 bg-gray-50/70 flex items-center justify-between gap-3">
+                                <button
+                                    type="button"
+                                    onClick={handleRecheckPermission}
+                                    className="flex-1 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl text-xs sm:text-sm transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+                                >
+                                    <span>🔄</span>
+                                    <span>فحص وتحديث الإذن الآن</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowUnblockModal(false)}
+                                    className="py-2.5 px-4 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold rounded-2xl text-xs sm:text-sm transition cursor-pointer"
+                                >
+                                    إغلاق
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </MerchantLayout>
     );
