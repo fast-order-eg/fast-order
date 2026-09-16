@@ -233,31 +233,52 @@ class ProductDraftController extends Controller
             }
         }
 
-        // Generate variant stock combinations
+        // 1. Process custom variant stock combinations & custom pricing
         $variantsStock = [];
-        $hasVariants = (count($sizes) > 0 || count($colors) > 0);
-        if ($hasVariants) {
-            $szList = count($sizes) > 0 ? $sizes : [null];
-            $clList = count($colors) > 0 ? $colors : [null];
-            foreach ($szList as $s) {
-                foreach ($clList as $c) {
+        if ($request->filled('variants_stock')) {
+            $rawVs = $request->input('variants_stock');
+            $vsArr = is_string($rawVs) ? json_decode($rawVs, true) : $rawVs;
+            if (is_array($vsArr) && count($vsArr) > 0) {
+                foreach ($vsArr as $item) {
                     $variantsStock[] = [
-                        'size' => $s,
-                        'color' => $c,
-                        'qty' => 100,
+                        'size' => $item['size'] ?? null,
+                        'color' => $item['color'] ?? null,
+                        'options' => is_array($item['options'] ?? null) ? $item['options'] : (is_object($item['options'] ?? null) ? (array) $item['options'] : []),
+                        'price' => isset($item['price']) && $item['price'] !== '' ? (float) $item['price'] : $priceAfter,
+                        'qty' => isset($item['qty']) && $item['qty'] !== '' ? (int) $item['qty'] : 100,
                     ];
                 }
             }
-        } elseif (!empty($customVariants)) {
-            foreach ($customVariants as $cv) {
-                foreach ($cv['values'] as $val) {
-                    $variantsStock[] = [
-                        'size' => null,
-                        'color' => null,
-                        'options' => [$cv['name'] => $val],
-                        'price' => '',
-                        'qty' => 100,
-                    ];
+        }
+
+        // 2. If not explicitly provided, generate combinations from sizes, colors, and custom variants
+        if (empty($variantsStock)) {
+            $hasVariants = (count($sizes) > 0 || count($colors) > 0);
+            if ($hasVariants) {
+                $szList = count($sizes) > 0 ? $sizes : [null];
+                $clList = count($colors) > 0 ? $colors : [null];
+                foreach ($szList as $s) {
+                    foreach ($clList as $c) {
+                        $variantsStock[] = [
+                            'size' => $s,
+                            'color' => $c,
+                            'options' => [],
+                            'price' => $priceAfter,
+                            'qty' => 100,
+                        ];
+                    }
+                }
+            } elseif (!empty($customVariants)) {
+                foreach ($customVariants as $cv) {
+                    foreach ($cv['values'] as $val) {
+                        $variantsStock[] = [
+                            'size' => null,
+                            'color' => null,
+                            'options' => [$cv['name'] => $val],
+                            'price' => $priceAfter,
+                            'qty' => 100,
+                        ];
+                    }
                 }
             }
         }
@@ -463,7 +484,24 @@ class ProductDraftController extends Controller
             }
         }
 
-        if ($sizesUpdated || $colorsUpdated) {
+        if ($request->has('variants_stock')) {
+            $rawVs = $request->input('variants_stock');
+            $vsArr = is_string($rawVs) ? json_decode($rawVs, true) : $rawVs;
+            if (is_array($vsArr)) {
+                $filteredVs = [];
+                $basePrice = $fieldsToUpdate['price_after'] ?? $product->price_after;
+                foreach ($vsArr as $item) {
+                    $filteredVs[] = [
+                        'size' => $item['size'] ?? null,
+                        'color' => $item['color'] ?? null,
+                        'options' => is_array($item['options'] ?? null) ? $item['options'] : (is_object($item['options'] ?? null) ? (array) $item['options'] : []),
+                        'price' => isset($item['price']) && $item['price'] !== '' ? (float) $item['price'] : $basePrice,
+                        'qty' => isset($item['qty']) && $item['qty'] !== '' ? (int) $item['qty'] : 100,
+                    ];
+                }
+                $fieldsToUpdate['variants_stock'] = count($filteredVs) > 0 ? $filteredVs : null;
+            }
+        } elseif ($sizesUpdated || $colorsUpdated) {
             $variantsStock = [];
             $szList = count($sizes) > 0 ? $sizes : [null];
             $clList = count($colors) > 0 ? $colors : [null];
@@ -539,6 +577,7 @@ class ProductDraftController extends Controller
         // Record initial stock movement
         if ($product->stock > 0) {
             StockMovement::create([
+                'tenant_id' => $product->tenant_id,
                 'product_id' => $product->id,
                 'quantity' => $product->stock,
                 'type' => 'in',
@@ -607,6 +646,7 @@ class ProductDraftController extends Controller
             'sizes' => $product->sizes ?: [],
             'colors' => $product->colors ?: [],
             'custom_variants' => $product->custom_variants ?: [],
+            'variants_stock' => $product->variants_stock ?: [],
             'price_tiers' => $product->price_tiers ?: [],
             'stock' => (int) $product->stock,
             'category_id' => $product->category_id,
