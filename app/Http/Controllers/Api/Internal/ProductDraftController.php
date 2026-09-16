@@ -57,19 +57,28 @@ class ProductDraftController extends Controller
         // Owner details if available
         $owner = $tenant->owner_id ? User::find($tenant->owner_id) : User::where('tenant_id', $tenant->id)->first();
 
+        $storeName = Setting::where('tenant_id', $tenant->id)->where('key', 'store_name')->value('value')
+            ?: $tenant->name
+            ?: $tenant->slug;
+
+        $storePhone = $tenant->phone 
+            ?: ($owner?->phone ?? null) 
+            ?: Setting::where('tenant_id', $tenant->id)->where('key', 'phone')->value('value')
+            ?: Setting::where('tenant_id', $tenant->id)->where('key', 'whatsapp')->value('value');
+
         return response()->json([
             'success' => true,
             'data' => [
                 'id' => $tenant->id,
-                'name' => $tenant->name ?: $tenant->slug,
+                'name' => $storeName,
                 'slug' => $tenant->slug,
                 'domain' => $tenant->custom_domain,
                 'email' => $tenant->email ?: ($owner?->email ?? null),
-                'phone' => $tenant->phone ?: ($owner?->phone ?? null),
+                'phone' => $storePhone,
                 'owner_name' => $owner?->name ?? null,
                 'store_url' => $tenant->getStoreUrl(),
                 'products_count' => $productsCount,
-                'main_categories' => Category::getMainCategories(),
+                'main_categories' => Category::getMainCategories($tenant->id),
                 'categories' => $categories,
             ],
         ]);
@@ -269,16 +278,49 @@ class ProductDraftController extends Controller
                     return $tenant;
                 }
             }
+            // Search Settings table (phone, whatsapp, mobile)
+            $setting = Setting::whereIn('key', ['phone', 'whatsapp', 'mobile'])
+                ->where(function ($q) use ($phoneVariants) {
+                    foreach ($phoneVariants as $pv) {
+                        $q->orWhere('value', $pv)
+                          ->orWhere('value', 'like', "%{$pv}%")
+                          ->orWhereRaw("REGEXP_REPLACE(value, '[^0-9]', '') LIKE ?", ["%{$pv}%"]);
+                    }
+                })->first();
+
+            if ($setting && $setting->tenant_id) {
+                $tenant = Tenant::find($setting->tenant_id);
+                if ($tenant) {
+                    return $tenant;
+                }
+            }
         }
 
         // =========================================================================
-        // 5. Store Name Lookup (Fallback)
+        // 5. Store Name Lookup (Fallback - checks Tenant name and Settings store_name)
         // =========================================================================
         $tenant = Tenant::where('name', $query)
             ->orWhere('name', 'like', "%{$query}%")
             ->first();
 
-        return $tenant;
+        if ($tenant) {
+            return $tenant;
+        }
+
+        $storeNameSetting = Setting::where('key', 'store_name')
+            ->where(function ($q) use ($query) {
+                $q->where('value', $query)
+                  ->orWhere('value', 'like', "%{$query}%");
+            })->first();
+
+        if ($storeNameSetting && $storeNameSetting->tenant_id) {
+            $tenant = Tenant::find($storeNameSetting->tenant_id);
+            if ($tenant) {
+                return $tenant;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -321,12 +363,12 @@ class ProductDraftController extends Controller
         $mainCat = trim((string) ($request->input('main_category') ?? ''));
         $catName = trim((string) ($validated['category_name'] ?? ''));
 
-        // If main_category is provided, ensure it exists in system main categories setting
-        if (!empty($mainCat)) {
-            $allMain = Category::getMainCategories();
+        // If main_category is provided, ensure it exists in tenant main categories setting
+        if (!empty($mainCat) && $tenant) {
+            $allMain = Category::getMainCategories($tenant->id);
             if (!in_array($mainCat, $allMain)) {
                 $allMain[] = $mainCat;
-                Category::saveMainCategories($allMain);
+                Category::saveMainCategories($allMain, $tenant->id);
             }
         }
 
@@ -578,11 +620,11 @@ class ProductDraftController extends Controller
 
         // Main Category & Category update
         $mainCat = trim((string) ($request->input('main_category') ?? ''));
-        if (!empty($mainCat)) {
-            $allMain = Category::getMainCategories();
+        if (!empty($mainCat) && $tenant) {
+            $allMain = Category::getMainCategories($tenant->id);
             if (!in_array($mainCat, $allMain)) {
                 $allMain[] = $mainCat;
-                Category::saveMainCategories($allMain);
+                Category::saveMainCategories($allMain, $tenant->id);
             }
         }
 

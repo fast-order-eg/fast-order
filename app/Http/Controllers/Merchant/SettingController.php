@@ -40,7 +40,7 @@ class SettingController extends Controller
             'tiktok_page' => Setting::get('tiktok_page', '', $tenantId),
             'google_maps_url' => Setting::get('google_maps_url', '', $tenantId),
             'address' => Setting::get('address', '', $tenantId),
-            'main_categories' => Category::getMainCategories(),
+            'main_categories' => Category::getMainCategories($tenantId),
         ];
 
         return Inertia::render('Merchant/Settings/Index', [
@@ -152,7 +152,7 @@ class SettingController extends Controller
             $cats = $request->input('main_categories', []);
             // Filter empty ones
             $cats = array_values(array_filter(array_map('trim', (array) $cats)));
-            Category::saveMainCategories($cats);
+            Category::saveMainCategories($cats, $tenantId);
         }
 
         return redirect()->route('settings.index')->with('success', 'تم حفظ الإعدادات والبيكسلات بنجاح ✓');

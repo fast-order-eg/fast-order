@@ -22,13 +22,13 @@ class Category extends Model
     ];
 
     // قائمة الأقسام الرئيسية المتاحة (مخزنة في الـ settings)
-    public static function getMainCategories(): array
+    public static function getMainCategories(?int $tenantId = null): array
     {
-        $stored = Setting::get('main_categories');
+        $stored = Setting::get('main_categories', null, $tenantId);
         if ($stored) {
             $arr = json_decode($stored, true);
             if (is_array($arr) && count($arr)) {
-                return $arr;
+                return array_values(array_unique(array_filter(array_map('trim', $arr))));
             }
         }
         // القيم الافتراضية
@@ -37,9 +37,10 @@ class Category extends Model
         ];
     }
 
-    public static function saveMainCategories(array $categories): void
+    public static function saveMainCategories(array $categories, ?int $tenantId = null): void
     {
-        Setting::set('main_categories', json_encode(array_values($categories), JSON_UNESCAPED_UNICODE));
+        $clean = array_values(array_unique(array_filter(array_map('trim', $categories))));
+        Setting::set('main_categories', json_encode($clean, JSON_UNESCAPED_UNICODE), 'general', $tenantId);
     }
 
     public function products()
