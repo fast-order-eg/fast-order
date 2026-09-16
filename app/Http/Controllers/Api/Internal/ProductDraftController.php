@@ -313,6 +313,9 @@ class ProductDraftController extends Controller
             'images_base64.*' => 'nullable|string',
         ]);
 
+        $priceAfter = (float) $validated['price_after'];
+        $priceBefore = isset($validated['price_before']) && $validated['price_before'] !== '' ? (float) $validated['price_before'] : 0.0;
+
         // Resolve Category & Main Category
         $categoryId = $validated['category_id'] ?? null;
         $mainCat = trim((string) ($request->input('main_category') ?? ''));
@@ -686,11 +689,14 @@ class ProductDraftController extends Controller
             $variantsStock = [];
             $szList = count($sizes) > 0 ? $sizes : [null];
             $clList = count($colors) > 0 ? $colors : [null];
+            $basePrice = $fieldsToUpdate['price_after'] ?? $product->price_after;
             foreach ($szList as $s) {
                 foreach ($clList as $c) {
                     $variantsStock[] = [
                         'size' => $s,
                         'color' => $c,
+                        'options' => [],
+                        'price' => (float) $basePrice,
                         'qty' => 100,
                     ];
                 }
