@@ -231,6 +231,7 @@ class OrderController extends Controller
                     'price'         => $item['price'],
                     'quantity'      => $item['qty'],
                     'total'         => $itemTotal,
+                    'image'         => $product?->main_image_path ? asset('storage/' . $product->main_image_path) : $product?->image_url,
                     'selectedSize'  => $item['selectedSize'] ?? null,
                     'selectedColor' => $item['selectedColor'] ?? null,
                     'options'       => $item['options'] ?? null,

@@ -41,6 +41,7 @@ class WebhookSender
      */
     public static function sendSingleWebhook(Webhook $webhook, string $event, array $payload): array
     {
+        $payload = self::formatPayload($event, $payload);
         $jsonPayload = json_encode($payload);
         $signature = hash_hmac('sha256', $jsonPayload, $webhook->secret);
 
@@ -82,4 +83,54 @@ class WebhookSender
             'duration_ms' => $duration,
         ];
     }
+
+    /**
+     * Normalize and format payload to ensure CRM and ERP compatibility (e.g. FasterSoft).
+     */
+    public static function formatPayload(string $event, array $payload): array
+    {
+        if (isset($payload['items']) && is_array($payload['items'])) {
+            foreach ($payload['items'] as &$item) {
+                if (!is_array($item)) {
+                    continue;
+                }
+
+                $productId = $item['id'] ?? $item['product_id'] ?? null;
+                $product = null;
+                if ($productId) {
+                    $product = \App\Models\Product::withoutGlobalScopes()->find($productId);
+                }
+
+                // Ensure product_id is explicitly set
+                if (!isset($item['product_id']) && $productId) {
+                    $item['product_id'] = $productId;
+                }
+
+                // Clean product name to match FasterSoft / ERP catalog
+                if ($product && !empty($product->name)) {
+                    if (!empty($item['name']) && $item['name'] !== $product->name) {
+                        $item['bundle_title'] = $item['name'];
+                    }
+                    $item['name'] = $product->name;
+                } elseif (!empty($item['name'])) {
+                    $cleanName = preg_replace('/\s*\(\s*\d+\s*(?:قطع|قطعة|قطعه|pieces?)\s*\)$/ui', '', (string)$item['name']);
+                    if ($cleanName && $cleanName !== $item['name']) {
+                        $item['bundle_title'] = $item['name'];
+                        $item['name'] = trim($cleanName);
+                    }
+                }
+
+                // Ensure product image is set
+                if (empty($item['image']) && $product) {
+                    $item['image'] = $product->main_image_path
+                        ? asset('storage/' . $product->main_image_path)
+                        : ($product->image_url ?? null);
+                }
+            }
+            unset($item);
+        }
+
+        return $payload;
+    }
 }
+
