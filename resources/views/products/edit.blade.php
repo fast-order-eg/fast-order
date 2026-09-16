@@ -417,35 +417,42 @@ function openVariantsModal() {
                 <table class="min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden">
                     <thead class="bg-gray-50">
                         <tr>
-                            ${sizesEnabled ? '<th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">المقاس</th>' : ''}
-                            ${colorsEnabled ? '<th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">اللون</th>' : ''}
-                            <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">الكمية المتاحة</th>
+                            ${sizesEnabled ? '<th class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">المقاس</th>' : ''}
+                            ${colorsEnabled ? '<th class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">اللون</th>' : ''}
+                            <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">السعر المخصص (ج.م)</th>
+                            <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">الكمية المتاحة</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
             `;
 
+            const defaultPrice = document.querySelector('input[name="price_after"]')?.value || '';
+
             combinations.forEach((combo, idx) => {
                 const existing = variantsStockData.find(v => v.size == combo.size && v.color == combo.color);
-                const val = existing ? existing.qty : '';
+                const val = existing ? (existing.qty ?? '') : '';
+                const priceVal = existing ? (existing.price ?? '') : '';
 
                 tableHTML += `<tr>`;
                 if (sizesEnabled) {
-                    tableHTML += `<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${combo.size}</td>`;
+                    tableHTML += `<td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${combo.size}</td>`;
                 }
                 if (colorsEnabled) {
-                    tableHTML += `<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    tableHTML += `<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                         <span class="px-2 py-1 bg-gray-100 rounded text-gray-700 border">${combo.color}</span>
                     </td>`;
                 }
-                tableHTML += `<td class="px-6 py-4 whitespace-nowrap">
-                    <input type="number" min="0" data-size="${combo.size || ''}" data-color="${combo.color || ''}" class="variant-qty-input focus:ring-purple-500 focus:border-purple-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border" placeholder="عدد القطع" value="${val}">
+                tableHTML += `<td class="px-4 py-3 whitespace-nowrap">
+                    <input type="number" step="0.01" min="0" data-size="${combo.size || ''}" data-color="${combo.color || ''}" class="variant-price-input focus:ring-purple-500 focus:border-purple-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border text-center font-medium" placeholder="${defaultPrice || 'السعر'}" value="${priceVal}">
+                </td>`;
+                tableHTML += `<td class="px-4 py-3 whitespace-nowrap">
+                    <input type="number" min="0" data-size="${combo.size || ''}" data-color="${combo.color || ''}" class="variant-qty-input focus:ring-purple-500 focus:border-purple-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border text-center font-medium" placeholder="100" value="${val}">
                 </td>`;
                 tableHTML += `</tr>`;
             });
 
             tableHTML += `</tbody></table>`;
-            tableHTML += `<div class="mt-4 text-sm text-gray-500"><i class="fas fa-info-circle mr-1"></i> اترك الحقل فارغاً إذا كنت تريد أن يكون المخزون غير محدود لهذا المقاس/اللون، واكتب 0 إذا نفذ من المخزون.</div>`;
+            tableHTML += `<div class="mt-4 text-sm text-gray-500"><i class="fas fa-info-circle mr-1"></i> يمكنك تحديد سعر مخصص لكل مقاس أو لون يختلف عن السعر الأساسي للمنتج. إذا تركته فارغاً سيتم استخدام السعر الأساسي.</div>`;
             modalBody.innerHTML = tableHTML;
         }
     }
@@ -459,14 +466,18 @@ function closeVariantsModal() {
 
 function saveVariantsModal() {
     variantsStockData = [];
-    const inputs = document.querySelectorAll('.variant-qty-input');
-    inputs.forEach(inp => {
-        const val = inp.value.trim();
-        if (val !== '') {
+    const rows = document.querySelectorAll('#variantsModalBody tbody tr');
+    rows.forEach(tr => {
+        const qtyInp = tr.querySelector('.variant-qty-input');
+        const priceInp = tr.querySelector('.variant-price-input');
+        if (qtyInp) {
+            const qtyVal = qtyInp.value.trim();
+            const priceVal = priceInp ? priceInp.value.trim() : '';
             variantsStockData.push({
-                size: inp.dataset.size || null,
-                color: inp.dataset.color || null,
-                qty: parseInt(val) || 0
+                size: qtyInp.dataset.size || null,
+                color: qtyInp.dataset.color || null,
+                price: priceVal !== '' ? parseFloat(priceVal) : null,
+                qty: qtyVal !== '' ? parseInt(qtyVal) : 100
             });
         }
     });
