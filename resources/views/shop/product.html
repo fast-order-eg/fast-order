@@ -270,7 +270,12 @@
       max-width: 100% !important;
       box-sizing: border-box !important;
       scrollbar-width: thin !important;
-      touch-action: pan-x !important;
+      touch-action: auto !important;
+      touch-action: pan-x pan-y !important;
+    }
+    
+    .p-thumbs:empty {
+      display: none !important;
     }
     
     .p-thumbs::-webkit-scrollbar {
@@ -295,6 +300,10 @@
       background: #ffffff;
       padding: 2px;
       box-sizing: border-box !important;
+      touch-action: auto !important;
+      touch-action: pan-x pan-y !important;
+      user-select: none;
+      -webkit-user-select: none;
     }
     
     .p-thumb img {
@@ -302,6 +311,9 @@
       height: 100%;
       object-fit: cover;
       border-radius: 6px;
+      pointer-events: none;
+      -webkit-user-drag: none;
+      user-select: none;
     }
     
     .p-thumb.active {
@@ -469,7 +481,7 @@
     }
 
     function renderProductDetails(p) {
-      const imgs = [p.image_url, ...(p.images || [])].filter(Boolean);
+      const imgs = Array.from(new Set([p.image_url, ...(p.images || [])].filter(Boolean)));
       const price = window.BirdCart.formatPrice ? window.BirdCart.formatPrice(p.price_after, p.price_before) : '';
       const descList = (p.description || '').split(/\r?\n|\u2022|-/).map(s => s.trim()).filter(Boolean).map(s => `<li>${s}</li>`).join('');
       root.innerHTML = `
@@ -479,7 +491,7 @@
               <div class="p-main">
                 <img id="pMain" src="${imgs[0] || ''}" alt="${p.name || ''}">
               </div>
-              <div class="p-thumbs">${imgs.map((src, i) => `<button class="p-thumb ${i === 0 ? 'active' : ''}" data-idx="${i}"><img src="${src}" alt="thumb ${i + 1}"></button>`).join('')}</div>
+              ${imgs.length > 1 ? `<div class="p-thumbs">${imgs.map((src, i) => `<button type="button" class="p-thumb ${i === 0 ? 'active' : ''}" data-idx="${i}"><img src="${src}" alt="thumb ${i + 1}"></button>`).join('')}</div>` : ''}
             </div>
           </div>
           <div class="card p-info-card" style="padding:16px">
@@ -572,7 +584,12 @@
         }, 150);
         thumbs.forEach(t => t.classList.remove('active'));
         const t = thumbs[idx];
-        if (t) t.classList.add('active');
+        if (t) {
+          t.classList.add('active');
+          try {
+            t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          } catch(e) {}
+        }
         if (lb && lb.classList.contains('open') && lbImg) {
           lbImg.src = nextSrc;
         }
