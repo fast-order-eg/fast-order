@@ -134,6 +134,13 @@ class ProductController extends Controller
         // tenant_id يُعبأ تلقائياً عبر BelongsToTenant trait
         $product = Product::create($data);
 
+        // إذا كان التصنيف ليس له صورة، يتم وضع صورة المنتج الرئيسية له تلقائياً
+        if ($product->category && empty($product->category->image_path) && !empty($product->main_image_path)) {
+            $product->category->update([
+                'image_path' => $product->main_image_path,
+            ]);
+        }
+
         // تسجيل حركة المخزون الابتدائية
         if ($product->stock > 0) {
             \App\Models\StockMovement::create([

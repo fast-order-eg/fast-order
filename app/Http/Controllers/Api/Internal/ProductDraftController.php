@@ -564,6 +564,13 @@ class ProductDraftController extends Controller
 
         $product = Product::create($productData);
 
+        // Auto-assign category image if category has no image
+        if ($product->category && empty($product->category->image_path) && !empty($product->main_image_path)) {
+            $product->category->update([
+                'image_path' => $product->main_image_path,
+            ]);
+        }
+
         // Save additional gallery images
         if (count($savedImagePaths) > 1) {
             for ($i = 1; $i < count($savedImagePaths); $i++) {
@@ -770,6 +777,13 @@ class ProductDraftController extends Controller
         $product->refresh();
         $product->load(['category', 'images']);
 
+        // Auto-assign category image if category has no image
+        if ($product->category && empty($product->category->image_path) && !empty($product->main_image_path)) {
+            $product->category->update([
+                'image_path' => $product->main_image_path,
+            ]);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'تم تحديث بيانات مسودة المنتج بنجاح.',
@@ -802,6 +816,13 @@ class ProductDraftController extends Controller
             'is_active' => true,
             'preview_token' => null, // Clear token once live
         ]);
+
+        // Auto-assign category image if category has no image
+        if ($product->category && empty($product->category->image_path) && !empty($product->main_image_path)) {
+            $product->category->update([
+                'image_path' => $product->main_image_path,
+            ]);
+        }
 
         // Record initial stock movement
         if ($product->stock > 0) {
