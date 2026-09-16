@@ -18,6 +18,14 @@ use Illuminate\Support\Str;
 class ProductDraftController extends Controller
 {
     /**
+     * Look up store/tenant details by slug or phone number (Route: store.lookup).
+     */
+    public function lookupStore(Request $request): JsonResponse
+    {
+        return $this->storeLookup($request);
+    }
+
+    /**
      * Look up store/tenant details by slug or phone number.
      */
     public function storeLookup(Request $request): JsonResponse
