@@ -26,7 +26,7 @@ class ProductDraftController extends Controller
     }
 
     /**
-     * Look up store/tenant details by slug or phone number.
+     * Look up store/tenant details by slug, url, email, or phone number.
      */
     public function storeLookup(Request $request): JsonResponse
     {
@@ -35,39 +35,16 @@ class ProductDraftController extends Controller
         if (empty($query)) {
             return response()->json([
                 'success' => false,
-                'message' => 'يرجى تقديم كود المتجر أو رقم الهاتف للبحث.',
+                'message' => 'يرجى تقديم كود المتجر، رابط المتجر/المنتج، رقم الهاتف، أو البريد الإلكتروني للبحث.',
             ], 400);
         }
 
-        $tenant = Tenant::where('slug', $query)
-            ->orWhere('id', is_numeric($query) ? (int) $query : 0)
-            ->first();
-
-        if (!$tenant) {
-            $cleanPhone = preg_replace('/[^0-9]/', '', $query);
-            if (str_starts_with($cleanPhone, '20') && strlen($cleanPhone) === 12) {
-                $cleanPhone = '0' . substr($cleanPhone, 2);
-            }
-
-            $tenant = Tenant::where(function ($q) use ($cleanPhone) {
-                $q->where('phone', 'like', "%{$cleanPhone}%")
-                  ->orWhere('phone', $cleanPhone);
-            })->first();
-
-            if (!$tenant) {
-                $owner = User::where('phone', 'like', "%{$cleanPhone}%")
-                    ->whereNotNull('tenant_id')
-                    ->first();
-                if ($owner) {
-                    $tenant = $owner->tenant;
-                }
-            }
-        }
+        $tenant = $this->resolveTenant($query);
 
         if (!$tenant) {
             return response()->json([
                 'success' => false,
-                'message' => "لم يتم العثور على متجر بالاسم أو الرقم: {$query}",
+                'message' => "لم يتم العثور على متجر مطابق للبيانات المدخلة: {$query}",
             ], 404);
         }
 
@@ -77,6 +54,9 @@ class ProductDraftController extends Controller
 
         $productsCount = Product::where('tenant_id', $tenant->id)->count();
 
+        // Owner details if available
+        $owner = $tenant->owner_id ? User::find($tenant->owner_id) : User::where('tenant_id', $tenant->id)->first();
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -84,7 +64,9 @@ class ProductDraftController extends Controller
                 'name' => $tenant->name ?: $tenant->slug,
                 'slug' => $tenant->slug,
                 'domain' => $tenant->custom_domain,
-                'phone' => $tenant->phone,
+                'email' => $tenant->email ?: ($owner?->email ?? null),
+                'phone' => $tenant->phone ?: ($owner?->phone ?? null),
+                'owner_name' => $owner?->name ?? null,
                 'store_url' => $tenant->getStoreUrl(),
                 'products_count' => $productsCount,
                 'main_categories' => Category::getMainCategories(),
@@ -94,19 +76,214 @@ class ProductDraftController extends Controller
     }
 
     /**
+     * Resolve tenant by URL, subdomain, custom domain, product id, email, phone, slug, or ID.
+     */
+    private function resolveTenant(string $query): ?Tenant
+    {
+        $query = trim($query);
+        if (empty($query)) {
+            return null;
+        }
+
+        // =========================================================================
+        // 1. URL / Domain Detection (e.g. https://emamrady63122.fast-order-eg.tech/shop/product.html?id=1346)
+        // =========================================================================
+        if (str_contains($query, 'http://') || str_contains($query, 'https://') || str_contains($query, '/') || str_contains($query, '.')) {
+            $rawUrl = $query;
+            if (!str_starts_with($rawUrl, 'http://') && !str_starts_with($rawUrl, 'https://')) {
+                $rawUrl = 'https://' . ltrim($rawUrl, '/');
+            }
+
+            $parsed = parse_url($rawUrl);
+            $host = strtolower($parsed['host'] ?? '');
+            $path = $parsed['path'] ?? '';
+            $queryString = $parsed['query'] ?? '';
+
+            // 1.a) Check if query string contains product ID (e.g. ?id=1346)
+            if (!empty($queryString)) {
+                parse_str($queryString, $queryParams);
+                if (!empty($queryParams['id']) && is_numeric($queryParams['id'])) {
+                    $product = Product::find((int) $queryParams['id']);
+                    if ($product && $product->tenant_id) {
+                        $tenant = Tenant::find($product->tenant_id);
+                        if ($tenant) {
+                            return $tenant;
+                        }
+                    }
+                }
+            }
+
+            // 1.b) Check if path contains product ID or slug (e.g. /products/1346 or /p/some-slug)
+            if (!empty($path)) {
+                if (preg_match('#/(?:product|products|p)/([^/?#]+)#i', $path, $pathMatches)) {
+                    $param = $pathMatches[1];
+                    if (is_numeric($param)) {
+                        $product = Product::find((int) $param);
+                    } else {
+                        $product = Product::where('slug', $param)->first();
+                    }
+                    if ($product && $product->tenant_id) {
+                        $tenant = Tenant::find($product->tenant_id);
+                        if ($tenant) {
+                            return $tenant;
+                        }
+                    }
+                }
+
+                // Path might contain store slug (e.g. /store/{slug} or /shop/{slug})
+                if (preg_match('#/(?:store|shop|m)/([^/?#.]+)(?:\.html)?#i', $path, $storeMatches)) {
+                    $candidateSlug = $storeMatches[1];
+                    if (!in_array(strtolower($candidateSlug), ['product', 'products', 'cart', 'checkout', 'index'])) {
+                        $tenant = Tenant::where('slug', $candidateSlug)->first();
+                        if ($tenant) {
+                            return $tenant;
+                        }
+                    }
+                }
+            }
+
+            // 1.c) Check if host matches custom domain on Tenant
+            if (!empty($host)) {
+                $tenant = Tenant::where('custom_domain', $host)
+                    ->orWhere('custom_domain', 'like', "%{$host}%")
+                    ->first();
+                if ($tenant) {
+                    return $tenant;
+                }
+
+                // 1.d) Extract subdomain from host (e.g. emamrady63122.fast-order-eg.tech)
+                $cleanHost = preg_replace('/:\d+$/', '', $host);
+                $parts = explode('.', $cleanHost);
+
+                if (count($parts) >= 3) {
+                    $subdomain = $parts[0];
+                    $ignored = ['www', 'app', 'api', 'admin', 'mail', 'crm', 'webmail', 'cpanel'];
+                    if (!in_array($subdomain, $ignored)) {
+                        $tenant = Tenant::where('slug', $subdomain)->first();
+                        if ($tenant) {
+                            return $tenant;
+                        }
+                    }
+                }
+            }
+        }
+
+        // =========================================================================
+        // 2. Email Detection (e.g. merchant@example.com)
+        // =========================================================================
+        if (str_contains($query, '@')) {
+            $cleanEmail = strtolower($query);
+            $tenant = Tenant::where('email', $cleanEmail)->first();
+            if ($tenant) {
+                return $tenant;
+            }
+
+            $user = User::where('email', $cleanEmail)->first();
+            if ($user) {
+                if ($user->tenant_id) {
+                    $tenant = Tenant::find($user->tenant_id);
+                    if ($tenant) {
+                        return $tenant;
+                    }
+                }
+                $tenant = Tenant::where('owner_id', $user->id)->first();
+                if ($tenant) {
+                    return $tenant;
+                }
+            }
+        }
+
+        // =========================================================================
+        // 3. Direct Slug or Tenant ID Lookup
+        // =========================================================================
+        $tenant = Tenant::where('slug', $query)
+            ->orWhere('slug', strtolower($query))
+            ->first();
+        if ($tenant) {
+            return $tenant;
+        }
+
+        if (is_numeric($query)) {
+            $tenant = Tenant::find((int) $query);
+            if ($tenant) {
+                return $tenant;
+            }
+        }
+
+        // =========================================================================
+        // 4. Phone Number Lookup (with Egyptian & International Normalization)
+        // =========================================================================
+        $digits = preg_replace('/[^0-9]/', '', $query);
+        if (!empty($digits) && strlen($digits) >= 7) {
+            $phoneVariants = [$digits];
+
+            // If 2010... (12 digits) -> 010... (11 digits)
+            if (str_starts_with($digits, '20') && strlen($digits) === 12) {
+                $phoneVariants[] = '0' . substr($digits, 2);
+                $phoneVariants[] = substr($digits, 2);
+            }
+            // If 010... (11 digits) -> 2010... (12 digits) and 10... (10 digits)
+            elseif (str_starts_with($digits, '0') && strlen($digits) === 11) {
+                $phoneVariants[] = '2' . $digits;
+                $phoneVariants[] = substr($digits, 1);
+            }
+            // If 10... (10 digits) -> 010... (11 digits) and 2010... (12 digits)
+            elseif (strlen($digits) === 10 && in_array(substr($digits, 0, 2), ['10', '11', '12', '15'])) {
+                $phoneVariants[] = '0' . $digits;
+                $phoneVariants[] = '20' . $digits;
+            }
+
+            $phoneVariants = array_unique($phoneVariants);
+
+            // Search Tenant phone
+            $tenant = Tenant::where(function ($q) use ($phoneVariants) {
+                foreach ($phoneVariants as $pv) {
+                    $q->orWhere('phone', $pv)->orWhere('phone', 'like', "%{$pv}%");
+                }
+            })->first();
+
+            if ($tenant) {
+                return $tenant;
+            }
+
+            // Search User phone
+            $user = User::where(function ($q) use ($phoneVariants) {
+                foreach ($phoneVariants as $pv) {
+                    $q->orWhere('phone', $pv)->orWhere('phone', 'like', "%{$pv}%");
+                }
+            })->first();
+
+            if ($user) {
+                if ($user->tenant_id) {
+                    $tenant = Tenant::find($user->tenant_id);
+                    if ($tenant) {
+                        return $tenant;
+                    }
+                }
+                $tenant = Tenant::where('owner_id', $user->id)->first();
+                if ($tenant) {
+                    return $tenant;
+                }
+            }
+        }
+
+        // =========================================================================
+        // 5. Store Name Lookup (Fallback)
+        // =========================================================================
+        $tenant = Tenant::where('name', $query)
+            ->orWhere('name', 'like', "%{$query}%")
+            ->first();
+
+        return $tenant;
+    }
+
+    /**
      * Create a new product draft (is_active = false) with secret preview token.
      */
     public function createDraft(Request $request): JsonResponse
     {
         $storeQuery = $request->input('store_slug') ?? $request->input('tenant_id');
-        $tenant = null;
-
-        if (is_numeric($storeQuery)) {
-            $tenant = Tenant::find((int) $storeQuery);
-        }
-        if (!$tenant && !empty($storeQuery)) {
-            $tenant = Tenant::where('slug', $storeQuery)->first();
-        }
+        $tenant = !empty($storeQuery) ? $this->resolveTenant((string) $storeQuery) : null;
 
         if (!$tenant) {
             return response()->json([
