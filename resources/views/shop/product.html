@@ -860,20 +860,54 @@
             }
           }
 
-          const cartItemName = finalQty > 1 ? `${btn.dataset.name} (${finalQty} قطع)` : btn.dataset.name;
+          const isBundleTier = !!(bundleInput && parseInt(bundleInput.value) > 1);
+
+          let hasDifferingPieceSelections = false;
+          if (finalQty > 1 && piecesSelections.length > 1) {
+            const first = piecesSelections[0];
+            for (let i = 1; i < piecesSelections.length; i++) {
+              const cur = piecesSelections[i];
+              if (cur.size !== first.size || cur.color !== first.color || JSON.stringify(cur.options || {}) !== JSON.stringify(first.options || {})) {
+                hasDifferingPieceSelections = true;
+                break;
+              }
+            }
+          }
+
+          const treatAsBundlePack = isBundleTier || hasDifferingPieceSelections;
+
+          let cartItemName = btn.dataset.name;
+          const unitPrice = (p.price_after !== undefined && p.price_after !== null && p.price_after !== '') 
+            ? Number(p.price_after) 
+            : (Number(btn.dataset.price) || Number(p.price) || 0);
+
+          let cartPrice = unitPrice;
+          let cartQty = qtyVal;
+
+          if (treatAsBundlePack) {
+            cartItemName = `${btn.dataset.name} (${finalQty} قطع)`;
+            cartPrice = totalBundlePrice;
+            cartQty = 1;
+          } else {
+            if (piecesSelections.length > 0 && !hasDifferingPieceSelections) {
+              combinedSize = piecesSelections[0]?.size || null;
+              combinedColor = piecesSelections[0]?.color || null;
+              combinedOptions = piecesSelections[0]?.options || null;
+            }
+          }
 
           window.BirdCart.addToCart({
             id: +btn.dataset.id,
             name: cartItemName,
-            price: totalBundlePrice,
+            price: cartPrice,
             image: btn.dataset.image || null,
             shipping_type: btn.dataset.shipping || 'free',
             price_before: Number(btn.dataset.priceBefore) || 0,
-            qty: 1,
+            qty: cartQty,
             selectedSize: combinedSize,
             selectedColor: combinedColor,
             options: combinedOptions,
-            piecesSelections: piecesSelections,
+            piecesSelections: treatAsBundlePack ? piecesSelections : null,
           });
           window.BirdCart.updateCartCount();
         }

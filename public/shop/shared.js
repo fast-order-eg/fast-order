@@ -784,7 +784,7 @@ function getCart(){ try{ return JSON.parse(localStorage.getItem('bird_cart')||'[
 function saveCart(items){ localStorage.setItem('bird_cart', JSON.stringify(items)); }
 function addToCart(item){
   const items = getCart();
-  const idx = items.findIndex(x=> x.id===item.id && (x.selectedSize||null)===(item.selectedSize||null) && (x.selectedColor||null)===(item.selectedColor||null) && JSON.stringify(x.options||{})===JSON.stringify(item.options||{}));
+  const idx = items.findIndex(x=> x.id===item.id && (x.name||'')===(item.name||'') && (x.selectedSize||null)===(item.selectedSize||null) && (x.selectedColor||null)===(item.selectedColor||null) && JSON.stringify(x.options||{})===JSON.stringify(item.options||{}));
   if(idx>-1){ items[idx].qty += item.qty||1; } else { items.push(item); }
   saveCart(items);
 }
