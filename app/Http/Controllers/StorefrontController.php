@@ -2139,15 +2139,6 @@ s0.parentNode.insertBefore(s1,s0);
 
     if (!window.__RECOVERED_TOAST_SHOWN__) {
       window.__RECOVERED_TOAST_SHOWN__ = true;
-      var toast = document.createElement('div');
-      toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#059669;color:#fff;padding:12px 24px;border-radius:12px;font-weight:700;font-size:0.95rem;box-shadow:0 10px 25px rgba(0,0,0,0.25);z-index:999999;font-family:Cairo,sans-serif;direction:rtl;display:flex;align-items:center;gap:8px;';
-      toast.innerHTML = '<span>🛒</span><span>تمت استعادة سلتك وبيانات طلبك بنجاح!</span>';
-      document.body.appendChild(toast);
-      setTimeout(function() {
-        toast.style.transition = 'opacity 0.5s ease';
-        toast.style.opacity = '0';
-        setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 500);
-      }, 4000);
     }
   }
 

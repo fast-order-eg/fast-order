@@ -162,7 +162,7 @@
         background: #ffffff;
         padding: 12px 16px;
         box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1);
-        z-index: 1000;
+        z-index: 100000 !important;
         border-top: 1px solid #e5e7eb;
       }
 
@@ -648,17 +648,114 @@
         }
       }, { passive: true });
 
-      // Lightbox (Fullscreen Modal)
-      function openLb() { lb.classList.add('open'); if (lbImg) lbImg.src = imgs[idx]; }
-      function closeLb() { lb.classList.remove('open'); }
+      // Lightbox (Fullscreen Modal) & History & Zoom
+      let isLbHistoryPushed = false;
+      let lbIsZoomed = false;
+
+      function resetLbZoom() {
+        if (!lbImg) return;
+        lbIsZoomed = false;
+        lbImg.style.transform = 'scale(1)';
+        lbImg.style.transformOrigin = 'center center';
+        lbImg.classList.remove('zoomed');
+      }
+
+      function toggleLbZoom(clientX, clientY) {
+        if (!lbImg) return;
+        if (!lbIsZoomed) {
+          const rect = lbImg.getBoundingClientRect();
+          const x = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+          const y = Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100));
+          lbImg.style.transformOrigin = `${x}% ${y}%`;
+          lbImg.style.transform = 'scale(2.5)';
+          lbImg.classList.add('zoomed');
+          lbIsZoomed = true;
+        } else {
+          resetLbZoom();
+        }
+      }
+
+      function openLb() {
+        if (!lb) return;
+        lb.classList.add('open');
+        resetLbZoom();
+        if (lbImg) lbImg.src = imgs[idx];
+
+        if (!isLbHistoryPushed) {
+          try {
+            history.pushState({ lbModalOpen: true }, '');
+            isLbHistoryPushed = true;
+          } catch(e) {}
+        }
+      }
+
+      function closeLb(popHistory = true) {
+        if (!lb) return;
+        lb.classList.remove('open');
+        resetLbZoom();
+
+        if (isLbHistoryPushed) {
+          isLbHistoryPushed = false;
+          if (popHistory) {
+            try {
+              if (history.state && history.state.lbModalOpen) {
+                history.back();
+              }
+            } catch(e) {}
+          }
+        }
+      }
+
+      window.__closeProductLightbox = closeLb;
+
+      window.addEventListener('popstate', (e) => {
+        if (lb && lb.classList.contains('open')) {
+          closeLb(false);
+        }
+      });
+
       main.addEventListener('click', openLb);
       const lbClose = lb.querySelector('.close');
-      if (lbClose) lbClose.addEventListener('click', closeLb);
-      lb.addEventListener('click', (e) => { if (e.target === lb) closeLb(); });
+      if (lbClose) lbClose.addEventListener('click', (e) => { e.stopPropagation(); closeLb(true); });
+      lb.addEventListener('click', (e) => { if (e.target === lb) closeLb(true); });
 
-      // Lightbox Touch Swipe
+      // Double-tap to zoom on mobile & double-click on desktop
+      let lbLastTapTime = 0;
       let lbStartX = 0;
       let lbStartY = 0;
+
+      if (lbImg) {
+        lbImg.addEventListener('touchend', (e) => {
+          const now = Date.now();
+          const timeSinceLastTap = now - lbLastTapTime;
+
+          let moved = false;
+          if (e.changedTouches && e.changedTouches.length > 0) {
+            const touch = e.changedTouches[0];
+            const dist = Math.hypot(touch.clientX - lbStartX, touch.clientY - lbStartY);
+            if (dist > 15) {
+              moved = true;
+            }
+          }
+
+          if (!moved && timeSinceLastTap > 0 && timeSinceLastTap < 320) {
+            e.preventDefault();
+            e.stopPropagation();
+            const touch = e.changedTouches[0];
+            toggleLbZoom(touch.clientX, touch.clientY);
+            lbLastTapTime = 0;
+          } else if (!moved) {
+            lbLastTapTime = now;
+          }
+        });
+
+        lbImg.addEventListener('dblclick', (e) => {
+          e.preventDefault();
+          toggleLbZoom(e.clientX, e.clientY);
+        });
+      }
+
+      // Lightbox Touch Swipe
       lb.addEventListener('touchstart', (e) => {
         if (e.touches && e.touches.length > 0) {
           lbStartX = e.touches[0].clientX;
@@ -670,7 +767,22 @@
         if (e.changedTouches && e.changedTouches.length > 0) {
           const diffX = e.changedTouches[0].clientX - lbStartX;
           const diffY = e.changedTouches[0].clientY - lbStartY;
+
+          if (lbIsZoomed) {
+            if (Math.abs(diffX) > 120 && Math.abs(diffX) > Math.abs(diffY)) {
+              resetLbZoom();
+              if (diffX < 0) {
+                show(idx - 1);
+              } else {
+                show(idx + 1);
+              }
+              if (lbImg) lbImg.src = imgs[idx];
+            }
+            return;
+          }
+
           if (Math.abs(diffX) > 35 && Math.abs(diffX) > Math.abs(diffY)) {
+            resetLbZoom();
             if (diffX < 0) {
               show(idx - 1);
             } else {
@@ -682,10 +794,10 @@
       }, { passive: true });
 
       document.addEventListener('keydown', (e) => {
-        if (!lb.classList.contains('open')) return;
-        if (e.key === 'Escape') closeLb();
-        if (e.key === 'ArrowLeft') { show(idx - 1); if (lbImg) lbImg.src = imgs[idx]; }
-        if (e.key === 'ArrowRight') { show(idx + 1); if (lbImg) lbImg.src = imgs[idx]; }
+        if (!lb || !lb.classList.contains('open')) return;
+        if (e.key === 'Escape') closeLb(true);
+        if (e.key === 'ArrowLeft') { resetLbZoom(); show(idx - 1); if (lbImg) lbImg.src = imgs[idx]; }
+        if (e.key === 'ArrowRight') { resetLbZoom(); show(idx + 1); if (lbImg) lbImg.src = imgs[idx]; }
       });
 
       window.currentProductData = p;
@@ -704,6 +816,10 @@
 
       // Cart logic
       function handleCartAction(btn, isBuyNow, bypassUpsell = false) {
+        if (typeof closeLb === 'function') {
+          closeLb(true);
+        }
+
         if (window.currentProductUpsells && window.currentProductUpsells.length > 0 && !bypassUpsell) {
           showUpsellPopup(window.currentProductUpsells[0], btn, isBuyNow);
           return;
