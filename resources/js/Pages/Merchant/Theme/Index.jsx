@@ -5,7 +5,14 @@ import MerchantLayout from '@/Layouts/MerchantLayout';
 // Color Preset Themes
 const COLOR_PRESETS = [
     {
-        name: 'برتقالي دافئ (الافتراضي)',
+        name: 'أسود أنيق (الافتراضي)',
+        primary: '#000000',
+        secondary: '#1F2937',
+        background: '#FFFFFF',
+        class: 'from-gray-950 to-gray-800'
+    },
+    {
+        name: 'برتقالي دافئ',
         primary: '#F97316',
         secondary: '#1F2937',
         background: '#FFFFFF',
@@ -46,7 +53,7 @@ export default function ThemeIndex({ themeCustomization }) {
 
     // Form setup using Inertia's useForm helper
     const { data, setData, put, processing, errors, hasChanges } = useForm({
-        primary_color: themeCustomization.primary_color || '#F97316',
+        primary_color: themeCustomization.primary_color || '#000000',
         secondary_color: themeCustomization.secondary_color || '#1F2937',
         background_color: themeCustomization.background_color || '#FFFFFF',
         font_family: themeCustomization.font_family || 'Almarai',

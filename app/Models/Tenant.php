@@ -83,6 +83,25 @@ class Tenant extends Model
             foreach ($defaultCategories as $catData) {
                 Category::create(array_merge($catData, ['tenant_id' => $tenant->id]));
             }
+
+            // 4. Auto-seed Default Theme Settings (Primary Color: Black #000000) for new merchants
+            $defaultTheme = [
+                'primary_color' => '#000000',
+                'secondary_color' => '#1F2937',
+                'background_color' => '#FFFFFF',
+                'font_family' => 'Almarai',
+                'header_layout' => 'Classic',
+                'banner_layout' => 'Slider',
+                'border_radius' => '8px',
+            ];
+            Setting::set('theme_customization', json_encode($defaultTheme), 'general', $tenant->id);
+            Setting::set('primary_color', '#000000', 'general', $tenant->id);
+            Setting::set('secondary_color', '#1F2937', 'general', $tenant->id);
+            Setting::set('background_color', '#FFFFFF', 'general', $tenant->id);
+            Setting::set('font_family', 'Almarai', 'general', $tenant->id);
+            Setting::set('header_layout', 'Classic', 'general', $tenant->id);
+            Setting::set('banner_layout', 'Slider', 'general', $tenant->id);
+            Setting::set('border_radius', '8px', 'general', $tenant->id);
         });
     }
 
