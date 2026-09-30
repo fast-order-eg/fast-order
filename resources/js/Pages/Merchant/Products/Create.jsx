@@ -65,6 +65,8 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
     
     const [sizeInput, setSizeInput] = useState('');
     const [colorInput, setColorInput] = useState('');
+    const [selectingColorIndex, setSelectingColorIndex] = useState(null);
+    const [uploadingColorImage, setUploadingColorImage] = useState(false);
     const [customVariantInputs, setCustomVariantInputs] = useState({});
 
     // Extra Features States
@@ -205,9 +207,61 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
         setData('price_tiers_json', JSON.stringify(newTiers));
     };
 
+    const addColor = (name) => {
+        const trimmed = (name || '').trim();
+        if (!trimmed) return;
+        const exists = (data.colors || []).some(c => (typeof c === 'object' && c !== null ? c.name : c) === trimmed);
+        if (!exists) {
+            setData('colors', [...data.colors, { name: trimmed, image: null }]);
+            setColorInput('');
+        }
+    };
+
+    const updateColorImage = (index, imageUrl) => {
+        const newColors = (data.colors || []).map((col, i) => {
+            if (i !== index) return col;
+            const colName = typeof col === 'object' && col !== null ? col.name : col;
+            return { name: colName, image: imageUrl };
+        });
+        setData('colors', newColors);
+        setSelectingColorIndex(null);
+    };
+
+    const removeColorImage = (index) => {
+        updateColorImage(index, null);
+    };
+
+    const handleColorImageUpload = async (colorIdx, file) => {
+        if (!file) return;
+        setUploadingColorImage(true);
+        const formData = new FormData();
+        formData.append('image', file);
+        try {
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            const res = await fetch('/admin/products/upload-color-image', {
+                method: 'POST',
+                headers: {
+                    ...(csrf ? { 'X-CSRF-TOKEN': csrf } : {}),
+                    'Accept': 'application/json',
+                },
+                body: formData
+            });
+            const json = await res.json();
+            if (json.success && (json.image_url || json.image_path)) {
+                updateColorImage(colorIdx, json.image_url || (`/storage/${json.image_path}`));
+            } else {
+                alert('حدث خطأ أثناء رفع الصورة: ' + (json.message || ''));
+            }
+        } catch(err) {
+            alert('تعذر رفع صورة اللون: ' + err.message);
+        } finally {
+            setUploadingColorImage(false);
+        }
+    };
+
     // Variant Combinations
     const activeSizes = data.sizes.filter(s => s.trim() !== '');
-    const activeColors = data.colors.filter(c => c.trim() !== '');
+    const activeColors = (data.colors || []).map(c => (typeof c === 'object' && c !== null ? c.name : c) || '').filter(c => typeof c === 'string' && c.trim() !== '');
     const activeCustomVariants = (data.custom_variants || []).filter(cv => cv.name && cv.name.trim() !== '' && cv.values && cv.values.filter(v => v.trim() !== '').length > 0);
     const hasVariants = activeSizes.length > 0 || activeColors.length > 0 || activeCustomVariants.length > 0;
 
@@ -723,50 +777,84 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
 
                             {/* Colors */}
                             <div className="space-y-3">
-                                <label className="block text-sm font-semibold text-gray-700">الألوان المتاحة</label>
+                                <div className="flex items-center justify-between">
+                                    <label className="block text-sm font-semibold text-gray-700">الألوان المتاحة للمنتج</label>
+                                    <span className="text-xs text-gray-400">يمكنك ربط كل لون بصورة تظهر للعميل عند اختياره</span>
+                                </div>
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
-                                        placeholder="مثال: أحمر، أزرق، أسود"
+                                        placeholder="اكتب اسم اللون (مثال: نبيتي، أسود، كحلي...)"
                                         value={colorInput}
                                         onChange={(e) => setColorInput(e.target.value)}
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter') {
                                                 e.preventDefault();
-                                                if (colorInput.trim() && !data.colors.includes(colorInput.trim())) {
-                                                    setData('colors', [...data.colors, colorInput.trim()]);
-                                                    setColorInput('');
-                                                }
+                                                addColor(colorInput);
                                             }
                                         }}
                                         className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white"
                                     />
                                     <button
                                         type="button"
-                                        onClick={() => {
-                                            if (colorInput.trim() && !data.colors.includes(colorInput.trim())) {
-                                                setData('colors', [...data.colors, colorInput.trim()]);
-                                                setColorInput('');
-                                            }
-                                        }}
+                                        onClick={() => addColor(colorInput)}
                                         className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
                                     >
-                                        إضافة
+                                        إضافة لون
                                     </button>
                                 </div>
-                                <div className="flex flex-wrap gap-1.5 mt-2">
-                                    {data.colors.map((col, idx) => (
-                                        <span key={idx} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-50 text-orange-700 text-xs font-semibold border border-orange-100">
-                                            {col}
-                                            <button
-                                                type="button"
-                                                onClick={() => setData('colors', data.colors.filter(x => x !== col))}
-                                                className="text-orange-500 hover:text-orange-700 font-bold"
-                                            >
-                                                ✕
-                                            </button>
-                                        </span>
-                                    ))}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3">
+                                    {data.colors.map((col, idx) => {
+                                        const colName = typeof col === 'object' && col !== null ? col.name : col;
+                                        const colImage = typeof col === 'object' && col !== null ? col.image : null;
+                                        return (
+                                            <div key={idx} className="flex items-center justify-between gap-2 p-2 rounded-xl bg-gray-50 border border-gray-200 hover:border-orange-300 transition-all">
+                                                <div className="flex items-center gap-2 min-w-0">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSelectingColorIndex(idx)}
+                                                        className="relative w-9 h-9 rounded-lg overflow-hidden border border-gray-300 bg-white flex items-center justify-center hover:opacity-80 transition-opacity flex-shrink-0 group/img"
+                                                        title={colImage ? 'تغيير صورة هذا اللون' : 'ربط هذا اللون بصورة'}
+                                                    >
+                                                        {colImage ? (
+                                                            <img src={colImage} alt={colName} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <svg className="w-4 h-4 text-gray-400 group-hover/img:text-orange-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                            </svg>
+                                                        )}
+                                                        <div className="absolute inset-0 bg-black/40 text-white text-[8px] font-bold opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity">
+                                                            {colImage ? 'تغيير' : 'ربط'}
+                                                        </div>
+                                                    </button>
+                                                    <div className="min-w-0">
+                                                        <span className="text-xs font-bold text-gray-900 block truncate">{colName}</span>
+                                                        {colImage ? (
+                                                            <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-0.5">
+                                                                <span>✓</span> مربوط بصورة
+                                                            </span>
+                                                        ) : (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setSelectingColorIndex(idx)}
+                                                                className="text-[10px] text-orange-600 hover:text-orange-700 underline font-semibold"
+                                                            >
+                                                                + ربط صورة
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setData('colors', data.colors.filter((_, i) => i !== idx))}
+                                                    className="w-6 h-6 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center text-xs font-bold transition-colors"
+                                                    title="حذف اللون"
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
@@ -1072,6 +1160,112 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
                     </div>
                 </form>
             </div>
+
+            {/* Modal for selecting or uploading image for a color */}
+            {selectingColorIndex !== null && data.colors[selectingColorIndex] && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-100 space-y-5 text-right" dir="rtl">
+                        <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                            <div className="flex items-center gap-2">
+                                <span className="text-xl">🎨</span>
+                                <div>
+                                    <h3 className="font-bold text-gray-900 text-base">
+                                        ربط صورة باللون: <span className="text-orange-600 font-extrabold">{typeof data.colors[selectingColorIndex] === 'object' ? data.colors[selectingColorIndex]?.name : data.colors[selectingColorIndex]}</span>
+                                    </h3>
+                                    <p className="text-xs text-gray-500">اختر صورة هذا اللون لتظهر كخيار مرئي أنيق للعميل في صفحة المنتج</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setSelectingColorIndex(null)}
+                                className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 flex items-center justify-center font-bold text-sm"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Existing Product Images to Pick With 1 Click */}
+                        <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-2">1. اختر من صور المنتج الحالية (بنقرة واحدة):</label>
+                            {[mainImagePreview, ...galleryPreviews].filter(Boolean).length > 0 ? (
+                                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2.5 max-h-48 overflow-y-auto p-1 border border-gray-100 rounded-xl bg-gray-50/50">
+                                    {[mainImagePreview, ...galleryPreviews].filter(Boolean).map((imgUrl, iIdx) => {
+                                        const isCurrent = (typeof data.colors[selectingColorIndex] === 'object' ? data.colors[selectingColorIndex]?.image : null) === imgUrl;
+                                        return (
+                                            <button
+                                                key={iIdx}
+                                                type="button"
+                                                onClick={() => updateColorImage(selectingColorIndex, imgUrl)}
+                                                className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all group ${
+                                                    isCurrent ? 'border-orange-600 ring-2 ring-orange-200' : 'border-gray-200 hover:border-gray-400'
+                                                }`}
+                                            >
+                                                <img src={imgUrl} alt="Product img" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                                                {isCurrent && (
+                                                    <div className="absolute inset-0 bg-orange-600/30 flex items-center justify-center text-white font-black text-sm">
+                                                        ✓
+                                                    </div>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <p className="text-xs text-gray-400 bg-gray-50 p-3 rounded-lg border border-dashed border-gray-200 text-center">
+                                    لم تقم برفع صور للمنتج بعد. يمكنك رفع صورة خاصة باللون بالأسفل مباشرة.
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Upload New Specific Image for this Color */}
+                        <div className="pt-3 border-t border-gray-100">
+                            <label className="block text-xs font-bold text-gray-700 mb-2">2. أو رفع صورة جديدة خاصة بهذا اللون من جهازك:</label>
+                            <div className="flex items-center gap-3">
+                                <label className="flex-1 flex items-center justify-center gap-2 py-3 px-4 border-2 border-dashed border-gray-300 rounded-xl hover:border-orange-500 hover:bg-orange-50/30 cursor-pointer transition-all">
+                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                    </svg>
+                                    <span className="text-xs font-bold text-gray-600">
+                                        {uploadingColorImage ? 'جاري رفع وضغط الصورة...' : 'اضغط لاختيار صورة من جهازك'}
+                                    </span>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        disabled={uploadingColorImage}
+                                        onChange={(e) => {
+                                            if (e.target.files && e.target.files[0]) {
+                                                handleColorImageUpload(selectingColorIndex, e.target.files[0]);
+                                            }
+                                        }}
+                                        className="hidden"
+                                    />
+                                </label>
+                            </div>
+                        </div>
+
+                        {/* Remove linked image button if color has image */}
+                        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                            {(typeof data.colors[selectingColorIndex] === 'object' && data.colors[selectingColorIndex]?.image) ? (
+                                <button
+                                    type="button"
+                                    onClick={() => removeColorImage(selectingColorIndex)}
+                                    className="text-xs font-bold text-red-600 hover:text-red-700 hover:underline flex items-center gap-1"
+                                >
+                                    <span>🗑️</span> إزالة الصورة المربوطة (إبقاء اللون نصاً فقط)
+                                </button>
+                            ) : <div></div>}
+
+                            <button
+                                type="button"
+                                onClick={() => setSelectingColorIndex(null)}
+                                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-colors"
+                            >
+                                إغلاق
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </MerchantLayout>
     );
 }

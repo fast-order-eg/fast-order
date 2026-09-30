@@ -1541,6 +1541,8 @@ window.adjustBrandFontSize = adjustBrandFontSize;
   function extractProductPageSelections(qty) {
     var sizePieces = [];
     var colorPieces = [];
+    var colorImagePieces = [];
+    var piecesSelections = [];
     var customOptions = {};
 
     var finalQty = parseInt(qty) || 1;
@@ -1556,8 +1558,20 @@ window.adjustBrandFontSize = adjustBrandFontSize;
       var cInp = document.querySelector('input[name="product_color_' + i + '"]:checked') ||
                  document.querySelector('input[name="product_color"]:checked') ||
                  document.querySelector('input[name="color"]:checked');
+      var cImg = null;
       if (cInp && cInp.value) {
         colorPieces.push(cInp.value);
+        cImg = cInp.getAttribute('data-image') || null;
+        colorImagePieces.push(cImg);
+      }
+
+      if ((sInp && sInp.value) || (cInp && cInp.value)) {
+        piecesSelections.push({
+          piece: i + 1,
+          size: sInp ? sInp.value : null,
+          color: cInp ? cInp.value : null,
+          color_image: cImg
+        });
       }
     }
 
@@ -1617,12 +1631,17 @@ window.adjustBrandFontSize = adjustBrandFontSize;
         : colorPieces[0];
     }
 
+    var primaryColorImage = colorImagePieces.find(function(img) { return !!img; }) || null;
+
     return {
       selectedSize: combinedSize,
       selectedColor: combinedColor,
+      selectedColorImage: primaryColorImage,
       options: Object.keys(customOptions).length > 0 ? customOptions : null,
       sizePieces: sizePieces,
-      colorPieces: colorPieces
+      colorPieces: colorPieces,
+      colorImagePieces: colorImagePieces,
+      piecesSelections: piecesSelections
     };
   }
   window.extractProductPageSelections = extractProductPageSelections;
@@ -1683,12 +1702,14 @@ window.adjustBrandFontSize = adjustBrandFontSize;
           price: prodPrice,
           qty: qty,
           quantity: qty,
-          image: prodImg,
+          image: variantInfo.selectedColorImage || prodImg,
           selectedSize: variantInfo.selectedSize,
           selectedColor: variantInfo.selectedColor,
+          selectedColorImage: variantInfo.selectedColorImage,
           options: variantInfo.options,
           sizePieces: variantInfo.sizePieces,
-          colorPieces: variantInfo.colorPieces
+          colorPieces: variantInfo.colorPieces,
+          piecesSelections: variantInfo.piecesSelections
         }];
         return items;
       }

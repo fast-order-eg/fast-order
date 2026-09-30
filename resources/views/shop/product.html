@@ -355,6 +355,63 @@
       box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25) !important;
       font-weight: 700 !important;
     }
+
+    /* Color Swatches Grid (Compact 4-col for mobile, ideal for 17+ colors) */
+    .color-swatches-grid {
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 8px !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    @media (min-width: 640px) {
+      .color-swatches-grid {
+        grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)) !important;
+        gap: 10px !important;
+      }
+    }
+    .color-swatch-item {
+      cursor: pointer;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid #e5e7eb;
+      background: #ffffff;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-sizing: border-box;
+      touch-action: manipulation;
+      user-select: none;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .color-swatch-item:hover {
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
+    }
+    .color-swatch-item.selected,
+    .color-swatch-item.active,
+    .color-swatch-item:has(input[type="radio"]:checked) {
+      border-color: var(--primary-color, #111827) !important;
+      box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.18) !important;
+    }
+    .color-swatch-item.selected .swatch-check,
+    .color-swatch-item.active .swatch-check,
+    .color-swatch-item:has(input[type="radio"]:checked) .swatch-check {
+      display: flex !important;
+      background: var(--primary-color, #111827) !important;
+    }
+    .color-swatch-item.selected .swatch-name-bar,
+    .color-swatch-item.active .swatch-name-bar,
+    .color-swatch-item:has(input[type="radio"]:checked) .swatch-name-bar {
+      color: var(--primary-color, #111827) !important;
+      font-weight: 800 !important;
+    }
+    .color-swatch-item.selected .swatch-img-wrap img,
+    .color-swatch-item.active .swatch-img-wrap img,
+    .color-swatch-item:has(input[type="radio"]:checked) .swatch-img-wrap img {
+      transform: scale(1.06);
+    }
     
     /* Stock status badges */
     .badge-stock {
@@ -596,6 +653,32 @@
       }
 
       thumbs.forEach(t => t.addEventListener('click', () => show(+t.dataset.idx)));
+
+      window.switchMainProductImage = function(src) {
+        if (!src || !main) return;
+        main.classList.add('fade-out');
+        setTimeout(() => {
+          main.src = src;
+          main.classList.remove('fade-out');
+        }, 120);
+
+        if (lb && lb.classList.contains('open') && lbImg) {
+          lbImg.src = src;
+        }
+
+        let foundIdx = -1;
+        if (imgs && imgs.length) {
+          foundIdx = imgs.findIndex(imgSrc => imgSrc === src || src.endsWith(imgSrc) || (typeof imgSrc === 'string' && imgSrc.endsWith(src)));
+        }
+        thumbs.forEach((t, tIdx) => {
+          if (tIdx === foundIdx) {
+            t.classList.add('active');
+            try { t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); } catch(e){}
+          } else {
+            t.classList.remove('active');
+          }
+        });
+      };
 
       // Hover Zoom Effect - Desktop Only (disable on touch screens)
       const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || window.matchMedia('(pointer: coarse)').matches;
@@ -863,10 +946,12 @@
             }
           }
 
+          let selectedColorImg = null;
           if (hasColors) {
             const colorInput = document.querySelector(`input[name="product_color_${i}"]:checked`);
             if (colorInput) {
               selectedColor = colorInput.value;
+              selectedColorImg = colorInput.getAttribute('data-image') || null;
             } else {
               const err = document.querySelector(`#colorError_${i}`);
               if (err) {
@@ -894,7 +979,7 @@
             });
           }
 
-          piecesSelections.push({ size: selectedSize, color: selectedColor, options: selectedOptions });
+          piecesSelections.push({ piece: i + 1, size: selectedSize, color: selectedColor, color_image: selectedColorImg, options: selectedOptions });
         }
 
         if (!isValid) {
@@ -1012,18 +1097,21 @@
             }
           }
 
+          const chosenColorImage = piecesSelections[0]?.color_image || null;
+
           window.BirdCart.addToCart({
             id: +btn.dataset.id,
             name: cartItemName,
             price: cartPrice,
-            image: btn.dataset.image || null,
+            image: chosenColorImage || btn.dataset.image || null,
             shipping_type: btn.dataset.shipping || 'free',
             price_before: Number(btn.dataset.priceBefore) || 0,
             qty: cartQty,
             selectedSize: combinedSize,
             selectedColor: combinedColor,
+            selectedColorImage: chosenColorImage,
             options: combinedOptions,
-            piecesSelections: treatAsBundlePack ? piecesSelections : null,
+            piecesSelections: piecesSelections,
           });
           window.BirdCart.updateCartCount();
         }
@@ -1246,10 +1334,77 @@
       return html;
     }
 
+    window.onColorSwatchSelected = function(radio, pieceIdx) {
+      if (!radio) return;
+      const val = radio.value;
+      const img = radio.getAttribute('data-image');
+      
+      const container = radio.closest('.color-group-container');
+      if (container) {
+        container.querySelectorAll('.color-swatch-item').forEach(el => {
+          el.classList.remove('selected', 'active');
+          el.style.removeProperty('border-color');
+          el.style.removeProperty('box-shadow');
+          const chk = el.querySelector('.swatch-check');
+          if (chk) chk.style.display = 'none';
+          const imgEl = el.querySelector('.swatch-img-wrap img');
+          if (imgEl) imgEl.style.transform = 'scale(1)';
+          const nameBar = el.querySelector('.swatch-name-bar');
+          if (nameBar) {
+            nameBar.style.removeProperty('color');
+            nameBar.style.removeProperty('font-weight');
+          }
+        });
+        
+        const parentLabel = radio.closest('.color-swatch-item');
+        if (parentLabel) {
+          parentLabel.classList.add('selected', 'active');
+          const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#111827';
+          parentLabel.style.setProperty('border-color', primaryColor, 'important');
+          parentLabel.style.setProperty('box-shadow', '0 0 0 2px ' + primaryColor + '33', 'important');
+          const chk = parentLabel.querySelector('.swatch-check');
+          if (chk) {
+            chk.style.background = primaryColor;
+            chk.style.display = 'flex';
+          }
+          const imgEl = parentLabel.querySelector('.swatch-img-wrap img');
+          if (imgEl) imgEl.style.transform = 'scale(1.08)';
+          const nameBar = parentLabel.querySelector('.swatch-name-bar');
+          if (nameBar) {
+            nameBar.style.color = primaryColor;
+            nameBar.style.fontWeight = '800';
+          }
+        }
+      }
+
+      const err = document.querySelector(`#colorError_${pieceIdx}`);
+      if (err) { err.style.display = 'none'; err.classList.add('hidden'); }
+
+      const lbl = document.getElementById(`colorSelectedLabel_${pieceIdx}`);
+      if (lbl) {
+        lbl.textContent = val;
+      }
+
+      if (img && typeof window.switchMainProductImage === 'function') {
+        window.switchMainProductImage(img);
+      }
+
+      if (typeof window.updateVariantAvailability === 'function') {
+        window.updateVariantAvailability(pieceIdx);
+      }
+    };
+
     function renderSizesAndColors(p, qty = 1) {
       let html = '';
       let sizes = p.sizes || []; if (typeof sizes === 'string') { try { sizes = JSON.parse(sizes); } catch(e) { sizes = []; } }
       let colors = p.colors || []; if (typeof colors === 'string') { try { colors = JSON.parse(colors); } catch(e) { colors = []; } }
+
+      const normalizedColors = Array.isArray(colors) ? colors.map(c => {
+        if (typeof c === 'object' && c !== null) {
+          return { name: c.name || '', image: c.image || null };
+        }
+        return { name: String(c || ''), image: null };
+      }).filter(c => c.name && c.name.trim() !== '') : [];
 
       let customVariants = [];
       if (p.custom_variants) {
@@ -1257,7 +1412,8 @@
       }
 
       const hasSizes = Array.isArray(sizes) && sizes.length > 0;
-      const hasColors = Array.isArray(colors) && colors.length > 0;
+      const hasColors = normalizedColors.length > 0;
+      const hasColorImages = normalizedColors.some(c => !!c.image);
       const hasCustomVariants = Array.isArray(customVariants) && customVariants.length > 0;
 
       if (!hasSizes && !hasColors && !hasCustomVariants) return '';
@@ -1287,20 +1443,61 @@
         }
 
         if (hasColors) {
-          html += `
-            <div style="margin-bottom: 12px;">
-              <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; margin-bottom: 8px; font-size: 0.95rem; color:#111827;">اللون <span style="color: #dc2626;">*</span><span style="color:#6b7280; font-weight:400; font-size:0.85rem;">:</span><span id="colorSelectedLabel_${i}" style="color:#111827; font-weight:700; font-size:0.88rem;"></span></label>
-              <div style="display: flex; gap: 8px; flex-wrap: wrap;" class="color-group-container" data-piece="${i}">
-                ${colors.map(color => `
-                  <label class="color-option" style="cursor: pointer; position: relative;">
-                    <input type="radio" name="product_color_${i}" value="${color}" style="display: none;" onchange="updateVariantAvailability(${i})">
-                    <span class="variant-btn" data-type="color" data-val="${color}">${color}</span>
-                  </label>
-                `).join('')}
+          if (hasColorImages) {
+            html += `
+              <div style="margin-bottom: 14px;">
+                <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; margin-bottom: 10px; font-size: 0.95rem; color:#111827;">
+                  <span>اللون</span><span style="color: #dc2626;">*</span><span style="color:#6b7280; font-weight:400; font-size:0.85rem;">:</span>
+                  <span id="colorSelectedLabel_${i}" style="color: var(--primary-color, #111827); font-weight:800; font-size:0.95rem;"></span>
+                </label>
+                <div class="color-swatches-grid color-group-container" data-piece="${i}">
+                  ${normalizedColors.map(col => {
+                    const colName = col.name;
+                    const colImg = col.image;
+                    if (colImg) {
+                      return `
+                        <label class="color-option color-swatch-item" data-color-name="${colName}" data-color-img="${colImg}" data-piece="${i}" title="${colName}">
+                          <input type="radio" name="product_color_${i}" value="${colName}" data-image="${colImg}" style="display: none;" onchange="onColorSwatchSelected(this, ${i})">
+                          <span class="variant-btn" data-type="color" data-val="${colName}" style="display: none;">${colName}</span>
+                          <div class="swatch-img-wrap" style="width: 100%; aspect-ratio: 1 / 1; position: relative; background: #f8fafc; overflow: hidden;">
+                            <img src="${colImg}" alt="${colName}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.25s ease;">
+                            <div class="swatch-check" style="position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #111827; color: #fff; font-size: 10px; font-weight: 900; display: none; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.25);">✓</div>
+                          </div>
+                          <div class="swatch-name-bar" style="padding: 4px 2px; text-align: center; font-size: 0.72rem; font-weight: 700; color: #374151; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: #fff; border-top: 1px solid #f1f5f9; line-height: 1.2;">
+                            ${colName}
+                          </div>
+                        </label>
+                      `;
+                    } else {
+                      return `
+                        <label class="color-option color-swatch-item color-swatch-text" data-color-name="${colName}" data-color-img="" data-piece="${i}" style="min-height: 54px; padding: 6px; justify-content: center; align-items: center;">
+                          <input type="radio" name="product_color_${i}" value="${colName}" data-image="" style="display: none;" onchange="onColorSwatchSelected(this, ${i})">
+                          <span class="variant-btn" data-type="color" data-val="${colName}" style="display: none;">${colName}</span>
+                          <span style="font-size: 0.8rem; font-weight: 700; color: #374151;">${colName}</span>
+                        </label>
+                      `;
+                    }
+                  }).join('')}
+                </div>
+                <div id="colorError_${i}" class="error-msg colorError" style="color: #dc2626; font-size: 0.875rem; margin-top: 6px; display: none;">يرجى اختيار اللون</div>
               </div>
-              <div id="colorError_${i}" class="error-msg colorError" style="color: #dc2626; font-size: 0.875rem; margin-top: 4px; display: none;">يرجى اختيار اللون</div>
-            </div>
-          `;
+            `;
+          } else {
+            html += `
+              <div style="margin-bottom: 12px;">
+                <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; margin-bottom: 8px; font-size: 0.95rem; color:#111827;">اللون <span style="color: #dc2626;">*</span><span style="color:#6b7280; font-weight:400; font-size:0.85rem;">:</span><span id="colorSelectedLabel_${i}" style="color:#111827; font-weight:700; font-size:0.88rem;"></span></label>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;" class="color-group-container" data-piece="${i}">
+                  ${normalizedColors.map(col => `
+                    <label class="color-option" style="cursor: pointer; position: relative;">
+                      <input type="radio" name="product_color_${i}" value="${col.name}" style="display: none;" onchange="updateVariantAvailability(${i})">
+                      <span class="variant-btn" data-type="color" data-val="${col.name}">${col.name}</span>
+                    </label>
+                  `).join('')}
+                </div>
+                <div id="colorError_${i}" class="error-msg colorError" style="color: #dc2626; font-size: 0.875rem; margin-top: 4px; display: none;">يرجى اختيار اللون</div>
+              </div>
+            `;
+          }
         }
 
         if (hasCustomVariants) {
@@ -2367,8 +2564,10 @@
               qty: i.qty,
               selectedSize: i.selectedSize || null,
               selectedColor: i.selectedColor || null,
-              options: i.options || null,
-              piecesSelections: i.piecesSelections || null
+              selectedColorImage: i.selectedColorImage || null,
+              colorPieces: i.colorPieces || null,
+              piecesSelections: i.piecesSelections || null,
+              options: i.options || null
             };
           })
         };

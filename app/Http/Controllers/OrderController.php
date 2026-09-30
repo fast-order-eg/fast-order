@@ -33,9 +33,12 @@ class OrderController extends Controller
             'items'            => 'required|array|min:1',
             'items.*.id'       => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
-            'items.*.selectedSize'  => 'nullable|string',
-            'items.*.selectedColor' => 'nullable|string',
-            'items.*.options'       => 'nullable',
+            'items.*.selectedSize'       => 'nullable|string',
+            'items.*.selectedColor'      => 'nullable|string',
+            'items.*.selectedColorImage' => 'nullable|string',
+            'items.*.colorPieces'        => 'nullable|array',
+            'items.*.piecesSelections'   => 'nullable|array',
+            'items.*.options'            => 'nullable',
             'notes'            => 'nullable|string|max:1000'
         ]);
 
@@ -62,16 +65,23 @@ class OrderController extends Controller
             $itemTotal = $price * $item['quantity'];
             $subtotal += $itemTotal;
 
+            $colorImg = $item['selectedColorImage'] ?? null;
+            $productImg = $product->main_image_path ? asset('storage/' . $product->main_image_path) : $product->image_url;
+
             $orderItems[] = [
-                'id'            => $product->id,
-                'name'          => $product->name,
-                'price'         => $price,
-                'quantity'      => $item['quantity'],
-                'total'         => $itemTotal,
-                'image'         => $product->main_image_path ? asset('storage/' . $product->main_image_path) : $product->image_url,
-                'selectedSize'  => $item['selectedSize'] ?? null,
-                'selectedColor' => $item['selectedColor'] ?? null,
-                'options'       => $item['options'] ?? null,
+                'id'                 => $product->id,
+                'name'               => $product->name,
+                'price'              => $price,
+                'quantity'           => $item['quantity'],
+                'total'              => $itemTotal,
+                'image'              => $colorImg ?: $productImg,
+                'image_url'          => $colorImg ?: $productImg,
+                'selectedSize'       => $item['selectedSize'] ?? null,
+                'selectedColor'      => $item['selectedColor'] ?? null,
+                'selectedColorImage' => $colorImg,
+                'colorPieces'        => $item['colorPieces'] ?? null,
+                'piecesSelections'   => $item['piecesSelections'] ?? null,
+                'options'            => $item['options'] ?? null,
             ];
         }
 
@@ -197,9 +207,12 @@ class OrderController extends Controller
                 'items.*.name'     => 'required|string',
                 'items.*.price'    => 'required|numeric',
                 'items.*.qty'      => 'required|integer|min:1',
-                'items.*.selectedSize'  => 'nullable|string',
-                'items.*.selectedColor' => 'nullable|string',
-                'items.*.options'       => 'nullable',
+                'items.*.selectedSize'       => 'nullable|string',
+                'items.*.selectedColor'      => 'nullable|string',
+                'items.*.selectedColorImage' => 'nullable|string',
+                'items.*.colorPieces'        => 'nullable|array',
+                'items.*.piecesSelections'   => 'nullable|array',
+                'items.*.options'            => 'nullable',
                 'notes'            => 'nullable|string|max:1000'
             ]);
 
@@ -225,16 +238,23 @@ class OrderController extends Controller
                 $itemTotal = $item['price'] * $item['qty'];
                 $subtotal += $itemTotal;
 
+                $colorImg = $item['selectedColorImage'] ?? null;
+                $productImg = $product?->main_image_path ? asset('storage/' . $product->main_image_path) : $product?->image_url;
+
                 $orderItems[] = [
-                    'id'            => $item['id'],
-                    'name'          => $item['name'],
-                    'price'         => $item['price'],
-                    'quantity'      => $item['qty'],
-                    'total'         => $itemTotal,
-                    'image'         => $product?->main_image_path ? asset('storage/' . $product->main_image_path) : $product?->image_url,
-                    'selectedSize'  => $item['selectedSize'] ?? null,
-                    'selectedColor' => $item['selectedColor'] ?? null,
-                    'options'       => $item['options'] ?? null,
+                    'id'                 => $item['id'],
+                    'name'               => $item['name'],
+                    'price'              => $item['price'],
+                    'quantity'           => $item['qty'],
+                    'total'              => $itemTotal,
+                    'image'              => $colorImg ?: $productImg,
+                    'image_url'          => $colorImg ?: $productImg,
+                    'selectedSize'       => $item['selectedSize'] ?? null,
+                    'selectedColor'      => $item['selectedColor'] ?? null,
+                    'selectedColorImage' => $colorImg,
+                    'colorPieces'        => $item['colorPieces'] ?? null,
+                    'piecesSelections'   => $item['piecesSelections'] ?? null,
+                    'options'            => $item['options'] ?? null,
                 ];
             }
 

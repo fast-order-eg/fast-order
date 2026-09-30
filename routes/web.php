@@ -168,6 +168,7 @@ Route::prefix('admin')->group(function () {
             Route::get('/products/bulk/template', [App\Http\Controllers\Merchant\BulkUploadController::class, 'downloadTemplate'])->name('merchant.products.bulk.template');
             Route::post('/products/bulk', [App\Http\Controllers\Merchant\BulkUploadController::class, 'import'])->name('merchant.products.bulk.import');
 
+            Route::post('/products/upload-color-image', [App\Http\Controllers\Merchant\ProductController::class, 'uploadColorImage'])->name('merchant.products.upload-color-image');
             Route::patch('products/{product}/toggle-status', [App\Http\Controllers\Merchant\ProductController::class, 'toggleStatus'])->name('merchant.products.toggle-status');
             Route::resource('products', App\Http\Controllers\Merchant\ProductController::class)
                 ->names('merchant.products')
@@ -661,6 +662,17 @@ Route::prefix('admin')->group(function () {
 
             $mainImg = $p->image_url ?: $p->main_image_path;
 
+            $rawColors = is_string($p->colors) ? json_decode($p->colors, true) : ($p->colors ?: []);
+            $formattedColors = is_array($rawColors) ? array_values(array_map(function($c) use ($formatImg) {
+                if (is_array($c) && isset($c['name'])) {
+                    return [
+                        'name' => $c['name'],
+                        'image' => !empty($c['image']) ? $formatImg($c['image']) : null,
+                    ];
+                }
+                return $c;
+            }, $rawColors)) : [];
+
             $data = [
                 'id' => $p->id,
                 'name' => $p->name,
@@ -672,7 +684,7 @@ Route::prefix('admin')->group(function () {
                 'category' => $catName,
                 'image_url' => $formatImg($mainImg),
                 'sizes' => is_string($p->sizes) ? json_decode($p->sizes, true) : ($p->sizes ?: []),
-                'colors' => is_string($p->colors) ? json_decode($p->colors, true) : ($p->colors ?: []),
+                'colors' => $formattedColors,
                 'custom_variants' => is_string($p->custom_variants) ? json_decode($p->custom_variants, true) : ($p->custom_variants ?: []),
                 'images' => $images,
                 'shipping_type' => $p->shipping_type ?? 'free',

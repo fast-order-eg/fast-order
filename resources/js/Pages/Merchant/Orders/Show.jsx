@@ -79,6 +79,10 @@ export default function OrderShow({ order, active_shipping_gateways = [], is_aut
                     if (v) variantDetails.push(`${k}: ${v}`);
                 });
             }
+            if (item.piecesSelections && Array.isArray(item.piecesSelections) && item.piecesSelections.length > 0) {
+                const piecesStr = item.piecesSelections.map((p, i) => `قطعة ${p.piece || (i + 1)}: ${[p.color ? `اللون: ${p.color}` : '', p.size ? `المقاس: ${p.size}` : ''].filter(Boolean).join(' - ')}`).join(' | ');
+                variantDetails.push(`القطع: [ ${piecesStr} ]`);
+            }
 
             if (variantDetails.length > 0) {
                 return `${mainLine}\n${variantDetails.join(', ')}`;
@@ -232,9 +236,9 @@ ${totalsBlock}${shippingBlock}`;
                                             rel="noopener noreferrer"
                                             className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex-shrink-0 hover:opacity-80 transition-opacity"
                                         >
-                                            {item.image_url ? (
+                                            {(item.selectedColorImage || item.image_url) ? (
                                                 <img
-                                                    src={item.image_url}
+                                                    src={item.selectedColorImage || item.image_url}
                                                     alt={item.name}
                                                     className="w-full h-full object-cover"
                                                     onError={(e) => {
@@ -263,7 +267,10 @@ ${totalsBlock}${shippingBlock}`;
                                                     </span>
                                                 )}
                                                 {item.selectedColor && (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 text-gray-700">
+                                                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">
+                                                        {item.selectedColorImage && (
+                                                            <img src={item.selectedColorImage} alt={item.selectedColor} className="w-4 h-4 rounded object-cover border border-gray-300" />
+                                                        )}
                                                         لون: {item.selectedColor}
                                                     </span>
                                                 )}
@@ -274,6 +281,25 @@ ${totalsBlock}${shippingBlock}`;
                                                 ) : null)}
                                                 <span className="text-xs text-gray-500 font-medium">الكمية: {item.quantity}</span>
                                             </div>
+
+                                            {/* Piece Selections Breakdown (اختيارات كل قطعة) */}
+                                            {item.piecesSelections && Array.isArray(item.piecesSelections) && item.piecesSelections.length > 0 && (
+                                                <div className="mt-2.5 space-y-1.5 bg-gray-50 p-2.5 rounded-xl border border-gray-200/80">
+                                                    <span className="text-[11px] font-bold text-gray-600 block mb-1">تفاصيل اختيار كل قطعة:</span>
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                                                        {item.piecesSelections.map((pc, pIdx) => (
+                                                            <div key={pIdx} className="flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-700">
+                                                                <span className="font-bold text-orange-600 shrink-0">قطعة {pc.piece || (pIdx + 1)}:</span>
+                                                                {pc.color_image && (
+                                                                    <img src={pc.color_image} alt={pc.color || ''} className="w-5 h-5 rounded-md object-cover border border-gray-300 shrink-0" />
+                                                                )}
+                                                                {pc.color && <span className="font-bold text-gray-800">{pc.color}</span>}
+                                                                {pc.size && <span className="text-gray-500 font-medium text-[11px] bg-gray-100 px-1.5 py-0.5 rounded mr-auto">مقاس {pc.size}</span>}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div className="text-left flex-shrink-0">

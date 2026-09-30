@@ -283,16 +283,36 @@
                 <tr>
                     <td>
                         <strong>{{ $itemName }}</strong>
-                        @if(isset($item['selectedSize']) || isset($item['selectedColor']) || isset($item['size']) || isset($item['color']) || isset($item['options']))
-                            <br><small style="color: #6b7280;">
+                        @if(isset($item['selectedSize']) || isset($item['selectedColor']) || isset($item['size']) || isset($item['color']) || isset($item['options']) || !empty($item['selectedColorImage']))
+                            <br><small style="color: #6b7280; display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap;">
                                 @if(isset($item['selectedSize']) || isset($item['size'])) المقاس: {{ $item['selectedSize'] ?? $item['size'] }} @endif
-                                @if(isset($item['selectedColor']) || isset($item['color'])) اللون: {{ $item['selectedColor'] ?? $item['color'] }} @endif
+                                @if(isset($item['selectedColor']) || isset($item['color']))
+                                    | اللون: {{ $item['selectedColor'] ?? $item['color'] }}
+                                    @if(!empty($item['selectedColorImage']))
+                                        <img src="{{ $item['selectedColorImage'] }}" alt="Color" style="width: 18px; height: 18px; object-fit: cover; border-radius: 3px; vertical-align: middle; border: 1px solid #d1d5db; display: inline-block;">
+                                    @endif
+                                @endif
                                 @if(isset($item['options']) && is_array($item['options']))
                                     @foreach($item['options'] as $optK => $optV)
                                         @if($optV) | {{ $optK }}: {{ $optV }} @endif
                                     @endforeach
                                 @endif
                             </small>
+                        @endif
+                        @if(!empty($item['piecesSelections']) && is_array($item['piecesSelections']))
+                            <div style="margin-top: 6px; padding: 6px; background-color: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 11px;">
+                                <strong style="color: #4b5563; display: block; margin-bottom: 4px;">تفاصيل اختيار كل قطعة:</strong>
+                                @foreach($item['piecesSelections'] as $pIdx => $pc)
+                                    <div style="display: inline-block; margin-left: 8px; margin-bottom: 3px; background: #fff; padding: 2px 6px; border-radius: 4px; border: 1px solid #e5e7eb;">
+                                        <span style="font-weight: bold; color: #ea580c;">قطعة {{ $pc['piece'] ?? ($pIdx + 1) }}:</span>
+                                        @if(!empty($pc['color_image']))
+                                            <img src="{{ $pc['color_image'] }}" alt="" style="width: 16px; height: 16px; object-fit: cover; border-radius: 3px; vertical-align: middle; border: 1px solid #d1d5db; margin: 0 2px;">
+                                        @endif
+                                        @if(!empty($pc['color'])) <span>{{ $pc['color'] }}</span> @endif
+                                        @if(!empty($pc['size'])) <span style="color: #6b7280;">({{ $pc['size'] }})</span> @endif
+                                    </div>
+                                @endforeach
+                            </div>
                         @endif
                         @if(isset($item['description']))
                         <br><small style="color: #6b7280;">{{ $item['description'] }}</small>

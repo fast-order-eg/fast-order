@@ -98,8 +98,18 @@ class ProductController extends Controller
         if ($request->has('sizes') && is_array($request->sizes)) {
             $data['sizes'] = array_values(array_filter($request->sizes));
         }
-        if ($request->has('colors') && is_array($request->colors)) {
-            $data['colors'] = array_values(array_filter($request->colors));
+        if ($request->has('colors')) {
+            $colors = $request->colors;
+            if (is_string($colors)) {
+                $colors = json_decode($colors, true);
+            }
+            if (is_array($colors)) {
+                $data['colors'] = array_values(array_filter($colors, function($c) {
+                    if (is_string($c)) return trim($c) !== '';
+                    if (is_array($c)) return !empty($c['name']) && trim($c['name']) !== '';
+                    return false;
+                }));
+            }
         }
         if ($request->has('custom_variants')) {
             $cv = $request->custom_variants;
@@ -243,8 +253,21 @@ class ProductController extends Controller
         } else {
             $data['sizes'] = null;
         }
-        if ($request->has('colors') && is_array($request->colors)) {
-            $data['colors'] = array_values(array_filter($request->colors));
+        if ($request->has('colors')) {
+            $colors = $request->colors;
+            if (is_string($colors)) {
+                $colors = json_decode($colors, true);
+            }
+            if (is_array($colors)) {
+                $filteredColors = array_values(array_filter($colors, function($c) {
+                    if (is_string($c)) return trim($c) !== '';
+                    if (is_array($c)) return !empty($c['name']) && trim($c['name']) !== '';
+                    return false;
+                }));
+                $data['colors'] = count($filteredColors) > 0 ? $filteredColors : null;
+            } else {
+                $data['colors'] = null;
+            }
         } else {
             $data['colors'] = null;
         }
@@ -407,5 +430,23 @@ class ProductController extends Controller
         }
 
         return redirect()->back()->with('success', $message);
+    }
+
+    /**
+     * رفع صورة خاصة بلون معين للمنتج
+     */
+    public function uploadColorImage(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:20480',
+        ]);
+
+        $path = \App\Services\ImageCompressionService::compressAndStore($request->file('image'), 'products/colors', 'public');
+
+        return response()->json([
+            'success'    => true,
+            'image_path' => $path,
+            'image_url'  => asset('storage/' . $path),
+        ]);
     }
 }
