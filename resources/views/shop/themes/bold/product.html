@@ -538,7 +538,26 @@
     }
 
     function renderProductDetails(p) {
-      const imgs = Array.from(new Set([p.image_url, ...(p.images || [])].filter(Boolean)));
+      function resolveShopImg(url) {
+        if (!url || typeof url !== 'string') return '';
+        const trimmed = url.trim();
+        if (!trimmed) return '';
+        if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('/')) {
+          return trimmed;
+        }
+        return '/storage/' + trimmed;
+      }
+
+      let rawColors = p.colors || [];
+      if (typeof rawColors === 'string') { try { rawColors = JSON.parse(rawColors); } catch(e) { rawColors = []; } }
+      const colorImgs = (Array.isArray(rawColors) ? rawColors : [])
+        .map(c => (typeof c === 'object' && c !== null ? resolveShopImg(c.image) : null))
+        .filter(Boolean);
+
+      const mainImgFormatted = resolveShopImg(p.image_url);
+      const galleryImgsFormatted = (p.images || []).map(resolveShopImg).filter(Boolean);
+      const imgs = Array.from(new Set([mainImgFormatted, ...galleryImgsFormatted, ...colorImgs].filter(Boolean)));
+
       const price = window.BirdCart.formatPrice ? window.BirdCart.formatPrice(p.price_after, p.price_before) : '';
       const descList = (p.description || '').split(/\r?\n|\u2022|-/).map(s => s.trim()).filter(Boolean).map(s => `<li>${s}</li>`).join('');
       root.innerHTML = `
@@ -546,9 +565,9 @@
           <div class="card p-gallery-card" style="padding:16px">
             <div class="p-gallery">
               <div class="p-main">
-                <img id="pMain" src="${imgs[0] || ''}" alt="${p.name || ''}">
+                <img id="pMain" src="${imgs[0] || ''}" alt="${p.name || ''}" onerror="if(this.dataset.fallbackApplied !== '1'){this.dataset.fallbackApplied='1'; if('${imgs[0] || ''}' && this.src !== '${imgs[0] || ''}'){this.src='${imgs[0] || ''}';}}">
               </div>
-              ${imgs.length > 1 ? `<div class="p-thumbs">${imgs.map((src, i) => `<button type="button" class="p-thumb ${i === 0 ? 'active' : ''}" data-idx="${i}"><img src="${src}" alt="thumb ${i + 1}"></button>`).join('')}</div>` : ''}
+              ${imgs.length > 1 ? `<div class="p-thumbs">${imgs.map((src, i) => `<button type="button" class="p-thumb ${i === 0 ? 'active' : ''}" data-idx="${i}"><img src="${src}" alt="thumb ${i + 1}" onerror="this.parentElement.style.opacity='0.4';"></button>`).join('')}</div>` : ''}
             </div>
           </div>
           <div class="card p-info-card" style="padding:16px">
@@ -650,6 +669,19 @@
         if (lb && lb.classList.contains('open') && lbImg) {
           lbImg.src = nextSrc;
         }
+
+        // Auto-select matching color swatch if this image belongs to a color!
+        try {
+          const matchingSwatch = document.querySelector(`input[name="product_color_0"][data-image="${nextSrc}"]`) ||
+                                 document.querySelector(`input[name^="product_color_"][data-image="${nextSrc}"]`);
+          if (matchingSwatch && !matchingSwatch.checked) {
+            matchingSwatch.checked = true;
+            if (typeof window.onColorSwatchSelected === 'function') {
+              const pMatch = matchingSwatch.name.match(/product_color_(\d+)/);
+              window.onColorSwatchSelected(matchingSwatch, pMatch ? pMatch[1] : 0);
+            }
+          }
+        } catch(e) {}
       }
 
       thumbs.forEach(t => t.addEventListener('click', () => show(+t.dataset.idx)));
@@ -1396,12 +1428,22 @@
 
     function renderSizesAndColors(p, qty = 1) {
       let html = '';
+      function resolveShopImg(url) {
+        if (!url || typeof url !== 'string') return '';
+        const trimmed = url.trim();
+        if (!trimmed) return '';
+        if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('/')) {
+          return trimmed;
+        }
+        return '/storage/' + trimmed;
+      }
+
       let sizes = p.sizes || []; if (typeof sizes === 'string') { try { sizes = JSON.parse(sizes); } catch(e) { sizes = []; } }
       let colors = p.colors || []; if (typeof colors === 'string') { try { colors = JSON.parse(colors); } catch(e) { colors = []; } }
 
       const normalizedColors = Array.isArray(colors) ? colors.map(c => {
         if (typeof c === 'object' && c !== null) {
-          return { name: c.name || '', image: c.image || null };
+          return { name: c.name || '', image: resolveShopImg(c.image) || null };
         }
         return { name: String(c || ''), image: null };
       }).filter(c => c.name && c.name.trim() !== '') : [];
@@ -1460,7 +1502,7 @@
                           <input type="radio" name="product_color_${i}" value="${colName}" data-image="${colImg}" style="display: none;" onchange="onColorSwatchSelected(this, ${i})">
                           <span class="variant-btn" data-type="color" data-val="${colName}" style="display: none;">${colName}</span>
                           <div class="swatch-img-wrap" style="width: 100%; aspect-ratio: 1 / 1; position: relative; background: #f8fafc; overflow: hidden;">
-                            <img src="${colImg}" alt="${colName}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.25s ease;">
+                            <img src="${colImg}" alt="${colName}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.25s ease;" onerror="this.style.opacity='0.25';">
                             <div class="swatch-check" style="position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #111827; color: #fff; font-size: 10px; font-weight: 900; display: none; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.25);">✓</div>
                           </div>
                           <div class="swatch-name-bar" style="padding: 4px 2px; text-align: center; font-size: 0.72rem; font-weight: 700; color: #374151; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: #fff; border-top: 1px solid #f1f5f9; line-height: 1.2;">

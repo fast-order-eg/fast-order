@@ -520,7 +520,13 @@ Route::prefix('admin')->group(function () {
             }
             $formatImg = function($path) {
                 if (!$path) return null;
-                if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://') || str_starts_with($path, '/')) {
+                if (str_starts_with($path, 'data:image/') || str_starts_with($path, 'data:')) {
+                    return $path;
+                }
+                if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+                    return $path;
+                }
+                if (str_starts_with($path, '/')) {
                     return url($path);
                 }
                 return asset('storage/' . ltrim($path, '/'));
@@ -624,7 +630,13 @@ Route::prefix('admin')->group(function () {
         Route::get('/public-api/products/{id}', function ($id) {
             $formatImg = function($path) {
                 if (!$path) return null;
-                if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://') || str_starts_with($path, '/')) {
+                if (str_starts_with($path, 'data:image/') || str_starts_with($path, 'data:')) {
+                    return $path;
+                }
+                if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+                    return $path;
+                }
+                if (str_starts_with($path, '/')) {
                     return url($path);
                 }
                 return asset('storage/' . ltrim($path, '/'));

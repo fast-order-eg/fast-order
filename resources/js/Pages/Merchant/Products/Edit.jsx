@@ -247,7 +247,7 @@ export default function Edit({ product, categories, allProducts = [] }) {
             });
             const json = await res.json();
             if (json.success && (json.image_url || json.image_path)) {
-                updateColorImage(colorIdx, json.image_url || (`/storage/${json.image_path}`));
+                updateColorImage(colorIdx, json.image_path ? (`/storage/${json.image_path}`) : json.image_url);
             } else {
                 alert('حدث خطأ أثناء رفع الصورة: ' + (json.message || ''));
             }

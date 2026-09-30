@@ -99,17 +99,7 @@ class ProductController extends Controller
             $data['sizes'] = array_values(array_filter($request->sizes));
         }
         if ($request->has('colors')) {
-            $colors = $request->colors;
-            if (is_string($colors)) {
-                $colors = json_decode($colors, true);
-            }
-            if (is_array($colors)) {
-                $data['colors'] = array_values(array_filter($colors, function($c) {
-                    if (is_string($c)) return trim($c) !== '';
-                    if (is_array($c)) return !empty($c['name']) && trim($c['name']) !== '';
-                    return false;
-                }));
-            }
+            $data['colors'] = $this->processColorsInput($request->colors);
         }
         if ($request->has('custom_variants')) {
             $cv = $request->custom_variants;
@@ -254,20 +244,7 @@ class ProductController extends Controller
             $data['sizes'] = null;
         }
         if ($request->has('colors')) {
-            $colors = $request->colors;
-            if (is_string($colors)) {
-                $colors = json_decode($colors, true);
-            }
-            if (is_array($colors)) {
-                $filteredColors = array_values(array_filter($colors, function($c) {
-                    if (is_string($c)) return trim($c) !== '';
-                    if (is_array($c)) return !empty($c['name']) && trim($c['name']) !== '';
-                    return false;
-                }));
-                $data['colors'] = count($filteredColors) > 0 ? $filteredColors : null;
-            } else {
-                $data['colors'] = null;
-            }
+            $data['colors'] = $this->processColorsInput($request->colors);
         } else {
             $data['colors'] = null;
         }
@@ -430,6 +407,58 @@ class ProductController extends Controller
         }
 
         return redirect()->back()->with('success', $message);
+    }
+
+    /**
+     * معالجة مصفوفة الألوان وتحويل أي صور Base64 إلى ملفات فعلية على القرص
+     */
+    protected function processColorsInput($colors)
+    {
+        if (is_string($colors)) {
+            $colors = json_decode($colors, true);
+        }
+        if (!is_array($colors)) {
+            return null;
+        }
+
+        $filtered = [];
+        foreach ($colors as $c) {
+            if (is_string($c)) {
+                $name = trim($c);
+                if ($name !== '') {
+                    $filtered[] = ['name' => $name, 'image' => null];
+                }
+            } elseif (is_array($c) && !empty($c['name']) && trim($c['name']) !== '') {
+                $name = trim($c['name']);
+                $image = !empty($c['image']) ? $c['image'] : null;
+
+                // إذا كانت الصورة بتنسيق base64 data URI نقوم بفكها وتخزينها كملف حقيقي
+                if ($image && is_string($image) && str_starts_with($image, 'data:image/')) {
+                    try {
+                        preg_match('/^data:image\/(\w+);base64,/', $image, $type);
+                        $b64Data = substr($image, strpos($image, ',') + 1);
+                        $decoded = base64_decode($b64Data);
+                        if ($decoded !== false) {
+                            $ext = strtolower($type[1] ?? 'jpg');
+                            if ($ext === 'jpeg') $ext = 'jpg';
+                            if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'])) $ext = 'jpg';
+                            $filename = 'products/colors/color_' . uniqid('', true) . '.' . $ext;
+                            \Illuminate\Support\Facades\Storage::disk('public')->put($filename, $decoded);
+                            $image = $filename;
+                        }
+                    } catch (\Throwable $e) {
+                        \Log::error("Failed to decode and save color base64 image: " . $e->getMessage());
+                    }
+                }
+
+                $filtered[] = [
+                    'name' => $name,
+                    'image' => $image,
+                ];
+            }
+        }
+
+        return count($filtered) > 0 ? $filtered : null;
     }
 
     /**
