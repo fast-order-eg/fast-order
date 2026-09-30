@@ -5,6 +5,21 @@ import MerchantLayout from '@/Layouts/MerchantLayout';
 export default function OrderShow({ order, active_shipping_gateways = [], is_auto_confirm_enabled = false, wallet_balance = 0 }) {
     const { flash } = usePage().props;
     const [isSendingWa, setIsSendingWa] = React.useState(false);
+    const [previewImage, setPreviewImage] = React.useState(null);
+
+    React.useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') setPreviewImage(null);
+        };
+        if (previewImage) {
+            window.addEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = 'hidden';
+        }
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = '';
+        };
+    }, [previewImage]);
 
     const handleSendAutoConfirm = () => {
         if (!confirm('هل تريد إرسال رسالة التأكيد التلقائي للعميل عبر الواتساب الآن؟ (تكلفة الرسالة 1 ج.م تُخصم من رصيد المحفظة)')) return;
@@ -72,16 +87,17 @@ export default function OrderShow({ order, active_shipping_gateways = [], is_aut
             const mainLine = `${idx + 1}. ${item.name} (${item.quantity}x ${unitPrice}) = ${itemTotal}`;
 
             let variantDetails = [];
-            if (item.selectedColor) variantDetails.push(`اللون: ${item.selectedColor}`);
-            if (item.selectedSize) variantDetails.push(`المقاس: ${item.selectedSize}`);
-            if (item.options && typeof item.options === 'object') {
-                Object.entries(item.options).forEach(([k, v]) => {
-                    if (v) variantDetails.push(`${k}: ${v}`);
-                });
-            }
             if (item.piecesSelections && Array.isArray(item.piecesSelections) && item.piecesSelections.length > 0) {
                 const piecesStr = item.piecesSelections.map((p, i) => `قطعة ${p.piece || (i + 1)}: ${[p.color ? `اللون: ${p.color}` : '', p.size ? `المقاس: ${p.size}` : ''].filter(Boolean).join(' - ')}`).join(' | ');
                 variantDetails.push(`القطع: [ ${piecesStr} ]`);
+            } else {
+                if (item.selectedColor) variantDetails.push(`اللون: ${item.selectedColor}`);
+                if (item.selectedSize) variantDetails.push(`المقاس: ${item.selectedSize}`);
+                if (item.options && typeof item.options === 'object') {
+                    Object.entries(item.options).forEach(([k, v]) => {
+                        if (v) variantDetails.push(`${k}: ${v}`);
+                    });
+                }
             }
 
             if (variantDetails.length > 0) {
@@ -228,86 +244,156 @@ ${totalsBlock}${shippingBlock}`;
                             </h3>
 
                             <div className="divide-y divide-gray-100">
-                                {order.items.map((item, idx) => (
-                                    <div key={idx} className="py-4 flex gap-4 first:pt-0 last:pb-0">
-                                        <a
-                                            href={`/shop/product.html?id=${item.id}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex-shrink-0 hover:opacity-80 transition-opacity"
-                                        >
-                                            {(item.selectedColorImage || item.image_url) ? (
-                                                <img
-                                                    src={item.selectedColorImage || item.image_url}
-                                                    alt={item.name}
-                                                    className="w-full h-full object-cover"
-                                                    onError={(e) => {
-                                                        e.currentTarget.onerror = null;
-                                                        e.currentTarget.src = 'https://dummyimage.com/150x150/f3f4f6/9ca3af&text=صورة+المنتج';
-                                                    }}
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-xs text-gray-400 font-bold bg-gray-100">صورة</div>
-                                            )}
-                                        </a>
+                                {order.items.map((item, idx) => {
+                                    const hasPieces = item.piecesSelections && Array.isArray(item.piecesSelections) && item.piecesSelections.length > 0;
+                                    const mainImg = item.selectedColorImage || item.image_url;
 
-                                        <div className="flex-1 min-w-0">
-                                            <a
-                                                href={`/shop/product.html?id=${item.id}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="font-semibold text-gray-900 text-sm hover:text-orange-600 transition-colors block"
-                                            >
-                                                {item.name}
-                                            </a>
-                                            <div className="flex flex-wrap gap-2 mt-1">
-                                                {item.selectedSize && (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 text-gray-700">
-                                                        مقاس: {item.selectedSize}
-                                                    </span>
-                                                )}
-                                                {item.selectedColor && (
-                                                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">
-                                                        {item.selectedColorImage && (
-                                                            <img src={item.selectedColorImage} alt={item.selectedColor} className="w-4 h-4 rounded object-cover border border-gray-300" />
+                                    return (
+                                        <div key={idx} className="py-4 first:pt-0 last:pb-0 space-y-3">
+                                            {/* Header row: Thumbnail & Title/Price */}
+                                            <div className="flex items-start gap-3 sm:gap-4">
+                                                {/* Thumbnail with Lightbox zoom */}
+                                                <div className="relative group shrink-0">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (mainImg) setPreviewImage({ url: mainImg, title: item.name });
+                                                        }}
+                                                        className={`w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center relative transition-all ${mainImg ? 'cursor-pointer hover:ring-2 hover:ring-indigo-400 hover:shadow-md' : ''}`}
+                                                        title={mainImg ? "اضغط لتكبير الصورة" : ""}
+                                                    >
+                                                        {mainImg ? (
+                                                            <>
+                                                                <img
+                                                                    src={mainImg}
+                                                                    alt={item.name}
+                                                                    className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                                                                    onError={(e) => {
+                                                                        e.currentTarget.onerror = null;
+                                                                        e.currentTarget.src = 'https://dummyimage.com/150x150/f3f4f6/9ca3af&text=صورة+المنتج';
+                                                                    }}
+                                                                />
+                                                                <span className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-xl">
+                                                                    <svg className="w-5 h-5 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                                                    </svg>
+                                                                </span>
+                                                            </>
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-xs text-gray-400 font-bold bg-gray-100">صورة</div>
                                                         )}
-                                                        لون: {item.selectedColor}
-                                                    </span>
-                                                )}
-                                                {item.options && Object.entries(item.options).map(([k, v]) => v ? (
-                                                    <span key={k} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-100">
-                                                        {k}: {v}
-                                                    </span>
-                                                ) : null)}
-                                                <span className="text-xs text-gray-500 font-medium">الكمية: {item.quantity}</span>
+                                                    </button>
+                                                </div>
+
+                                                {/* Title + Price */}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-start justify-between gap-2 sm:gap-4">
+                                                        <div className="min-w-0">
+                                                            <a
+                                                                href={`/shop/product.html?id=${item.id}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="font-bold text-gray-900 text-sm sm:text-base hover:text-orange-600 transition-colors block leading-snug line-clamp-2"
+                                                            >
+                                                                {item.name}
+                                                            </a>
+                                                            <div className="flex items-center gap-2 mt-1">
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-700">
+                                                                    الكمية: {item.quantity}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="text-left shrink-0">
+                                                            <p className="font-bold text-gray-900 text-sm sm:text-base whitespace-nowrap">{formatCurrency(item.price)}</p>
+                                                            {Number(item.quantity) > 1 && (
+                                                                <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 whitespace-nowrap">
+                                                                    الإجمالي: {formatCurrency(item.total || (item.price * item.quantity))}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Standard Variant Badges (Only shown if NOT multi-pieces to avoid duplicates) */}
+                                                    {!hasPieces && (
+                                                        <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                                                            {item.selectedSize && (
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
+                                                                    مقاس: {item.selectedSize}
+                                                                </span>
+                                                            )}
+                                                            {item.selectedColor && (
+                                                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">
+                                                                    {item.selectedColorImage && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => setPreviewImage({ url: item.selectedColorImage, title: `${item.name} - لون: ${item.selectedColor}` })}
+                                                                            className="cursor-pointer hover:opacity-80 transition shrink-0"
+                                                                            title="اضغط لتكبير صورة اللون"
+                                                                        >
+                                                                            <img src={item.selectedColorImage} alt={item.selectedColor} className="w-4 h-4 rounded object-cover border border-gray-300" />
+                                                                        </button>
+                                                                    )}
+                                                                    <span>لون: {item.selectedColor}</span>
+                                                                </span>
+                                                            )}
+                                                            {item.options && Object.entries(item.options).map(([k, v]) => v ? (
+                                                                <span key={k} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-100">
+                                                                    {k}: {v}
+                                                                </span>
+                                                            ) : null)}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
 
-                                            {/* Piece Selections Breakdown (اختيارات كل قطعة) */}
-                                            {item.piecesSelections && Array.isArray(item.piecesSelections) && item.piecesSelections.length > 0 && (
-                                                <div className="mt-2.5 space-y-1.5 bg-gray-50 p-2.5 rounded-xl border border-gray-200/80">
-                                                    <span className="text-[11px] font-bold text-gray-600 block mb-1">تفاصيل اختيار كل قطعة:</span>
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                                            {/* Piece Selections Breakdown (اختيارات كل قطعة) - Spans FULL width */}
+                                            {hasPieces && (
+                                                <div className="w-full bg-slate-50/90 p-3 rounded-xl border border-slate-200/80 space-y-2 mt-2">
+                                                    <div className="flex items-center justify-between text-xs">
+                                                        <span className="font-bold text-gray-800 flex items-center gap-1.5">
+                                                            <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                                                            تفاصيل اختيار كل قطعة ({item.piecesSelections.length} قطع):
+                                                        </span>
+                                                        <span className="text-[11px] text-gray-400">اضغط على صورة اللون للتكبير</span>
+                                                    </div>
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                         {item.piecesSelections.map((pc, pIdx) => (
-                                                            <div key={pIdx} className="flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-700">
-                                                                <span className="font-bold text-orange-600 shrink-0">قطعة {pc.piece || (pIdx + 1)}:</span>
-                                                                {pc.color_image && (
-                                                                    <img src={pc.color_image} alt={pc.color || ''} className="w-5 h-5 rounded-md object-cover border border-gray-300 shrink-0" />
+                                                            <div key={pIdx} className="flex items-center gap-2.5 bg-white p-2.5 rounded-lg border border-gray-200/90 shadow-2xs hover:border-gray-300 transition">
+                                                                <span className="font-bold text-orange-600 text-xs shrink-0 bg-orange-50 px-2 py-1 rounded border border-orange-100">
+                                                                    قطعة {pc.piece || (pIdx + 1)}
+                                                                </span>
+                                                                {pc.color_image ? (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setPreviewImage({ url: pc.color_image, title: `${item.name} - قطعة ${pc.piece || (pIdx + 1)} (${pc.color || ''})` })}
+                                                                        className="relative group shrink-0 rounded-lg overflow-hidden border border-gray-300 hover:ring-2 hover:ring-orange-400 transition"
+                                                                        title="اضغط لتكبير صورة اللون"
+                                                                    >
+                                                                        <img src={pc.color_image} alt={pc.color || ''} className="w-8 h-8 object-cover" />
+                                                                        <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                                                                            <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                                                            </svg>
+                                                                        </div>
+                                                                    </button>
+                                                                ) : null}
+                                                                {pc.color && (
+                                                                    <span className="font-bold text-gray-800 text-xs">{pc.color}</span>
                                                                 )}
-                                                                {pc.color && <span className="font-bold text-gray-800">{pc.color}</span>}
-                                                                {pc.size && <span className="text-gray-500 font-medium text-[11px] bg-gray-100 px-1.5 py-0.5 rounded mr-auto">مقاس {pc.size}</span>}
+                                                                {pc.size && (
+                                                                    <span className="text-gray-600 font-semibold text-xs bg-gray-100 px-2 py-0.5 rounded mr-auto border border-gray-200">
+                                                                        مقاس {pc.size}
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                         ))}
                                                     </div>
                                                 </div>
                                             )}
                                         </div>
-
-                                        <div className="text-left flex-shrink-0">
-                                            <p className="font-bold text-gray-900 text-sm">{formatCurrency(item.price)}</p>
-                                            <p className="text-xs text-gray-400 mt-0.5">الإجمالي: {formatCurrency(item.total)}</p>
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -634,6 +720,60 @@ ${totalsBlock}${shippingBlock}`;
                     </div>
                 </div>
             </div>
+
+            {/* Image Preview Modal (Lightbox) */}
+            {previewImage && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+                    onClick={() => setPreviewImage(null)}
+                >
+                    <div
+                        className="relative max-w-2xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between px-4 py-3 bg-gray-900 text-white">
+                            <span className="font-bold text-sm truncate">{previewImage.title || 'معاينة الصورة'}</span>
+                            <button
+                                type="button"
+                                onClick={() => setPreviewImage(null)}
+                                className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors cursor-pointer"
+                                title="إغلاق"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="p-4 bg-gray-100 flex items-center justify-center overflow-auto min-h-[220px]">
+                            <img
+                                src={previewImage.url}
+                                alt={previewImage.title || 'معاينة الصورة'}
+                                className="max-w-full max-h-[65vh] object-contain rounded-lg shadow-sm"
+                            />
+                        </div>
+                        <div className="px-4 py-3 bg-white border-t border-gray-150 flex items-center justify-between text-xs text-gray-500">
+                            <a
+                                href={previewImage.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-indigo-600 hover:text-indigo-700 font-bold inline-flex items-center gap-1 cursor-pointer"
+                            >
+                                <span>فتح بالحجم الأصلي</span>
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                            </a>
+                            <button
+                                type="button"
+                                onClick={() => setPreviewImage(null)}
+                                className="px-4 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-bold transition-colors cursor-pointer"
+                            >
+                                إغلاق
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </MerchantLayout>
     );
 }

@@ -279,11 +279,12 @@
                     $itemName = $item['name'] ?? $item['product_name'] ?? $item['title'] ?? 'منتج';
                     $qty = (int) ($item['quantity'] ?? $item['qty'] ?? 1);
                     $price = (float) ($item['price'] ?? 0);
+                    $hasPieces = !empty($item['piecesSelections']) && is_array($item['piecesSelections']) && count($item['piecesSelections']) > 0;
                 @endphp
                 <tr>
                     <td>
                         <strong>{{ $itemName }}</strong>
-                        @if(isset($item['selectedSize']) || isset($item['selectedColor']) || isset($item['size']) || isset($item['color']) || isset($item['options']) || !empty($item['selectedColorImage']))
+                        @if(!$hasPieces && (isset($item['selectedSize']) || isset($item['selectedColor']) || isset($item['size']) || isset($item['color']) || isset($item['options']) || !empty($item['selectedColorImage'])))
                             <br><small style="color: #6b7280; display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap;">
                                 @if(isset($item['selectedSize']) || isset($item['size'])) المقاس: {{ $item['selectedSize'] ?? $item['size'] }} @endif
                                 @if(isset($item['selectedColor']) || isset($item['color']))

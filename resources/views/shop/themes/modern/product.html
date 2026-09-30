@@ -658,13 +658,23 @@
           main.src = nextSrc;
           main.classList.remove('fade-out');
         }, 150);
+        function scrollThumbIntoView(thumbEl) {
+          if (!thumbEl) return;
+          try {
+            const thumbsContainer = document.querySelector('.p-thumbs');
+            if (thumbsContainer) {
+              const thumbLeft = thumbEl.offsetLeft - thumbsContainer.offsetLeft;
+              const scrollTarget = thumbLeft - (thumbsContainer.clientWidth / 2) + (thumbEl.clientWidth / 2);
+              thumbsContainer.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+            }
+          } catch(e) {}
+        }
+
         thumbs.forEach(t => t.classList.remove('active'));
         const t = thumbs[idx];
         if (t) {
           t.classList.add('active');
-          try {
-            t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-          } catch(e) {}
+          scrollThumbIntoView(t);
         }
         if (lb && lb.classList.contains('open') && lbImg) {
           lbImg.src = nextSrc;
@@ -705,7 +715,14 @@
         thumbs.forEach((t, tIdx) => {
           if (tIdx === foundIdx) {
             t.classList.add('active');
-            try { t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); } catch(e){}
+            try {
+              const thumbsContainer = document.querySelector('.p-thumbs');
+              if (thumbsContainer) {
+                const thumbLeft = t.offsetLeft - thumbsContainer.offsetLeft;
+                const scrollTarget = thumbLeft - (thumbsContainer.clientWidth / 2) + (t.clientWidth / 2);
+                thumbsContainer.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+              }
+            } catch(e) {}
           } else {
             t.classList.remove('active');
           }
