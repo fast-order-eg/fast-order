@@ -10,6 +10,11 @@ class SecurityHeaders
 {
     public function handle(Request $request, Closure $next): Response
     {
+        // إعادة التوجيه التلقائي إلى HTTPS في بيئة الإنتاج لمنع فقدان الكوكيز الآمنة وظهور خطأ 419
+        if (app()->environment('production') && !$request->isSecure() && $request->header('X-Forwarded-Proto') !== 'https') {
+            return redirect()->secure($request->getRequestUri(), 301);
+        }
+
         $response = $next($request);
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('X-XSS-Protection', '1; mode=block');

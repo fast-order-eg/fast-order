@@ -2,6 +2,12 @@
     {{-- Session Status --}}
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
+    @if(session('error'))
+        <div class="mb-4 font-medium text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <div class="text-center mb-8">
         <h2 class="text-3xl font-bold text-gray-800 mb-3">تسجيل الدخول</h2>
         <p class="text-gray-600">مرحباً بك في لوحة التحكم</p>

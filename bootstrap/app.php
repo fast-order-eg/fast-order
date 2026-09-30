@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // الثقة في البروكسي (Cloudflare و OpenLiteSpeed) لقراءة بروتوكول HTTPS و IP العميل بشكل صحيح
+        $middleware->trustProxies(at: '*');
+
         // Global middleware - يُطبَّق على جميع الطلبات
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
 
@@ -146,6 +149,26 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('monitor:health')->everyTenMinutes();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // معالجة خطأ 419 (انتهاء الجلسة / CSRF Token) بسلاسة دون إظهار شاشة خطأ ميتة للمستخدم
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('login') || $request->is('admin/login') || $request->is('*/login') || $request->is('register')) {
+                return redirect()->to($request->fullUrl())
+                    ->withInput($request->except(['password', 'password_confirmation', '_token']))
+                    ->with('error', 'انتهت صلاحية الجلسة، تم تحديث الصفحة تلقائياً. يرجى إعادة إدخال كلمة المرور.');
+            }
+
+            if ($request->expectsJson() || $request->is('api/*') || $request->is('*/api/*') || $request->is('public-api/*')) {
+                return response()->json([
+                    'message' => 'انتهت صلاحية الجلسة، يرجى تحديث الصفحة',
+                    'status' => 419
+                ], 419);
+            }
+
+            return redirect()->back()
+                ->withInput($request->except(['password', 'password_confirmation', '_token']))
+                ->with('error', 'انتهت صلاحية الجلسة، يرجى إعادة المحاولة.');
+        });
+
         $exceptions->report(function (\Throwable $e) {
             \Illuminate\Support\Facades\Log::channel('fastorder-errors')->error($e->getMessage(), [
                 'exception' => get_class($e),

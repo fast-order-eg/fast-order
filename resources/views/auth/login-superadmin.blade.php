@@ -256,6 +256,10 @@
     <div class="status">{{ session('status') }}</div>
     @endif
 
+    @if(session('error'))
+    <div class="error">{{ session('error') }}</div>
+    @endif
+
     @if($errors->any())
     <div class="error">
         @foreach($errors->all() as $error)

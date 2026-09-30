@@ -23,6 +23,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // فرض بروتوكول HTTPS في بيئة الإنتاج لضمان عمل الكوكيز والجلسات وأمان النماذج
+        if ($this->app->environment('production') || str_starts_with(config('app.url'), 'https://')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
+
         // تعيين التوقيت لمكتبة Carbon
         Carbon::setLocale('en');
         date_default_timezone_set('Africa/Cairo');
