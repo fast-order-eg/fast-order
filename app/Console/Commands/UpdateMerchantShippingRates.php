@@ -18,14 +18,14 @@ class UpdateMerchantShippingRates extends Command
 
         $tenant = is_numeric($tenantInput)
             ? Tenant::find($tenantInput)
-            : Tenant::where('subdomain', $tenantInput)->first();
+            : Tenant::where('slug', $tenantInput)->orWhere('custom_domain', $tenantInput)->first();
 
         if (!$tenant) {
             $this->error("التاجر غير موجود: {$tenantInput}");
             return 1;
         }
 
-        $this->info("جاري تحديث أسعار الشحن للتاجر: {$tenant->name} (معرف: {$tenant->id}, نطاق: {$tenant->subdomain})");
+        $this->info("جاري تحديث أسعار الشحن للتاجر: {$tenant->name} (معرف: {$tenant->id}, نطاق: {$tenant->slug})");
 
         // تعريف المجموعات
         $cairoGiza = [
