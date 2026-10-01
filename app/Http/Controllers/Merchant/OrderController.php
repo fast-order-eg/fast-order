@@ -283,6 +283,26 @@ class OrderController extends Controller
             ->pluck('provider')
             ->toArray();
 
+        $products = Product::withoutGlobalScopes()
+            ->where('tenant_id', $order->tenant_id)
+            ->where('is_active', true)
+            ->select('id', 'name', 'price', 'price_after', 'main_image_path', 'image_url', 'stock')
+            ->get()
+            ->map(function ($p) {
+                return [
+                    'id'    => $p->id,
+                    'name'  => $p->name,
+                    'price' => (float) ($p->price_after ?? $p->price ?? 0),
+                    'image' => $p->main_image_path ? asset('storage/' . $p->main_image_path) : ($p->image_url ?? null),
+                ];
+            });
+
+        $governorates = \App\Models\ShippingGovernorate::withoutGlobalScopes()
+            ->where('tenant_id', $order->tenant_id)
+            ->where('is_active', true)
+            ->select('id', 'name', 'price')
+            ->get();
+
         return Inertia::render('Merchant/Orders/Show', [
             'order' => [
                 'id'               => $order->id,
@@ -309,10 +329,80 @@ class OrderController extends Controller
                 'whatsapp_message_id'    => $order->whatsapp_message_id,
                 'created_at'             => $order->created_at ? \Carbon\Carbon::parse($order->created_at)->format('Y-m-d H:i') : null,
             ],
+            'products'                 => $products,
+            'governorates'             => $governorates,
             'active_shipping_gateways' => $activeShippingGateways,
             'is_auto_confirm_enabled'  => (bool) \App\Models\Setting::get('auto_confirm_enabled', false, $order->tenant_id),
             'wallet_balance'           => (float) ($tenant->wallet_balance ?? 0),
         ]);
+    }
+
+    /**
+     * تحديث بيانات الطلب (البيانات، المنتجات، الأسعار، الشحن)
+     */
+    public function update(Request $request, Order $order)
+    {
+        $tenant = app(\App\Models\Tenant::class);
+        if ($order->tenant_id !== $tenant->id) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'customer_name'    => 'required|string|max:255',
+            'customer_phone'   => 'required|string|max:50',
+            'customer_email'   => 'nullable|string|max:255',
+            'customer_address' => 'required|string|max:1000',
+            'governorate'      => 'nullable|string|max:255',
+            'shipping_cost'    => 'required|numeric|min:0',
+            'notes'            => 'nullable|string|max:1000',
+            'items'            => 'required|array|min:1',
+            'items.*.name'     => 'required|string',
+            'items.*.price'    => 'required|numeric|min:0',
+            'items.*.quantity' => 'required|integer|min:1',
+        ]);
+
+        $subtotal = 0;
+        $updatedItems = [];
+
+        foreach ($request->input('items', []) as $item) {
+            $qty = max(1, (int) ($item['quantity'] ?? 1));
+            $price = max(0, (float) ($item['price'] ?? 0));
+            $itemTotal = $qty * $price;
+            $subtotal += $itemTotal;
+
+            $updatedItems[] = array_merge($item, [
+                'quantity' => $qty,
+                'price'    => $price,
+                'total'    => $itemTotal,
+            ]);
+        }
+
+        $shippingCost = (float) $validated['shipping_cost'];
+        $discount = (float) ($order->discount ?? 0);
+        $total = max(0, $subtotal + $shippingCost - $discount);
+
+        $order->update([
+            'customer_name'    => $validated['customer_name'],
+            'customer_phone'   => $validated['customer_phone'],
+            'customer_email'   => $validated['customer_email'] ?? null,
+            'customer_address' => $validated['customer_address'],
+            'governorate'      => $validated['governorate'] ?? $order->governorate,
+            'shipping_cost'    => $shippingCost,
+            'subtotal'         => $subtotal,
+            'total'            => $total,
+            'items'            => $updatedItems,
+            'notes'            => $request->input('notes', $order->notes),
+        ]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تعديل بيانات الطلب بنجاح',
+                'order'   => $order->fresh(),
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'تم تعديل بيانات الطلب بنجاح');
     }
 
     /**

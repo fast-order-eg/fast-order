@@ -1,11 +1,13 @@
 import React from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import MerchantLayout from '@/Layouts/MerchantLayout';
+import EditOrderModal from './EditOrderModal';
 
-export default function OrderShow({ order, active_shipping_gateways = [], is_auto_confirm_enabled = false, wallet_balance = 0 }) {
+export default function OrderShow({ order, products = [], governorates = [], active_shipping_gateways = [], is_auto_confirm_enabled = false, wallet_balance = 0 }) {
     const { flash } = usePage().props;
     const [isSendingWa, setIsSendingWa] = React.useState(false);
     const [previewImage, setPreviewImage] = React.useState(null);
+    const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
 
     React.useEffect(() => {
         const handleKeyDown = (e) => {
@@ -20,6 +22,15 @@ export default function OrderShow({ order, active_shipping_gateways = [], is_aut
             document.body.style.overflow = '';
         };
     }, [previewImage]);
+
+    React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('edit') === '1') {
+                setIsEditModalOpen(true);
+            }
+        }
+    }, []);
 
     const handleSendAutoConfirm = () => {
         if (!confirm('هل تريد إرسال رسالة التأكيد التلقائي للعميل عبر الواتساب الآن؟ (تكلفة الرسالة 1 ج.م تُخصم من رصيد المحفظة)')) return;
@@ -148,16 +159,39 @@ ${totalsBlock}${shippingBlock}`;
 
             <div className="w-full space-y-6">
                 {/* Breadcrumb & Navigation */}
+                {/* Breadcrumb & Navigation */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <nav className="flex items-center gap-2 text-sm text-gray-500">
+                    <nav className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
                         <Link href="/admin/orders" className="hover:text-orange-600 transition-colors">الطلبات</Link>
                         <svg className="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                         </svg>
-                        <span className="text-gray-800 font-medium">تفاصيل الطلب {order.reference_number}</span>
+                        <span className="text-gray-900 font-bold text-base">تفاصيل الطلب #{order.reference_number}</span>
+                        {order.created_at && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-900 border border-amber-200/80 rounded-lg text-xs font-bold mr-1">
+                                <svg className="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span>تاريخ ووقت الطلب:</span>
+                                <span className="dir-ltr font-mono font-extrabold">{order.created_at}</span>
+                            </span>
+                        )}
                     </nav>
                     
                     <div className="flex items-center gap-2">
+                        {/* Edit Order Button */}
+                        <button
+                            type="button"
+                            onClick={() => setIsEditModalOpen(true)}
+                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm shadow-orange-200 cursor-pointer"
+                            title="تعديل بيانات وأسعار وشحن الطلب"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            <span>تعديل الطلب</span>
+                        </button>
+
                         <a
                             href={`/admin/orders/${order.id}/invoice`}
                             target="_blank"
@@ -174,11 +208,20 @@ ${totalsBlock}${shippingBlock}`;
 
                 {/* Status Bar */}
                 <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
                         <span className="text-sm font-semibold text-gray-500">حالة الطلب الحالية:</span>
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${getStatusBadgeClass(order.status)}`}>
                             {getStatusText(order.status)}
                         </span>
+                        {order.created_at && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold border border-gray-200">
+                                <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>بتاريخ:</span>
+                                <span className="dir-ltr font-mono font-semibold">{order.created_at}</span>
+                            </span>
+                        )}
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
@@ -774,6 +817,15 @@ ${totalsBlock}${shippingBlock}`;
                     </div>
                 </div>
             )}
+
+            {/* Edit Order Modal */}
+            <EditOrderModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                order={order}
+                products={products}
+                governorates={governorates}
+            />
         </MerchantLayout>
     );
 }
