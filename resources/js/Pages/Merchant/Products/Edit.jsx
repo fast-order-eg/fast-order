@@ -1372,20 +1372,18 @@ export default function Edit({ product, categories, allProducts = [] }) {
                                                 <button
                                                     key={i}
                                                     type="button"
+                                                    title={imgObj.title}
                                                     onClick={() => updateColorImage(selectingColorIndex, imgObj.url)}
                                                     className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all group ${
                                                         isSelected ? 'border-orange-500 ring-2 ring-orange-400/40 shadow-sm' : 'border-gray-200 hover:border-orange-300'
                                                     }`}
                                                 >
-                                                    <img src={imgObj.url} alt={imgObj.title} className="w-full h-full object-cover" />
+                                                    <img src={imgObj.url} alt={imgObj.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                                                     {isSelected && (
                                                         <div className="absolute inset-0 bg-orange-600/30 flex items-center justify-center text-white font-bold text-lg">
                                                             ✓
                                                         </div>
                                                     )}
-                                                    <span className="absolute bottom-0 inset-x-0 bg-black/60 text-[9px] text-white py-0.5 truncate px-1 text-center">
-                                                        {imgObj.title}
-                                                    </span>
                                                 </button>
                                             );
                                         })}
