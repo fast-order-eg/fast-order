@@ -725,11 +725,11 @@ export default function Edit({ product, categories, allProducts = [] }) {
                             المقاسات والألوان (اختياري)
                         </h3>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div className="space-y-6">
                             {/* Sizes */}
-                            <div className="space-y-3">
+                            <div className="space-y-3 pb-5 border-b border-gray-100">
                                 <label className="block text-sm font-semibold text-gray-700">المقاسات المتاحة</label>
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 max-w-md">
                                     <input
                                         type="text"
                                         placeholder="مثال: M, L, XL, 42"
@@ -754,7 +754,7 @@ export default function Edit({ product, categories, allProducts = [] }) {
                                                 setSizeInput('');
                                             }
                                         }}
-                                        className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
+                                        className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors shrink-0"
                                     >
                                         إضافة
                                     </button>
@@ -777,11 +777,11 @@ export default function Edit({ product, categories, allProducts = [] }) {
 
                             {/* Colors */}
                             <div className="space-y-3">
-                                <div className="flex items-center justify-between">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                                     <label className="block text-sm font-semibold text-gray-700">الألوان المتاحة للمنتج</label>
                                     <span className="text-xs text-gray-400">يمكنك ربط كل لون بصورة تظهر للعميل عند اختياره</span>
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 max-w-md">
                                     <input
                                         type="text"
                                         placeholder="اكتب اسم اللون (مثال: نبيتي، أسود، كحلي...)"
@@ -798,48 +798,48 @@ export default function Edit({ product, categories, allProducts = [] }) {
                                     <button
                                         type="button"
                                         onClick={() => addColor(colorInput)}
-                                        className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
+                                        className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors whitespace-nowrap shrink-0"
                                     >
                                         إضافة لون
                                     </button>
                                 </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 mt-3">
                                     {data.colors.map((col, idx) => {
                                         const colName = typeof col === 'object' && col !== null ? col.name : col;
                                         const colImage = typeof col === 'object' && col !== null ? col.image : null;
                                         return (
-                                            <div key={idx} className="flex items-center justify-between gap-2 p-2 rounded-xl bg-gray-50 border border-gray-200 hover:border-orange-300 transition-all">
-                                                <div className="flex items-center gap-2 min-w-0">
+                                            <div key={idx} className="flex items-center justify-between gap-2.5 p-2.5 rounded-xl bg-white border border-gray-200/90 shadow-2xs hover:border-orange-300 hover:shadow-xs transition-all">
+                                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                                     <button
                                                         type="button"
                                                         onClick={() => setSelectingColorIndex(idx)}
-                                                        className="relative w-9 h-9 rounded-lg overflow-hidden border border-gray-300 bg-white flex items-center justify-center hover:opacity-80 transition-opacity flex-shrink-0 group/img"
+                                                        className="relative w-10 h-10 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center hover:opacity-85 transition-opacity shrink-0 group/img shadow-2xs"
                                                         title={colImage ? 'تغيير صورة هذا اللون' : 'ربط هذا اللون بصورة'}
                                                     >
                                                         {colImage ? (
                                                             <img src={colImage} alt={colName} className="w-full h-full object-cover" />
                                                         ) : (
-                                                            <svg className="w-4 h-4 text-gray-400 group-hover/img:text-orange-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <svg className="w-4.5 h-4.5 text-gray-400 group-hover/img:text-orange-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                                             </svg>
                                                         )}
-                                                        <div className="absolute inset-0 bg-black/40 text-white text-[8px] font-bold opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity">
+                                                        <div className="absolute inset-0 bg-black/40 text-white text-[9px] font-bold opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity">
                                                             {colImage ? 'تغيير' : 'ربط'}
                                                         </div>
                                                     </button>
-                                                    <div className="min-w-0">
-                                                        <span className="text-xs font-bold text-gray-900 block truncate">{colName}</span>
+                                                    <div className="min-w-0 flex-1">
+                                                        <span className="text-xs sm:text-sm font-bold text-gray-900 block truncate" title={colName}>{colName}</span>
                                                         {colImage ? (
-                                                            <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-0.5">
+                                                            <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1 mt-0.5 whitespace-nowrap">
                                                                 <span>✓</span> مربوط بصورة
                                                             </span>
                                                         ) : (
                                                             <button
                                                                 type="button"
                                                                 onClick={() => setSelectingColorIndex(idx)}
-                                                                className="text-[10px] text-orange-600 hover:text-orange-700 underline font-semibold"
+                                                                className="text-[11px] text-orange-600 hover:text-orange-700 font-bold hover:underline inline-flex items-center gap-0.5 mt-0.5 whitespace-nowrap"
                                                             >
-                                                                + ربط صورة
+                                                                <span>+</span> ربط صورة
                                                             </button>
                                                         )}
                                                     </div>
@@ -847,7 +847,7 @@ export default function Edit({ product, categories, allProducts = [] }) {
                                                 <button
                                                     type="button"
                                                     onClick={() => setData('colors', data.colors.filter((_, i) => i !== idx))}
-                                                    className="w-6 h-6 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center text-xs font-bold transition-colors"
+                                                    className="w-7 h-7 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center text-xs font-bold transition-colors shrink-0"
                                                     title="حذف اللون"
                                                 >
                                                     ✕
