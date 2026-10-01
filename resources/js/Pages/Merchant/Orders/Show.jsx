@@ -213,15 +213,7 @@ ${totalsBlock}${shippingBlock}`;
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${getStatusBadgeClass(order.status)}`}>
                             {getStatusText(order.status)}
                         </span>
-                        {order.created_at && (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold border border-gray-200">
-                                <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>بتاريخ:</span>
-                                <span className="dir-ltr font-mono font-semibold">{order.created_at}</span>
-                            </span>
-                        )}
+
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
