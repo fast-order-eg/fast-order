@@ -444,10 +444,14 @@ class ProductController extends Controller
                             if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'])) $ext = 'jpg';
                             $filename = 'products/colors/color_' . uniqid('', true) . '.' . $ext;
                             \Illuminate\Support\Facades\Storage::disk('public')->put($filename, $decoded);
-                            $image = $filename;
+                            $image = '/storage/' . $filename;
                         }
                     } catch (\Throwable $e) {
                         \Log::error("Failed to decode and save color base64 image: " . $e->getMessage());
+                    }
+                } elseif ($image && is_string($image)) {
+                    if (!str_starts_with($image, 'http://') && !str_starts_with($image, 'https://') && !str_starts_with($image, '/')) {
+                        $image = '/storage/' . $image;
                     }
                 }
 

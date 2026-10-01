@@ -37,6 +37,16 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
         return `/storage/${img}`;
     };
 
+    const formatImageUrl = (url) => {
+        if (!url || typeof url !== 'string') return null;
+        const trimmed = url.trim();
+        if (!trimmed) return null;
+        if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:') || trimmed.startsWith('/')) {
+            return trimmed;
+        }
+        return `/storage/${trimmed}`;
+    };
+
     const parseJSON = (val) => {
         if (!val) return [];
         try {
@@ -218,10 +228,11 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
     };
 
     const updateColorImage = (index, imageUrl) => {
+        const formattedUrl = formatImageUrl(imageUrl);
         const newColors = (data.colors || []).map((col, i) => {
             if (i !== index) return col;
             const colName = typeof col === 'object' && col !== null ? col.name : col;
-            return { name: colName, image: imageUrl };
+            return { name: colName, image: formattedUrl };
         });
         setData('colors', newColors);
         setSelectingColorIndex(null);
@@ -806,7 +817,7 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 mt-3">
                                     {data.colors.map((col, idx) => {
                                         const colName = typeof col === 'object' && col !== null ? col.name : col;
-                                        const colImage = typeof col === 'object' && col !== null ? col.image : null;
+                                        const colImage = formatImageUrl(typeof col === 'object' && col !== null ? col.image : null);
                                         return (
                                             <div key={idx} className="flex items-center justify-between gap-2.5 p-2.5 rounded-xl bg-white border border-gray-200/90 shadow-2xs hover:border-orange-300 hover:shadow-xs transition-all">
                                                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -817,12 +828,20 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
                                                         title={colImage ? 'تغيير صورة هذا اللون' : 'ربط هذا اللون بصورة'}
                                                     >
                                                         {colImage ? (
-                                                            <img src={colImage} alt={colName} className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            <svg className="w-4.5 h-4.5 text-gray-400 group-hover/img:text-orange-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                            </svg>
-                                                        )}
+                                                            <img 
+                                                                src={colImage} 
+                                                                alt={colName} 
+                                                                className="w-full h-full object-cover" 
+                                                                onError={(e) => {
+                                                                    e.currentTarget.style.display = 'none';
+                                                                    const icon = e.currentTarget.parentElement.querySelector('.color-fallback-icon');
+                                                                    if (icon) icon.classList.remove('hidden');
+                                                                }}
+                                                            />
+                                                        ) : null}
+                                                        <svg className={`w-4.5 h-4.5 text-gray-400 group-hover/img:text-orange-600 transition-colors color-fallback-icon ${colImage ? 'hidden' : 'block'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                        </svg>
                                                         <div className="absolute inset-0 bg-black/40 text-white text-[9px] font-bold opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-opacity">
                                                             {colImage ? 'تغيير' : 'ربط'}
                                                         </div>
@@ -1190,7 +1209,8 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
                             {[mainImagePreview, ...galleryPreviews].filter(Boolean).length > 0 ? (
                                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2.5 max-h-48 overflow-y-auto p-1 border border-gray-100 rounded-xl bg-gray-50/50">
                                     {[mainImagePreview, ...galleryPreviews].filter(Boolean).map((imgUrl, iIdx) => {
-                                        const isCurrent = (typeof data.colors[selectingColorIndex] === 'object' ? data.colors[selectingColorIndex]?.image : null) === imgUrl;
+                                        const currentColor = typeof data.colors[selectingColorIndex] === 'object' ? data.colors[selectingColorIndex]?.image : null;
+                                        const isCurrent = currentColor && formatImageUrl(currentColor) === formatImageUrl(imgUrl);
                                         return (
                                             <button
                                                 key={iIdx}

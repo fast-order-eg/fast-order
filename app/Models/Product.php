@@ -85,6 +85,21 @@ class Product extends Model
         return static::resolveImageUrl($path);
     }
 
+    public function getColorsAttribute($value)
+    {
+        $colors = is_string($value) ? json_decode($value, true) : $value;
+        if (!is_array($colors)) {
+            return $colors;
+        }
+
+        return array_map(function ($c) {
+            if (is_array($c) && !empty($c['image'])) {
+                $c['image'] = static::resolveImageUrl($c['image']);
+            }
+            return $c;
+        }, $colors);
+    }
+
     public function category()
     {
         return $this->belongsTo(Category::class);
