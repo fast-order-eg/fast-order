@@ -89,12 +89,12 @@ class OrderController extends Controller
         $total = $subtotal + $shippingCost;
         $tenantId = $governorate->tenant_id ?? null;
 
-        // 🛡️ فحص التكرار (Deduplication Guard): منع تكرار نفس الطلب لنفس العميل ونفس القيمة خلال 60 ثانية
+        // 🛡️ فحص التكرار (Deduplication Guard): منع تكرار نفس الطلب لنفس العميل ونفس القيمة خلال 120 ثانية (دقيقتين)
         if ($tenantId && !empty($validated['customer_phone'])) {
             $recentDuplicate = Order::where('tenant_id', $tenantId)
                 ->where('customer_phone', $validated['customer_phone'])
                 ->where('total', $total)
-                ->where('created_at', '>=', now()->subSeconds(60))
+                ->where('created_at', '>=', now()->subSeconds(120))
                 ->latest('id')
                 ->first();
 
@@ -235,7 +235,21 @@ class OrderController extends Controller
                     $hasNonFreeShipping = true;
                 }
 
-                $itemTotal = $item['price'] * $item['qty'];
+                $price = (float) ($item['price'] ?? 0);
+                $qty = max(1, (int) ($item['qty'] ?? 1));
+
+                // 🛡️ حماية السعر: إذا كان للمنتج سعر في قاعدة البيانات والسعر القادم صفر أو سالب
+                if ($product) {
+                    $dbBasePrice = (float) ($product->price_after ?? $product->price ?? 0);
+                    if ($dbBasePrice > 0 && $price <= 0) {
+                        $price = $this->getProductPrice($product, $qty);
+                        if ($price <= 0) {
+                            $price = $dbBasePrice;
+                        }
+                    }
+                }
+
+                $itemTotal = $price * $qty;
                 $subtotal += $itemTotal;
 
                 $colorImg = $item['selectedColorImage'] ?? null;
@@ -244,8 +258,8 @@ class OrderController extends Controller
                 $orderItems[] = [
                     'id'                 => $item['id'],
                     'name'               => $item['name'],
-                    'price'              => $item['price'],
-                    'quantity'           => $item['qty'],
+                    'price'              => $price,
+                    'quantity'           => $qty,
                     'total'              => $itemTotal,
                     'image'              => $colorImg ?: $productImg,
                     'image_url'          => $colorImg ?: $productImg,
@@ -282,12 +296,12 @@ class OrderController extends Controller
             $total = max(0, $subtotal - $discount + $shippingCost);
             $tenantId = $governorate->tenant_id ?? null;
 
-            // 🛡️ فحص التكرار (Deduplication Guard): منع تكرار نفس الطلب لنفس العميل ونفس القيمة خلال 60 ثانية
+            // 🛡️ فحص التكرار (Deduplication Guard): منع تكرار نفس الطلب لنفس العميل ونفس القيمة خلال 120 ثانية (دقيقتين)
             if ($tenantId && !empty($validated['customer_phone'])) {
                 $recentDuplicate = Order::where('tenant_id', $tenantId)
                     ->where('customer_phone', $validated['customer_phone'])
                     ->where('total', $total)
-                    ->where('created_at', '>=', now()->subSeconds(60))
+                    ->where('created_at', '>=', now()->subSeconds(120))
                     ->latest('id')
                     ->first();
 

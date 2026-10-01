@@ -104,15 +104,26 @@ class CheckoutController extends Controller
                     $hasNonFreeShipping = true;
                 }
 
+                $price = (float) ($item['price'] ?? 0);
+                $qty = max(1, (int) ($item['qty'] ?? 1));
+
+                // 🛡️ حماية السعر: إذا كان للمنتج سعر في قاعدة البيانات وسعر الطلب المرسل صفر أو سالب
+                if ($product) {
+                    $dbBasePrice = (float) ($product->price_after ?? $product->price ?? 0);
+                    if ($dbBasePrice > 0 && $price <= 0) {
+                        $price = $dbBasePrice;
+                    }
+                }
+
                 // التحقق من المخزون
-                if ($product && $product->stock < $item['qty']) {
+                if ($product && $product->stock < $qty) {
                     return response()->json([
                         'success' => false,
                         'message' => "المنتج \"{$product->name}\" غير متوفر بالكمية المطلوبة. المتاح: {$product->stock}",
                     ], 422);
                 }
 
-                $itemTotal  = (float) $item['price'] * (int) $item['qty'];
+                $itemTotal  = $price * $qty;
                 $subtotal  += $itemTotal;
 
                 $options = $item['options'] ?? null;
@@ -146,8 +157,8 @@ class CheckoutController extends Controller
                 $orderItems[] = [
                     'id'               => $item['id'],
                     'name'             => $item['name'],
-                    'price'            => (float) $item['price'],
-                    'quantity'         => (int) $item['qty'],
+                    'price'            => $price,
+                    'quantity'         => $qty,
                     'total'            => $itemTotal,
                     'image'            => $product?->main_image_path
                                             ? asset('storage/' . $product->main_image_path)
@@ -183,12 +194,12 @@ class CheckoutController extends Controller
             $total        = max(0, $subtotal - $discount + $shippingCost);
             $tenantId     = optional($request->attributes->get('tenant'))->id;
 
-            // 🛡️ فحص التكرار (Deduplication Guard): منع تكرار نفس الطلب لنفس العميل ونفس القيمة خلال 60 ثانية
+            // 🛡️ فحص التكرار (Deduplication Guard): منع تكرار نفس الطلب لنفس العميل ونفس القيمة خلال 120 ثانية (دقيقتين)
             if ($tenantId && !empty($validated['customer_phone'])) {
                 $recentDuplicate = Order::where('tenant_id', $tenantId)
                     ->where('customer_phone', $validated['customer_phone'])
                     ->where('total', $total)
-                    ->where('created_at', '>=', now()->subSeconds(60))
+                    ->where('created_at', '>=', now()->subSeconds(120))
                     ->latest('id')
                     ->first();
 
