@@ -283,17 +283,53 @@ class OrderController extends Controller
             ->pluck('provider')
             ->toArray();
 
+        $orderProductIds = collect($order->items)->pluck('id')->filter()->unique();
         $products = Product::withoutGlobalScopes()
             ->where('tenant_id', $order->tenant_id)
-            ->where('is_active', true)
-            ->select('id', 'name', 'price', 'price_after', 'main_image_path', 'image_url', 'stock')
+            ->where(function ($q) use ($orderProductIds) {
+                $q->where('is_active', true)
+                  ->orWhereIn('id', $orderProductIds);
+            })
             ->get()
             ->map(function ($p) {
+                $rawColors = is_string($p->colors) ? json_decode($p->colors, true) : $p->colors;
+                $rawSizes = is_string($p->sizes) ? json_decode($p->sizes, true) : $p->sizes;
+
+                $colors = [];
+                if (is_array($rawColors)) {
+                    foreach ($rawColors as $c) {
+                        if (is_array($c) && !empty($c['name'])) {
+                            $colors[] = [
+                                'name'  => trim($c['name']),
+                                'image' => !empty($c['image']) ? Product::resolveImageUrl($c['image']) : null,
+                            ];
+                        } elseif (is_string($c) && trim($c) !== '') {
+                            $colors[] = [
+                                'name'  => trim($c),
+                                'image' => null,
+                            ];
+                        }
+                    }
+                }
+
+                $sizes = [];
+                if (is_array($rawSizes)) {
+                    foreach ($rawSizes as $s) {
+                        if (is_string($s) && trim($s) !== '') {
+                            $sizes[] = trim($s);
+                        } elseif (is_array($s) && !empty($s['name'])) {
+                            $sizes[] = trim($s['name']);
+                        }
+                    }
+                }
+
                 return [
-                    'id'    => $p->id,
-                    'name'  => $p->name,
-                    'price' => (float) ($p->price_after ?? $p->price ?? 0),
-                    'image' => $p->main_image_path ? asset('storage/' . $p->main_image_path) : ($p->image_url ?? null),
+                    'id'     => $p->id,
+                    'name'   => $p->name,
+                    'price'  => (float) ($p->price_after ?? $p->price ?? 0),
+                    'image'  => Product::resolveImageUrl($p->main_image_path ?: $p->image_url),
+                    'colors' => $colors,
+                    'sizes'  => $sizes,
                 ];
             });
 
@@ -384,7 +420,7 @@ class OrderController extends Controller
         $order->update([
             'customer_name'    => $validated['customer_name'],
             'customer_phone'   => $validated['customer_phone'],
-            'customer_email'   => $validated['customer_email'] ?? null,
+            'customer_email'   => $request->has('customer_email') ? ($validated['customer_email'] ?? null) : $order->customer_email,
             'customer_address' => $validated['customer_address'],
             'governorate'      => $validated['governorate'] ?? $order->governorate,
             'shipping_cost'    => $shippingCost,

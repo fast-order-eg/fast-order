@@ -10,18 +10,17 @@ export default function EditOrderModal({
 }) {
     if (!isOpen || !order) return null;
 
-    // بيانات العميل
+    // بيانات العميل (تم استبعاد بريد العميل حسب الطلب)
     const [customerName, setCustomerName] = useState(order.customer_name || '');
     const [customerPhone, setCustomerPhone] = useState(order.customer_phone || '');
-    const [customerEmail, setCustomerEmail] = useState(order.customer_email || '');
     const [notes, setNotes] = useState(order.notes || '');
 
-    // بيانات الشحن
+    // بيانات الشحن (تم استبعاد الدولة حسب الطلب)
     const [governorate, setGovernorate] = useState(order.governorate || '');
     const [customerAddress, setCustomerAddress] = useState(order.customer_address || '');
     const [shippingCost, setShippingCost] = useState(Number(order.shipping_cost || 0));
 
-    // عناصر السلة
+    // عناصر السلة مع دعم تفاصيل القطع والألوان والمقاسات
     const [items, setItems] = useState(() => {
         const initialItems = Array.isArray(order.items) ? order.items : [];
         return initialItems.map((it) => ({
@@ -33,7 +32,7 @@ export default function EditOrderModal({
             image_url: it.image_url || it.image || null,
             selectedSize: it.selectedSize || null,
             selectedColor: it.selectedColor || null,
-            piecesSelections: it.piecesSelections || null,
+            piecesSelections: Array.isArray(it.piecesSelections) ? it.piecesSelections : null,
             options: it.options || null,
         }));
     });
@@ -90,21 +89,149 @@ export default function EditOrderModal({
     };
 
     const handleAddProduct = (prod) => {
+        const matchingProduct = products.find(p => String(p.id) === String(prod.id));
+        const defaultColor = matchingProduct?.colors?.[0]?.name || null;
+        const defaultColorImg = matchingProduct?.colors?.[0]?.image || null;
+        const defaultSize = matchingProduct?.sizes?.[0] || null;
+
         const newItem = {
             id: prod.id,
             name: prod.name,
             price: Number(prod.price || 0),
             quantity: 1,
-            image: prod.image,
-            image_url: prod.image,
-            selectedSize: null,
-            selectedColor: null,
+            image: defaultColorImg || prod.image,
+            image_url: defaultColorImg || prod.image,
+            selectedSize: defaultSize,
+            selectedColor: defaultColor,
             piecesSelections: null,
             options: null,
         };
         setItems(prev => [...prev, newItem]);
         setIsProductPickerOpen(false);
         setProductSearch('');
+    };
+
+    // تحديث قطعة معينة داخل العرض (عرض قطعتين أو أكثر)
+    const updatePieceSelection = (itemIndex, pieceIndex, field, value) => {
+        setItems(prev => {
+            const next = [...prev];
+            const item = { ...next[itemIndex] };
+            const matchingProduct = products.find(p => String(p.id) === String(item.id));
+
+            let pieces = Array.isArray(item.piecesSelections) ? [...item.piecesSelections] : [];
+            if (!pieces[pieceIndex]) {
+                pieces[pieceIndex] = { piece: pieceIndex + 1, size: '', color: '', color_image: null, options: [] };
+            } else {
+                pieces[pieceIndex] = { ...pieces[pieceIndex] };
+            }
+
+            pieces[pieceIndex][field] = value;
+
+            // في حالة تغيير اللون، تحديث صورة اللون تلقائياً
+            if (field === 'color') {
+                const matchedColor = matchingProduct?.colors?.find(c => c.name === value);
+                if (matchedColor && matchedColor.image) {
+                    pieces[pieceIndex].color_image = matchedColor.image;
+                    // لو أول قطعة، نحدث صورة العنصر الرئيسية أيضاً
+                    if (pieceIndex === 0) {
+                        item.image = matchedColor.image;
+                        item.image_url = matchedColor.image;
+                    }
+                }
+            }
+
+            item.piecesSelections = pieces;
+            item.selectedColor = pieces.map((p, i) => `ق${i + 1}: ${p.color || ''}`).join(' | ');
+            item.selectedSize = pieces.map((p, i) => `ق${i + 1}: ${p.size || ''}`).join(' | ');
+
+            next[itemIndex] = item;
+            return next;
+        });
+    };
+
+    // إضافة قطعة جديدة لباقة العرض
+    const addPieceToItem = (itemIndex) => {
+        setItems(prev => {
+            const next = [...prev];
+            const item = { ...next[itemIndex] };
+            const matchingProduct = products.find(p => String(p.id) === String(item.id));
+            let pieces = Array.isArray(item.piecesSelections) ? [...item.piecesSelections] : [];
+
+            // إذا كان المنتج قطعة مفردة وحولناه لباقة قطعتين
+            if (pieces.length === 0) {
+                pieces = [
+                    {
+                        piece: 1,
+                        color: item.selectedColor || matchingProduct?.colors?.[0]?.name || '',
+                        color_image: item.image || matchingProduct?.colors?.[0]?.image || null,
+                        size: item.selectedSize || matchingProduct?.sizes?.[0] || '',
+                        options: [],
+                    },
+                    {
+                        piece: 2,
+                        color: matchingProduct?.colors?.[0]?.name || '',
+                        color_image: matchingProduct?.colors?.[0]?.image || null,
+                        size: matchingProduct?.sizes?.[0] || '',
+                        options: [],
+                    }
+                ];
+            } else {
+                const nextNum = pieces.length + 1;
+                pieces.push({
+                    piece: nextNum,
+                    color: matchingProduct?.colors?.[0]?.name || '',
+                    color_image: matchingProduct?.colors?.[0]?.image || null,
+                    size: matchingProduct?.sizes?.[0] || '',
+                    options: [],
+                });
+            }
+
+            item.piecesSelections = pieces;
+            item.selectedColor = pieces.map((p, i) => `ق${i + 1}: ${p.color || ''}`).join(' | ');
+            item.selectedSize = pieces.map((p, i) => `ق${i + 1}: ${p.size || ''}`).join(' | ');
+            next[itemIndex] = item;
+            return next;
+        });
+    };
+
+    // حذف قطعة من باقة العرض
+    const removePieceFromItem = (itemIndex, pieceIndex) => {
+        setItems(prev => {
+            const next = [...prev];
+            const item = { ...next[itemIndex] };
+            let pieces = Array.isArray(item.piecesSelections) ? [...item.piecesSelections] : [];
+            if (pieces.length <= 1) return prev;
+
+            pieces = pieces.filter((_, idx) => idx !== pieceIndex).map((p, i) => ({ ...p, piece: i + 1 }));
+            item.piecesSelections = pieces;
+            item.selectedColor = pieces.map((p, i) => `ق${i + 1}: ${p.color || ''}`).join(' | ');
+            item.selectedSize = pieces.map((p, i) => `ق${i + 1}: ${p.size || ''}`).join(' | ');
+            next[itemIndex] = item;
+            return next;
+        });
+    };
+
+    // تحديث اللون أو المقاس لمنتج مفرد
+    const updateSingleVariant = (itemIndex, field, value) => {
+        setItems(prev => {
+            const next = [...prev];
+            const item = { ...next[itemIndex] };
+            const matchingProduct = products.find(p => String(p.id) === String(item.id));
+
+            if (field === 'color') {
+                item.selectedColor = value;
+                const matchedColor = matchingProduct?.colors?.find(c => c.name === value);
+                if (matchedColor && matchedColor.image) {
+                    item.image = matchedColor.image;
+                    item.image_url = matchedColor.image;
+                }
+            } else if (field === 'size') {
+                item.selectedSize = value;
+            }
+
+            next[itemIndex] = item;
+            return next;
+        });
     };
 
     const handleGovernorateChange = (govName) => {
@@ -141,7 +268,6 @@ export default function EditOrderModal({
         router.put(`/admin/orders/${order.id}`, {
             customer_name: customerName,
             customer_phone: customerPhone,
-            customer_email: customerEmail || null,
             customer_address: customerAddress,
             governorate: governorate || null,
             shipping_cost: Number(shippingCost || 0),
@@ -178,7 +304,8 @@ export default function EditOrderModal({
 
     return (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-in fade-in duration-200">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full my-auto flex flex-col max-h-[92vh] overflow-hidden border border-gray-200">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full my-auto flex flex-col max-h-[92vh] overflow-hidden border border-gray-200 text-right" dir="rtl">
+                
                 {/* Modal Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white sticky top-0 z-20">
                     <div className="flex items-center gap-2.5">
@@ -195,7 +322,7 @@ export default function EditOrderModal({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition"
+                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition cursor-pointer"
                         title="إغلاق"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -214,13 +341,12 @@ export default function EditOrderModal({
 
                 {/* Modal Body */}
                 <div className="p-5 sm:p-6 overflow-y-auto space-y-6 flex-1 bg-slate-50/50">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
                         
-                        {/* Right / Second Column in RTL: عناصر السلة وملخص الطلب (lg:col-span-7) */}
-                        <div className="lg:col-span-7 space-y-5 order-1 lg:order-2">
-                            {/* Card: عناصر السلة */}
+                        {/* 1. العمود الأيمن في وضع الكمبيوتر (lg:col-span-7): عناصر السلة بالكامل */}
+                        <div className="lg:col-span-7 space-y-4">
                             <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200/90 shadow-2xs space-y-4">
-                                <div className="flex items-center justify-between pb-1 border-b border-gray-100">
+                                <div className="flex items-center justify-between pb-2 border-b border-gray-100">
                                     <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
                                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                                         <span>عناصر السلة</span>
@@ -239,15 +365,15 @@ export default function EditOrderModal({
                                             <span>اختر المنتجات</span>
                                         </button>
 
-                                        {/* Product Picker Dropdown */}
+                                        {/* Dropdown إضافة منتج */}
                                         {isProductPickerOpen && (
-                                            <div className="absolute left-0 sm:right-auto sm:left-0 mt-2 w-72 sm:w-80 bg-white border border-gray-200 rounded-xl shadow-xl z-30 p-3 space-y-2">
+                                            <div className="absolute left-0 mt-2 w-72 sm:w-80 bg-white border border-gray-200 rounded-xl shadow-xl z-30 p-3 space-y-2">
                                                 <div className="flex items-center justify-between pb-1 border-b border-gray-100">
                                                     <span className="text-xs font-bold text-gray-700">إضافة منتج من المتجر</span>
                                                     <button
                                                         type="button"
                                                         onClick={() => setIsProductPickerOpen(false)}
-                                                        className="text-gray-400 hover:text-gray-600 text-xs"
+                                                        className="text-gray-400 hover:text-gray-600 text-xs cursor-pointer"
                                                     >
                                                         ✕
                                                     </button>
@@ -290,90 +416,284 @@ export default function EditOrderModal({
                                     </div>
                                 </div>
 
-                                {/* Items List */}
-                                <div className="space-y-3">
-                                    {items.map((item, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="p-3 bg-slate-50/70 rounded-xl border border-gray-200/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:border-gray-300 transition"
-                                        >
-                                            {/* Thumbnail & Info */}
-                                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                                                <img
-                                                    src={item.image_url || item.image || 'https://dummyimage.com/100x100/f3f4f6/9ca3af&text=صورة'}
-                                                    alt={item.name}
-                                                    className="w-12 h-12 rounded-lg object-cover border border-gray-200 shrink-0 bg-white shadow-2xs"
-                                                />
-                                                <div className="min-w-0">
-                                                    <h4 className="font-bold text-gray-900 text-xs sm:text-sm line-clamp-1">{item.name}</h4>
-                                                    {(item.selectedColor || item.selectedSize) && (
-                                                        <div className="text-[11px] text-gray-500 flex flex-wrap gap-2 mt-0.5">
-                                                            {item.selectedColor && <span>اللون: <strong className="text-gray-700">{item.selectedColor}</strong></span>}
-                                                            {item.selectedSize && <span>| المقاس: <strong className="text-gray-700">{item.selectedSize}</strong></span>}
+                                {/* قائمة المنتجات */}
+                                <div className="space-y-4">
+                                    {items.map((item, idx) => {
+                                        const matchingProduct = products.find(p => String(p.id) === String(item.id));
+                                        const hasPieces = Array.isArray(item.piecesSelections) && item.piecesSelections.length > 0;
+                                        const colorOptions = matchingProduct?.colors || [];
+                                        const sizeOptions = matchingProduct?.sizes || [];
+
+                                        return (
+                                            <div
+                                                key={idx}
+                                                className="p-4 bg-slate-50/70 rounded-2xl border border-gray-200/90 hover:border-gray-300 transition space-y-3"
+                                            >
+                                                {/* الجزء العلوي: الصورة + الاسم + الكمية والسعر */}
+                                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                                                    {/* الصورة والاسم */}
+                                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                        <img
+                                                            src={item.image_url || item.image || 'https://dummyimage.com/100x100/f3f4f6/9ca3af&text=صورة'}
+                                                            alt={item.name}
+                                                            className="w-12 h-12 rounded-xl object-cover border border-gray-200 shrink-0 bg-white shadow-2xs"
+                                                        />
+                                                        <div className="min-w-0">
+                                                            <h4 className="font-bold text-gray-900 text-xs sm:text-sm line-clamp-1">{item.name}</h4>
+                                                            {hasPieces ? (
+                                                                <div className="text-[10px] text-orange-700 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200 mt-1 inline-block font-bold">
+                                                                    عرض باقة {item.piecesSelections.length} قطع
+                                                                </div>
+                                                            ) : (
+                                                                (item.selectedColor || item.selectedSize) && (
+                                                                    <div className="text-[11px] text-gray-500 flex flex-wrap gap-2 mt-0.5">
+                                                                        {item.selectedColor && <span>اللون: <strong className="text-gray-700">{item.selectedColor}</strong></span>}
+                                                                        {item.selectedSize && <span>| المقاس: <strong className="text-gray-700">{item.selectedSize}</strong></span>}
+                                                                    </div>
+                                                                )
+                                                            )}
                                                         </div>
-                                                    )}
-                                                    {item.piecesSelections && item.piecesSelections.length > 0 && (
-                                                        <div className="text-[10px] text-orange-700 bg-orange-50 px-2 py-0.5 rounded border border-orange-100 mt-1 inline-block font-bold">
-                                                            باقة {item.piecesSelections.length} قطع
+                                                    </div>
+
+                                                    {/* الكمية والسعر والإجمالي والحذف */}
+                                                    <div className="flex items-center gap-2.5 self-end sm:self-center shrink-0">
+                                                        {/* الكمية */}
+                                                        <div className="flex flex-col items-center">
+                                                            <span className="text-[10px] text-gray-400 font-bold mb-0.5">الكمية *</span>
+                                                            <input
+                                                                type="number"
+                                                                min="1"
+                                                                value={item.quantity}
+                                                                onChange={(e) => updateItemQuantity(idx, e.target.value)}
+                                                                className="w-14 text-center text-xs py-1.5 px-1 border border-gray-300 rounded-lg font-bold text-gray-800 focus:ring-1 focus:ring-orange-400 focus:outline-none bg-white"
+                                                            />
                                                         </div>
-                                                    )}
+
+                                                        <span className="text-gray-400 text-xs pt-3 font-bold">×</span>
+
+                                                        {/* السعر (سعر العرض أو سعر القطعة مجمعاً) */}
+                                                        <div className="flex flex-col items-center">
+                                                            <span className="text-[10px] text-gray-400 font-bold mb-0.5">
+                                                                {hasPieces ? 'سعر العرض *' : 'السعر *'}
+                                                            </span>
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                step="any"
+                                                                value={item.price}
+                                                                onChange={(e) => updateItemPrice(idx, e.target.value)}
+                                                                className="w-20 text-center text-xs py-1.5 px-1 border border-gray-300 rounded-lg font-bold text-gray-800 focus:ring-1 focus:ring-orange-400 focus:outline-none bg-white"
+                                                            />
+                                                        </div>
+
+                                                        {/* الإجمالي */}
+                                                        <div className="text-left min-w-[70px] pt-3">
+                                                            <span className="font-extrabold text-gray-900 text-xs sm:text-sm">
+                                                                {Math.round(item.price * item.quantity)} ج.م
+                                                            </span>
+                                                        </div>
+
+                                                        {/* زر الحذف */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeItem(idx)}
+                                                            className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition mt-3 cursor-pointer shrink-0"
+                                                            title="حذف هذا المنتج"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
                                                 </div>
+
+                                                {/* تفاصيل العرض: تعديل اللون والمقاس لكل قطعة داخل العرض */}
+                                                {hasPieces ? (
+                                                    <div className="bg-white p-3 rounded-xl border border-gray-200/90 space-y-2.5 shadow-2xs">
+                                                        <div className="flex items-center justify-between text-xs pb-1 border-b border-gray-100">
+                                                            <span className="font-bold text-gray-800 flex items-center gap-1.5">
+                                                                <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                                                                <span>تفاصيل قطع العرض ({item.piecesSelections.length} قطع) - تعديل اللون والمقاس:</span>
+                                                            </span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => addPieceToItem(idx)}
+                                                                className="text-[11px] font-bold text-orange-600 hover:text-orange-700 hover:underline cursor-pointer"
+                                                            >
+                                                                + إضافة قطعة للعرض
+                                                            </button>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                                            {item.piecesSelections.map((pc, pIdx) => (
+                                                                <div key={pIdx} className="bg-slate-50 p-2.5 rounded-lg border border-gray-200 space-y-2">
+                                                                    <div className="flex items-center justify-between">
+                                                                        <span className="text-[11px] font-bold text-orange-700 bg-orange-100/70 px-2 py-0.5 rounded">
+                                                                            قطعة {pc.piece || (pIdx + 1)}
+                                                                        </span>
+                                                                        {item.piecesSelections.length > 1 && (
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => removePieceFromItem(idx, pIdx)}
+                                                                                className="text-gray-400 hover:text-red-600 text-xs px-1 cursor-pointer"
+                                                                                title="حذف هذه القطعة"
+                                                                            >
+                                                                                ✕
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+
+                                                                    <div className="space-y-1.5 text-xs">
+                                                                        {/* اختيار اللون للقطعة */}
+                                                                        <div>
+                                                                            <label className="block text-[10px] font-bold text-gray-500 mb-0.5">اللون:</label>
+                                                                            {colorOptions.length > 0 ? (
+                                                                                <div className="flex items-center gap-1.5">
+                                                                                    {pc.color_image && (
+                                                                                        <img src={pc.color_image} alt="" className="w-5 h-5 rounded object-cover border border-gray-300 shrink-0" />
+                                                                                    )}
+                                                                                    <select
+                                                                                        value={pc.color || ''}
+                                                                                        onChange={(e) => updatePieceSelection(idx, pIdx, 'color', e.target.value)}
+                                                                                        className="w-full text-xs py-1 px-1.5 border border-gray-300 rounded-lg bg-white focus:ring-1 focus:ring-orange-400 font-medium"
+                                                                                    >
+                                                                                        <option value="">اختر اللون</option>
+                                                                                        {pc.color && !colorOptions.some(c => c.name === pc.color) && (
+                                                                                            <option value={pc.color}>{pc.color}</option>
+                                                                                        )}
+                                                                                        {colorOptions.map((c, cIdx) => (
+                                                                                            <option key={cIdx} value={c.name}>{c.name}</option>
+                                                                                        ))}
+                                                                                    </select>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <input
+                                                                                    type="text"
+                                                                                    value={pc.color || ''}
+                                                                                    onChange={(e) => updatePieceSelection(idx, pIdx, 'color', e.target.value)}
+                                                                                    placeholder="اسم اللون"
+                                                                                    className="w-full text-xs py-1 px-2 border border-gray-300 rounded-lg bg-white"
+                                                                                />
+                                                                            )}
+                                                                        </div>
+
+                                                                        {/* اختيار المقاس للقطعة */}
+                                                                        <div>
+                                                                            <label className="block text-[10px] font-bold text-gray-500 mb-0.5">المقاس:</label>
+                                                                            {sizeOptions.length > 0 ? (
+                                                                                <select
+                                                                                    value={pc.size || ''}
+                                                                                    onChange={(e) => updatePieceSelection(idx, pIdx, 'size', e.target.value)}
+                                                                                    className="w-full text-xs py-1 px-1.5 border border-gray-300 rounded-lg bg-white focus:ring-1 focus:ring-orange-400 font-medium"
+                                                                                >
+                                                                                    <option value="">اختر المقاس</option>
+                                                                                    {pc.size && !sizeOptions.includes(pc.size) && (
+                                                                                        <option value={pc.size}>{pc.size}</option>
+                                                                                    )}
+                                                                                    {sizeOptions.map((s, sIdx) => (
+                                                                                        <option key={sIdx} value={s}>{s}</option>
+                                                                                    ))}
+                                                                                </select>
+                                                                            ) : (
+                                                                                <input
+                                                                                    type="text"
+                                                                                    value={pc.size || ''}
+                                                                                    onChange={(e) => updatePieceSelection(idx, pIdx, 'size', e.target.value)}
+                                                                                    placeholder="المقاس"
+                                                                                    className="w-full text-xs py-1 px-2 border border-gray-300 rounded-lg bg-white"
+                                                                                />
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    /* لو منتج عادي: إمكانية اختيار اللون أو المقاس أو تحويله لعرض */
+                                                    (colorOptions.length > 0 || sizeOptions.length > 0 || item.selectedColor || item.selectedSize) && (
+                                                        <div className="bg-white p-2.5 rounded-xl border border-gray-200/90 flex flex-wrap items-center gap-3 text-xs">
+                                                            {/* تعديل اللون */}
+                                                            {(colorOptions.length > 0 || item.selectedColor) && (
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <span className="text-[11px] font-bold text-gray-500">اللون:</span>
+                                                                    {colorOptions.length > 0 ? (
+                                                                        <select
+                                                                            value={item.selectedColor || ''}
+                                                                            onChange={(e) => updateSingleVariant(idx, 'color', e.target.value)}
+                                                                            className="text-xs py-1 px-2 border border-gray-300 rounded-lg bg-white focus:ring-1 focus:ring-orange-400 font-medium"
+                                                                        >
+                                                                            <option value="">اختر اللون</option>
+                                                                            {item.selectedColor && !colorOptions.some(c => c.name === item.selectedColor) && (
+                                                                                <option value={item.selectedColor}>{item.selectedColor}</option>
+                                                                            )}
+                                                                            {colorOptions.map((c, cIdx) => (
+                                                                                <option key={cIdx} value={c.name}>{c.name}</option>
+                                                                            ))}
+                                                                        </select>
+                                                                    ) : (
+                                                                        <input
+                                                                            type="text"
+                                                                            value={item.selectedColor || ''}
+                                                                            onChange={(e) => updateSingleVariant(idx, 'color', e.target.value)}
+                                                                            className="text-xs py-1 px-2 border border-gray-300 rounded-lg bg-white"
+                                                                            placeholder="اللون"
+                                                                        />
+                                                                    )}
+                                                                </div>
+                                                            )}
+
+                                                            {/* تعديل المقاس */}
+                                                            {(sizeOptions.length > 0 || item.selectedSize) && (
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <span className="text-[11px] font-bold text-gray-500">المقاس:</span>
+                                                                    {sizeOptions.length > 0 ? (
+                                                                        <select
+                                                                            value={item.selectedSize || ''}
+                                                                            onChange={(e) => updateSingleVariant(idx, 'size', e.target.value)}
+                                                                            className="text-xs py-1 px-2 border border-gray-300 rounded-lg bg-white focus:ring-1 focus:ring-orange-400 font-medium max-w-[180px] truncate"
+                                                                        >
+                                                                            <option value="">اختر المقاس</option>
+                                                                            {item.selectedSize && !sizeOptions.includes(item.selectedSize) && (
+                                                                                <option value={item.selectedSize}>{item.selectedSize}</option>
+                                                                            )}
+                                                                            {sizeOptions.map((s, sIdx) => (
+                                                                                <option key={sIdx} value={s}>{s}</option>
+                                                                            ))}
+                                                                        </select>
+                                                                    ) : (
+                                                                        <input
+                                                                            type="text"
+                                                                            value={item.selectedSize || ''}
+                                                                            onChange={(e) => updateSingleVariant(idx, 'size', e.target.value)}
+                                                                            className="text-xs py-1 px-2 border border-gray-300 rounded-lg bg-white"
+                                                                            placeholder="المقاس"
+                                                                        />
+                                                                    )}
+                                                                </div>
+                                                            )}
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => addPieceToItem(idx)}
+                                                                className="text-[11px] font-bold text-orange-600 hover:underline mr-auto cursor-pointer"
+                                                            >
+                                                                + تحويل إلى عرض قطعتين
+                                                            </button>
+                                                        </div>
+                                                    )
+                                                )}
                                             </div>
-
-                                            {/* Quantity × Price = Total + Trash */}
-                                            <div className="flex items-center gap-2.5 self-end sm:self-center shrink-0">
-                                                {/* Quantity */}
-                                                <div className="flex flex-col items-center">
-                                                    <span className="text-[10px] text-gray-400 font-bold mb-0.5">الكمية *</span>
-                                                    <input
-                                                        type="number"
-                                                        min="1"
-                                                        value={item.quantity}
-                                                        onChange={(e) => updateItemQuantity(idx, e.target.value)}
-                                                        className="w-14 text-center text-xs py-1.5 px-1 border border-gray-300 rounded-lg font-bold text-gray-800 focus:ring-1 focus:ring-orange-400 focus:outline-none bg-white"
-                                                    />
-                                                </div>
-
-                                                <span className="text-gray-400 text-xs pt-3 font-bold">×</span>
-
-                                                {/* Price */}
-                                                <div className="flex flex-col items-center">
-                                                    <span className="text-[10px] text-gray-400 font-bold mb-0.5">السعر *</span>
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        step="any"
-                                                        value={item.price}
-                                                        onChange={(e) => updateItemPrice(idx, e.target.value)}
-                                                        className="w-20 text-center text-xs py-1.5 px-1 border border-gray-300 rounded-lg font-bold text-gray-800 focus:ring-1 focus:ring-orange-400 focus:outline-none bg-white"
-                                                    />
-                                                </div>
-
-                                                {/* Item Total */}
-                                                <div className="text-left min-w-[70px] pt-3">
-                                                    <span className="font-extrabold text-gray-900 text-xs sm:text-sm">
-                                                        {Math.round(item.price * item.quantity)} ج.م
-                                                    </span>
-                                                </div>
-
-                                                {/* Delete Button */}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeItem(idx)}
-                                                    className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition mt-3 cursor-pointer shrink-0"
-                                                    title="حذف هذا المنتج"
-                                                >
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Card: ملخص الطلب */}
+                        {/* 2. العمود الأيسر في وضع الكمبيوتر (lg:col-span-5): المجموع والحاجات التانية */}
+                        <div className="lg:col-span-5 space-y-4">
+                            
+                            {/* Card: ملخص الطلب والمجموع */}
                             <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200/90 shadow-2xs space-y-3">
                                 <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2 pb-1 border-b border-gray-100">
                                     <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
@@ -398,7 +718,7 @@ export default function EditOrderModal({
                                         </div>
                                     )}
 
-                                    {/* Shipping Fee - Editable Input Box */}
+                                    {/* حقل تعديل رسوم التوصيل */}
                                     <div className="flex items-center justify-between py-2 border-y border-gray-100">
                                         <span className="font-semibold text-gray-700">رسوم التوصيل:</span>
                                         <div className="flex items-center gap-1.5">
@@ -422,11 +742,8 @@ export default function EditOrderModal({
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Left / First Column in RTL: بيانات العميل والشحن (lg:col-span-5) */}
-                        <div className="lg:col-span-5 space-y-5 order-2 lg:order-1">
-                            {/* Card: بيانات العميل */}
+                            {/* Card: بيانات العميل (بدون بريد العميل) */}
                             <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200/90 shadow-2xs space-y-3.5">
                                 <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2 pb-1 border-b border-gray-100">
                                     <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
@@ -442,17 +759,6 @@ export default function EditOrderModal({
                                             onChange={(e) => setCustomerName(e.target.value)}
                                             className="w-full text-xs sm:text-sm px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-400 focus:outline-none font-medium"
                                             required
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-semibold text-gray-600 mb-1">بريد العميل</label>
-                                        <input
-                                            type="email"
-                                            value={customerEmail}
-                                            onChange={(e) => setCustomerEmail(e.target.value)}
-                                            className="w-full text-xs sm:text-sm px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-400 focus:outline-none dir-ltr text-right font-medium"
-                                            placeholder="example@mail.com"
                                         />
                                     </div>
 
@@ -480,7 +786,7 @@ export default function EditOrderModal({
                                 </div>
                             </div>
 
-                            {/* Card: بيانات الشحن */}
+                            {/* Card: بيانات الشحن (بدون حقل الدولة) */}
                             <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200/90 shadow-2xs space-y-3.5">
                                 <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2 pb-1 border-b border-gray-100">
                                     <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
@@ -488,16 +794,6 @@ export default function EditOrderModal({
                                 </h3>
 
                                 <div className="space-y-3">
-                                    <div>
-                                        <label className="block text-xs font-semibold text-gray-600 mb-1">الدولة</label>
-                                        <input
-                                            type="text"
-                                            value="مصر"
-                                            disabled
-                                            className="w-full text-xs sm:text-sm px-3 py-2 border border-gray-200 bg-gray-50 text-gray-500 rounded-xl cursor-not-allowed font-medium"
-                                        />
-                                    </div>
-
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-600 mb-1">المحافظة</label>
                                         <select
@@ -520,7 +816,7 @@ export default function EditOrderModal({
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-600 mb-1">العنوان بالتفصيل *</label>
                                         <textarea
-                                            rows={3}
+                                            rows={2}
                                             value={customerAddress}
                                             onChange={(e) => setCustomerAddress(e.target.value)}
                                             className="w-full text-xs sm:text-sm px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-400 focus:outline-none resize-none font-medium"
@@ -535,12 +831,12 @@ export default function EditOrderModal({
                 </div>
 
                 {/* Modal Footer */}
-                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-white sticky bottom-0 z-20">
+                <div className="px-6 py-4 border-t border-gray-100 bg-white flex items-center justify-end gap-3 sticky bottom-0 z-20">
                     <button
                         type="button"
                         onClick={onClose}
                         disabled={isSubmitting}
-                        className="px-5 py-2.5 rounded-xl text-xs font-bold text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 transition cursor-pointer"
+                        className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 text-xs sm:text-sm font-bold hover:bg-gray-50 transition cursor-pointer"
                     >
                         إلغاء
                     </button>
@@ -549,15 +845,18 @@ export default function EditOrderModal({
                         type="button"
                         onClick={handleSubmit}
                         disabled={isSubmitting}
-                        className="px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm shadow-emerald-200 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold transition shadow-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                         {isSubmitting ? (
                             <>
-                                <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                <svg className="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
                                 <span>جاري الحفظ...</span>
                             </>
                         ) : (
-                            <span>حفظ</span>
+                            <span>حفظ التعديلات</span>
                         )}
                     </button>
                 </div>
