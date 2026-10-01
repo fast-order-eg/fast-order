@@ -606,24 +606,14 @@ export default function OrdersIndex({ orders, totalAmount, statusCounts, product
                                                         </Link>
                                                     )}
                                                     {(order.is_unlocked || wallet_balance >= 2) && (
-                                                        <>
-                                                            <Link
-                                                                href={`/admin/orders/${order.id}?edit=1`}
-                                                                className="px-2.5 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1"
-                                                                title="تعديل بيانات وأسعار الطلب"
-                                                            >
-                                                                <span>✏️</span>
-                                                                <span>تعديل</span>
-                                                            </Link>
-                                                            <a
-                                                                href={`/admin/orders/${order.id}/invoice`}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-200 transition-colors"
-                                                            >
-                                                                الفاتورة
-                                                            </a>
-                                                        </>
+                                                        <a
+                                                            href={`/admin/orders/${order.id}/invoice`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-200 transition-colors"
+                                                        >
+                                                            الفاتورة
+                                                        </a>
                                                     )}
                                                 </div>
                                             </td>
@@ -733,23 +723,14 @@ export default function OrdersIndex({ orders, totalAmount, statusCounts, product
                                             </Link>
                                         )}
                                         {(order.is_unlocked || wallet_balance >= 2) && (
-                                            <>
-                                                <Link
-                                                    href={`/admin/orders/${order.id}?edit=1`}
-                                                    className="flex-1 py-2 text-center bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1"
-                                                >
-                                                    <span>✏️</span>
-                                                    <span>تعديل</span>
-                                                </Link>
-                                                <a
-                                                    href={`/admin/orders/${order.id}/invoice`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex-1 py-2 text-center bg-gray-100 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-200 transition-colors"
-                                                >
-                                                    الفاتورة
-                                                </a>
-                                            </>
+                                            <a
+                                                href={`/admin/orders/${order.id}/invoice`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex-1 py-2 text-center bg-gray-100 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-200 transition-colors"
+                                            >
+                                                الفاتورة
+                                            </a>
                                         )}
                                     </div>
                                 </div>
