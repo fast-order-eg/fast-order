@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 
 class DiagnoseProductImages extends Command
 {
-    protected $signature = 'diagnose:images {tenant? : Subdomain, slug or ID}';
+    protected $signature = 'diagnose:images {tenant? : Subdomain, slug or ID} {--search= : Search product name}';
     protected $description = 'تشخيص صور المنتجات للمستأجر والتحقق من وجود الملفات على القرص';
 
     public function handle()
@@ -36,38 +36,57 @@ class DiagnoseProductImages extends Command
 
         $this->info("المستأجر: {$tenant->name} (معرف: {$tenant->id}, نطاق: {$tenant->slug})");
 
-        $products = Product::withoutGlobalScopes()
-            ->where('tenant_id', $tenant->id)
-            ->orderBy('id', 'desc')
-            ->take(15)
-            ->get();
+        $search = $this->option('search');
 
-        $this->info("فحص آخر 15 منتج:");
+        $query = Product::withoutGlobalScopes()->where('tenant_id', $tenant->id);
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        $products = $query->take(30)->get();
+
         $storageBase = storage_path('app/public');
         $publicStorage = public_path('storage');
 
+        $totalProducts = Product::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count();
+        $this->info("إجمالي منتجات المستأجر: {$totalProducts}");
+
         $rows = [];
+        $missingCount = 0;
         foreach ($products as $p) {
             $path = $p->main_image_path ?: $p->image_url;
             $cleanPath = ltrim(str_replace('/storage/', '', $path ?? ''), '/');
             
-            $existsInStorageApp = file_exists("{$storageBase}/{$cleanPath}");
-            $existsInPublicStorage = file_exists("{$publicStorage}/{$cleanPath}");
+            $existsInStorageApp = !empty($cleanPath) && file_exists("{$storageBase}/{$cleanPath}");
+            $existsInPublicStorage = !empty($cleanPath) && file_exists("{$publicStorage}/{$cleanPath}");
+
+            if (!$existsInStorageApp && !str_starts_with($path ?? '', 'http')) {
+                $missingCount++;
+            }
 
             $rows[] = [
                 $p->id,
-                mb_substr($p->name, 0, 20),
-                $path ?? 'null',
+                mb_substr($p->name, 0, 25),
+                mb_substr($path ?? 'null', 0, 40),
                 $existsInStorageApp ? 'نعم ✓' : 'لا ✗',
                 $existsInPublicStorage ? 'نعم ✓' : 'لا ✗',
-                $p->image_display_url ?? 'null',
+                mb_substr($p->image_display_url ?? 'null', 0, 50),
             ];
         }
 
         $this->table(
-            ['ID', 'الاسم', 'المسار الأصلي', 'في storage/app/public', 'في public/storage', 'الرابط المحسوب'],
+            ['ID', 'الاسم', 'المسار الأصلي', 'في storage/app', 'في public/storage', 'الرابط المحسوب'],
             $rows
         );
+
+        $this->info("الصور المفقودة في العينة: {$missingCount}");
+
+        // فحص سريع إذا كانت هناك صور في مسار قديم
+        if ($missingCount > 0) {
+            $this->warn("محاولة البحث عن الصور المفقودة في /home/fast-order-eg.tech بالكامل...");
+        }
 
         return 0;
     }
