@@ -8,12 +8,17 @@ export default function OrderShow({ order, products = [], governorates = [], act
     const [isSendingWa, setIsSendingWa] = React.useState(false);
     const [previewImage, setPreviewImage] = React.useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+    const [isDeleting, setIsDeleting] = React.useState(false);
 
     React.useEffect(() => {
         const handleKeyDown = (e) => {
-            if (e.key === 'Escape') setPreviewImage(null);
+            if (e.key === 'Escape') {
+                setPreviewImage(null);
+                if (!isDeleting) setIsDeleteModalOpen(false);
+            }
         };
-        if (previewImage) {
+        if (previewImage || isDeleteModalOpen) {
             window.addEventListener('keydown', handleKeyDown);
             document.body.style.overflow = 'hidden';
         }
@@ -21,7 +26,7 @@ export default function OrderShow({ order, products = [], governorates = [], act
             window.removeEventListener('keydown', handleKeyDown);
             document.body.style.overflow = '';
         };
-    }, [previewImage]);
+    }, [previewImage, isDeleteModalOpen, isDeleting]);
 
     React.useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -51,6 +56,17 @@ export default function OrderShow({ order, products = [], governorates = [], act
         if (!confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) return;
         router.patch(`/admin/orders/${order.id}/cancel`, {}, {
             preserveScroll: true,
+        });
+    };
+
+    const handleDeleteOrder = () => {
+        setIsDeleting(true);
+        router.delete(`/admin/orders/${order.id}`, {
+            onFinish: () => setIsDeleting(false),
+            onError: () => {
+                setIsDeleting(false);
+                setIsDeleteModalOpen(false);
+            },
         });
     };
 
@@ -178,7 +194,7 @@ ${totalsBlock}${shippingBlock}`;
                         )}
                     </nav>
                     
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         {/* Edit Order Button */}
                         <button
                             type="button"
@@ -203,6 +219,19 @@ ${totalsBlock}${shippingBlock}`;
                             </svg>
                             الفاتورة pdf
                         </a>
+
+                        {/* Delete Order Button */}
+                        <button
+                            type="button"
+                            onClick={() => setIsDeleteModalOpen(true)}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200 hover:border-rose-600 rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer group"
+                            title="حذف هذا الطلب"
+                        >
+                            <svg className="w-4 h-4 text-rose-500 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            <span>حذف الطلب</span>
+                        </button>
                     </div>
                 </div>
 
@@ -818,6 +847,75 @@ ${totalsBlock}${shippingBlock}`;
                 products={products}
                 governorates={governorates}
             />
+
+            {/* Delete Order Confirmation Modal */}
+            {isDeleteModalOpen && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+                    onClick={() => !isDeleting && setIsDeleteModalOpen(false)}
+                >
+                    <div
+                        className="relative max-w-md w-full bg-white rounded-2xl overflow-hidden shadow-2xl p-6 text-center space-y-5 animate-in zoom-in-95 duration-200"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="w-16 h-16 mx-auto rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-3xl shadow-inner">
+                            <svg className="w-8 h-8 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </div>
+
+                        <div className="space-y-2">
+                            <h3 className="text-lg font-black text-gray-900">
+                                تأكيد حذف الطلب / الفاتورة
+                            </h3>
+                            <div className="inline-block px-3 py-1 bg-gray-100 rounded-lg text-xs font-mono font-bold text-gray-700">
+                                رقم الفاتورة: #{order.reference_number || order.id}
+                            </div>
+                            <p className="text-sm text-gray-600 leading-relaxed pt-1">
+                                هل أنت متأكد من رغبتك في حذف هذا الطلب؟
+                            </p>
+                            <div className="p-3 bg-amber-50 rounded-xl border border-amber-200/80 text-xs text-amber-900 text-right space-y-1">
+                                <div className="font-bold flex items-center gap-1.5 text-amber-800">
+                                    <span>ℹ️</span>
+                                    <span>ملاحظة هامة:</span>
+                                </div>
+                                <p className="leading-relaxed">
+                                    سيتم إخفاء الطلب من قائمة الطلبات النشطة، مع <strong>الاحتفاظ برقم الفاتورة وبياناتها مسجلة</strong> في أرشيف النظام لحماية تسلسل الفواتير.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 pt-2">
+                            <button
+                                type="button"
+                                disabled={isDeleting}
+                                onClick={handleDeleteOrder}
+                                className="flex-1 py-2.5 px-4 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-rose-200 flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                {isDeleting ? (
+                                    <>
+                                        <svg className="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span>جاري الحذف...</span>
+                                    </>
+                                ) : (
+                                    <span>نعم، حذف الطلب</span>
+                                )}
+                            </button>
+                            <button
+                                type="button"
+                                disabled={isDeleting}
+                                onClick={() => setIsDeleteModalOpen(false)}
+                                className="flex-1 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 text-gray-700 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                            >
+                                تراجع / إلغاء
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </MerchantLayout>
     );
 }

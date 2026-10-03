@@ -756,12 +756,33 @@ class OrderController extends Controller
     }
 
     /**
-     * حذف الطلب
+     * حذف الطلب (Soft Delete) مع الحفاظ على رقم الفاتورة وسجلاتها
      */
     public function destroy(Order $order)
     {
+        $tenant = app(\App\Models\Tenant::class);
+        if ($order->tenant_id && $tenant->id && (int) $order->tenant_id !== (int) $tenant->id) {
+            abort(403, 'غير مصرح بإجراء هذا الإجراء.');
+        }
+
+        // إذا لم يكن الطلب ملغياً مسبقاً، يتم استرجاع كميات المخزون
+        if ($order->status !== 'cancelled') {
+            $this->restoreOrderStock($order);
+        }
+
+        // إلغاء بوليصة الشحن إن وجدت ولم تكن ملغاة
+        if ($order->shipment && $order->shipment->status !== 'cancelled') {
+            try {
+                (new \App\Services\Shipping\ShippingManager())->cancelShipment($order->shipment);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Auto cancel shipment failed on order deletion for Order #{$order->id}: " . $e->getMessage());
+            }
+        }
+
+        $refNumber = $order->reference_number ?: $order->id;
         $order->delete();
-        return redirect()->route('orders.index')->with('success', 'تم حذف الطلب بنجاح ✓');
+
+        return redirect()->route('orders.index')->with('success', "تم حذف الطلب #{$refNumber} بنجاح مع الاحتفاظ برقم الفاتورة في السجلات ✓");
     }
 
     /**

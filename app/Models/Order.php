@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 use App\Traits\BelongsToTenant;
 
 class Order extends Model
 {
-    use HasFactory, BelongsToTenant;
+    use HasFactory, BelongsToTenant, SoftDeletes;
     
     protected $fillable = [
         'tenant_id',
@@ -60,6 +61,7 @@ class Order extends Model
         'whatsapp_charge_amount' => 'float',
         'created_at' => 'datetime:Y-m-d H:i:s',
         'updated_at' => 'datetime:Y-m-d H:i:s',
+        'deleted_at' => 'datetime:Y-m-d H:i:s',
     ];
 
     /**
@@ -88,6 +90,7 @@ class Order extends Model
             'whatsapp_charge_amount' => 'float',
             'created_at' => 'datetime:Y-m-d H:i:s',
             'updated_at' => 'datetime:Y-m-d H:i:s',
+            'deleted_at' => 'datetime:Y-m-d H:i:s',
         ];
     }
 
@@ -108,7 +111,7 @@ class Order extends Model
     {
         do {
             $referenceNumber = str_pad(rand(10000, 99999), 5, '0', STR_PAD_LEFT);
-        } while (self::where('reference_number', $referenceNumber)->exists());
+        } while (self::withTrashed()->where('reference_number', $referenceNumber)->exists());
         
         return $referenceNumber;
     }
