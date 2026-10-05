@@ -654,7 +654,7 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
                                         {errors?.secret_key && <p className="text-xs text-red-600 mt-1">{errors.secret_key}</p>}
                                     </div>
 
-                                    <div className="space-y-2 pt-1 border-t border-gray-100">
+                                    <div className="pt-1 border-t border-gray-100">
                                         <div className="flex items-center gap-2">
                                             <input
                                                 type="checkbox"
@@ -665,19 +665,6 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
                                             />
                                             <label htmlFor="speedaf_is_allow_open" className="text-xs font-medium text-gray-700 cursor-pointer">
                                                 السماح للعميل بفتح ومعاينة الشحنة قبل الاستلام (موصى به لزيادة نسبة التسليم)
-                                            </label>
-                                        </div>
-
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="checkbox"
-                                                id="speedaf_is_sandbox"
-                                                checked={speedafForm.is_sandbox}
-                                                onChange={(e) => setSpeedafForm({ ...speedafForm, is_sandbox: e.target.checked })}
-                                                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
-                                            />
-                                            <label htmlFor="speedaf_is_sandbox" className="text-xs font-medium text-gray-700 cursor-pointer">
-                                                وضع الاختبار التجريبي (Sandbox / UAT Mode)
                                             </label>
                                         </div>
                                     </div>
