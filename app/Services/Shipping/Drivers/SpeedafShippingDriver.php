@@ -191,16 +191,19 @@ class SpeedafShippingDriver implements ShippingProviderInterface
                 }
             }
 
+            // If decryptedData is a list of results, take the first item
+            $resultItem = (is_array($decryptedData) && isset($decryptedData[0])) ? $decryptedData[0] : $decryptedData;
+
             // Verify inner response success
-            if (isset($decryptedData['success']) && !$decryptedData['success']) {
-                $msg = $decryptedData['message'] ?? 'فشلت معالجة الشحنة في نظام Speedaf';
+            if (isset($resultItem['success']) && !$resultItem['success']) {
+                $msg = $resultItem['message'] ?? 'فشلت معالجة الشحنة في نظام Speedaf';
                 return [
                     'success' => false,
                     'error'   => "خطأ Speedaf: {$msg}",
                 ];
             }
 
-            $billCode = $decryptedData['billCode'] ?? ($decryptedData['waybillNo'] ?? null);
+            $billCode = $resultItem['billCode'] ?? ($resultItem['waybillNo'] ?? null);
 
             if (empty($billCode)) {
                 return [

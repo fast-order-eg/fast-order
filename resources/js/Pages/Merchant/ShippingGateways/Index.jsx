@@ -341,23 +341,6 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
                                             <span className="text-indigo-600 font-semibold text-xs">زيارة الموقع ↗</span>
                                         </a>
                                     )}
-
-                                    {p.pricing_url && (
-                                        <a
-                                            href={p.pricing_url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center justify-between px-3 py-2 bg-amber-50 hover:bg-amber-100/80 border border-amber-200 rounded-xl text-xs text-amber-800 font-medium transition-colors"
-                                        >
-                                            <span className="flex items-center gap-1.5">
-                                                <span>💰</span>
-                                                <span>عرض الأسعار والتتبع</span>
-                                            </span>
-                                            <svg className="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                            </svg>
-                                        </a>
-                                    )}
                                 </div>
                             </div>
 
@@ -714,16 +697,6 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
                                         className="text-indigo-600 hover:underline font-medium"
                                     >
                                         زيارة الموقع الرسمي لـ {selectedProvider.name} ↗
-                                    </a>
-                                )}
-                                {selectedProvider.pricing_url && (
-                                    <a
-                                        href={selectedProvider.pricing_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-amber-700 hover:underline font-medium"
-                                    >
-                                        حاسبة الأسعار والتتبع ↗
                                     </a>
                                 )}
                             </div>

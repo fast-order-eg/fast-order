@@ -31,7 +31,6 @@ class ShippingGatewaysController extends Controller
                 'logo' => '/images/shipping/bosta.svg',
                 'description' => 'شحن سريع وموثوق داخل مصر مع تغطية شاملة لجميع المحافظات ودعم الدفع عند الاستلام.',
                 'website_url' => 'https://bosta.co/',
-                'pricing_url' => 'https://bosta.co/ar-eg/pricing',
                 'connect_type' => 'bosta_api',
                 'api_key_note' => 'برجاء إضافة رقم API لربط تطبيق بوسطة بالمتجر الخاص بكم',
                 'is_active' => isset($gateways['bosta']) ? (bool)$gateways['bosta']->is_active : false,
@@ -45,7 +44,6 @@ class ShippingGatewaysController extends Controller
                 'logo' => '/images/shipping/aramex.svg',
                 'description' => 'خدمات شحن دولية ومحلية متكاملة وسريعة مع أرامكس وتوصيل فوري لكافة المحافظات.',
                 'website_url' => 'https://www.aramex.com/',
-                'pricing_url' => 'https://www.aramex.com/ar/ar/track/shipments',
                 'connect_type' => 'aramex_api',
                 'is_active' => isset($gateways['aramex']) ? (bool)$gateways['aramex']->is_active : false,
                 'connected_account' => (isset($gateways['aramex']) && $gateways['aramex']->is_active) 
@@ -58,7 +56,6 @@ class ShippingGatewaysController extends Controller
                 'logo' => '/images/shipping/jnt.svg',
                 'description' => 'شحن فائق السرعة وتغطية شاملة لجميع المحافظات مع خدمة الدفع عند الاستلام.',
                 'website_url' => 'https://www.jtexpress-eg.com/',
-                'pricing_url' => 'https://www.jtexpress-eg.com/shipping-rates',
                 'connect_type' => 'jnt_api',
                 'is_active' => isset($gateways['jnt']) ? (bool)$gateways['jnt']->is_active : false,
                 'connected_account' => (isset($gateways['jnt']) && $gateways['jnt']->is_active) 
@@ -71,7 +68,6 @@ class ShippingGatewaysController extends Controller
                 'logo' => '/images/shipping/speedaf.svg',
                 'description' => 'شحن فائق السرعة وتغطية شاملة لكافة المحافظات المصرية مع دعم خيار فتح الشحنة والمعاينة والدفع عند الاستلام.',
                 'website_url' => 'https://speedaf.com/eg-ar',
-                'pricing_url' => 'https://speedaf.com/eg-ar/service/price',
                 'connect_type' => 'speedaf_api',
                 'is_active' => isset($gateways['speedaf']) ? (bool)$gateways['speedaf']->is_active : false,
                 'connected_account' => (isset($gateways['speedaf']) && $gateways['speedaf']->is_active) 

@@ -58,12 +58,12 @@ class SpeedafCipherService
         $sign = self::sign($timestamp, $secretKey, $dataString);
 
         $bodyJson = json_encode([
-            'data' => is_string($data) ? $data : $data, // preserve object/string structure
             'sign' => $sign,
+            'data' => $dataString,
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         $des = self::getDesInstance($secretKey);
-        $encryptedBytes = $des->encrypt($bodyJson);
+        $encryptedBytes = @$des->encrypt($bodyJson);
 
         if ($encryptedBytes === false) {
             throw new RuntimeException('فشل تشفير بيانات الطلب لشركة Speedaf.');
@@ -90,7 +90,7 @@ class SpeedafCipherService
         }
 
         $des = self::getDesInstance($secretKey);
-        $decryptedJson = $des->decrypt($encryptedBytes);
+        $decryptedJson = @$des->decrypt($encryptedBytes);
 
         if ($decryptedJson === false || $decryptedJson === '') {
             throw new RuntimeException('فشل فك تشفير استجابة شركة Speedaf.');
