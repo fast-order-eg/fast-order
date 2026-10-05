@@ -607,9 +607,12 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
                             {/* SPEEDAF EXPRESS API MODAL */}
                             {selectedProvider.id === 'speedaf' && (
                                 <div className="space-y-3">
-                                    <div className="p-3 bg-orange-50 border border-orange-200 rounded-xl text-xs text-orange-950 leading-relaxed font-medium space-y-1">
+                                    <div className="p-3 bg-orange-50 border border-orange-200 rounded-xl text-xs text-orange-950 leading-relaxed font-medium space-y-2">
                                         <div>ℹ️ يتم الحصول على مفاتيح الربط من لوحة تحكم <strong>Speedaf Open Platform</strong> أو عبر ممثل حسابكم في سبيداف مصر.</div>
-                                        <div className="text-[11px] text-orange-800 font-bold">⚠️ تنبيه: تأكد من إضافة عنوان IP السيرفر إلى القائمة البيضاء (IP Whitelist) في إعدادات سبيداف حتى يتم قبول طلبات الـ API.</div>
+                                        <div className="p-2 bg-white/90 rounded-lg border border-orange-200 text-orange-900 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                                            <span>⚠️ عنوان IP السيرفر للإضافة في (IP Whitelist) لدى سبيداف:</span>
+                                            <code className="font-mono font-extrabold bg-orange-100 text-orange-950 px-2.5 py-1 rounded dir-ltr select-all text-xs border border-orange-300">186.240.148.113</code>
+                                        </div>
                                     </div>
 
                                     <div>
