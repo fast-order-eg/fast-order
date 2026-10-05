@@ -6,6 +6,7 @@ use App\Contracts\ShippingProviderInterface;
 use App\Services\Shipping\Drivers\BostaShippingDriver;
 use App\Services\Shipping\Drivers\JntShippingDriver;
 use App\Services\Shipping\Drivers\AramexShippingDriver;
+use App\Services\Shipping\Drivers\SpeedafShippingDriver;
 use App\Models\Order;
 use App\Models\Shipment;
 use App\Models\ShippingGateway;
@@ -22,6 +23,7 @@ class ShippingManager
             'bosta' => new BostaShippingDriver(),
             'jnt' => new JntShippingDriver(),
             'aramex' => new AramexShippingDriver(),
+            'speedaf' => new SpeedafShippingDriver(),
             default => throw new InvalidArgumentException("Unsupported shipping provider: {$provider}"),
         };
     }
@@ -39,10 +41,11 @@ class ShippingManager
             ->first();
 
         $providerTitle = match ($provider) {
-            'bosta'  => 'بوسطة (Bosta)',
-            'jnt'    => 'J&T Express',
-            'aramex' => 'أرامكس (Aramex)',
-            default  => $provider,
+            'bosta'   => 'بوسطة (Bosta)',
+            'jnt'     => 'J&T Express',
+            'aramex'  => 'أرامكس (Aramex)',
+            'speedaf' => 'سبيداف إكسبريس (Speedaf)',
+            default   => $provider,
         };
 
         if (!$gateway) {
@@ -55,6 +58,8 @@ class ShippingManager
             || !empty($creds['password']) 
             || !empty($creds['private_key']) 
             || !empty($creds['customer_code']) 
+            || !empty($creds['app_code'])
+            || !empty($creds['secret_key'])
             || !empty($creds['account_number']);
 
         if (!$hasKey) {

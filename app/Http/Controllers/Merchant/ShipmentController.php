@@ -18,7 +18,7 @@ class ShipmentController extends Controller
     public function store(Request $request, Order $order): RedirectResponse
     {
         $request->validate([
-            'provider' => ['required', 'string', 'in:bosta,jnt,aramex'],
+            'provider' => ['required', 'string', 'in:bosta,jnt,aramex,speedaf'],
         ]);
 
         try {

@@ -65,6 +65,19 @@ class ShippingGatewaysController extends Controller
                     ? ($gateways['jnt']->credentials['customer_code'] ?? $gateways['jnt']->credentials['account_email'] ?? null) 
                     : null,
             ],
+            [
+                'id' => 'speedaf',
+                'name' => 'Speedaf Express (سيداف إكسبريس)',
+                'logo' => '/images/shipping/speedaf.svg',
+                'description' => 'شحن فائق السرعة وتغطية شاملة لكافة المحافظات المصرية مع دعم خيار فتح الشحنة والمعاينة والدفع عند الاستلام.',
+                'website_url' => 'https://speedaf.com/eg-ar',
+                'pricing_url' => 'https://speedaf.com/eg-ar/service/price',
+                'connect_type' => 'speedaf_api',
+                'is_active' => isset($gateways['speedaf']) ? (bool)$gateways['speedaf']->is_active : false,
+                'connected_account' => (isset($gateways['speedaf']) && $gateways['speedaf']->is_active) 
+                    ? ($gateways['speedaf']->credentials['customer_code'] ?? $gateways['speedaf']->credentials['app_code'] ?? null) 
+                    : null,
+            ],
         ];
 
         $hasActiveProvider = $gateways->where('is_active', true)->isNotEmpty();
@@ -104,7 +117,7 @@ class ShippingGatewaysController extends Controller
     {
         $request->validate([
             'enabled'  => ['required', 'boolean'],
-            'provider' => ['required', 'string', 'in:bosta,jnt,aramex'],
+            'provider' => ['required', 'string', 'in:bosta,jnt,aramex,speedaf'],
             'trigger'  => ['required', 'string', 'in:on_confirm,on_create'],
         ]);
 
@@ -263,6 +276,47 @@ class ShippingGatewaysController extends Controller
     }
 
     /**
+     * Connect Speedaf Express via API Credentials
+     */
+    public function connectSpeedaf(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'customer_code'   => ['required', 'string', 'max:100'],
+            'app_code'        => ['required', 'string', 'max:100'],
+            'secret_key'      => ['required', 'string', 'max:255'],
+            'platform_source' => ['nullable', 'string', 'max:50'],
+            'is_sandbox'      => ['nullable', 'boolean'],
+            'is_allow_open'   => ['nullable', 'boolean'],
+        ], [
+            'customer_code.required' => 'يرجى إدخال كود العميل لـ Speedaf (Customer Code).',
+            'app_code.required'      => 'يرجى إدخال رمز التطبيق (App Code).',
+            'secret_key.required'    => 'يرجى إدخال المفتاح السري (Secret Key).',
+        ]);
+
+        ShippingGateway::updateOrCreate(
+            [
+                'tenant_id' => session()->get('tenant_id') ?? config('tenant.id'),
+                'provider'  => 'speedaf',
+            ],
+            [
+                'is_active' => true,
+                'credentials' => [
+                    'customer_code'   => trim($request->customer_code),
+                    'app_code'        => trim($request->app_code),
+                    'secret_key'      => trim($request->secret_key),
+                    'platform_source' => trim($request->platform_source ?: 'csp'),
+                    'is_sandbox'      => (bool) $request->boolean('is_sandbox'),
+                    'is_allow_open'   => (bool) $request->boolean('is_allow_open'),
+                    'connected_at'    => now()->toDateTimeString(),
+                ],
+            ]
+        );
+
+        return redirect()->route('merchant.shipping-gateways.index')
+            ->with('success', 'تم ربط وتفعيل حساب Speedaf Express بنجاح وفقاً للمواصفات الرسمية');
+    }
+
+    /**
      * Direct connect account helper
      */
     public function connectAccount(Request $request): RedirectResponse
@@ -274,7 +328,11 @@ class ShippingGatewaysController extends Controller
         }
 
         if ($provider === 'jnt') {
-            return $this->connectJnt();
+            return $this->connectJnt($request);
+        }
+
+        if ($provider === 'speedaf') {
+            return $this->connectSpeedaf($request);
         }
 
         return redirect()->route('merchant.shipping-gateways.index')

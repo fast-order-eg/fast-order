@@ -208,7 +208,11 @@ export default function OrdersIndex({ orders, totalAmount, statusCounts, product
         if (order.shipment) {
             const providerTitle = order.shipment.provider === 'jnt'
                 ? 'J&T'
-                : (order.shipment.provider === 'bosta' ? 'بوسطة' : (order.shipment.provider === 'aramex' ? 'أرامكس' : order.shipment.provider));
+                : (order.shipment.provider === 'bosta' 
+                    ? 'بوسطة' 
+                    : (order.shipment.provider === 'aramex' 
+                        ? 'أرامكس' 
+                        : (order.shipment.provider === 'speedaf' ? 'سبيداف' : order.shipment.provider)));
 
             return (
                 <div className="flex flex-col items-start gap-0.5">
@@ -932,7 +936,7 @@ export default function OrdersIndex({ orders, totalAmount, statusCounts, product
                                                     className="w-4 h-4 text-purple-600 focus:ring-purple-500"
                                                 />
                                                 <span className="font-bold text-sm">
-                                                    {gw.name || (gw.provider === 'jnt' ? 'J&T Express' : (gw.provider === 'bosta' ? 'بوسطة' : (gw.provider === 'aramex' ? 'أرامكس' : gw.provider)))}
+                                                    {gw.name || (gw.provider === 'jnt' ? 'J&T Express' : (gw.provider === 'bosta' ? 'بوسطة' : (gw.provider === 'aramex' ? 'أرامكس' : (gw.provider === 'speedaf' ? 'سبيداف إكسبريس (Speedaf)' : gw.provider))))}
                                                 </span>
                                             </div>
                                             <span className="text-xs text-gray-400 font-mono uppercase">{gw.provider}</span>

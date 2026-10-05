@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 70" width="240" height="70">
+  <g fill="none" fill-rule="evenodd">
+    <path d="M14 16 L32 16 L22 34 L34 34 L12 56 L18 38 L10 38 Z" fill="#FF5500"/>
+    <text x="40" y="48" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="32" font-weight="900" fill="#0A2540" letter-spacing="-0.5">speedaf</text>
+    <text x="168" y="32" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800" fill="#FF5500" letter-spacing="1">EXPRESS</text>
+  </g>
+</svg>

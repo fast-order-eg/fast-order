@@ -610,7 +610,7 @@ ${totalsBlock}${shippingBlock}`;
                                 <p className="text-xs text-gray-500">
                                     اختر شركة الشحن المربوطة لإرسال بيانات العميل والطلب واستخراج رقم التتبع فوراً:
                                 </p>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                     {/* Bosta */}
                                     {active_shipping_gateways.includes('bosta') ? (
                                         <button
@@ -670,6 +670,27 @@ ${totalsBlock}${shippingBlock}`;
                                             title="اضغط لربط وتفعيل أرامكس"
                                         >
                                             <span>🔴 أرامكس (Aramex)</span>
+                                            <span className="text-[10px] text-amber-600 font-normal">غير مربوطة (ربط الآن ⚙️)</span>
+                                        </Link>
+                                    )}
+
+                                    {/* Speedaf Express */}
+                                    {active_shipping_gateways.includes('speedaf') ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => router.post(`/admin/orders/${order.id}/shipment`, { provider: 'speedaf' })}
+                                            className="py-2.5 px-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm text-center flex flex-col items-center justify-center gap-1 cursor-pointer"
+                                        >
+                                            <span className="font-black">🚚 سبيداف (Speedaf)</span>
+                                            <span className="text-[10px] text-orange-100">مفعلة ✓</span>
+                                        </button>
+                                    ) : (
+                                        <Link
+                                            href="/admin/shipping-gateways"
+                                            className="py-2.5 px-3 bg-gray-50 hover:bg-gray-100 text-gray-600 border border-dashed border-gray-300 rounded-xl text-xs font-bold transition-colors text-center flex flex-col items-center justify-center gap-1"
+                                            title="اضغط لربط وتفعيل سبيداف"
+                                        >
+                                            <span>🚚 سبيداف (Speedaf)</span>
                                             <span className="text-[10px] text-amber-600 font-normal">غير مربوطة (ربط الآن ⚙️)</span>
                                         </Link>
                                     )}

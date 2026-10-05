@@ -37,6 +37,16 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
         is_sandbox: false,
     });
 
+    // Speedaf specific state
+    const [speedafForm, setSpeedafForm] = useState({
+        customer_code: '',
+        app_code: '',
+        secret_key: '',
+        platform_source: 'csp',
+        is_sandbox: false,
+        is_allow_open: true,
+    });
+
     const handleOpenModal = (provider) => {
         setSelectedProvider(provider);
         setApiKeyInput('');
@@ -54,13 +64,21 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
             password: '',
             is_sandbox: false,
         });
+        setSpeedafForm({
+            customer_code: '',
+            app_code: '',
+            secret_key: '',
+            platform_source: 'csp',
+            is_sandbox: false,
+            is_allow_open: true,
+        });
     };
 
     const hasActiveGateways = providers.some((p) => p.is_active);
 
     const handleToggleAutoDispatch = () => {
         if (!hasActiveGateways && !autoDispatchForm.enabled) {
-            alert('يرجى ربط وتفعيل شركة شحن واحدة على الأقل أولاً (بوسطة / J&T / أرامكس) لتتمكن من تفعيل التحويل التلقائي.');
+            alert('يرجى ربط وتفعيل شركة شحن واحدة على الأقل أولاً (بوسطة / J&T / أرامكس / سبيداف) لتتمكن من تفعيل التحويل التلقائي.');
             return;
         }
 
@@ -113,6 +131,11 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
                 onFinish: () => setLoading(false),
                 onSuccess: () => setSelectedProvider(null),
             });
+        } else if (selectedProvider.connect_type === 'speedaf_api') {
+            router.post('/admin/shipping-gateways/connect-speedaf', speedafForm, {
+                onFinish: () => setLoading(false),
+                onSuccess: () => setSelectedProvider(null),
+            });
         }
     };
 
@@ -143,7 +166,7 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
                             </span>
                         </h1>
                         <p className="text-indigo-200 text-sm leading-relaxed">
-                            اربط متجرك مباشرة مع كبرى شركات الشحن (بوسطة، أرامكس، J&T Express) لإنشاء بوليصات الشحن وتتبع الشحنات وإرسال الطلبات تلقائياً بضغطة زر.
+                            اربط متجرك مباشرة مع كبرى شركات الشحن (بوسطة، أرامكس، J&T Express، سبيداف Speedaf) لإنشاء بوليصات الشحن وتتبع الشحنات وإرسال الطلبات تلقائياً بضغطة زر.
                         </p>
                     </div>
                 </div>
@@ -256,7 +279,7 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
                 </div>
 
                 {/* Gateway Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {providers.map((p) => (
                         <div key={p.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
                             <div className="space-y-4">
@@ -272,7 +295,7 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
                                             />
                                         ) : (
                                             <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center font-bold text-indigo-700 text-lg shadow-inner">
-                                                {p.id === 'bosta' ? '📦' : (p.id === 'jnt' ? '⚡' : '🔴')}
+                                                {p.id === 'bosta' ? '📦' : (p.id === 'jnt' ? '⚡' : (p.id === 'speedaf' ? '🚚' : '🔴'))}
                                             </div>
                                         )}
                                     </div>
@@ -577,6 +600,104 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
                                         <label htmlFor="jnt_is_sandbox" className="text-xs font-medium text-gray-700 cursor-pointer">
                                             وضع الاختبار التجريبي (Sandbox / Demo Mode)
                                         </label>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* SPEEDAF EXPRESS API MODAL */}
+                            {selectedProvider.id === 'speedaf' && (
+                                <div className="space-y-3">
+                                    <div className="p-3 bg-orange-50 border border-orange-200 rounded-xl text-xs text-orange-950 leading-relaxed font-medium space-y-1">
+                                        <div>ℹ️ يتم الحصول على مفاتيح الربط من لوحة تحكم <strong>Speedaf Open Platform</strong> أو عبر ممثل حسابكم في سبيداف مصر.</div>
+                                        <div className="text-[11px] text-orange-800 font-bold">⚠️ تنبيه: تأكد من إضافة عنوان IP السيرفر إلى القائمة البيضاء (IP Whitelist) في إعدادات سبيداف حتى يتم قبول طلبات الـ API.</div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                            كود العميل (Customer Code) <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={speedafForm.customer_code}
+                                            onChange={(e) => setSpeedafForm({ ...speedafForm, customer_code: e.target.value })}
+                                            placeholder="مثال: EG0012345"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-indigo-500 dir-ltr text-left"
+                                        />
+                                        {errors?.customer_code && <p className="text-xs text-red-600 mt-1">{errors.customer_code}</p>}
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                                رمز التطبيق (App Code) <span className="text-red-500">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={speedafForm.app_code}
+                                                onChange={(e) => setSpeedafForm({ ...speedafForm, app_code: e.target.value })}
+                                                placeholder="App Code..."
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 dir-ltr text-left font-mono"
+                                            />
+                                            {errors?.app_code && <p className="text-xs text-red-600 mt-1">{errors.app_code}</p>}
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                                كود المنصة (Platform Source)
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={speedafForm.platform_source}
+                                                onChange={(e) => setSpeedafForm({ ...speedafForm, platform_source: e.target.value })}
+                                                placeholder="csp"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 dir-ltr text-left font-mono"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                            المفتاح السري (Secret Key) <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={speedafForm.secret_key}
+                                            onChange={(e) => setSpeedafForm({ ...speedafForm, secret_key: e.target.value })}
+                                            placeholder="المفتاح السري للتشفير والتوقيع (DES Secret Key)..."
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-indigo-500 dir-ltr text-left"
+                                        />
+                                        {errors?.secret_key && <p className="text-xs text-red-600 mt-1">{errors.secret_key}</p>}
+                                    </div>
+
+                                    <div className="space-y-2 pt-1 border-t border-gray-100">
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                id="speedaf_is_allow_open"
+                                                checked={speedafForm.is_allow_open}
+                                                onChange={(e) => setSpeedafForm({ ...speedafForm, is_allow_open: e.target.checked })}
+                                                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+                                            />
+                                            <label htmlFor="speedaf_is_allow_open" className="text-xs font-medium text-gray-700 cursor-pointer">
+                                                السماح للعميل بفتح ومعاينة الشحنة قبل الاستلام (موصى به لزيادة نسبة التسليم)
+                                            </label>
+                                        </div>
+
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                id="speedaf_is_sandbox"
+                                                checked={speedafForm.is_sandbox}
+                                                onChange={(e) => setSpeedafForm({ ...speedafForm, is_sandbox: e.target.checked })}
+                                                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+                                            />
+                                            <label htmlFor="speedaf_is_sandbox" className="text-xs font-medium text-gray-700 cursor-pointer">
+                                                وضع الاختبار التجريبي (Sandbox / UAT Mode)
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             )}
