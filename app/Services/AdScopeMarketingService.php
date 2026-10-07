@@ -94,6 +94,8 @@ class AdScopeMarketingService
                 }
 
                 $now = now();
+                $campaigns = $this->normalizeCampaigns($json['campaigns'] ?? []);
+
                 $result = [
                     'success'           => true,
                     'has_campaigns'     => true,
@@ -101,7 +103,7 @@ class AdScopeMarketingService
                     'date_preset'       => $datePreset,
                     'currency'          => $json['currency'] ?? 'EGP',
                     'summary'           => $json['summary'] ?? null,
-                    'campaigns'         => $json['campaigns'] ?? [],
+                    'campaigns'         => $campaigns,
                     'cached_at'         => $now->toIso8601String(),
                     'last_updated_at'   => $now->toIso8601String(),
                     'last_updated_formatted' => $now->locale('ar')->translatedFormat('l d F Y - h:i A'),
@@ -136,4 +138,65 @@ class AdScopeMarketingService
             ];
         }
     }
+
+    /**
+     * Normalize campaigns: classify goal (sales vs messages), format labels, and extract Facebook post URLs.
+     */
+    protected function normalizeCampaigns(array $campaigns): array
+    {
+        foreach ($campaigns as &$campaign) {
+            $objective = strtoupper($campaign['objective'] ?? '');
+            $name = $campaign['name'] ?? '';
+
+            $hasMessageCta = false;
+            if (!empty($campaign['ads']) && is_array($campaign['ads'])) {
+                foreach ($campaign['ads'] as &$ad) {
+                    $creative = $ad['creative'] ?? [];
+                    $cta = $creative['cta_type'] ?? '';
+                    if (in_array($cta, ['MESSAGE_PAGE', 'SEND_MESSAGE', 'WHATSAPP_MESSAGE'])) {
+                        $hasMessageCta = true;
+                    }
+
+                    // Extract Facebook post link
+                    $postUrl = $creative['preview_url'] ?? null;
+                    if (empty($postUrl)) {
+                        $imgUrl = $creative['image_url'] ?? $creative['thumbnail_url'] ?? '';
+                        if (preg_match('/_(\d{15,22})_/', $imgUrl, $m)) {
+                            $postUrl = "https://www.facebook.com/photo/?fbid={$m[1]}";
+                        } elseif (!empty($ad['id'])) {
+                            $postUrl = "https://www.facebook.com/ads/experience/confirmation/?ad_id={$ad['id']}";
+                        }
+                    }
+                    $ad['facebook_post_url'] = $postUrl;
+                }
+                unset($ad);
+            }
+
+            $isMessages = $objective === 'OUTCOME_ENGAGEMENT'
+                || $objective === 'MESSAGES'
+                || str_contains($objective, 'ENGAGEMENT')
+                || str_contains($objective, 'MESSAGE')
+                || $hasMessageCta
+                || str_contains($name, 'رسايل')
+                || str_contains($name, 'رسائل');
+
+            if ($isMessages) {
+                $campaign['goal_type'] = 'messages';
+                $campaign['goal_badge'] = 'إعلان رسائل';
+                $campaign['result_label'] = 'رسائل';
+                $campaign['cpa_label'] = 'تكلفة الرسالة';
+                $campaign['show_roas'] = false;
+            } else {
+                $campaign['goal_type'] = 'sales';
+                $campaign['goal_badge'] = 'إعلان مبيعات';
+                $campaign['result_label'] = 'طلبات شراء';
+                $campaign['cpa_label'] = 'تكلفة الطلب (CPA)';
+                $campaign['show_roas'] = true;
+            }
+        }
+        unset($campaign);
+
+        return $campaigns;
+    }
 }
+
