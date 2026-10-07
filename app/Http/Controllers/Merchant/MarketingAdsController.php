@@ -29,9 +29,9 @@ class MarketingAdsController extends Controller
             $tenant = Tenant::first();
         }
 
-        $datePreset = $request->query('date_preset', 'last_7d');
+        $datePreset = $request->query('date_preset', 'maximum');
         if (!array_key_exists($datePreset, AdScopeMarketingService::ALLOWED_PRESETS)) {
-            $datePreset = 'last_7d';
+            $datePreset = 'maximum';
         }
 
         $forceRefresh = (bool) $request->boolean('refresh');

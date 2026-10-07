@@ -4,7 +4,7 @@ import { Head, router } from '@inertiajs/react';
 
 export default function MarketingAdsIndex({
     adsData = {},
-    datePreset = 'last_7d',
+    datePreset = 'maximum',
     allowedPresets = {},
     hasCampaigns = false,
     campaignIds = [],
@@ -17,7 +17,6 @@ export default function MarketingAdsIndex({
     const campaigns = adsData?.campaigns || [];
     const currency = adsData?.currency || 'EGP';
     const lastUpdatedFormatted = adsData?.last_updated_formatted || null;
-    const isFromCache = adsData?.is_from_cache ?? false;
 
     // Helper: format numbers in English (en-US)
     const formatNumber = (num, decimals = 0) => {
@@ -141,9 +140,9 @@ export default function MarketingAdsIndex({
 
         const presetLabel = allowedPresets[datePreset] || datePreset;
         const storeName = tenant?.name || 'متجري';
-        const updateTime = lastUpdatedFormatted || new Date().toLocaleString('en-US');
+        const updateTime = lastUpdatedFormatted || '';
 
-        let reportText = `📊 تقرير أداء إعلانات فيسبوك (Meta Ads)\n🏪 المتجر: ${storeName}\n🗓️ الفترة: ${presetLabel}\n⏱️ وقت الفحص: ${updateTime}\n\n`;
+        let reportText = `📊 تقرير أداء إعلانات فيسبوك (Meta Ads)\n🏪 المتجر: ${storeName}\n🗓️ الفترة: ${presetLabel}\n⏱️ آخر تحديث: ${updateTime}\n\n`;
 
         campaigns.forEach((c) => {
             const goalInfo = getCampaignGoalInfo(c);
@@ -167,6 +166,9 @@ export default function MarketingAdsIndex({
             }
             if (c.impressions) {
                 reportText += `👁️ مرات الظهور: ${formatNumber(c.impressions)}\n`;
+            }
+            if (c.end_info) {
+                reportText += `⏳ تاريخ الانتهاء: ${c.end_info.formatted} (${c.end_info.remaining_text})\n`;
             }
             reportText += `\n`;
         });
@@ -203,40 +205,17 @@ export default function MarketingAdsIndex({
                             </p>
                         </div>
 
-                        {/* Top Action Buttons (Refresh + Copy) */}
+                        {/* Top Action Button: Copy Report */}
                         {hasCampaigns && (
-                            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
-                                <button
-                                    type="button"
-                                    onClick={handleRefresh}
-                                    disabled={loading}
-                                    className="px-3.5 py-2 bg-white/10 hover:bg-white/20 active:scale-95 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 border border-white/15 backdrop-blur-sm disabled:opacity-50 shadow-sm"
-                                    title="تحديث البيانات فوراً من فيسبوك"
-                                >
-                                    <svg
-                                        className={`w-4 h-4 ${loading ? 'animate-spin text-blue-300' : 'text-white'}`}
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                                        />
-                                    </svg>
-                                    <span>{loading ? 'جاري الفحص...' : 'تحديث البيانات'}</span>
-                                </button>
-
+                            <div className="flex items-center gap-2.5 w-full md:w-auto">
                                 <button
                                     type="button"
                                     onClick={handleCopyReport}
                                     disabled={campaigns.length === 0 || loading}
-                                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm border ${
+                                    className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm border ${
                                         copied
                                             ? 'bg-emerald-600 text-white border-emerald-500 scale-105'
-                                            : 'bg-blue-600 hover:bg-blue-500 text-white border-blue-400/40 active:scale-95'
+                                            : 'bg-white/10 hover:bg-white/20 active:scale-95 text-white border-white/20 backdrop-blur-sm'
                                     }`}
                                     title="نسخ تقرير أداء الحملات لمشاركته"
                                 >
@@ -287,28 +266,42 @@ export default function MarketingAdsIndex({
                             })}
                         </div>
 
-                        {/* Last Updated Timestamp & Status */}
-                        {lastUpdatedFormatted && (
-                            <div className="flex items-center gap-2 text-xs text-gray-500 mr-auto md:mr-0 self-end md:self-center">
-                                <span className="inline-flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100 font-medium text-gray-600">
+                        {/* Last Updated Timestamp & Refresh Button */}
+                        <div className="flex items-center gap-2.5 text-xs mr-auto md:mr-0 self-end md:self-center">
+                            {lastUpdatedFormatted && (
+                                <span className="inline-flex items-center gap-1.5 bg-gray-50 px-2.5 py-1.5 rounded-xl border border-gray-100 font-medium text-gray-600">
                                     <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <span>آخر فحص:</span>
+                                    <span>آخر تحديث:</span>
                                     <strong className="text-gray-800 font-bold font-mono">{lastUpdatedFormatted}</strong>
                                 </span>
+                            )}
 
-                                {isFromCache ? (
-                                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-100 font-medium" title="البيانات محفوظة مؤقتاً لمدة 5 دقائق لتسريع التصفح">
-                                        ذاكرة مؤقتة (5 دقائق) 💾
-                                    </span>
-                                ) : (
-                                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100 font-medium">
-                                        بيانات مباشرة من فيسبوك 🔄
-                                    </span>
-                                )}
-                            </div>
-                        )}
+                            {/* Refresh Button Placed Right Here */}
+                            <button
+                                type="button"
+                                onClick={handleRefresh}
+                                disabled={loading}
+                                className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+                                title="تحديث البيانات فوراً من فيسبوك"
+                            >
+                                <svg
+                                    className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`}
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                    />
+                                </svg>
+                                <span>{loading ? 'جاري التحديث...' : 'تحديث'}</span>
+                            </button>
+                        </div>
                     </div>
                 )}
 
@@ -422,8 +415,24 @@ export default function MarketingAdsIndex({
                                                             </h4>
                                                         </div>
 
-                                                        <div className="flex items-center gap-3 text-xs text-gray-400 font-mono">
+                                                        <div className="flex items-center gap-3 text-xs text-gray-400 font-mono flex-wrap">
                                                             <span>معرف الحملة: <span className="select-all text-gray-600 font-bold">{campaign.id}</span></span>
+                                                            
+                                                            {/* End Date & Remaining Time */}
+                                                            {campaign.end_info ? (
+                                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 text-xs font-sans font-medium">
+                                                                    <span>⏳ الانتهاء:</span>
+                                                                    <strong className="font-mono text-gray-800 font-bold">{campaign.end_info.formatted}</strong>
+                                                                    <span className="bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-bold text-[11px]">
+                                                                        {campaign.end_info.remaining_text}
+                                                                    </span>
+                                                                </span>
+                                                            ) : (
+                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-gray-50 text-gray-500 border border-gray-200 text-[11px] font-sans">
+                                                                    <span>⏳ تاريخ الانتهاء:</span>
+                                                                    <span>مستمرة (غير محدد وقت انتهاء)</span>
+                                                                </span>
+                                                            )}
                                                         </div>
                                                     </div>
 

@@ -30,10 +30,10 @@ class AdScopeMarketingService
      * @param bool $forceRefresh
      * @return array
      */
-    public function getCampaignsSummary(Tenant $tenant, string $datePreset = 'last_7d', bool $forceRefresh = false): array
+    public function getCampaignsSummary(Tenant $tenant, string $datePreset = 'maximum', bool $forceRefresh = false): array
     {
         if (!array_key_exists($datePreset, self::ALLOWED_PRESETS)) {
-            $datePreset = 'last_7d';
+            $datePreset = 'maximum';
         }
 
         $campaignIds = $tenant->getMetaCampaignIds();
@@ -95,6 +95,7 @@ class AdScopeMarketingService
 
                 $now = now();
                 $campaigns = $this->normalizeCampaigns($json['campaigns'] ?? []);
+                $periodAr = $now->format('A') === 'AM' ? 'ص' : 'م';
 
                 $result = [
                     'success'           => true,
@@ -106,7 +107,7 @@ class AdScopeMarketingService
                     'campaigns'         => $campaigns,
                     'cached_at'         => $now->toIso8601String(),
                     'last_updated_at'   => $now->toIso8601String(),
-                    'last_updated_formatted' => $now->locale('ar')->translatedFormat('l d F Y - h:i A'),
+                    'last_updated_formatted' => $now->format('j-n-Y - h:i ') . $periodAr,
                     'is_from_cache'     => false,
                 ];
 
@@ -193,6 +194,49 @@ class AdScopeMarketingService
                 $campaign['cpa_label'] = 'تكلفة الطلب (CPA)';
                 $campaign['show_roas'] = true;
             }
+
+            // Calculate end date & remaining time
+            $stopTime = $campaign['stop_time'] ?? $campaign['end_time'] ?? null;
+            if (!$stopTime && !empty($campaign['adsets']) && is_array($campaign['adsets'])) {
+                foreach ($campaign['adsets'] as $adset) {
+                    if (!empty($adset['end_time'])) {
+                        $stopTime = $adset['end_time'];
+                        break;
+                    }
+                }
+            }
+
+            $endInfo = null;
+            if ($stopTime) {
+                try {
+                    $endDate = \Carbon\Carbon::parse($stopTime);
+                    $now = now();
+                    $isEnded = $endDate->isPast();
+                    $diffDays = (int) $now->diffInDays($endDate, false);
+                    $diffHours = (int) ($now->diffInHours($endDate, false) % 24);
+                    $endPeriodAr = $endDate->format('A') === 'AM' ? 'ص' : 'م';
+                    $formattedDate = $endDate->format('j-n-Y - h:i ') . $endPeriodAr;
+
+                    if ($isEnded) {
+                        $remainingText = 'انتهت الحملة ⏹️';
+                    } elseif ($diffDays > 0) {
+                        $remainingText = "متبقي {$diffDays} يوم" . ($diffHours > 0 ? " و {$diffHours} ساعة" : "");
+                    } else {
+                        $remainingHours = max(1, (int) $now->diffInHours($endDate, false));
+                        $remainingText = "متبقي {$remainingHours} ساعة";
+                    }
+
+                    $endInfo = [
+                        'raw'            => $stopTime,
+                        'formatted'      => $formattedDate,
+                        'remaining_text' => $remainingText,
+                        'is_ended'       => $isEnded,
+                    ];
+                } catch (\Throwable) {
+                    $endInfo = null;
+                }
+            }
+            $campaign['end_info'] = $endInfo;
         }
         unset($campaign);
 
