@@ -85,6 +85,7 @@ Route::domain('app.' . $baseDomain)->group(function () {
         Route::delete('/tenants/{tenant}', [App\Http\Controllers\SuperAdmin\TenantController::class, 'destroy'])->name('superadmin.tenants.destroy');
         Route::post('/tenants/{tenant}/add-wallet-balance', [App\Http\Controllers\SuperAdmin\TenantController::class, 'addWalletBalance'])->name('superadmin.tenants.add-wallet-balance');
         Route::post('/tenants/{tenant}/deduct-wallet-balance', [App\Http\Controllers\SuperAdmin\TenantController::class, 'deductWalletBalance'])->name('superadmin.tenants.deduct-wallet-balance');
+        Route::post('/tenants/{tenant}/update-meta-campaigns', [App\Http\Controllers\SuperAdmin\TenantController::class, 'updateMetaCampaigns'])->name('superadmin.tenants.update-meta-campaigns');
 
         // Subscriptions & Plans Management
         Route::get('/subscriptions/plans', [App\Http\Controllers\SuperAdmin\SubscriptionController::class, 'plans'])->name('superadmin.subscriptions.plans');
@@ -307,6 +308,11 @@ Route::prefix('admin')->group(function () {
                 Route::delete('/{conversionApi}', [\App\Http\Controllers\Merchant\ConversionApiController::class, 'destroy'])->name('destroy');
                 Route::patch('/{conversionApi}/toggle', [\App\Http\Controllers\Merchant\ConversionApiController::class, 'toggle'])->name('toggle');
                 Route::post('/{conversionApi}/test', [\App\Http\Controllers\Merchant\ConversionApiController::class, 'testEvent'])->name('test');
+            });
+
+            // Marketing Ads (Meta / Facebook Ads Performance)
+            Route::prefix('marketing')->name('merchant.marketing.')->group(function () {
+                Route::get('/ads', [\App\Http\Controllers\Merchant\MarketingAdsController::class, 'index'])->name('ads');
             });
 
             // Coming Soon pages (Phase 67)

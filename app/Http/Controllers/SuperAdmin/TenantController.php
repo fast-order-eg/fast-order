@@ -527,4 +527,39 @@ class TenantController extends Controller
 
         return redirect()->back()->with('success', 'تم خصم الرصيد من محفظة التاجر وتسجيل المعاملة بنجاح.');
     }
+
+    /**
+     * Update Meta/Facebook Ads Campaign IDs for a tenant.
+     */
+    public function updateMetaCampaigns(Request $request, Tenant $tenant): RedirectResponse
+    {
+        $request->validate([
+            'meta_campaign_ids' => ['nullable'],
+        ]);
+
+        $raw = $request->input('meta_campaign_ids');
+        $ids = [];
+
+        if (is_array($raw)) {
+            $ids = $raw;
+        } elseif (is_string($raw) && trim($raw) !== '') {
+            $ids = preg_split('/[\r\n,]+/', $raw, -1, PREG_SPLIT_NO_EMPTY);
+        }
+
+        $cleanIds = array_values(array_unique(array_filter(array_map(function ($id) {
+            return trim(strval($id));
+        }, $ids))));
+
+        $tenant->meta_campaign_ids = !empty($cleanIds) ? $cleanIds : null;
+        $tenant->save();
+
+        // Invalidate marketing ads cache for this tenant
+        \Illuminate\Support\Facades\Cache::forget("meta_ads_tenant_{$tenant->id}_today");
+        \Illuminate\Support\Facades\Cache::forget("meta_ads_tenant_{$tenant->id}_yesterday");
+        \Illuminate\Support\Facades\Cache::forget("meta_ads_tenant_{$tenant->id}_last_7d");
+        \Illuminate\Support\Facades\Cache::forget("meta_ads_tenant_{$tenant->id}_this_month");
+        \Illuminate\Support\Facades\Cache::forget("meta_ads_tenant_{$tenant->id}_maximum");
+
+        return redirect()->back()->with('success', 'تم حفظ وتحديث معرّفات حملات فيسبوك بنجاح لهذا المتجر.');
+    }
 }

@@ -35,6 +35,27 @@ export default function Show({ tenant, settings, plans, productsCount = 0, order
         });
     };
 
+    const initialCampaignIds = Array.isArray(tenant.meta_campaign_ids)
+        ? tenant.meta_campaign_ids.join(', ')
+        : (tenant.meta_campaign_ids || '');
+
+    const {
+        data: metaData,
+        setData: setMetaData,
+        post: postMetaCampaigns,
+        processing: savingMeta,
+        errors: metaErrors,
+    } = useForm({
+        meta_campaign_ids: initialCampaignIds,
+    });
+
+    const handleMetaSubmit = (e) => {
+        e.preventDefault();
+        postMetaCampaigns(route('superadmin.tenants.update-meta-campaigns', tenant.id), {
+            preserveScroll: true,
+        });
+    };
+
     const handleOpenAssignModal = () => {
         const activeSub = tenant.subscriptions?.find(s => s.status === 'active') || tenant.subscriptions?.[0];
         const currentPlanId = activeSub ? activeSub.plan_id : (plans?.[0]?.id || '');
@@ -343,6 +364,83 @@ export default function Show({ tenant, settings, plans, productsCount = 0, order
                                 </span>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Meta Ads Campaign IDs Card */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
+                            <div className="flex items-center gap-2">
+                                <span className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">
+                                    📢
+                                </span>
+                                <div>
+                                    <h3 className="text-sm font-bold text-gray-800">إعلانات فيسبوك (Meta Ads)</h3>
+                                    <p className="text-[11px] text-gray-500">ربط معرّفات الحملات للمتجر</p>
+                                </div>
+                            </div>
+                            {tenant.meta_campaign_ids && tenant.meta_campaign_ids.length > 0 ? (
+                                <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    مربوط ({tenant.meta_campaign_ids.length}) 🟢
+                                </span>
+                            ) : (
+                                <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-50 text-gray-500 border border-gray-200">
+                                    غير مربوط ⚪
+                                </span>
+                            )}
+                        </div>
+
+                        <form onSubmit={handleMetaSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                    معرّفات الحملات (Campaign IDs)
+                                </label>
+                                <textarea
+                                    rows={3}
+                                    value={metaData.meta_campaign_ids}
+                                    onChange={(e) => setMetaData('meta_campaign_ids', e.target.value)}
+                                    placeholder="أدخل معرّفات الحملات مفصولة بفواصل أو أسطر، مثال: 120252521017770114"
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dir-ltr text-left"
+                                />
+                                {metaErrors?.meta_campaign_ids && (
+                                    <p className="text-xs text-red-600 mt-1">{metaErrors.meta_campaign_ids}</p>
+                                )}
+                                <p className="text-[11px] text-gray-400 mt-1.5 leading-relaxed">
+                                    يتم جلب الإحصائيات (المصروف، النتائج، CPA، ROAS، ومعاينة الإعلانات) تلقائياً من منصة الإعلانات وعرضها في لوحة التاجر.
+                                </p>
+                            </div>
+
+                            {Array.isArray(tenant.meta_campaign_ids) && tenant.meta_campaign_ids.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 pt-1">
+                                    {tenant.meta_campaign_ids.map((id, idx) => (
+                                        <span key={idx} className="font-mono text-[11px] bg-blue-50 text-blue-800 px-2 py-0.5 rounded-md border border-blue-100 select-all">
+                                            {id}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                                <button
+                                    type="submit"
+                                    disabled={savingMeta}
+                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-50 shadow-sm"
+                                >
+                                    {savingMeta ? 'جاري الحفظ...' : 'حفظ الحملات'}
+                                </button>
+
+                                {tenant.meta_campaign_ids && tenant.meta_campaign_ids.length > 0 && (
+                                    <a
+                                        href={`${typeof window !== 'undefined' ? window.location.protocol : 'http:'}//${tenant.slug}.${typeof window !== 'undefined' ? window.location.host.replace('app.', '') : 'fastorder.localhost'}/admin/marketing/ads`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-xs text-blue-600 hover:text-blue-800 font-semibold inline-flex items-center gap-1"
+                                    >
+                                        <span>معاينة لوحة الإعلانات</span>
+                                        <span>↗</span>
+                                    </a>
+                                )}
+                            </div>
+                        </form>
                     </div>
                 </div>
 

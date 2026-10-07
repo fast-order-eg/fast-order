@@ -121,6 +121,7 @@ class Tenant extends Model
         'is_active',
         'wallet_balance',
         'settings',
+        'meta_campaign_ids',
         'theme_id',
         'custom_domain',
     ];
@@ -129,6 +130,7 @@ class Tenant extends Model
         'is_active' => 'boolean',
         'wallet_balance' => 'integer',
         'settings' => 'array',
+        'meta_campaign_ids' => 'array',
         'trial_ends_at' => 'datetime',
         'subscription_ends_at' => 'datetime',
     ];
@@ -213,5 +215,28 @@ class Tenant extends Model
         }
         $scheme = parse_url($appUrl, PHP_URL_SCHEME) ?: 'https';
         return "{$scheme}://{$this->slug}.{$baseHost}";
+    }
+
+    /**
+     * Get normalized array of Meta Campaign IDs
+     *
+     * @return array<string>
+     */
+    public function getMetaCampaignIds(): array
+    {
+        $raw = $this->meta_campaign_ids;
+        if (is_string($raw)) {
+            $decoded = json_decode($raw, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $raw = $decoded;
+            } else {
+                $raw = preg_split('/[\s,]+/', $raw, -1, PREG_SPLIT_NO_EMPTY);
+            }
+        }
+        if (!is_array($raw)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('trim', array_map('strval', $raw))));
     }
 }
