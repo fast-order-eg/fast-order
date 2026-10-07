@@ -3,6 +3,15 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Favicon & Brand Icons (Google & Browsers) -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.json">
+
     <title>@yield('title', 'فاست أوردر (Fast Order) | أنشئ متجرك الإلكتروني المتكامل في ثوانٍ')</title>
     <meta name="description" content="@yield('meta_description', 'المنصة الأسرع والأذكى في الوطن العربي لإدارة تجارتك الإلكترونية دون تعقيد برمجيات، مع عمولة 0% وباقات تناسب نمو عملك وتجربة مجانية لمدة 7 أيام.')">
     <meta name="keywords" content="تجارة إلكترونية, إنشاء متجر إلكتروني, منصة متاجر, فاست أوردر, Fast Order, بدون عمولة, متجر إلكتروني مصر, ربط بيكسل فيسبوك, استرجاع السلات المتروكة, تسويق إلكتروني">
