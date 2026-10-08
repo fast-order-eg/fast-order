@@ -214,6 +214,8 @@ class AdScopeMarketingService
                     $isEnded = $endDate->isPast();
                     $diffDays = (int) $now->diffInDays($endDate, false);
                     $diffHours = (int) ($now->diffInHours($endDate, false) % 24);
+                    $endPeriodAr = $endDate->format('A') === 'AM' ? 'ص' : 'م';
+                    $formattedDate = $endDate->format('j-n-Y - h:i ') . $endPeriodAr;
                     $dateOnly = $endDate->format('j-n-Y');
                     $timeOnly = $endDate->format('h:i ') . $endPeriodAr;
 
@@ -242,7 +244,8 @@ class AdScopeMarketingService
                         'remaining_text' => $remainingText,
                         'is_ended'       => $isEnded,
                     ];
-                } catch (\Throwable) {
+                } catch (\Throwable $e) {
+                    Log::error('EndInfo error: ' . $e->getMessage());
                     $endInfo = null;
                 }
             }
