@@ -106,6 +106,43 @@ export default function MarketingAdsIndex({
         return 'https://facebook.com';
     };
 
+    // Helper: parse end_info into separate date/time and days/hours parts for mobile display
+    const getEndInfoParts = (endInfo) => {
+        if (!endInfo) return null;
+
+        let dateOnly = endInfo.date_only || '';
+        let timeOnly = endInfo.time_only || '';
+
+        if (!dateOnly || !timeOnly) {
+            const parts = (endInfo.formatted || '').split(' - ');
+            dateOnly = parts[0] || endInfo.formatted || '';
+            timeOnly = parts[1] || '';
+        }
+
+        let daysText = endInfo.days_text || '';
+        let hoursText = endInfo.hours_text || '';
+
+        if (!daysText && !hoursText) {
+            const rem = endInfo.remaining_text || '';
+            if (rem.includes(' و ')) {
+                const remParts = rem.split(' و ');
+                daysText = remParts[0] || '';
+                hoursText = remParts[1] ? `و ${remParts[1]}` : '';
+            } else {
+                daysText = rem;
+                hoursText = '';
+            }
+        }
+
+        return {
+            dateOnly,
+            timeOnly,
+            daysText,
+            hoursText,
+            isEnded: !!endInfo.is_ended,
+        };
+    };
+
     // Handle Date Preset Change
     const handlePresetChange = (newPreset) => {
         if (newPreset === datePreset) return;
@@ -368,34 +405,28 @@ export default function MarketingAdsIndex({
                         {/* ── Store Stats: Real Orders & Abandoned Carts ── */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {/* Real Orders Count */}
-                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4 hover:border-emerald-200 transition-colors">
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 flex items-center gap-4 hover:border-emerald-200 transition-colors">
                                 <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-2xl flex-shrink-0">
                                     🛒
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-xs font-bold text-gray-600 mb-1">عدد الأوردرات الفعلي</p>
-                                    <strong className="text-3xl font-extrabold text-emerald-700 font-mono leading-none block">
+                                    <strong className="text-2xl sm:text-3xl font-extrabold text-emerald-700 font-mono leading-none block">
                                         {formatNumber(storeStats.orders_count)}
                                     </strong>
-                                    <p className="text-[11px] text-gray-400 mt-1 font-medium">
-                                        الطلبات المسجلة بالسيستم ({allowedPresets[datePreset] || datePreset})
-                                    </p>
                                 </div>
                             </div>
 
                             {/* Abandoned Carts Count */}
-                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4 hover:border-amber-200 transition-colors">
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 flex items-center gap-4 hover:border-amber-200 transition-colors">
                                 <div className="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-2xl flex-shrink-0">
                                     🛍️
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-xs font-bold text-gray-600 mb-1">عدد أوردرات السلة المتروكة</p>
-                                    <strong className="text-3xl font-extrabold text-amber-600 font-mono leading-none block">
+                                    <strong className="text-2xl sm:text-3xl font-extrabold text-amber-600 font-mono leading-none block">
                                         {formatNumber(storeStats.abandoned_count)}
                                     </strong>
-                                    <p className="text-[11px] text-gray-400 mt-1 font-medium">
-                                        السلات المتروكة ({allowedPresets[datePreset] || datePreset})
-                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -419,6 +450,7 @@ export default function MarketingAdsIndex({
                                     const isExpanded = !!expandedCampaigns[campaign.id];
                                     const isActive = campaign.status === 'ACTIVE' || campaign.effective_status === 'ACTIVE';
                                     const goalInfo = getCampaignGoalInfo(campaign);
+                                    const endParts = getEndInfoParts(campaign.end_info);
 
                                     return (
                                         <div
@@ -457,13 +489,39 @@ export default function MarketingAdsIndex({
                                                             
                                                             {/* End Date & Remaining Time */}
                                                             {campaign.end_info ? (
-                                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 text-xs font-sans font-medium">
-                                                                    <span>⏳ الانتهاء:</span>
-                                                                    <strong className="font-mono text-gray-800 font-bold">{campaign.end_info.formatted}</strong>
-                                                                    <span className="bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-bold text-[11px]">
-                                                                        {campaign.end_info.remaining_text}
+                                                                <>
+                                                                    {/* Desktop view (inline) */}
+                                                                    <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 text-xs font-sans font-medium">
+                                                                        <span>⏳ الانتهاء:</span>
+                                                                        <strong className="font-mono text-gray-800 font-bold">{campaign.end_info.formatted}</strong>
+                                                                        <span className="bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded font-bold text-[11px]">
+                                                                            {campaign.end_info.remaining_text}
+                                                                        </span>
                                                                     </span>
-                                                                </span>
+
+                                                                    {/* Mobile view only (Date on top, Time below; Days on top, Hours below) */}
+                                                                    {endParts && (
+                                                                        <div className="flex sm:hidden items-center justify-between gap-3 px-3 py-2 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 text-xs font-sans font-medium w-full mt-1.5">
+                                                                            {/* Right side: Icon + Date & Time */}
+                                                                            <div className="flex items-center gap-2 text-right">
+                                                                                <span className="text-base flex-shrink-0">⏳</span>
+                                                                                <div className="flex flex-col leading-tight">
+                                                                                    <span className="text-[10px] text-amber-800/80 font-bold">الانتهاء:</span>
+                                                                                    <strong className="font-mono text-gray-900 font-bold text-xs">{endParts.dateOnly}</strong>
+                                                                                    <span className="font-mono text-gray-700 text-[11px] font-semibold">{endParts.timeOnly}</span>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            {/* Left side: Remaining days on top, hours below */}
+                                                                            <div className="bg-amber-100/90 text-amber-950 px-2.5 py-1 rounded-lg text-center flex flex-col justify-center leading-tight border border-amber-200/60 flex-shrink-0">
+                                                                                <span className="font-bold text-xs">{endParts.daysText}</span>
+                                                                                {endParts.hoursText && (
+                                                                                    <span className="text-[11px] font-semibold text-amber-900 mt-0.5">{endParts.hoursText}</span>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </>
                                                             ) : (
                                                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-gray-50 text-gray-500 border border-gray-200 text-[11px] font-sans">
                                                                     <span>⏳ تاريخ الانتهاء:</span>

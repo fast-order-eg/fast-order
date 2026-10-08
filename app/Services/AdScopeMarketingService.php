@@ -214,21 +214,31 @@ class AdScopeMarketingService
                     $isEnded = $endDate->isPast();
                     $diffDays = (int) $now->diffInDays($endDate, false);
                     $diffHours = (int) ($now->diffInHours($endDate, false) % 24);
-                    $endPeriodAr = $endDate->format('A') === 'AM' ? 'ص' : 'م';
-                    $formattedDate = $endDate->format('j-n-Y - h:i ') . $endPeriodAr;
+                    $dateOnly = $endDate->format('j-n-Y');
+                    $timeOnly = $endDate->format('h:i ') . $endPeriodAr;
 
                     if ($isEnded) {
                         $remainingText = 'انتهت الحملة ⏹️';
+                        $daysText = 'انتهت الحملة ⏹️';
+                        $hoursText = null;
                     } elseif ($diffDays > 0) {
                         $remainingText = "متبقي {$diffDays} يوم" . ($diffHours > 0 ? " و {$diffHours} ساعة" : "");
+                        $daysText = "متبقي {$diffDays} يوم";
+                        $hoursText = $diffHours > 0 ? "و {$diffHours} ساعة" : null;
                     } else {
                         $remainingHours = max(1, (int) $now->diffInHours($endDate, false));
                         $remainingText = "متبقي {$remainingHours} ساعة";
+                        $daysText = "متبقي";
+                        $hoursText = "{$remainingHours} ساعة";
                     }
 
                     $endInfo = [
                         'raw'            => $stopTime,
                         'formatted'      => $formattedDate,
+                        'date_only'      => $dateOnly,
+                        'time_only'      => $timeOnly,
+                        'days_text'      => $daysText,
+                        'hours_text'     => $hoursText,
                         'remaining_text' => $remainingText,
                         'is_ended'       => $isEnded,
                     ];
