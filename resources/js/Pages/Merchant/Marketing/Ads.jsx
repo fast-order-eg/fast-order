@@ -8,6 +8,7 @@ export default function MarketingAdsIndex({
     allowedPresets = {},
     hasCampaigns = false,
     campaignIds = [],
+    storeStats = { orders_count: 0, abandoned_count: 0 },
     tenant = null,
 }) {
     const [loading, setLoading] = useState(false);
@@ -27,9 +28,9 @@ export default function MarketingAdsIndex({
         }).format(num);
     };
 
-    // Helper: format currency
-    const formatCurrency = (num) => {
-        return `${formatNumber(num, 2)} ${currency}`;
+    // Helper: format currency (default 0 decimals for integer amount)
+    const formatCurrency = (num, decimals = 0) => {
+        return `${formatNumber(num, decimals)} ${currency}`;
     };
 
     // Helper: toggle campaign accordion
@@ -142,7 +143,7 @@ export default function MarketingAdsIndex({
         const storeName = tenant?.name || 'متجري';
         const updateTime = lastUpdatedFormatted || '';
 
-        let reportText = `📊 تقرير أداء إعلانات فيسبوك (Meta Ads)\n🏪 المتجر: ${storeName}\n🗓️ الفترة: ${presetLabel}\n⏱️ آخر تحديث: ${updateTime}\n\n`;
+        let reportText = `📊 تقرير أداء إعلانات فيسبوك (Meta Ads)\n🏪 المتجر: ${storeName}\n🗓️ الفترة: ${presetLabel}\n⏱️ آخر تحديث: ${updateTime}\n🛒 عدد الأوردرات الفعلي: ${formatNumber(storeStats.orders_count)}\n🛍️ عدد أوردرات السلة المتروكة: ${formatNumber(storeStats.abandoned_count)}\n\n`;
 
         campaigns.forEach((c) => {
             const goalInfo = getCampaignGoalInfo(c);
@@ -151,9 +152,9 @@ export default function MarketingAdsIndex({
             reportText += `───────────────────────\n`;
             reportText += `📢 ${c.name} (${statusText})\n`;
             reportText += `🎯 الهدف: ${goalInfo.badgeText} ${goalInfo.badgeIcon}\n`;
-            reportText += `💰 المصروف: ${formatCurrency(c.spend)}\n`;
+            reportText += `💰 المصروف: ${formatCurrency(c.spend, 0)}\n`;
             reportText += `🎯 النتائج (${goalInfo.resultLabel}): ${formatNumber(c.results)}\n`;
-            reportText += `🏷️ ${goalInfo.cpaLabel}: ${formatCurrency(c.cpa)}\n`;
+            reportText += `🏷️ ${goalInfo.cpaLabel}: ${formatCurrency(c.cpa, 2)}\n`;
             
             if (goalInfo.showRoas && c.roas > 0) {
                 reportText += `📈 العائد الإعلاني (ROAS): ${formatNumber(c.roas, 2)}x\n`;
@@ -363,6 +364,42 @@ export default function MarketingAdsIndex({
                 ) : (
                     /* CAMPAIGNS LIST (Individual details per campaign, no combined totals) */
                     <div className="space-y-5">
+
+                        {/* ── Store Stats: Real Orders & Abandoned Carts ── */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Real Orders Count */}
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4 hover:border-emerald-200 transition-colors">
+                                <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-2xl flex-shrink-0">
+                                    🛒
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-xs font-bold text-gray-600 mb-1">عدد الأوردرات الفعلي</p>
+                                    <strong className="text-3xl font-extrabold text-emerald-700 font-mono leading-none block">
+                                        {formatNumber(storeStats.orders_count)}
+                                    </strong>
+                                    <p className="text-[11px] text-gray-400 mt-1 font-medium">
+                                        الطلبات المسجلة بالسيستم ({allowedPresets[datePreset] || datePreset})
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Abandoned Carts Count */}
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4 hover:border-amber-200 transition-colors">
+                                <div className="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-2xl flex-shrink-0">
+                                    🛍️
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-xs font-bold text-gray-600 mb-1">عدد أوردرات السلة المتروكة</p>
+                                    <strong className="text-3xl font-extrabold text-amber-600 font-mono leading-none block">
+                                        {formatNumber(storeStats.abandoned_count)}
+                                    </strong>
+                                    <p className="text-[11px] text-gray-400 mt-1 font-medium">
+                                        السلات المتروكة ({allowedPresets[datePreset] || datePreset})
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="flex items-center justify-between">
                             <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                                 <span>الحملات الإعلانية المربوطة</span>
@@ -469,7 +506,7 @@ export default function MarketingAdsIndex({
                                                         <span className="text-[11px] font-semibold text-gray-500">💰 المصروف</span>
                                                         <div className="mt-1">
                                                             <strong className="text-base font-extrabold text-gray-900 font-mono block">
-                                                                {formatNumber(campaign.spend, 2)}
+                                                                {formatNumber(campaign.spend, 0)}
                                                             </strong>
                                                             <span className="text-[10px] text-gray-400 font-semibold">{currency}</span>
                                                         </div>
