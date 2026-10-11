@@ -161,8 +161,8 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
 
     const getPaymentMethodLabel = (method) => {
         const methods = {
-            instapay: 'إنستاباي (InstaPay)',
-            vodafone_cash: 'فودافون كاش (Vodafone Cash)',
+            instapay: 'إنستاباي',
+            vodafone_cash: 'فودافون كاش',
             bank_transfer: 'تحويل بنكي',
             cash: 'نقدي',
         };
@@ -188,7 +188,7 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden space-y-0">
                 {/* Header Section */}
-                <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="p-4 sm:p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                         <h2 className="text-xl font-bold text-gray-800">إيصالات الدفع ومحافظ المتاجر</h2>
                         <p className="text-sm text-gray-500 mt-1">
@@ -198,19 +198,19 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setShowSettingsModal(true)}
-                            className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-sm font-semibold shadow-sm transition-all flex items-center gap-2"
+                            className="px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs sm:text-sm font-semibold shadow-sm transition-all flex items-center gap-1.5 whitespace-nowrap"
                         >
                             <span>⚙️</span>
-                            <span>أرقام استقبال التحويلات</span>
+                            <span>أرقام التحويلات</span>
                         </button>
                         <button
                             onClick={() => setShowAttachModal(true)}
-                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold shadow-sm transition-all flex items-center justify-center gap-2"
+                            className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs sm:text-sm font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 whitespace-nowrap"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                             </svg>
-                            إرفاق إيصال جديد
+                            إيصال جديد
                         </button>
                     </div>
                 </div>
@@ -236,15 +236,36 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
 
                         <div>
                             <label className="block text-xs font-bold text-gray-500 mb-1">الفلترة باليوم/التاريخ:</label>
-                            <input
-                                type="date"
-                                value={dateFilter}
-                                onChange={(e) => {
-                                    setDateFilter(e.target.value);
-                                    handleApplyFilters({ date: e.target.value });
-                                }}
-                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                            />
+                            <div className="relative">
+                                <input
+                                    type="date"
+                                    value={dateFilter}
+                                    onChange={(e) => {
+                                        setDateFilter(e.target.value);
+                                        handleApplyFilters({ date: e.target.value });
+                                    }}
+                                    style={{ colorScheme: 'light' }}
+                                    className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                                />
+                                {!dateFilter && (
+                                    <span className="absolute inset-y-0 right-3 flex items-center text-xs font-medium text-gray-400 pointer-events-none">
+                                        📅 حدد التاريخ للفلترة...
+                                    </span>
+                                )}
+                                {dateFilter && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setDateFilter('');
+                                            handleApplyFilters({ date: '' });
+                                        }}
+                                        className="absolute left-2.5 inset-y-0 flex items-center text-gray-400 hover:text-gray-600 text-xs font-bold"
+                                        title="إلغاء فلترة التاريخ"
+                                    >
+                                        ✕
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         <div className="flex items-end gap-2">
@@ -279,7 +300,7 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
                             {[
                                 { id: '', label: 'الكل' },
                                 { id: 'pending', label: 'قيد المراجعة ⏳', color: 'bg-amber-500' },
-                                { id: 'approved', label: 'المقبولة ✅', color: 'bg-emerald-500' },
+                                { id: 'approved', label: 'المؤكدة ✅', color: 'bg-emerald-500' },
                                 { id: 'rejected', label: 'المرفوضة ❌', color: 'bg-rose-500' },
                             ].map((st) => (
                                 <button
@@ -330,16 +351,15 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
                     <table className="w-full text-right border-collapse">
                         <thead>
                             <tr className="bg-gray-50 text-gray-500 text-xs font-semibold uppercase tracking-wider border-b border-gray-100">
-                                <th className="px-6 py-4">الرقم المرجعي</th>
-                                <th className="px-6 py-4">المتجر</th>
-                                <th className="px-6 py-4">نوع الطلب</th>
-                                <th className="px-6 py-4">الباقة / التفاصيل</th>
-                                <th className="px-6 py-4">المبلغ</th>
-                                <th className="px-6 py-4">طريقة الدفع / المرجع</th>
-                                <th className="px-6 py-4">تاريخ التقديم</th>
-                                <th className="px-6 py-4">الإشعار</th>
-                                <th className="px-6 py-4">الحالة</th>
-                                <th className="px-6 py-4 text-left">العمليات</th>
+                                <th className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">الرقم المرجعي</th>
+                                <th className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">المتجر</th>
+                                <th className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">نوع الطلب / الباقة</th>
+                                <th className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">المبلغ</th>
+                                <th className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">طريقة الدفع / المرجع</th>
+                                <th className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">تاريخ التقديم</th>
+                                <th className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">الإيصال</th>
+                                <th className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">الحالة</th>
+                                <th className="px-4 py-3 sm:px-6 sm:py-4 text-left whitespace-nowrap">العمليات</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 text-sm">
@@ -350,12 +370,12 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
 
                                     return (
                                         <tr key={receipt.id} className="hover:bg-gray-50/50 transition-colors">
-                                            <td className="px-6 py-4">
+                                            <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">
                                                 <span className="font-mono font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 text-xs select-all" dir="ltr">
                                                     {refCode}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-4 py-3 sm:px-6 sm:py-4">
                                                 <div>
                                                     <Link 
                                                         href={route('superadmin.tenants.show', receipt.tenant?.id || 0)}
@@ -374,98 +394,89 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
                                                 const isYearlyReceipt = receipt.plan?.slug === 'yearly' || receipt.plan?.name?.includes('سنوي');
 
                                                 return (
-                                                    <>
-                                                        <td className="px-6 py-4">
-                                                            {isCommissionReceipt ? (
-                                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-extrabold bg-purple-50 text-purple-700 border border-purple-200">
-                                                                    👛 شحن محفظة
-                                                                </span>
-                                                            ) : (
-                                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
-                                                                    📦 اشتراك باقة
-                                                                </span>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-6 py-4">
-                                                            <span className="font-semibold text-gray-800">
-                                                                {isCommissionReceipt 
-                                                                    ? '👛 شحن محفظة' 
-                                                                    : isMonthlyReceipt 
-                                                                        ? 'اشتراك شهري' 
-                                                                        : isYearlyReceipt 
-                                                                            ? 'اشتراك سنوي' 
-                                                                            : (receipt.plan ? (
-                                                                                receipt.plan.price_yearly > receipt.plan.price_monthly && receipt.amount >= receipt.plan.price_yearly 
-                                                                                    ? 'اشتراك سنوي' 
-                                                                                    : 'اشتراك شهري'
-                                                                              ) : 'خطة غير معروفة'
-                                                                            )
+                                                    <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">
+                                                        {isCommissionReceipt ? (
+                                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-extrabold bg-purple-50 text-purple-700 border border-purple-200">
+                                                                👛 شحن محفظة
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                                                                📦 {isMonthlyReceipt 
+                                                                    ? 'اشتراك شهري' 
+                                                                    : isYearlyReceipt 
+                                                                        ? 'اشتراك سنوي' 
+                                                                        : (receipt.plan ? (
+                                                                            receipt.plan.price_yearly > receipt.plan.price_monthly && receipt.amount >= receipt.plan.price_yearly 
+                                                                                ? 'اشتراك سنوي' 
+                                                                                : 'اشتراك شهري'
+                                                                          ) : 'اشتراك باقة'
+                                                                        )
                                                                 }
                                                             </span>
-                                                        </td>
-                                                    </>
+                                                        )}
+                                                    </td>
                                                 );
                                             })()}
-                                            <td className="px-6 py-4 font-bold text-indigo-600">
+                                            <td className="px-4 py-3 sm:px-6 sm:py-4 font-bold text-indigo-600 whitespace-nowrap">
                                                 {Math.round(parseFloat(receipt.amount)).toLocaleString('en-US')} ج.م
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">
                                                 <div>
                                                     <span className="font-semibold text-gray-700 block text-xs">
                                                         {getPaymentMethodLabel(receipt.payment_method)}
                                                     </span>
                                                     {receipt.payment_reference && (
                                                         <span className="font-mono text-xs text-gray-500 select-all block mt-0.5" dir="ltr">
-                                                            الرقم: {receipt.payment_reference}
+                                                            {receipt.payment_reference}
                                                         </span>
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-xs text-gray-600">
-                                                <div className="space-y-0.5">
-                                                    <span className="font-bold text-gray-800 block">{dt.date}</span>
-                                                    <span className="text-[11px] text-gray-400 font-mono block" dir="ltr">{dt.time}</span>
+                                            <td className="px-4 py-3 sm:px-6 sm:py-4 text-xs text-gray-600 whitespace-nowrap">
+                                                <div className="flex flex-col whitespace-nowrap">
+                                                    <span className="font-bold text-gray-800 text-xs whitespace-nowrap leading-tight">{dt.date}</span>
+                                                    <span className="text-[11px] text-gray-500 font-mono whitespace-nowrap leading-tight mt-0.5" dir="ltr">{dt.time}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">
                                                 {receipt.receipt_path ? (
                                                     <a
                                                         href={`/storage/${receipt.receipt_path}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 underline transition-colors"
+                                                        className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 underline transition-colors whitespace-nowrap"
                                                     >
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                         </svg>
-                                                        عرض الملف
+                                                        الإيصال
                                                     </a>
                                                 ) : (
-                                                    <span className="text-xs text-gray-400">لا يوجد ملف</span>
+                                                    <span className="text-xs text-gray-400 whitespace-nowrap">لا يوجد ملف</span>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">
                                                 {receipt.status === 'pending' && (
-                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100">
+                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100 whitespace-nowrap">
                                                         قيد المراجعة
                                                     </span>
                                                 )}
                                                 {receipt.status === 'approved' && (
-                                                    <div>
-                                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
-                                                            مقبول ومؤكد
+                                                    <div className="whitespace-nowrap">
+                                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 whitespace-nowrap">
+                                                            مؤكد
                                                         </span>
                                                         {receipt.approved_by && (
-                                                            <span className="block text-[10px] text-gray-400 mt-1">
-                                                                بواسطة: {receipt.approved_by?.name || 'المدير'}
+                                                            <span className="block text-[11px] text-gray-500 font-medium whitespace-nowrap mt-1">
+                                                                {receipt.approved_by?.name || 'سوبر أدمن'}
                                                             </span>
                                                         )}
                                                     </div>
                                                 )}
                                                 {receipt.status === 'rejected' && (
-                                                    <div>
-                                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-100">
+                                                    <div className="whitespace-nowrap">
+                                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-100 whitespace-nowrap">
                                                             مرفوض
                                                         </span>
                                                         {receipt.rejection_reason && (
@@ -476,27 +487,27 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
                                                     </div>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4 text-left">
+                                            <td className="px-4 py-3 sm:px-6 sm:py-4 text-left whitespace-nowrap">
                                                 {receipt.status === 'pending' ? (
-                                                    <div className="flex items-center justify-end gap-2">
+                                                    <div className="flex items-center justify-end gap-2 whitespace-nowrap">
                                                         <button
                                                             onClick={() => handleApprove(receipt)}
                                                             disabled={processing}
-                                                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-bold transition-colors disabled:opacity-50 shadow-sm"
+                                                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-bold transition-colors disabled:opacity-50 shadow-sm whitespace-nowrap"
                                                         >
-                                                            موافقة وتأكيد
+                                                            تأكيد
                                                         </button>
                                                         <button
                                                             onClick={() => openRejectModal(receipt)}
                                                             disabled={processing}
-                                                            className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-md text-xs font-bold transition-colors disabled:opacity-50 shadow-sm"
+                                                            className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-md text-xs font-bold transition-colors disabled:opacity-50 shadow-sm whitespace-nowrap"
                                                         >
                                                             رفض
                                                         </button>
                                                         <button
                                                             onClick={() => handleDeleteReceipt(receipt)}
                                                             disabled={processing}
-                                                            className="px-2.5 py-1.5 bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-600 rounded-md text-xs font-bold transition-colors"
+                                                            className="px-2.5 py-1.5 bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-600 rounded-md text-xs font-bold transition-colors whitespace-nowrap"
                                                             title="حذف الإيصال"
                                                         >
                                                             🗑️
@@ -506,7 +517,7 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
                                                     <button
                                                         onClick={() => handleDeleteReceipt(receipt)}
                                                         disabled={processing}
-                                                        className="px-2.5 py-1 bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-600 border border-gray-200 hover:border-red-200 rounded-md text-xs font-bold transition-colors"
+                                                        className="px-2.5 py-1 bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-600 border border-gray-200 hover:border-red-200 rounded-md text-xs font-bold transition-colors whitespace-nowrap"
                                                         title="حذف الإيصال"
                                                     >
                                                         🗑️ حذف
@@ -518,7 +529,7 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
                                 })
                             ) : (
                                 <tr>
-                                    <td colSpan="10" className="px-6 py-12 text-center text-gray-400">
+                                    <td colSpan="9" className="px-6 py-12 text-center text-gray-400">
                                         لا توجد إيصالات أو طلبات شحن مطابقة للتصفية حالياً.
                                     </td>
                                 </tr>
@@ -562,12 +573,12 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
                     <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
                         <form onSubmit={handleSaveSettings}>
                             <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                                <h3 className="text-lg font-bold text-gray-800">أرقام استقبال التحويلات</h3>
+                                <h3 className="text-lg font-bold text-gray-800">أرقام التحويلات</h3>
                                 <button type="button" onClick={() => setShowSettingsModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
                             </div>
                             <div className="p-6 space-y-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-700 mb-1">رقم فودافون كاش (Vodafone Cash)</label>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1">رقم فودافون كاش</label>
                                     <input
                                         type="text"
                                         required
@@ -578,7 +589,7 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-700 mb-1">رقم إنستا باي (InstaPay)</label>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1">رقم إنستاباي</label>
                                     <input
                                         type="text"
                                         required
@@ -678,7 +689,7 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
                                 </div>
                                 <div className="mt-3 text-center sm:mt-5">
                                     <h3 className="text-lg leading-6 font-bold text-gray-900">
-                                        إرفاق إيصال دفع جديد
+                                        إيصال جديد
                                     </h3>
                                     <p className="text-xs text-gray-400 mt-1">
                                         تسجيل عملية دفع يدوية لمتجر وتحديد الباقة والمبلغ المحول.
@@ -788,8 +799,8 @@ export default function Receipts({ receipts, tenants, plans, paymentSettings, fi
                                         className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-right"
                                     >
                                         <option value="">اختر طريقة الدفع...</option>
-                                        <option value="instapay">إنستاباي (InstaPay)</option>
-                                        <option value="vodafone_cash">فودافون كاش (Vodafone Cash)</option>
+                                        <option value="instapay">إنستاباي</option>
+                                        <option value="vodafone_cash">فودافون كاش</option>
                                         <option value="bank_transfer">تحويل بنكي</option>
                                         <option value="cash">نقدي</option>
                                     </select>
