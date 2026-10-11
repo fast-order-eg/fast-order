@@ -69,9 +69,17 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            if (file.size > 15 * 1024 * 1024) {
+                manualForm.setError('receipt', 'حجم الملف كبير جداً (أكثر من 15 ميجابايت). يرجى اختيار ملف بحجم أصغر.');
+                return;
+            }
             manualForm.setData('receipt', file);
             manualForm.clearErrors('receipt');
-            setPreviewImage(URL.createObjectURL(file));
+            if (file.type && file.type.startsWith('image/')) {
+                setPreviewImage(URL.createObjectURL(file));
+            } else {
+                setPreviewImage(null);
+            }
         }
     };
 
@@ -430,10 +438,10 @@ export default function WalletIndex({ wallet_balance, paymentInfo, depositReques
                                                     <span className={`text-xs font-bold ${manualForm.errors.receipt ? 'text-rose-600' : 'text-indigo-600'}`}>
                                                         اختر صورة الإيصال للرفع
                                                     </span>
-                                                    <span className="text-[11px] text-gray-400 mt-0.5">PNG, JPG حتى 3 ميجابايت</span>
+                                                    <span className="text-[11px] text-gray-400 mt-0.5">PNG, JPG, HEIC, PDF حتى 15 ميجابايت</span>
                                                     <input
                                                         type="file"
-                                                        accept="image/*"
+                                                        accept="image/*,application/pdf"
                                                         onChange={handleFileChange}
                                                         className="hidden"
                                                     />

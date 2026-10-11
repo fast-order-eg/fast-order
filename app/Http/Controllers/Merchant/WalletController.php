@@ -78,7 +78,7 @@ class WalletController extends Controller
             'amount'            => 'required|numeric|min:300',
             'payment_method'    => 'required|string|in:vodafone_cash,instapay',
             'payment_reference' => 'required|string|max:100',
-            'receipt'           => 'required|image|mimes:jpeg,png,jpg,webp|max:3072',
+            'receipt'           => 'required|file|mimes:jpeg,png,jpg,webp,heic,heif,jfif,pdf|max:15360',
         ], [
             'amount.required'            => 'يرجى إدخال مبلغ الشحن.',
             'amount.numeric'             => 'المبلغ يجب أن يكون قيمة رقمية.',
@@ -87,8 +87,9 @@ class WalletController extends Controller
             'payment_method.in'          => 'طريقة التحويل المحددة غير صالحة.',
             'payment_reference.required' => 'يرجى إدخال الرقم المُنقَل منه.',
             'receipt.required'           => 'يرجى إرفاق صورة إشعار التحويل (إسكرين شوت).',
-            'receipt.image'              => 'الملف المرفوع يجب أن يكون صورة.',
-            'receipt.max'                => 'حجم الصورة يجب ألا يتجاوز 3 ميجابايت.',
+            'receipt.file'               => 'الملف المرفوع يجب أن يكون صورة أو مستند صالح.',
+            'receipt.mimes'              => 'صيغة الملف غير مدعومة. الصيغ المتاحة: JPG, PNG, WEBP, HEIC, PDF.',
+            'receipt.max'                => 'حجم الملف يجب ألا يتجاوز 15 ميجابايت.',
         ]);
 
         $tenant = app(Tenant::class);

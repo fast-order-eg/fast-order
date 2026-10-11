@@ -123,7 +123,7 @@ class SubscriptionController extends Controller
             'plan_id' => 'required|exists:subscription_plans,id',
             'payment_method' => 'required|string|in:vodafone_cash,instapay',
             'payment_reference' => 'required|string|max:100',
-            'receipt' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'receipt' => 'required|file|mimes:jpeg,png,jpg,webp,heic,heif,jfif,pdf|max:15360',
             'amount' => 'required|numeric|min:0',
         ], [
             'plan_id.required' => 'يرجى اختيار الباقة المطلوبة.',
@@ -132,8 +132,9 @@ class SubscriptionController extends Controller
             'payment_method.in' => 'طريقة الدفع المحددة غير صالحة.',
             'payment_reference.required' => 'يرجى إدخال رقم العملية أو رقم المحفظة المحول منها.',
             'receipt.required' => 'يرجى رفع صورة إيصال التحويل.',
-            'receipt.image' => 'يجب أن يكون الملف المرفوع صورة.',
-            'receipt.max' => 'حجم الصورة لا يجب أن يتعدى 2 ميجابايت.',
+            'receipt.file' => 'يجب أن يكون الملف المرفوع صورة أو مستند صالح.',
+            'receipt.mimes' => 'صيغة الملف غير مدعومة. الصيغ المتاحة: JPG, PNG, WEBP, HEIC, PDF.',
+            'receipt.max' => 'حجم الملف لا يجب أن يتعدى 15 ميجابايت.',
             'amount.required' => 'يرجى إدخال المبلغ المدفوع.',
             'amount.numeric' => 'يجب أن يكون المبلغ قيمة رقمية.',
         ]);
