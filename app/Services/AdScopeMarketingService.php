@@ -213,7 +213,7 @@ class AdScopeMarketingService
                     $now = now();
                     $isEnded = $endDate->isPast();
                     $diffDays = (int) $now->diffInDays($endDate, false);
-                    $diffHours = (int) ($now->diffInHours($endDate, false) % 24);
+                    $diffHours = ((int) $now->diffInHours($endDate, false)) % 24;
                     $endPeriodAr = $endDate->format('A') === 'AM' ? 'ص' : 'م';
                     $formattedDate = $endDate->format('j-n-Y - h:i ') . $endPeriodAr;
                     $dateOnly = $endDate->format('j-n-Y');
