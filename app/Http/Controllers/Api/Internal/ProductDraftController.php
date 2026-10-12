@@ -351,6 +351,7 @@ class ProductDraftController extends Controller
             'category_id' => 'nullable|integer',
             'category_name' => 'nullable|string',
             'main_category' => 'nullable|string',
+            'shipping_type' => 'nullable|string',
             'images_base64' => 'nullable|array',
             'images_base64.*' => 'nullable|string',
         ]);
@@ -515,6 +516,12 @@ class ProductDraftController extends Controller
 
         $previewToken = Str::random(32);
 
+        $rawShipping = strtolower(trim((string) ($request->input('shipping_type') ?? '')));
+        $shippingType = 'free';
+        if (in_array($rawShipping, ['governorate', 'governorates', 'paid']) || str_contains($rawShipping, 'محافظ')) {
+            $shippingType = 'governorate';
+        }
+
         $productData = [
             'tenant_id' => $tenant->id,
             'name' => $validated['name'],
@@ -525,7 +532,7 @@ class ProductDraftController extends Controller
             'price_before' => (int) ($validated['price_before'] ?? 0),
             'stock' => $stock,
             'low_stock_threshold' => 5,
-            'shipping_type' => 'free',
+            'shipping_type' => $shippingType,
             'sizes' => count($sizes) > 0 ? $sizes : null,
             'colors' => count($colors) > 0 ? $colors : null,
             'custom_variants' => $customVariants,
@@ -623,6 +630,14 @@ class ProductDraftController extends Controller
         }
         if ($request->filled('stock')) {
             $fieldsToUpdate['stock'] = (int) $request->input('stock');
+        }
+        if ($request->has('shipping_type')) {
+            $rawSt = strtolower(trim((string) $request->input('shipping_type')));
+            if (in_array($rawSt, ['governorate', 'governorates', 'paid']) || str_contains($rawSt, 'محافظ')) {
+                $fieldsToUpdate['shipping_type'] = 'governorate';
+            } elseif (in_array($rawSt, ['free', 'مجاني']) || str_contains($rawSt, 'مجان')) {
+                $fieldsToUpdate['shipping_type'] = 'free';
+            }
         }
 
         // Main Category & Category update
@@ -899,6 +914,7 @@ class ProductDraftController extends Controller
             'variants_stock' => $product->variants_stock ?: [],
             'price_tiers' => $product->price_tiers ?: [],
             'stock' => (int) $product->stock,
+            'shipping_type' => $product->shipping_type ?: 'free',
             'category_id' => $product->category_id,
             'category_name' => $product->category?->name_ar ?: $product->category?->name,
             'main_category' => $product->category?->main_category,

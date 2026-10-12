@@ -50,7 +50,7 @@ class ProductController extends Controller
             'category_id' => 'nullable|exists:categories,id',
             'stock' => 'nullable|integer|min:0',
             'price_before' => 'nullable|numeric|min:0',
-            'shipping_type' => 'nullable|in:free,paid,calculated',
+            'shipping_type' => 'nullable|in:free,governorate',
         ]);
 
         $validated['tenant_id'] = $tenant->id;
@@ -71,7 +71,7 @@ class ProductController extends Controller
             'category_id' => 'nullable|exists:categories,id',
             'stock' => 'nullable|integer|min:0',
             'price_before' => 'nullable|numeric|min:0',
-            'shipping_type' => 'nullable|in:free,paid,calculated',
+            'shipping_type' => 'nullable|in:free,governorate',
         ]);
 
         $product->update($validated);
