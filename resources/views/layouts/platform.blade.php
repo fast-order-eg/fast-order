@@ -12,25 +12,34 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.json">
 
-    <title>@yield('title', 'فاست أوردر (Fast Order) | أنشئ متجرك الإلكتروني المتكامل في ثوانٍ')</title>
-    <meta name="description" content="@yield('meta_description', 'المنصة الأسرع والأذكى في الوطن العربي لإدارة تجارتك الإلكترونية دون تعقيد برمجيات، مع عمولة 0% وباقات تناسب نمو عملك وتجربة مجانية لمدة 7 أيام.')">
-    <meta name="keywords" content="تجارة إلكترونية, إنشاء متجر إلكتروني, منصة متاجر, فاست أوردر, Fast Order, بدون عمولة, متجر إلكتروني مصر, ربط بيكسل فيسبوك, استرجاع السلات المتروكة, تسويق إلكتروني">
+    <title>@yield('title', 'فاست أوردر (Fast Order) | أفضل منصة لإنشاء متجر إلكتروني وستور في مصر | بديل ايزي اوردر وشوبيفاي')</title>
+    <meta name="title" content="@yield('title', 'فاست أوردر (Fast Order) | أفضل منصة لإنشاء متجر إلكتروني وستور في مصر | بديل ايزي اوردر وشوبيفاي')">
+    <meta name="description" content="@yield('meta_description', 'أنشئ متجرك الإلكتروني واستمتع بأسرع تجربة بيع أونلاين في مصر مع فاست أوردر (Fast Order). البديل الأقوى لمنصة ايزي اوردر وشوبيفاي: شيك أوت في خطوة واحدة لزيادة مبيعات الدفع عند الاستلام، ربط بيكسل فيسبوك وتيك توك، وعمولة 0%.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'فاست أوردر, فاست اوردر, Fast Order, FastOrder, ايزي اوردر, بديل ايزي اوردر, Easy Order, EasyOrder, منصة ايزي اوردر, إنشاء متجر إلكتروني, عمل متجر الكتروني في مصر, تصميم متجر الكتروني, ستور اونلاين, انشاء ستور, متجر الكتروني, منصة تجارة إلكترونية, شوبيفاي مصر, مبيعات الدفع عند الاستلام, بيكسل فيسبوك, بيكسل تيك توك, تأكيد الطلبات بالواتساب')">
     <meta name="author" content="Fast Order Platform">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="{{ url()->current() }}" />
 
     <!-- Open Graph / Facebook / WhatsApp Meta Tags -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Fast Order — فاست أوردر" />
-    <meta property="og:title" content="@yield('og_title', 'فاست أوردر (Fast Order) | منصة التجارة الإلكترونية الأسرع في الوطن العربي')" />
-    <meta property="og:description" content="@yield('og_description', 'أنشئ متجرك الإلكتروني المتكامل مجاناً في أقل من 3 دقائق بدون عمولات على مبيعاتك وبتقنيات سرعة فائقة.')" />
+    <meta property="og:site_name" content="فاست أوردر — Fast Order" />
+    <meta property="og:title" content="@yield('og_title', 'فاست أوردر (Fast Order) | منصة إنشاء المتاجر الإلكترونية في مصر | بديل ايزي اوردر')" />
+    <meta property="og:description" content="@yield('og_description', 'أنشئ متجرك الإلكتروني وصفحة الهبوط في دقائق بأسرع شيك أوت في مصر، وعمولة 0%، وبديل اقتصادي متفوق لمنصة ايزي اوردر وشوبيفاي.')" />
+    <meta property="og:image" content="{{ asset('images/logo.png') }}" />
+    <meta property="og:image:secure_url" content="{{ asset('images/logo.png') }}" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:alt" content="شعار فاست أوردر Fast Order" />
     <meta property="og:url" content="{{ url()->current() }}" />
     <meta property="og:locale" content="ar_EG" />
     
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="{{ url()->current() }}">
     <meta name="twitter:title" content="@yield('og_title', 'فاست أوردر | أنشئ متجرك الإلكتروني المتكامل')">
-    <meta name="twitter:description" content="@yield('og_description', 'المنصة الأسرع والأذكى لإدارة تجارتك الإلكترونية بدون عمولات على المبيعات وبتقنيات حديثة.')">
+    <meta name="twitter:description" content="@yield('og_description', 'المنصة الأسرع والأذكى لإدارة تجارتك الإلكترونية في مصر بدون عمولات وبتقنيات حديثة.')">
+    <meta name="twitter:image" content="{{ asset('images/logo.png') }}">
 
     <!-- JSON-LD Structured Data Schema for Google -->
     <script type="application/ld+json">
@@ -38,7 +47,7 @@
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "Fast Order",
-      "alternateName": "فاست أوردر",
+      "alternateName": ["فاست أوردر", "فاست اوردر", "FastOrder", "بديل ايزي اوردر", "Easy Order Alternative"],
       "operatingSystem": "All",
       "applicationCategory": "BusinessApplication",
       "description": "منصة متكاملة لبناء وتطوير المتاجر الإلكترونية في الوطن العربي بدون عمولات وبتقنيات سرعة فائقة.",

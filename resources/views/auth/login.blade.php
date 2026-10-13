@@ -1,4 +1,7 @@
-<x-guest-layout>
+<x-guest-layout 
+    title="تسجيل الدخول | لوحة تحكم المتجر - فاست أوردر"
+    description="سجل الدخول إلى لوحة تحكم متجرك الإلكتروني في فاست أوردر لإدارة الطلبات والمنتجات والعملاء."
+>
     {{-- Session Status --}}
     <x-auth-session-status class="mb-4" :status="session('status')" />
 

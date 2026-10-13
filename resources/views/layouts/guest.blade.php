@@ -4,7 +4,76 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Fast Order — استعادة كلمة السر' }}</title>
+
+    @php
+        $pageTitle = $title ?? $attributes->get('title') ?? 'فاست أوردر (Fast Order) — منصة إنشاء المتاجر الإلكترونية في مصر | بديل ايزي اوردر';
+        $pageDesc  = $description ?? $attributes->get('description') ?? 'أنشئ متجرك الإلكتروني في دقيقة مع فاست أوردر (Fast Order). أسرع شيك أوت لزيادة مبيعات الدفع عند الاستلام، ربط بيكسل فيسبوك وتيك توك، وعمولة 0%. البديل الأسرع والأوفر لمنصة ايزي اوردر وشوبيفاي في مصر.';
+        $pageKeys  = $keywords ?? $attributes->get('keywords') ?? 'فاست أوردر, فاست اوردر, Fast Order, ايزي اوردر, بديل ايزي اوردر, Easy Order, إنشاء متجر إلكتروني, عمل متجر الكتروني في مصر, ستور اونلاين, انشاء ستور, متجر الكتروني, تصميم متجر الكتروني, منصة تجارة الكترونية, شوبيفاي مصر, دفع عند الاستلام, بيكسل فيسبوك, بيكسل تيك توك';
+        $pageImg   = $ogImage ?? $attributes->get('og-image') ?? asset('images/logo.png');
+        if (!str_starts_with($pageImg, 'http')) {
+            $pageImg = url($pageImg);
+        }
+        $pageUrl   = $canonicalUrl ?? $attributes->get('canonical-url') ?? url()->current();
+        $pageRobots = $robots ?? $attributes->get('robots') ?? 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
+    @endphp
+
+    <!-- Primary SEO Meta Tags -->
+    <title>{{ $pageTitle }}</title>
+    <meta name="title" content="{{ $pageTitle }}">
+    <meta name="description" content="{{ $pageDesc }}">
+    <meta name="keywords" content="{{ $pageKeys }}">
+    <meta name="author" content="Fast Order">
+    <meta name="robots" content="{{ $pageRobots }}">
+    <link rel="canonical" href="{{ $pageUrl }}">
+
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="فاست أوردر — Fast Order">
+    <meta property="og:title" content="{{ $pageTitle }}">
+    <meta property="og:description" content="{{ $pageDesc }}">
+    <meta property="og:image" content="{{ $pageImg }}">
+    <meta property="og:image:secure_url" content="{{ $pageImg }}">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:image:alt" content="شعار فاست أوردر Fast Order">
+    <meta property="og:url" content="{{ $pageUrl }}">
+    <meta property="og:locale" content="ar_EG">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="{{ $pageUrl }}">
+    <meta name="twitter:title" content="{{ $pageTitle }}">
+    <meta name="twitter:description" content="{{ $pageDesc }}">
+    <meta name="twitter:image" content="{{ $pageImg }}">
+
+    <!-- Favicon & Brand Icons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "{{ addslashes($pageTitle) }}",
+        "description": "{{ addslashes($pageDesc) }}",
+        "url": "{{ $pageUrl }}",
+        "inLanguage": "ar",
+        "publisher": {
+            "@type": "Organization",
+            "name": "Fast Order",
+            "alternateName": ["فاست أوردر", "فاست اوردر", "بديل ايزي اوردر"],
+            "url": "https://fast-order-eg.tech",
+            "logo": "{{ asset('images/logo.png') }}"
+        }
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])

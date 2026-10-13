@@ -3,7 +3,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Fast Order — دخول المشرف</title>
+    <title>دخول المشرف العام | لوحة التحكم المركزية - فاست أوردر (Fast Order)</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta property="og:title" content="دخول المشرف العام | فاست أوردر">
+    <meta property="og:description" content="لوحة التحكم المركزية لمنصة فاست أوردر">
+    <meta property="og:image" content="{{ asset('images/logo.png') }}">
+    <link rel="icon" type="image/png" href="/favicon-32x32.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>

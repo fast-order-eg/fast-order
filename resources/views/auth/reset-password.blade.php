@@ -1,4 +1,7 @@
-<x-guest-layout title="Fast Order — تعيين كلمة السر الجديدة">
+<x-guest-layout 
+    title="تعيين كلمة المرور الجديدة | فاست أوردر (Fast Order)"
+    description="أدخل كلمة المرور الجديدة لحسابك على منصة فاست أوردر لإنشاء المتاجر الإلكترونية."
+>
     <div style="text-align: center; margin-bottom: 24px;">
         <h2 style="font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 8px;">تعيين كلمة سر جديدة</h2>
         <p style="font-size: 13px; color: #94a3b8; line-height: 1.5;">أدخل كلمة المرور الجديدة للحساب</p>

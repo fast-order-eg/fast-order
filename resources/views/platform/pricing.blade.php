@@ -3,7 +3,38 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>الباقات والأسعار - فاست أوردر (Fast Order)</title>
+    <title>الباقات والأسعار | فاست أوردر (Fast Order) — باقات مرنة بدون عمولة | بديل ايزي اوردر</title>
+    <meta name="title" content="الباقات والأسعار | فاست أوردر (Fast Order) — باقات مرنة بدون عمولة | بديل ايزي اوردر">
+    <meta name="description" content="اكتشف باقات وأسعار فاست أوردر (Fast Order). باقة الدفع على الطلب (2ج لكل أوردر) أو اشتراك شهري مع تجربة مجانية 7 أيام بدون عمولات وبديل اقتصادي متفوق لمنصة ايزي اوردر وشوبيفاي في مصر.">
+    <meta name="keywords" content="اسعار فاست اوردر, باقات فاست اوردر, بديل ايزي اوردر, اسعار ايزي اوردر, انشاء متجر الكتروني, ستور اونلاين, انشاء ستور في مصر, منصة تجارة الكترونية, تكلفة متجر الكتروني, شوبيفاي مصر, دفع عند الاستلام">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="https://fast-order-eg.tech/pricing">
+
+    <!-- Open Graph / WhatsApp -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="فاست أوردر — Fast Order">
+    <meta property="og:title" content="باقات وأسعار فاست أوردر | أرخص وأسرع منصة متاجر في مصر | بديل ايزي اوردر">
+    <meta property="og:description" content="اختر الباقة المناسبة لمتجرك: ادفع 2 جنيه فقط لكل أوردر أو باقة شهرية غير محدودة مع 0% عمولة وتجربة مجانية 7 أيام.">
+    <meta property="og:image" content="{{ asset('images/logo.png') }}">
+    <meta property="og:image:secure_url" content="{{ asset('images/logo.png') }}">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:image:alt" content="شعار فاست أوردر Fast Order">
+    <meta property="og:url" content="https://fast-order-eg.tech/pricing">
+    <meta property="og:locale" content="ar_EG">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="باقات وأسعار فاست أوردر | بديل ايزي اوردر">
+    <meta name="twitter:description" content="باقات مرنة وتوفير حقيقي لتجارتك الإلكترونية في مصر مع عمولة 0%.">
+    <meta name="twitter:image" content="{{ asset('images/logo.png') }}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     
     <!-- Google Fonts: Cairo -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

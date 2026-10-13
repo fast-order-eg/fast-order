@@ -329,11 +329,11 @@ class PlatformController extends Controller
                     '@type' => 'SoftwareApplication',
                     '@id' => 'https://fast-order-eg.tech/#software',
                     'name' => 'Fast Order',
-                    'alternateName' => ['فاست اوردر', 'فاست أوردر', 'FastOrder'],
+                    'alternateName' => ['فاست اوردر', 'فاست أوردر', 'FastOrder', 'بديل ايزي اوردر', 'Easy Order Alternative', 'منصة ايزي اوردر'],
                     'applicationCategory' => 'BusinessApplication',
                     'operatingSystem' => 'All (Web-based SaaS)',
                     'url' => 'https://fast-order-eg.tech',
-                    'description' => 'منصة برمجية سحابية (SaaS) رائدة في مصر لإنشاء وإدارة المتاجر الإلكترونية وصفحات الهبوط فائقة السرعة لمبيعات الدفع عند الاستلام بعمولة 0% وباقات مرنة.',
+                    'description' => 'منصة برمجية سحابية (SaaS) رائدة في مصر لإنشاء وإدارة المتاجر الإلكترونية وصفحات الهبوط فائقة السرعة لمبيعات الدفع عند الاستلام بعمولة 0% وباقات مرنة، والبديل الأسرع والأوفر لمنصة ايزي اوردر وشوبيفاي.',
                     'offers' => [
                         [
                             '@type' => 'Offer',

@@ -288,10 +288,10 @@
     <link rel="manifest" href="/manifest.json">
 
     <!-- Primary SEO Meta Tags -->
-    <title>فاست اوردر | Fast Order — أفضل منصة لإنشاء متجر إلكتروني وستور أونلاين في مصر</title>
-    <meta name="title" content="فاست اوردر | Fast Order — أفضل منصة لإنشاء متجر إلكتروني وستور أونلاين في مصر">
-    <meta name="description" content="أنشئ متجرك الإلكتروني وصفحة الهبوط في دقائق مع فاست اوردر (Fast Order). أسرع شيك أوت لزيادة مبيعات الدفع عند الاستلام، ربط فوري لبكسل تيك توك وفيسبوك، عمولة 0%، وبدون تعقيد برمجي.">
-    <meta name="keywords" content="فاست اوردر, fast order, انشاء متجر الكتروني, ستور اونلاين, متجر الكتروني, عمل متجر الكتروني في مصر, انشاء ستور, منصة تجارة الكترونية, الدفع عند الاستلام, مبيعات الدفع عند الاستلام, بديل شوبيفاي في مصر, بيكسل تيك توك, بيكسل فيسبوك">
+    <title>فاست أوردر | Fast Order — أفضل منصة لإنشاء متجر إلكتروني وستور في مصر | بديل ايزي اوردر وشوبيفاي</title>
+    <meta name="title" content="فاست أوردر | Fast Order — أفضل منصة لإنشاء متجر إلكتروني وستور في مصر | بديل ايزي اوردر وشوبيفاي">
+    <meta name="description" content="أنشئ متجرك الإلكتروني وصفحة الهبوط في دقائق مع فاست أوردر (Fast Order). البديل الأقوى لمنصة ايزي اوردر وشوبيفاي في مصر: أسرع شيك أوت لزيادة مبيعات الدفع عند الاستلام، ربط فوري لبكسل تيك توك وفيسبوك، عمولة 0%، وتأكيد فوري للطلبات بالواتساب.">
+    <meta name="keywords" content="فاست اوردر, فاست أوردر, Fast Order, FastOrder, ايزي اوردر, بديل ايزي اوردر, Easy Order, EasyOrder, منصة ايزي اوردر, انشاء متجر الكتروني, عمل متجر الكتروني, تصميم متجر الكتروني, انشاء ستور, عمل ستور, ستور اونلاين, متجر الكتروني مصر, منصة تجارة الكترونية, الدفع عند الاستلام, مبيعات الدفع عند الاستلام, بديل شوبيفاي في مصر, بيكسل تيك توك, بيكسل فيسبوك, تأكيد الطلبات بالواتساب, شحن المحافظات">
     <meta name="author" content="Fast Order">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="https://fast-order-eg.tech">
@@ -300,17 +300,22 @@
     <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://fast-order-eg.tech">
-    <meta property="og:title" content="فاست اوردر | Fast Order — أنشئ متجرك الإلكتروني واستقبل أوردراتك في دقائق">
-    <meta property="og:description" content="المنصة الأسرع في مصر لمبيعات الدفع عند الاستلام. شيك أوت فائق السرعة، 0% عمولة، وتأكيد فوري للطلبات عبر الواتساب.">
+    <meta property="og:title" content="فاست أوردر | Fast Order — أنشئ متجرك الإلكتروني واستقبل أوردراتك في دقائق | بديل ايزي اوردر">
+    <meta property="og:description" content="المنصة الأسرع والأوفر في مصر لمبيعات الدفع عند الاستلام. شيك أوت فائق السرعة، 0% عمولة، ربط بيكسل فيسبوك وتيك توك، وتأكيد فوري للطلبات عبر الواتساب. البديل الأقوى لمنصة ايزي اوردر وشوبيفاي.">
     <meta property="og:image" content="{{ asset('images/logo.png') }}">
-    <meta property="og:site_name" content="فاست اوردر - Fast Order">
+    <meta property="og:image:secure_url" content="{{ asset('images/logo.png') }}">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:image:alt" content="شعار فاست أوردر Fast Order">
+    <meta property="og:site_name" content="فاست أوردر - Fast Order">
     <meta property="og:locale" content="ar_EG">
 
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://fast-order-eg.tech">
-    <meta name="twitter:title" content="فاست اوردر | Fast Order — أنشئ متجرك الإلكتروني في دقائق">
-    <meta name="twitter:description" content="أسرع منصة لإنشاء المتاجر الإلكترونية في مصر وصفحات الهبوط. عمولة 0% وأداء فائق لمبيعات الدفع عند الاستلام.">
+    <meta name="twitter:title" content="فاست أوردر | Fast Order — أفضل منصة لإنشاء متجر إلكتروني وستور في مصر">
+    <meta name="twitter:description" content="أنشئ متجرك الإلكتروني في دقائق مع فاست أوردر. شيك أوت سريع، عمولة 0%، وبديل اقتصادي متفوق لمنصة ايزي اوردر وشوبيفاي.">
     <meta name="twitter:image" content="{{ asset('images/logo.png') }}">
 
     <!-- Schema.org Structured Data (JSON-LD) for Search Engines & AI Models (ChatGPT, Gemini, Perplexity) -->
