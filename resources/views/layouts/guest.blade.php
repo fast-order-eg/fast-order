@@ -57,21 +57,21 @@
 
     <!-- Schema.org JSON-LD -->
     <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "WebPage",
-        "name": "{{ addslashes($pageTitle) }}",
-        "description": "{{ addslashes($pageDesc) }}",
-        "url": "{{ $pageUrl }}",
-        "inLanguage": "ar",
-        "publisher": {
-            "@type": "Organization",
-            "name": "Fast Order",
-            "alternateName": ["فاست أوردر", "فاست اوردر", "بديل ايزي اوردر"],
-            "url": "https://fast-order-eg.tech",
-            "logo": "{{ asset('images/logo.png') }}"
-        }
-    }
+    {!! json_encode([
+        '@context' => 'https://schema.org',
+        '@type' => 'WebPage',
+        'name' => $pageTitle,
+        'description' => $pageDesc,
+        'url' => $pageUrl,
+        'inLanguage' => 'ar',
+        'publisher' => [
+            '@type' => 'Organization',
+            'name' => 'Fast Order',
+            'alternateName' => ['فاست أوردر', 'فاست اوردر', 'بديل ايزي اوردر'],
+            'url' => 'https://fast-order-eg.tech',
+            'logo' => asset('images/logo.png'),
+        ],
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
     </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">

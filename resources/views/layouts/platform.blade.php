@@ -43,27 +43,27 @@
 
     <!-- JSON-LD Structured Data Schema for Google -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Fast Order",
-      "alternateName": ["فاست أوردر", "فاست اوردر", "FastOrder", "بديل ايزي اوردر", "Easy Order Alternative"],
-      "operatingSystem": "All",
-      "applicationCategory": "BusinessApplication",
-      "description": "منصة متكاملة لبناء وتطوير المتاجر الإلكترونية في الوطن العربي بدون عمولات وبتقنيات سرعة فائقة.",
-      "url": "https://fast-order-eg.tech",
-      "offers": {
-        "@type": "Offer",
-        "price": "500",
-        "priceCurrency": "EGP",
-        "availability": "https://schema.org/InStock"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.9",
-        "ratingCount": "1450"
-      }
-    }
+    {!! json_encode([
+      '@context' => 'https://schema.org',
+      '@type' => 'SoftwareApplication',
+      'name' => 'Fast Order',
+      'alternateName' => ['فاست أوردر', 'فاست اوردر', 'FastOrder', 'بديل ايزي اوردر', 'Easy Order Alternative'],
+      'operatingSystem' => 'All',
+      'applicationCategory' => 'BusinessApplication',
+      'description' => 'منصة متكاملة لبناء وتطوير المتاجر الإلكترونية في الوطن العربي بدون عمولات وبتقنيات سرعة فائقة.',
+      'url' => 'https://fast-order-eg.tech',
+      'offers' => [
+        '@type' => 'Offer',
+        'price' => '500',
+        'priceCurrency' => 'EGP',
+        'availability' => 'https://schema.org/InStock',
+      ],
+      'aggregateRating' => [
+        '@type' => 'AggregateRating',
+        'ratingValue' => '4.9',
+        'ratingCount' => '1450',
+      ],
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
     </script>
     
     <!-- Fonts -->
