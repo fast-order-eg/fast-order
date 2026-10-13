@@ -112,6 +112,45 @@ class OrderController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        // حساب الأوردرات المكررة بنفس رقم الهاتف بكفاءة عالية للصفحة الحالية
+        $pageOrders = $orders->getCollection();
+        $allVariations = [];
+        $phoneToNormalized = [];
+
+        foreach ($pageOrders as $o) {
+            $rawPhone = trim((string)$o->customer_phone);
+            $clean = static::normalizeCustomerPhone($rawPhone);
+            if (strlen($clean) >= 6) {
+                $phoneToNormalized[$rawPhone] = $clean;
+                $phoneToNormalized[$clean] = $clean;
+                foreach (static::getPhoneVariations($rawPhone) as $var) {
+                    $allVariations[$var] = true;
+                    $phoneToNormalized[$var] = $clean;
+                }
+            }
+        }
+
+        $phoneCounts = [];
+        if (!empty($allVariations)) {
+            $counts = Order::whereIn('customer_phone', array_keys($allVariations))
+                ->select('customer_phone', \Illuminate\Support\Facades\DB::raw('count(*) as aggregate'))
+                ->groupBy('customer_phone')
+                ->get();
+
+            foreach ($counts as $row) {
+                $norm = $phoneToNormalized[$row->customer_phone] ?? static::normalizeCustomerPhone($row->customer_phone);
+                $phoneCounts[$norm] = ($phoneCounts[$norm] ?? 0) + $row->aggregate;
+            }
+        }
+
+        $pageOrders->transform(function ($order) use ($phoneCounts) {
+            $clean = static::normalizeCustomerPhone($order->customer_phone);
+            $count = (strlen($clean) >= 6 && isset($phoneCounts[$clean])) ? (int) $phoneCounts[$clean] : 1;
+            $order->duplicate_count = $count;
+            $order->is_duplicate = ($count > 1);
+            return $order;
+        });
+
         // قائمة المنتجات للفلتر
         $productsList = Product::orderBy('name')->get(['id', 'name']);
 
@@ -339,6 +378,51 @@ class OrderController extends Controller
             ->select('id', 'name', 'price')
             ->get();
 
+        $cleanPhone = static::normalizeCustomerPhone($order->customer_phone);
+        $duplicateOrders = collect();
+
+        if (strlen($cleanPhone) >= 6) {
+            $variations = static::getPhoneVariations($order->customer_phone);
+            $duplicateOrders = Order::whereIn('customer_phone', $variations)
+                ->where('id', '!=', $order->id)
+                ->orderBy('created_at', 'desc')
+                ->limit(15)
+                ->get(['id', 'reference_number', 'customer_name', 'customer_phone', 'status', 'total', 'created_at'])
+                ->map(function ($dup) {
+                    return [
+                        'id'               => $dup->id,
+                        'reference_number' => $dup->reference_number,
+                        'customer_name'    => $dup->customer_name,
+                        'customer_phone'   => $dup->customer_phone,
+                        'status'           => $dup->status,
+                        'total'            => $dup->total,
+                        'created_at'       => $dup->created_at ? \Carbon\Carbon::parse($dup->created_at)->format('Y-m-d H:i') : null,
+                    ];
+                });
+        }
+
+        $isPhoneBlocked = false;
+        if (!empty($order->customer_phone)) {
+            $variations = static::getPhoneVariations($order->customer_phone);
+            $isPhoneBlocked = \App\Models\BlacklistRecord::where('type', 'phone')
+                ->whereIn('value', $variations)
+                ->exists();
+        }
+
+        $isIpBlocked = false;
+        if (!empty($order->ip_address)) {
+            $isIpBlocked = \App\Models\BlacklistRecord::where('type', 'ip')
+                ->where('value', $order->ip_address)
+                ->exists();
+        }
+
+        $format12h = function ($date) {
+            if (!$date) return null;
+            $c = \Carbon\Carbon::parse($date);
+            $period = $c->format('A') === 'PM' ? 'م' : 'ص';
+            return $c->format('Y-m-d h:i') . ' ' . $period;
+        };
+
         return Inertia::render('Merchant/Orders/Show', [
             'order' => [
                 'id'               => $order->id,
@@ -347,6 +431,10 @@ class OrderController extends Controller
                 'customer_phone'   => $order->customer_phone,
                 'customer_email'   => $order->customer_email,
                 'customer_address' => $order->customer_address,
+                'ip_address'       => $order->ip_address,
+                'ip_country'       => $order->ip_country,
+                'is_phone_blocked' => $isPhoneBlocked,
+                'is_ip_blocked'    => $isIpBlocked,
                 'governorate'      => $order->governorate,
                 'payment_method'   => $order->payment_method,
                 'payment_status'   => $order->payment_status,
@@ -356,15 +444,19 @@ class OrderController extends Controller
                 'shipping_cost'    => $order->shipping_cost,
                 'status'           => $order->status,
                 'is_unlocked'      => (bool) $order->is_unlocked,
+                'duplicate_count'  => $duplicateOrders->count() + 1,
+                'is_duplicate'     => $duplicateOrders->count() > 0,
                 'items'            => $items,
                 'notes'            => $order->notes,
                 'whatsapp_status'        => $order->whatsapp_status,
                 'whatsapp_charge_amount' => (float) ($order->whatsapp_charge_amount ?? 0),
-                'whatsapp_sent_at'       => $order->whatsapp_sent_at ? \Carbon\Carbon::parse($order->whatsapp_sent_at)->format('Y-m-d h:i A') : null,
-                'whatsapp_response_at'   => $order->whatsapp_response_at ? \Carbon\Carbon::parse($order->whatsapp_response_at)->format('Y-m-d h:i A') : null,
+                'whatsapp_sent_at'       => $format12h($order->whatsapp_sent_at),
+                'whatsapp_response_at'   => $format12h($order->whatsapp_response_at),
                 'whatsapp_message_id'    => $order->whatsapp_message_id,
-                'created_at'             => $order->created_at ? \Carbon\Carbon::parse($order->created_at)->format('Y-m-d h:i A') : null,
+                'whatsapp_replies'       => is_array($order->whatsapp_replies) ? $order->whatsapp_replies : (json_decode($order->whatsapp_replies ?? '[]', true) ?: []),
+                'created_at'             => $format12h($order->created_at),
             ],
+            'duplicate_orders'         => $duplicateOrders,
             'products'                 => $products,
             'governorates'             => $governorates,
             'active_shipping_gateways' => $activeShippingGateways,
@@ -930,4 +1022,43 @@ class OrderController extends Controller
         $pdf = \PDF::loadView('orders.invoice', compact('order', 'storeName', 'storePhone'));
         return $pdf->download('invoice-' . $order->reference_number . '.pdf');
     }
+
+    /**
+     * تنظيف وتوحيد صيغة رقم هاتف العميل للبحث والمطابقة
+     */
+    public static function normalizeCustomerPhone(?string $phone): string
+    {
+        $clean = preg_replace('/[^\d]/', '', (string)$phone);
+        if (str_starts_with($clean, '00201')) {
+            $clean = '0' . substr($clean, 4);
+        } elseif (str_starts_with($clean, '201')) {
+            $clean = '0' . substr($clean, 2);
+        } elseif (strlen($clean) === 10 && str_starts_with($clean, '1')) {
+            $clean = '0' . $clean;
+        }
+        return $clean;
+    }
+
+    /**
+     * توليد كل الصيغ المحتملة لرقم الهاتف للبحث في قاعدة البيانات
+     */
+    public static function getPhoneVariations(?string $phone): array
+    {
+        $raw = trim((string)$phone);
+        $clean = static::normalizeCustomerPhone($phone);
+        if (empty($clean) || strlen($clean) < 6) {
+            return array_values(array_unique(array_filter([$raw])));
+        }
+
+        $variations = [$raw, $clean];
+        if (strlen($clean) === 11 && str_starts_with($clean, '01')) {
+            $short = substr($clean, 1); // 10...
+            $variations[] = $short;
+            $variations[] = '2' . $clean; // 2010...
+            $variations[] = '+2' . $clean; // +2010...
+            $variations[] = '002' . $clean; // 002010...
+        }
+        return array_values(array_unique(array_filter($variations)));
+    }
 }
+

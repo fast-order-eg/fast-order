@@ -356,6 +356,7 @@ Route::prefix('admin')->group(function () {
             Route::prefix('blacklist')->name('merchant.blacklist.')->group(function () {
                 Route::get('/', [\App\Http\Controllers\Merchant\BlacklistController::class, 'index'])->name('index');
                 Route::post('/', [\App\Http\Controllers\Merchant\BlacklistController::class, 'store'])->name('store');
+                Route::post('/toggle', [\App\Http\Controllers\Merchant\BlacklistController::class, 'toggle'])->name('toggle');
                 Route::delete('/{blacklistRecord}', [\App\Http\Controllers\Merchant\BlacklistController::class, 'destroy'])->name('destroy');
             });
 

@@ -90,54 +90,121 @@ class WhatsAppWebhookController extends Controller
         $fromPhone = $message['from'] ?? '';
         $msgType = $message['type'] ?? 'text';
         $payloadAction = null;
+        $order = null;
         $orderId = null;
+        $rawText = '';
+        $mediaType = 'text';
+        $mediaUrl = null;
+        $caption = null;
 
         // A. Quick reply button (Template button click)
         if ($msgType === 'button') {
             $payloadAction = $message['button']['payload'] ?? $message['button']['text'] ?? null;
+            $rawText = (string) ($message['button']['text'] ?? $message['button']['payload'] ?? 'زر استجابة');
         } 
         // B. Interactive list / button reply
         elseif ($msgType === 'interactive') {
             $payloadAction = $message['interactive']['button_reply']['id'] 
                 ?? $message['interactive']['button_reply']['title'] 
                 ?? null;
+            $rawText = (string) ($message['interactive']['button_reply']['title'] ?? $message['interactive']['button_reply']['id'] ?? 'رد تفاعلي');
         }
         // C. Standard text reply
         elseif ($msgType === 'text') {
-            $text = trim($message['text']['body'] ?? '');
-            $payloadAction = $this->parseTextToIntent($text);
+            $rawText = trim((string) ($message['text']['body'] ?? ''));
+            $payloadAction = $this->parseTextToIntent($rawText);
+        }
+        // D. Media message (image, audio, voice note, video, document, sticker)
+        elseif (in_array($msgType, ['image', 'audio', 'voice', 'video', 'document', 'sticker'])) {
+            $mediaObj = $message[$msgType] ?? [];
+            $mediaId = $mediaObj['id'] ?? null;
+            $mimeType = $mediaObj['mime_type'] ?? null;
+            $caption = trim((string)($mediaObj['caption'] ?? ''));
+            $origFilename = $mediaObj['filename'] ?? null;
+            
+            $mediaType = in_array($msgType, ['audio', 'voice']) ? 'audio' : ($msgType === 'sticker' ? 'image' : $msgType);
+            
+            if ($mediaId) {
+                try {
+                    $whatsAppService = new \App\Services\MetaWhatsAppService();
+                    $mediaUrl = $whatsAppService->downloadMedia($mediaId, $mimeType, $origFilename);
+                } catch (\Throwable $e) {
+                    Log::error("Failed to download WhatsApp media {$mediaId}: " . $e->getMessage());
+                }
+            }
+
+            $rawText = $caption ?: match ($mediaType) {
+                'image'    => '📷 صورة مرسلة من العميل',
+                'audio'    => '🎤 رسالة صوتية من العميل',
+                'video'    => '🎥 مقطع فيديو من العميل',
+                'document' => '📄 مستند من العميل',
+                default    => "[ملف {$msgType}]",
+            };
+        } else {
+            $rawText = "[رسالة {$msgType}]";
         }
 
-        if (!$payloadAction) {
+        if (empty($rawText) && empty($payloadAction)) {
             return;
         }
 
-        // Try extracting order ID from payload (e.g. CONFIRM_ORDER_48)
-        if (preg_match('/^(CONFIRM|CANCEL)_ORDER_(\d+)$/i', $payloadAction, $matches)) {
+        // 1. Try matching Order directly by Meta context message ID (wamid of sent template)
+        $contextMsgId = $message['context']['id'] ?? null;
+        if ($contextMsgId) {
+            $order = Order::where('whatsapp_message_id', $contextMsgId)->first();
+        }
+
+        // 2. Try extracting order ID from payload (e.g. CONFIRM_ORDER_48)
+        if ($payloadAction && preg_match('/^(CONFIRM|CANCEL)_ORDER_(\d+)$/i', (string) $payloadAction, $matches)) {
             $actionType = strtoupper($matches[1]);
-            $orderId = (int) $matches[2];
-            $order = Order::find($orderId);
+            if (!$order) {
+                $orderId = (int) $matches[2];
+                $order = Order::find($orderId);
+            }
         } else {
-            // Find latest pending order matching customer phone
-            $formattedPhoneSuffix = substr($fromPhone, -9); // last 9 digits
+            if ($payloadAction && str_contains((string)$payloadAction, 'CONFIRM')) {
+                $actionType = 'CONFIRM';
+            } elseif ($payloadAction && str_contains((string)$payloadAction, 'CANCEL')) {
+                $actionType = 'CANCEL';
+            } else {
+                $actionType = $this->parseTextToIntent($rawText);
+            }
+        }
+
+        // 3. Fallback: Match by customer phone number
+        if (!$order && !empty($fromPhone)) {
+            $cleanDigits = preg_replace('/[^\d]/', '', $fromPhone);
+            $formattedPhoneSuffix = substr($cleanDigits, -9);
+
+            // نفضل أولاً الطلبات التي بانتظار رد الواتس
             $order = Order::where('customer_phone', 'like', "%{$formattedPhoneSuffix}")
                 ->where('whatsapp_status', 'pending')
                 ->latest()
                 ->first();
 
-            $actionType = str_contains($payloadAction, 'CONFIRM') ? 'CONFIRM' : (str_contains($payloadAction, 'CANCEL') ? 'CANCEL' : null);
+            // إذا لم نجد طلب معلق، نطابق أحدث طلب تم إرسال واتس له للعميل (لتسجيل كل رسائل العميل اللاحقة)
+            if (!$order) {
+                $order = Order::where('customer_phone', 'like', "%{$formattedPhoneSuffix}")
+                    ->whereNotNull('whatsapp_sent_at')
+                    ->latest()
+                    ->first();
+            }
+
+            // ملاذ أخير: أحدث طلب للعميل
+            if (!$order) {
+                $order = Order::where('customer_phone', 'like', "%{$formattedPhoneSuffix}")
+                    ->latest()
+                    ->first();
+            }
         }
 
         if (!$order) {
-            Log::info("No matching pending order found for WhatsApp reply from: {$fromPhone}, Payload: {$payloadAction}");
+            Log::info("No matching order found for WhatsApp reply from: {$fromPhone}, Text: {$rawText}");
             return;
         }
 
-        if ($actionType === 'CONFIRM') {
-            $this->confirmOrderViaWhatsApp($order);
-        } elseif ($actionType === 'CANCEL') {
-            $this->cancelOrderViaWhatsApp($order);
-        }
+        // تسجيل الرسالة والملاحظات بالتوقيت الدقيق وتحديث الحالة
+        $this->recordCustomerReplyAndProcess($order, $rawText, $actionType, $mediaType, $mediaUrl, $caption);
     }
 
     /**
@@ -165,23 +232,78 @@ class WhatsAppWebhookController extends Controller
     }
 
     /**
+     * Record customer reply in whatsapp_replies and notes, and update status accordingly.
+     */
+    protected function recordCustomerReplyAndProcess(
+        Order $order, 
+        string $rawText, 
+        ?string $actionType,
+        string $mediaType = 'text',
+        ?string $mediaUrl = null,
+        ?string $caption = null
+    ): void
+    {
+        $nowTime = now();
+        $period = $nowTime->format('A') === 'PM' ? 'م' : 'ص';
+        $time12 = $nowTime->format('Y-m-d h:i') . ' ' . $period;
+
+        // 1. تسجيل الرد في مصفوفة whatsapp_replies
+        $replies = is_array($order->whatsapp_replies)
+            ? $order->whatsapp_replies
+            : (json_decode($order->whatsapp_replies ?? '[]', true) ?: []);
+
+        $replies[] = [
+            'sender'    => 'customer',
+            'text'      => $rawText,
+            'action'    => $actionType ?: 'CUSTOM',
+            'time'      => $time12,
+            'type'      => $mediaType,
+            'media_url' => $mediaUrl,
+            'caption'   => $caption,
+        ];
+
+        // 2. تدوين الرد في الملاحظات / سجل الطلب
+        $existingNotes = trim((string) $order->notes);
+        $actionLabel = $actionType === 'CONFIRM' ? 'تأكيد' : ($actionType === 'CANCEL' ? 'إلغاء' : 'رد العميل');
+        $mediaNoteSuffix = $mediaUrl ? " (ملف مرفق: {$mediaUrl})" : '';
+        $noteEntry = "💬 [واتساب {$time12} - {$actionLabel}]: {$rawText}{$mediaNoteSuffix}";
+        $newNotes = $existingNotes ? ($existingNotes . "\n" . $noteEntry) : $noteEntry;
+
+        $updateData = [
+            'whatsapp_replies'     => $replies,
+            'whatsapp_response_at' => $nowTime,
+            'notes'                => $newNotes,
+        ];
+
+        if ($actionType === 'CONFIRM') {
+            $updateData['status'] = 'confirmed';
+            $updateData['whatsapp_status'] = 'confirmed';
+            $order->update($updateData);
+
+            Log::info("Order #{$order->reference_number} confirmed via WhatsApp. Customer message: {$rawText}");
+            $this->dispatchOrderToShipping($order);
+        } elseif ($actionType === 'CANCEL') {
+            if ($order->status !== 'cancelled') {
+                $this->restoreOrderStock($order);
+            }
+            $updateData['status'] = 'cancelled';
+            $updateData['whatsapp_status'] = 'cancelled';
+            $order->update($updateData);
+
+            Log::info("Order #{$order->reference_number} cancelled via WhatsApp. Customer message: {$rawText}");
+        } else {
+            // رد مخصص من العميل بدون تأكيد أو إلغاء صريح
+            $order->update($updateData);
+            Log::info("Recorded custom WhatsApp customer message for Order #{$order->reference_number}: {$rawText}");
+        }
+    }
+
+    /**
      * Confirm Order via WhatsApp & Auto-Dispatch Shipping.
      */
     protected function confirmOrderViaWhatsApp(Order $order): void
     {
-        $nowTime = now();
-        $timeStr = $nowTime->format('Y-m-d H:i:s');
-
-        $order->update([
-            'status'               => 'confirmed',
-            'whatsapp_status'      => 'confirmed',
-            'whatsapp_response_at' => $nowTime,
-        ]);
-
-        Log::info("Order #{$order->reference_number} confirmed via WhatsApp Webhook.");
-
-        // Automatically dispatch to shipping if merchant has auto dispatch enabled
-        $this->dispatchOrderToShipping($order);
+        $this->recordCustomerReplyAndProcess($order, 'تأكيد الطلب', 'CONFIRM');
     }
 
     /**
@@ -189,20 +311,7 @@ class WhatsAppWebhookController extends Controller
      */
     protected function cancelOrderViaWhatsApp(Order $order): void
     {
-        $nowTime = now();
-        $timeStr = $nowTime->format('Y-m-d H:i:s');
-
-        if ($order->status !== 'cancelled') {
-            $this->restoreOrderStock($order);
-        }
-
-        $order->update([
-            'status'               => 'cancelled',
-            'whatsapp_status'      => 'cancelled',
-            'whatsapp_response_at' => $nowTime,
-        ]);
-
-        Log::info("Order #{$order->reference_number} cancelled via WhatsApp Webhook.");
+        $this->recordCustomerReplyAndProcess($order, 'إلغاء الطلب', 'CANCEL');
     }
 
     /**

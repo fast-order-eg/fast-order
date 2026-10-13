@@ -3,10 +3,12 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import MerchantLayout from '@/Layouts/MerchantLayout';
 import EditOrderModal from './EditOrderModal';
 
-export default function OrderShow({ order, products = [], governorates = [], active_shipping_gateways = [], is_auto_confirm_enabled = false, wallet_balance = 0 }) {
+export default function OrderShow({ order, products = [], governorates = [], active_shipping_gateways = [], is_auto_confirm_enabled = false, wallet_balance = 0, duplicate_orders = [] }) {
     const { flash } = usePage().props;
     const [isSendingWa, setIsSendingWa] = React.useState(false);
     const [previewImage, setPreviewImage] = React.useState(null);
+    const [previewMedia, setPreviewMedia] = React.useState(null);
+    const [isBlacklistLoading, setIsBlacklistLoading] = React.useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
     const [isDeleting, setIsDeleting] = React.useState(false);
@@ -15,10 +17,11 @@ export default function OrderShow({ order, products = [], governorates = [], act
         const handleKeyDown = (e) => {
             if (e.key === 'Escape') {
                 setPreviewImage(null);
+                setPreviewMedia(null);
                 if (!isDeleting) setIsDeleteModalOpen(false);
             }
         };
-        if (previewImage || isDeleteModalOpen) {
+        if (previewImage || previewMedia || isDeleteModalOpen) {
             window.addEventListener('keydown', handleKeyDown);
             document.body.style.overflow = 'hidden';
         }
@@ -26,7 +29,7 @@ export default function OrderShow({ order, products = [], governorates = [], act
             window.removeEventListener('keydown', handleKeyDown);
             document.body.style.overflow = '';
         };
-    }, [previewImage, isDeleteModalOpen, isDeleting]);
+    }, [previewImage, previewMedia, isDeleteModalOpen, isDeleting]);
 
     React.useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -68,6 +71,50 @@ export default function OrderShow({ order, products = [], governorates = [], act
                 setIsDeleteModalOpen(false);
             },
         });
+    };
+
+    const handleToggleBlacklist = (type, value, label) => {
+        if (!value) return;
+        const isBlocked = type === 'phone' ? order.is_phone_blocked : order.is_ip_blocked;
+        const confirmMsg = isBlocked
+            ? `هل أنت متأكد من إلغاء حظر ${label} (${value}) لهذا المتجر؟`
+            : `هل أنت متأكد من حظر ${label} (${value})؟ لن يتمكن هذا العميل من تقديم أي طلبات جديدة في متجرك.`;
+
+        if (!confirm(confirmMsg)) return;
+
+        setIsBlacklistLoading(true);
+        router.post('/admin/blacklist/toggle', {
+            type,
+            value,
+            reason: `حظر مباشر من تفاصيل الطلب #${order.reference_number || order.id}`,
+        }, {
+            preserveScroll: true,
+            onFinish: () => setIsBlacklistLoading(false),
+        });
+    };
+
+    const formatDateTime12h = (dateStr) => {
+        if (!dateStr) return '';
+        try {
+            if (String(dateStr).includes('م') || String(dateStr).includes('ص')) return dateStr;
+            const parts = String(dateStr).trim().split(' ');
+            if (parts.length >= 2) {
+                const datePart = parts[0];
+                const timePart = parts[1];
+                const [hourStr, minStr] = timePart.split(':');
+                let hour = parseInt(hourStr, 10);
+                if (isNaN(hour)) return dateStr;
+                const minute = minStr || '00';
+                const period = hour >= 12 ? 'م' : 'ص';
+                hour = hour % 12;
+                if (hour === 0) hour = 12;
+                const formattedHour = String(hour).padStart(2, '0');
+                return `${datePart} ${formattedHour}:${minute} ${period}`;
+            }
+            return dateStr;
+        } catch (e) {
+            return dateStr;
+        }
     };
 
     const getStatusText = (status) => {
@@ -287,6 +334,62 @@ ${totalsBlock}${shippingBlock}`;
                     <div className="p-4 bg-red-50 border-r-4 border-red-500 rounded-lg text-red-800 text-sm font-medium flex items-center gap-2">
                         <span>⚠️</span>
                         {flash.error}
+                    </div>
+                )}
+
+                {/* تنبيه الأوردرات المكررة لنفس العميل */}
+                {duplicate_orders && duplicate_orders.length > 0 && (
+                    <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-5 shadow-sm space-y-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div className="flex items-center gap-2.5">
+                                <span className="text-xl">⚠️</span>
+                                <div>
+                                    <h4 className="font-extrabold text-amber-950 text-sm">
+                                        تنبيه أوردر مكرر: تم العثور على {duplicate_orders.length} طلبات أخرى مسجلة بنفس رقم الهاتف ({order.customer_phone})
+                                    </h4>
+                                    <p className="text-xs text-amber-800 mt-0.5">
+                                        يرجى مراجعة الطلبات السابقة وتأكيدها مع العميل قبل الشحن لتجنب إرسال شحنات مكررة لنفس الشخص.
+                                    </p>
+                                </div>
+                            </div>
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-amber-200 text-amber-900 shrink-0 self-start sm:self-auto shadow-2xs">
+                                <span>🔁</span>
+                                <span>إجمالي طلبات العميل: {duplicate_orders.length + 1}</span>
+                            </span>
+                        </div>
+
+                        <div className="bg-white rounded-lg border border-amber-200 overflow-hidden divide-y divide-gray-100">
+                            {duplicate_orders.map((dup) => (
+                                <div key={dup.id} className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-amber-50/50 transition-colors text-xs">
+                                    <div className="flex items-center gap-3">
+                                        <span className="font-mono font-bold text-gray-900 bg-gray-100 px-2 py-0.5 rounded">
+                                            #{dup.reference_number || dup.id}
+                                        </span>
+                                        <span className="text-gray-500 font-sans">
+                                            {dup.created_at}
+                                        </span>
+                                        <span className="font-bold text-gray-800">
+                                            {formatCurrency(dup.total)}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${getStatusBadgeClass(dup.status)}`}>
+                                            {getStatusText(dup.status)}
+                                        </span>
+                                        <a
+                                            href={`/admin/orders/${dup.id}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-md font-bold transition-colors"
+                                        >
+                                            <span>عرض الطلب</span>
+                                            <span>↗</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
 
@@ -589,6 +692,170 @@ ${totalsBlock}${shippingBlock}`;
                                         : '1 ج.م (تُخصم عند إرسال الرسالة بنجاح)'}
                                 </span>
                             </div>
+
+                            {/* سجل ردود وملاحظات العميل عبر الواتساب */}
+                            <div className="pt-2.5 border-t border-emerald-200/60 space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                                        <span>📥</span>
+                                        <span>الملاحظات وردود العميل عبر الواتساب:</span>
+                                    </span>
+                                    {order.whatsapp_replies && order.whatsapp_replies.length > 0 ? (
+                                        <span className="text-[11px] font-black bg-emerald-600 text-white px-2.5 py-0.5 rounded-full shadow-2xs">
+                                            {order.whatsapp_replies.length} {order.whatsapp_replies.length === 1 ? 'رسالة مسجلة' : 'رسائل مسجلة'}
+                                        </span>
+                                    ) : (
+                                        <span className="text-[11px] text-gray-500 font-medium">
+                                            لا توجد ردود بعد
+                                        </span>
+                                    )}
+                                </div>
+
+                                {order.whatsapp_replies && order.whatsapp_replies.length > 0 ? (
+                                    <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                                        {order.whatsapp_replies.map((reply, rIdx) => (
+                                            <div
+                                                key={rIdx}
+                                                className="bg-white rounded-xl p-3 border border-emerald-100 shadow-2xs space-y-1.5 transition-all hover:border-emerald-300"
+                                            >
+                                                <div className="flex items-center justify-between gap-2 text-[11px]">
+                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold ${
+                                                        reply.action === 'CONFIRM'
+                                                            ? 'bg-emerald-100 text-emerald-800'
+                                                            : (reply.action === 'CANCEL'
+                                                                ? 'bg-red-100 text-red-800'
+                                                                : 'bg-teal-100 text-teal-800')
+                                                    }`}>
+                                                        {reply.action === 'CONFIRM' && '✅ تأكيد الطلب'}
+                                                        {reply.action === 'CANCEL' && '❌ إلغاء الطلب'}
+                                                        {reply.action !== 'CONFIRM' && reply.action !== 'CANCEL' && '💬 رد العميل'}
+                                                    </span>
+                                                    <span className="text-gray-500 font-bold text-[11px]" dir="ltr">
+                                                        {formatDateTime12h(reply.time)}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-gray-900 font-medium leading-relaxed bg-gray-50/80 p-2.5 rounded-lg border border-gray-100 break-words whitespace-pre-wrap">
+                                                    {reply.text || reply.message}
+                                                </p>
+
+                                                {/* عرض الوسائط المرفقة (صور، فويس، فيديو، مستندات) */}
+                                                {reply.media_url && (
+                                                    <div className="mt-2 pt-2 border-t border-gray-100 space-y-2">
+                                                        {/* 1. الصور */}
+                                                        {reply.type === 'image' && (
+                                                            <div className="space-y-1.5">
+                                                                <div className="relative group inline-block max-w-full">
+                                                                    <img
+                                                                        src={reply.media_url}
+                                                                        alt="صورة العميل"
+                                                                        onClick={() => setPreviewMedia({ type: 'image', url: reply.media_url, caption: reply.caption || reply.text })}
+                                                                        className="max-h-60 max-w-full sm:max-w-xs rounded-xl border border-gray-200 object-cover cursor-zoom-in hover:opacity-95 transition-all shadow-xs"
+                                                                    />
+                                                                </div>
+                                                                <div className="flex items-center gap-3 text-[11px] font-bold">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setPreviewMedia({ type: 'image', url: reply.media_url, caption: reply.caption || reply.text })}
+                                                                        className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+                                                                    >
+                                                                        <span>🔍</span>
+                                                                        <span>تكبير الصورة</span>
+                                                                    </button>
+                                                                    <span className="text-gray-300">•</span>
+                                                                    <a
+                                                                        href={reply.media_url}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        download
+                                                                        className="text-gray-600 hover:text-gray-900 flex items-center gap-1 cursor-pointer"
+                                                                    >
+                                                                        <span>⬇️</span>
+                                                                        <span>تنزيل</span>
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* 2. الرسائل الصوتية (الفويس) */}
+                                                        {reply.type === 'audio' && (
+                                                            <div className="bg-emerald-50/90 border border-emerald-200 rounded-xl p-3 space-y-2 max-w-md">
+                                                                <div className="flex items-center justify-between text-xs font-bold text-emerald-900">
+                                                                    <span className="flex items-center gap-1.5">
+                                                                        <span>🎤</span>
+                                                                        <span>رسالة صوتية من العميل:</span>
+                                                                    </span>
+                                                                    <a
+                                                                        href={reply.media_url}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        download
+                                                                        className="text-[11px] text-emerald-700 hover:text-emerald-900 flex items-center gap-1 font-bold"
+                                                                    >
+                                                                        <span>⬇️</span>
+                                                                        <span>تنزيل الفويس</span>
+                                                                    </a>
+                                                                </div>
+                                                                <audio controls className="w-full h-9 rounded-lg">
+                                                                    <source src={reply.media_url} />
+                                                                    متصفحك لا يدعم مشغل الصوت.
+                                                                </audio>
+                                                            </div>
+                                                        )}
+
+                                                        {/* 3. الفيديو */}
+                                                        {reply.type === 'video' && (
+                                                            <div className="max-w-md space-y-2">
+                                                                <video controls className="w-full max-h-72 rounded-xl border border-gray-200 bg-black">
+                                                                    <source src={reply.media_url} />
+                                                                    متصفحك لا يدعم مشغل الفيديو.
+                                                                </video>
+                                                                <div className="flex items-center justify-end">
+                                                                    <a
+                                                                        href={reply.media_url}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        download
+                                                                        className="inline-flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-900"
+                                                                    >
+                                                                        <span>⬇️</span>
+                                                                        <span>تنزيل الفيديو</span>
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* 4. المستندات والملفات */}
+                                                        {reply.type === 'document' && (
+                                                            <div className="flex items-center justify-between gap-3 bg-gray-50 border border-gray-200 rounded-xl p-3 max-w-md">
+                                                                <div className="flex items-center gap-2 text-xs font-bold text-gray-800">
+                                                                    <span className="text-xl">📄</span>
+                                                                    <span className="truncate">{reply.caption || 'مستند مرفق'}</span>
+                                                                </div>
+                                                                <a
+                                                                    href={reply.media_url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    download
+                                                                    className="shrink-0 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-bold transition-all flex items-center gap-1"
+                                                                >
+                                                                    <span>⬇️</span>
+                                                                    <span>تحميل المستند</span>
+                                                                </a>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="p-3 bg-white/70 rounded-xl border border-emerald-100 text-center text-xs text-gray-500">
+                                        {order.whatsapp_status === 'pending'
+                                            ? '⏳ تم إرسال رسالة التأكيد وبانتظار رد وملاحظات العميل...'
+                                            : 'لم يقم العميل بإرسال أي رسائل نصية أو ملاحظات عبر الواتساب حتى الآن.'}
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {/* 7. إرسال الشحنة لشركة الشحن وتوليد البوليسة */}
@@ -717,19 +984,44 @@ ${totalsBlock}${shippingBlock}`;
                                 </div>
                                 <div>
                                     <span className="text-xs text-gray-400 block mb-0.5">الهاتف:</span>
-                                    <div className="flex items-center justify-between gap-2">
-                                        <span className="font-mono font-semibold text-gray-900" dir="ltr">{order.customer_phone}</span>
-                                        <a
-                                            href={generateWhatsAppUrl(order)}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-md text-xs font-bold transition-colors cursor-pointer"
-                                        >
-                                            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                                                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.205 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
-                                            </svg>
-                                            واتساب
-                                        </a>
+                                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-mono font-semibold text-gray-900" dir="ltr">{order.customer_phone}</span>
+                                            {order.is_phone_blocked && (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-300">
+                                                    محظور 🚫
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            {order.customer_phone && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleToggleBlacklist('phone', order.customer_phone, 'رقم الهاتف')}
+                                                    disabled={isBlacklistLoading}
+                                                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer border ${
+                                                        order.is_phone_blocked
+                                                            ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+                                                            : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200'
+                                                    }`}
+                                                    title={order.is_phone_blocked ? 'إلغاء حظر هذا الرقم لمتجرك' : 'حظر هذا الرقم ومنعه من الطلب في متجرك'}
+                                                >
+                                                    <span>🚫</span>
+                                                    <span>{order.is_phone_blocked ? 'إلغاء الحظر' : 'حظر الرقم'}</span>
+                                                </button>
+                                            )}
+                                            <a
+                                                href={generateWhatsAppUrl(order)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-md text-xs font-bold transition-colors cursor-pointer"
+                                            >
+                                                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                                                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.205 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+                                                </svg>
+                                                واتساب
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                                 <div>
@@ -739,6 +1031,51 @@ ${totalsBlock}${shippingBlock}`;
                                 <div>
                                     <span className="text-xs text-gray-400 block mb-0.5">العنوان:</span>
                                     <span className="text-gray-700 leading-relaxed block">{order.customer_address}</span>
+                                </div>
+
+                                {/* بيانات الـ IP ومكافحة الأوردرات الفيك */}
+                                <div className="pt-2 border-t border-gray-100">
+                                    <div className="bg-slate-50 border border-slate-200 rounded-lg p-2.5 flex items-center justify-between gap-2 flex-wrap">
+                                        <div className="space-y-1 text-xs" dir="ltr">
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="font-bold text-slate-500">IP:</span>
+                                                <span className="font-mono font-semibold text-slate-800">
+                                                    {order.ip_address || 'غير متوفر'}
+                                                </span>
+                                                {order.is_ip_blocked && (
+                                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-300">
+                                                        محظور 🚫
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="font-bold text-slate-500">IP Country:</span>
+                                                <span className="font-semibold uppercase text-slate-700">
+                                                    {order.ip_country || 'eg'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {order.ip_address ? (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleToggleBlacklist('ip', order.ip_address, 'عنوان IP')}
+                                                disabled={isBlacklistLoading}
+                                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer border ${
+                                                    order.is_ip_blocked
+                                                        ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+                                                        : 'bg-white text-slate-700 border-slate-300 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200'
+                                                }`}
+                                                title={order.is_ip_blocked ? 'إلغاء حظر عنوان IP' : 'حظر عنوان IP هذا لمنع الطلبات الفيك'}
+                                            >
+                                                <span>🛡️</span>
+                                                <span>{order.is_ip_blocked ? 'إلغاء حظر IP' : 'حظر الـ IP'}</span>
+                                            </button>
+                                        ) : (
+                                            <span className="text-[11px] text-gray-400 font-medium">
+                                                (مسجل من الطلبات القادمة)
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -937,6 +1274,53 @@ ${totalsBlock}${shippingBlock}`;
                     </div>
                 </div>
             )}
+
+                {/* نافذة تكبير وعرض وسائط الواتساب (Lightbox Modal) */}
+                {previewMedia && (
+                    <div
+                        className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4"
+                        onClick={() => setPreviewMedia(null)}
+                    >
+                        <div
+                            className="relative max-w-4xl max-h-[92vh] w-full bg-gray-900 rounded-2xl overflow-hidden shadow-2xl flex flex-col border border-gray-700"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="p-3.5 bg-gray-900/90 border-b border-gray-800 text-white flex items-center justify-between gap-3">
+                                <span className="text-xs font-bold truncate text-gray-200">
+                                    {previewMedia.caption || 'معاينة وسائط الواتساب'}
+                                </span>
+                                <div className="flex items-center gap-3 shrink-0">
+                                    <a
+                                        href={previewMedia.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        download
+                                        className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
+                                    >
+                                        <span>⬇️</span>
+                                        <span>تنزيل الملف</span>
+                                    </a>
+                                    <button
+                                        type="button"
+                                        onClick={() => setPreviewMedia(null)}
+                                        className="text-gray-400 hover:text-white text-lg font-bold p-1 cursor-pointer"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="p-3 overflow-auto flex items-center justify-center bg-black/60 max-h-[82vh]">
+                                {previewMedia.type === 'image' && (
+                                    <img
+                                        src={previewMedia.url}
+                                        alt="معاينة كاملة"
+                                        className="max-h-[78vh] w-auto max-w-full object-contain rounded-lg"
+                                    />
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
         </MerchantLayout>
     );
 }

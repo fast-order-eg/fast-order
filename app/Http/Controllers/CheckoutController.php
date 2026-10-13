@@ -236,6 +236,8 @@ class CheckoutController extends Controller
                 'customer_phone'   => $validated['customer_phone'],
                 'customer_email'   => $validated['customer_email'] ?? null,
                 'customer_address' => $validated['customer_address'],
+                'ip_address'       => $request->header('CF-Connecting-IP') ?: ($request->header('X-Forwarded-For') ? trim(explode(',', $request->header('X-Forwarded-For'))[0]) : null) ?: $request->ip(),
+                'ip_country'       => strtolower($request->header('CF-IPCountry') ?: $request->header('X-Country') ?: 'eg'),
                 'governorate'      => $governorate->name,
                 'payment_method'   => $paymentMethod,
                 'payment_status'   => $paymentStatus,

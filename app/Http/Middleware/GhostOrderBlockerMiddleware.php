@@ -15,46 +15,50 @@ class GhostOrderBlockerMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // 1. Check if the blocker is enabled in settings
-        $blockerEnabled = Setting::get('ghost_blocker_enabled', '0');
-        if ($blockerEnabled != '1') {
-            return $next($request);
-        }
-
-        $tenantId = session()->get('tenant_id') ?? config('tenant.id');
+        $tenantId = optional($request->attributes->get('tenant'))->id
+            ?? session()->get('tenant_id')
+            ?? config('tenant.id')
+            ?? (app()->bound(\App\Models\Tenant::class) ? app(\App\Models\Tenant::class)?->id : null);
 
         // Extract customer details from request
-        $ip = $request->ip();
-        $phone = trim($request->input('customer_phone', ''));
-        $email = trim(strtolower($request->input('customer_email', '')));
+        $ip = $request->header('CF-Connecting-IP') ?: ($request->header('X-Forwarded-For') ? trim(explode(',', $request->header('X-Forwarded-For'))[0]) : null) ?: $request->ip();
+        $phone = trim((string) $request->input('customer_phone', ''));
+        $email = trim(strtolower((string) $request->input('customer_email', '')));
         
-        // 2. Check Database Blacklist Records
+        // 1. Always enforce Tenant Database Blacklist Records unconditionally
         if ($tenantId) {
             // Check IP
-            $isIpBlocked = BlacklistRecord::where('tenant_id', $tenantId)
-                ->where('type', 'ip')
-                ->where('value', $ip)
-                ->exists();
+            if (!empty($ip)) {
+                $isIpBlocked = BlacklistRecord::where('tenant_id', $tenantId)
+                    ->where('type', 'ip')
+                    ->where('value', $ip)
+                    ->exists();
 
-            if ($isIpBlocked) {
-                return $this->blockResponse($request);
+                if ($isIpBlocked) {
+                    return $this->blockResponse($request, 'عذراً، تم حظر تقديم الطلبات من عنوان الشبكة هذا.');
+                }
             }
 
-            // Check Phone
+            // Check Phone with normalizations
             if (!empty($phone)) {
-                // Normalize phone (remove spaces, dashes)
                 $normalizedPhone = preg_replace('/[^0-9]/', '', $phone);
-                
+                $phoneVariants = array_filter(array_unique([
+                    $phone,
+                    $normalizedPhone,
+                    str_starts_with($normalizedPhone, '20') ? substr($normalizedPhone, 2) : null,
+                    str_starts_with($normalizedPhone, '20') ? '0' . substr($normalizedPhone, 2) : null,
+                    str_starts_with($normalizedPhone, '0') ? substr($normalizedPhone, 1) : null,
+                    str_starts_with($normalizedPhone, '0') ? '2' . $normalizedPhone : null,
+                    '0' . ltrim($normalizedPhone, '0'),
+                ]));
+
                 $isPhoneBlocked = BlacklistRecord::where('tenant_id', $tenantId)
                     ->where('type', 'phone')
-                    ->where(function($q) use ($phone, $normalizedPhone) {
-                        $q->where('value', $phone)
-                          ->orWhere('value', $normalizedPhone);
-                    })
+                    ->whereIn('value', $phoneVariants)
                     ->exists();
 
                 if ($isPhoneBlocked) {
-                    return $this->blockResponse($request);
+                    return $this->blockResponse($request, 'عذراً، هذا الرقم محظور من إتمام الطلبات.');
                 }
             }
 
@@ -69,6 +73,12 @@ class GhostOrderBlockerMiddleware
                     return $this->blockResponse($request);
                 }
             }
+        }
+
+        // 2. Check if the heuristic blocker is enabled in settings
+        $blockerEnabled = Setting::get('ghost_blocker_enabled', '0');
+        if ($blockerEnabled != '1') {
+            return $next($request);
         }
 
         // 3. Check Settings-defined blocked email domains or addresses

@@ -40,6 +40,74 @@ class MetaWhatsAppService
     }
 
     /**
+     * تنزيل ملف وسائط (صورة، فويس، فيديو، مستند) من خوادم Meta وحفظه محلياً في التخزين العام.
+     */
+    public function downloadMedia(string $mediaId, ?string $mimeType = null, ?string $originalFilename = null): ?string
+    {
+        if (empty($this->accessToken) || empty($mediaId)) {
+            return null;
+        }
+
+        try {
+            // 1. الاستعلام عن رابط التحميل المؤقت من Graph API
+            $infoRes = Http::withToken($this->accessToken)
+                ->timeout(15)
+                ->get("https://graph.facebook.com/{$this->apiVersion}/{$mediaId}");
+
+            if (!$infoRes->successful()) {
+                Log::warning("Failed to get WhatsApp media info for ID {$mediaId}: " . $infoRes->body());
+                return null;
+            }
+
+            $mediaData = $infoRes->json();
+            $downloadUrl = $mediaData['url'] ?? null;
+            $mime = $mediaData['mime_type'] ?? $mimeType ?? 'application/octet-stream';
+
+            if (!$downloadUrl) {
+                return null;
+            }
+
+            // 2. استخراج الامتداد المناسب بناء على نوع الوسائط
+            $extension = match (true) {
+                str_contains($mime, 'jpeg') || str_contains($mime, 'jpg') => 'jpg',
+                str_contains($mime, 'png') => 'png',
+                str_contains($mime, 'webp') => 'webp',
+                str_contains($mime, 'ogg') => 'ogg',
+                str_contains($mime, 'mp3') || str_contains($mime, 'mpeg') => 'mp3',
+                str_contains($mime, 'm4a') || str_contains($mime, 'mp4a') => 'm4a',
+                str_contains($mime, 'mp4') => 'mp4',
+                str_contains($mime, 'quicktime') || str_contains($mime, 'mov') => 'mov',
+                str_contains($mime, 'pdf') => 'pdf',
+                default => pathinfo((string)$originalFilename, PATHINFO_EXTENSION) ?: 'bin',
+            };
+
+            $fileName = 'wa_' . $mediaId . '_' . time() . '.' . $extension;
+            $filePath = 'whatsapp_media/' . $fileName;
+
+            // 3. تنزيل المحتوى الثنائي عبر رابط التحميل بتمرير Token
+            $mediaRes = Http::withToken($this->accessToken)
+                ->withHeaders([
+                    'User-Agent' => 'FastOrder-WhatsApp/1.0',
+                ])
+                ->timeout(30)
+                ->get($downloadUrl);
+
+            if (!$mediaRes->successful()) {
+                Log::warning("Failed to download WhatsApp media from URL: " . $downloadUrl);
+                return null;
+            }
+
+            // 4. الحفظ في القرص العام
+            \Illuminate\Support\Facades\Storage::disk('public')->put($filePath, $mediaRes->body());
+
+            return asset('storage/' . $filePath);
+        } catch (\Throwable $e) {
+            Log::error("Exception in downloadMedia for ID {$mediaId}: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Standardize phone number for WhatsApp (E.164 without leading +)
      * e.g. 01012345678 -> 201012345678
      */

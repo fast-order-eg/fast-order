@@ -73,4 +73,52 @@ class BlacklistController extends Controller
 
         return back()->with('success', 'تم إزالة القيمة من القائمة السوداء بنجاح ✓');
     }
+
+    /**
+     * تبديل حالة الحظر (حظر / إلغاء حظر) لقيمة معينة (هاتف أو IP أو إيميل).
+     */
+    public function toggle(Request $request)
+    {
+        $validated = $request->validate([
+            'type'   => 'required|in:phone,ip,email',
+            'value'  => 'required|string|max:255',
+            'reason' => 'nullable|string|max:255',
+        ]);
+
+        $type = $validated['type'];
+        $value = trim($validated['value']);
+
+        $query = BlacklistRecord::where('type', $type);
+        if ($type === 'phone') {
+            $cleanPhone = preg_replace('/[^0-9]/', '', $value);
+            $query->where(function ($q) use ($value, $cleanPhone) {
+                $q->where('value', $value)
+                  ->orWhere('value', $cleanPhone);
+                if (str_starts_with($cleanPhone, '0')) {
+                    $q->orWhere('value', substr($cleanPhone, 1))
+                      ->orWhere('value', '20' . substr($cleanPhone, 1));
+                } elseif (str_starts_with($cleanPhone, '20')) {
+                    $q->orWhere('value', '0' . substr($cleanPhone, 2))
+                      ->orWhere('value', substr($cleanPhone, 2));
+                }
+            });
+        } else {
+            $query->where('value', $value);
+        }
+
+        $existing = $query->first();
+
+        if ($existing) {
+            $existing->delete();
+            return back()->with('success', 'تم إلغاء الحظر بنجاح ✓');
+        }
+
+        BlacklistRecord::create([
+            'type'   => $type,
+            'value'  => $value,
+            'reason' => $validated['reason'] ?? 'تم الحظر من لوحة إدارة الطلبات',
+        ]);
+
+        return back()->with('success', 'تم حظر القيمة بنجاح وإضافتها للقائمة السوداء الخاصة بمتجرك ✓');
+    }
 }
