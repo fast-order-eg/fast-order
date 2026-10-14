@@ -559,17 +559,19 @@ export default function ShippingGatewaysIndex({ providers = [], autoDispatch = {
 
                                     <div>
                                         <label className="block text-xs font-semibold text-gray-700 mb-1">
-                                            كلمة مرور حساب الـ VIP (VIP Password) <span className="text-red-500">*</span>
+                                            كلمة مرور حساب الـ VIP (VIP Password) <span className="text-gray-400 text-[10px] font-normal">(اختياري)</span>
                                         </label>
                                         <input
                                             type="password"
-                                            required
                                             value={jntForm.password}
                                             onChange={(e) => setJntForm({ ...jntForm, password: e.target.value })}
-                                            placeholder="كلمة سر حساب التاجر بنظام VIP Portal..."
+                                            placeholder="كلمة سر حساب التاجر بنظام VIP Portal (أو اتركها فارغة للافتراضي)..."
                                             className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 dir-ltr text-left"
                                         />
                                         {errors?.password && <p className="text-xs text-red-600 mt-1">{errors.password}</p>}
+                                        <p className="text-[11px] text-gray-400 mt-0.5">
+                                            كلمة مرور حسابك في J&T (إذا لم تكن متأكداً منها يمكنك تركها فارغة وسيتم استخدام الكلمة الافتراضية).
+                                        </p>
                                     </div>
 
                                     <div className="flex items-center gap-2 pt-1">

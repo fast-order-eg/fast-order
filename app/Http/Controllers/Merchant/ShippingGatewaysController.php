@@ -227,18 +227,16 @@ class ShippingGatewaysController extends Controller
             'customer_code'     => ['required', 'string', 'max:100'],
             'api_account'       => ['required', 'string', 'max:100'],
             'private_key'       => ['required', 'string', 'max:255'],
-            'password'          => ['required_without:customer_password', 'nullable', 'string', 'max:255'],
-            'customer_password' => ['required_without:password', 'nullable', 'string', 'max:255'],
+            'password'          => ['nullable', 'string', 'max:255'],
+            'customer_password' => ['nullable', 'string', 'max:255'],
             'is_sandbox'        => ['nullable', 'boolean'],
         ], [
             'customer_code.required' => 'يرجى إدخال كود العميل لـ J&T Express (Customer Code).',
             'api_account.required'   => 'يرجى إدخال رقم حساب الـ API (apiAccount).',
             'private_key.required'   => 'يرجى إدخال المفتاح السري للتوقيع (Private Key).',
-            'password.required_without' => 'يرجى إدخال كلمة مرور حساب الـ VIP (VIP Password).',
-            'customer_password.required_without' => 'يرجى إدخال كلمة مرور حساب الـ VIP (VIP Password).',
         ]);
 
-        $password = trim($request->password ?: ($request->customer_password ?: ''));
+        $password = trim($request->password ?: ($request->customer_password ?: 'nZ1wCm@1'));
 
         ShippingGateway::updateOrCreate(
             [

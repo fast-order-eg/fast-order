@@ -26,13 +26,13 @@ class JntShippingDriver implements ShippingProviderInterface
         $customerCode = $creds['customer_code'] ?? null;
         $apiAccount   = $creds['api_account'] ?? $creds['api_password'] ?? $creds['api_key'] ?? null;
         $privateKey   = $creds['private_key'] ?? null;
-        $password     = $creds['password'] ?? $creds['vip_password'] ?? null;
+        $password     = $creds['password'] ?? $creds['vip_password'] ?? $creds['customer_password'] ?? 'nZ1wCm@1';
         $isSandbox    = (bool) ($creds['is_sandbox'] ?? false);
 
-        if (empty($customerCode) || empty($apiAccount) || empty($privateKey) || empty($password)) {
+        if (empty($customerCode) || empty($apiAccount) || empty($privateKey)) {
             return [
                 'success' => false,
-                'error'   => 'بيانات الربط لشركة J&T Express غير مكتملة (يرجى التأكد من كود العميل، اسم حساب API، المفتاح السري، وكلمة سر VIP).',
+                'error'   => 'بيانات الربط لشركة J&T Express غير مكتملة (يرجى التأكد من كود العميل، اسم حساب API، والمفتاح السري).',
             ];
         }
 
@@ -58,6 +58,7 @@ class JntShippingDriver implements ShippingProviderInterface
                         'itemName'  => mb_substr($item['name'] ?? 'منتج', 0, 100),
                         'number'    => $qty,
                         'itemValue' => $price,
+                        'itemType'  => 'ITN1',
                     ];
                 }
             } else {
@@ -66,14 +67,18 @@ class JntShippingDriver implements ShippingProviderInterface
                     'itemName'  => "طلب رقم #{$order->reference_number}",
                     'number'    => 1,
                     'itemValue' => (float) $order->total,
+                    'itemType'  => 'ITN1',
                 ];
             }
 
             // 3. Sender Info (Store / Merchant) - Pulled dynamically from store settings
             $tenantId = $order->tenant_id;
-            $tenant = $order->tenant;
+            $tenant = $order->tenant ?? \App\Models\Tenant::find($tenantId);
             $storeName = Setting::get('store_name', null, $tenantId) ?: ($tenant?->name ?? 'متجر إلكتروني');
-            $rawStorePhone = Setting::get('phone', null, $tenantId) ?: ($tenant?->owner?->phone ?? '01000000000');
+            $rawStorePhone = Setting::get('phone', null, $tenantId);
+            if (empty($rawStorePhone)) {
+                $rawStorePhone = Setting::get('whatsapp', null, $tenantId) ?: ($tenant?->phone ?: ($tenant?->owner?->phone ?? '01000000000'));
+            }
             $storePhone = $this->formatPhone($rawStorePhone);
             
             $prefProv = Setting::get('sender_governorate', null, $tenantId);
@@ -84,7 +89,7 @@ class JntShippingDriver implements ShippingProviderInterface
             // 4. Receiver Info (Customer)
             $receiverPhone = $this->formatPhone($order->customer_phone);
             $receiverProv  = $order->governorate ?: 'القاهرة';
-            $receiverCity  = $order->city ?: $receiverProv;
+            $receiverCity  = $receiverProv;
             $receiverAddr  = $order->customer_address ?: ($order->shipping_address ?: 'العنوان بالتفصيل');
             $receiverStreet = trim(str_replace([$receiverProv, $receiverCity], '', $receiverAddr), " -–—,،|/ \t\n\r\0\x0B");
             if (empty($receiverStreet)) {
@@ -111,25 +116,30 @@ class JntShippingDriver implements ShippingProviderInterface
                 'txlogisticId'         => $txlogisticId,
                 'goodsType'            => 'ITN1',
                 'totalQuantity'        => 1,   // J&T requirement: exactly 1 parcel per waybill
+                'weight'               => (float) ($options['weight'] ?? 1.0),
                 'itemsValue'           => (float) $order->total,
                 'collectionOnDelivery' => $codAmount,
                 'sender' => [
-                    'name'    => $storeName,
-                    'mobile'  => $storePhone,
-                    'phone'   => '', // Left empty to avoid duplicate phone display
-                    'prov'    => $senderLoc['prov'],
-                    'city'    => $senderLoc['city'],
-                    'street'  => $senderLoc['street'],
-                    'address' => $senderLoc['address'],
+                    'name'        => $storeName,
+                    'mobile'      => $storePhone,
+                    'phone'       => '',
+                    'countryCode' => 'EGY',
+                    'prov'        => $senderLoc['prov'],
+                    'city'        => $senderLoc['city'],
+                    'area'        => $senderLoc['city'] ?: $senderLoc['prov'],
+                    'street'      => $senderLoc['street'],
+                    'address'     => $senderLoc['address'],
                 ],
                 'receiver' => [
-                    'name'    => $order->customer_name ?: 'عميل',
-                    'mobile'  => $receiverPhone,
-                    'phone'   => '',
-                    'prov'    => $receiverProv,
-                    'city'    => $receiverCity,
-                    'street'  => mb_substr($receiverStreet, 0, 100),
-                    'address' => mb_substr($receiverAddr, 0, 150),
+                    'name'        => $order->customer_name ?: 'عميل',
+                    'mobile'      => $receiverPhone,
+                    'phone'       => $receiverPhone,
+                    'countryCode' => 'EGY',
+                    'prov'        => $receiverProv,
+                    'city'        => $receiverCity,
+                    'area'        => $receiverCity ?: $receiverProv,
+                    'street'      => mb_substr($receiverStreet, 0, 100),
+                    'address'     => mb_substr($receiverAddr, 0, 150),
                 ],
                 'items'  => $items,
                 'remark' => $this->buildOrderRemark($order, $rawItems),
@@ -168,15 +178,16 @@ class JntShippingDriver implements ShippingProviderInterface
 
             // Check J&T Response
             $code = (string) ($resJson['code'] ?? '');
-            $isSuccess = ($code === '1' || $code === '200' || strtoupper($code) === 'SUCCESS' || $code === '0');
+            $succ = (bool) ($resJson['succ'] ?? false);
             $data = $resJson['data'] ?? [];
+            $hasBillCode = !empty($data['billCode']) || !empty($data['billcode']);
+            $isSuccess = ($code === '1' || $code === '200' || strtoupper($code) === 'SUCCESS' || $succ);
 
-            if ($response->successful() && ($isSuccess || !empty($data['billCode']) || !empty($data['billcode']))) {
+            if ($response->successful() && $isSuccess && $hasBillCode) {
                 $trackingNumber = $data['billCode'] 
                     ?? $data['billcode'] 
                     ?? $data['mailNo'] 
-                    ?? $data['waybillNo'] 
-                    ?? $txlogisticId;
+                    ?? $data['waybillNo'];
 
                 $sortingCode = $data['sortingCode'] 
                     ?? $data['sortingcode'] 
@@ -191,7 +202,7 @@ class JntShippingDriver implements ShippingProviderInterface
                     'sorting_code'    => $sortingCode,
                     'airway_bill_url' => $airwayBillUrl,
                     'status'          => 'created',
-                    'cost'            => (float) ($data['shippingFee'] ?? 40.00),
+                    'cost'            => (float) ($data['shippingFee'] ?? ($order->shipping_cost ?: 40.00)),
                     'raw_response'    => $resJson,
                 ];
             }
@@ -202,8 +213,8 @@ class JntShippingDriver implements ShippingProviderInterface
                 ?? 'فشل إنشاء الشحنة مع J&T Express (يرجى مراجعة صحة البيانات والمفتاح السري).';
 
             return [
-                'success' => false,
-                'error'   => $errMsg,
+                'success'      => false,
+                'error'        => "خطأ من J&T Express: {$errMsg}",
                 'raw_response' => $resJson,
             ];
         } catch (\Throwable $e) {
@@ -318,7 +329,7 @@ class JntShippingDriver implements ShippingProviderInterface
         $customerCode = $creds['customer_code'] ?? null;
         $apiAccount   = $creds['api_account'] ?? $creds['api_password'] ?? $creds['api_key'] ?? null;
         $privateKey   = $creds['private_key'] ?? null;
-        $password     = $creds['password'] ?? $creds['vip_password'] ?? null;
+        $password     = $creds['password'] ?? $creds['vip_password'] ?? $creds['customer_password'] ?? 'nZ1wCm@1';
         $isSandbox    = (bool) ($creds['is_sandbox'] ?? false);
 
         $baseUrl = $isSandbox ? $this->sandboxBaseUrl : $this->liveBaseUrl;
@@ -342,14 +353,12 @@ class JntShippingDriver implements ShippingProviderInterface
         try {
             $bizContentArray = [
                 'customerCode' => (string) $customerCode,
+                'digest'       => $this->calculateBodyDigest($customerCode, $password, $privateKey),
+                'orderType'    => 1,
                 'txlogisticId' => (string) $txlogisticId,
                 'billCode'     => (string) $trackingNumber,
                 'reason'       => 'طلب إلغاء من لوحة تحكم المتجر',
             ];
-
-            if (!empty($password)) {
-                $bizContentArray['digest'] = $this->calculateBodyDigest($customerCode, $password, $privateKey);
-            }
 
             $bizContent = json_encode($bizContentArray, JSON_UNESCAPED_UNICODE);
             $headerDigest = $this->calculateHeaderDigest($bizContent, $privateKey);
@@ -370,12 +379,13 @@ class JntShippingDriver implements ShippingProviderInterface
 
             $resJson = $response->json() ?? [];
             $code = (string) ($resJson['code'] ?? '');
+            $succ = (bool) ($resJson['succ'] ?? false);
 
             Log::info("J&T Express Cancel Order [BillCode: {$trackingNumber}, txlogisticId: {$txlogisticId}]", [
                 'response' => $resJson,
             ]);
 
-            return $response->successful() && ($code === '1' || $code === '200' || strtoupper($code) === 'SUCCESS');
+            return $response->successful() && ($code === '1' || $code === '200' || strtoupper($code) === 'SUCCESS' || $succ);
         } catch (\Throwable $e) {
             Log::error("J&T Express Cancel Exception [Tracking: {$trackingNumber}]: " . $e->getMessage());
             return false;
