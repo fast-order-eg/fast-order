@@ -61,7 +61,7 @@ class AdReportController extends Controller
         $request->validate([
             'name'         => ['required', 'string', 'max:255'],
             'campaign_ids' => ['required', 'string'],
-            'notes'        => ['nullable', 'string', 'max:1000'],
+            'notes'        => ['nullable', 'string', 'max:5000'],
         ], [
             'name.required'         => 'يرجى إدخال اسم العميل أو اسم التقرير.',
             'campaign_ids.required' => 'يرجى إدخال معرف حملة إعلانية واحدة على الأقل.',
@@ -96,7 +96,7 @@ class AdReportController extends Controller
         $request->validate([
             'name'         => ['required', 'string', 'max:255'],
             'campaign_ids' => ['required', 'string'],
-            'notes'        => ['nullable', 'string', 'max:1000'],
+            'notes'        => ['nullable', 'string', 'max:5000'],
         ], [
             'name.required'         => 'يرجى إدخال اسم العميل أو اسم التقرير.',
             'campaign_ids.required' => 'يرجى إدخال معرف حملة إعلانية واحدة على الأقل.',

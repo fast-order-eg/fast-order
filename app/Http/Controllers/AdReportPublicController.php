@@ -58,6 +58,7 @@ class AdReportPublicController extends Controller
                 'id'         => $report->id,
                 'name'       => $report->name,
                 'token'      => $report->token,
+                'notes'      => $report->notes,
                 'created_at' => $report->created_at?->format('Y-m-d'),
             ],
             'adsData'        => $adsData,

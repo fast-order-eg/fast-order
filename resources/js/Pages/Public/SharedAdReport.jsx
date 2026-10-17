@@ -237,6 +237,10 @@ export default function SharedAdReport({
 
         let reportText = `📊 تقرير أداء إعلانات فيسبوك (Meta Ads)\n👤 العميل: ${clientName}\n🗓️ الفترة: ${presetLabel}\n⏱️ آخر تحديث: ${updateTime}\n\n`;
 
+        if (report?.notes) {
+            reportText += `📝 تقييم وملاحظات الحملة:\n${report.notes}\n\n`;
+        }
+
         campaigns.forEach((c) => {
             const goalInfo = getCampaignGoalInfo(c);
             const statusText = c.status === 'ACTIVE' || c.effective_status === 'ACTIVE' ? 'نشط 🟢' : 'متوقف ⏸️';
@@ -478,6 +482,30 @@ export default function SharedAdReport({
                 ) : (
                     /* CAMPAIGNS LIST (Individual details per campaign, exactly like merchant ads page) */
                     <div className="space-y-5">
+                        {/* Report Evaluation & Notes Banner for Client */}
+                        {report?.notes && (
+                            <div className="bg-gradient-to-r from-amber-50/90 via-orange-50/30 to-amber-50/70 border border-amber-200/90 rounded-2xl p-5 shadow-xs">
+                                <div className="flex items-start gap-3.5">
+                                    <div className="w-10 h-10 rounded-2xl bg-amber-100/90 text-amber-800 flex items-center justify-center text-xl flex-shrink-0 shadow-inner border border-amber-200/60">
+                                        📝
+                                    </div>
+                                    <div className="flex-1 min-w-0 space-y-1.5">
+                                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                                            <h4 className="text-sm font-bold text-amber-950 flex items-center gap-2">
+                                                <span>ملاحظات وتقييم أداء الإعلانات</span>
+                                            </h4>
+                                            <span className="text-[11px] font-bold text-amber-800 bg-amber-100/80 px-2.5 py-0.5 rounded-full border border-amber-200">
+                                                توصيات الفريق الإعلاني 💡
+                                            </span>
+                                        </div>
+                                        <p className="text-xs md:text-sm text-gray-800 leading-relaxed whitespace-pre-line select-text font-normal">
+                                            {report.notes}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="flex items-center justify-between">
                             <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                                 <span>الحملات الإعلانية المربوطة</span>

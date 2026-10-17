@@ -159,8 +159,6 @@ export default function AdReportsIndex({ reports, filters = {} }) {
                                     <th className="px-6 py-4">اسم العميل / التقرير</th>
                                     <th className="px-6 py-4">أرقام الحملات الإعلانية</th>
                                     <th className="px-6 py-4">الرابط المخصص للمعاينة</th>
-                                    <th className="px-6 py-4">الحالة</th>
-                                    <th className="px-6 py-4">تاريخ الإنشاء</th>
                                     <th className="px-6 py-4 text-left">الإجراءات</th>
                                 </tr>
                             </thead>
@@ -172,8 +170,9 @@ export default function AdReportsIndex({ reports, filters = {} }) {
                                             <td className="px-6 py-4">
                                                 <div className="font-bold text-gray-900 text-sm">{report.name}</div>
                                                 {report.notes && (
-                                                    <div className="text-[11px] text-gray-400 mt-0.5 truncate max-w-[200px]" title={report.notes}>
-                                                        {report.notes}
+                                                    <div className="text-[11px] text-gray-500 mt-1 flex items-center gap-1.5 line-clamp-1 max-w-[280px]" title={report.notes}>
+                                                        <span>📝</span>
+                                                        <span className="truncate">{report.notes}</span>
                                                     </div>
                                                 )}
                                             </td>
@@ -224,27 +223,6 @@ export default function AdReportsIndex({ reports, filters = {} }) {
                                                 </div>
                                             </td>
 
-                                            {/* Status Badge & Toggle */}
-                                            <td className="px-6 py-4">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleToggle(report)}
-                                                    className={`px-2.5 py-1 rounded-full text-[11px] font-bold cursor-pointer transition-colors border ${
-                                                        report.is_active
-                                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                                                            : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
-                                                    }`}
-                                                    title="اضغط لتبديل الحالة"
-                                                >
-                                                    {report.is_active ? 'نشط ومتاح 🟢' : 'معطّل 🔴'}
-                                                </button>
-                                            </td>
-
-                                            {/* Created At */}
-                                            <td className="px-6 py-4 text-gray-500 font-mono text-[11px]">
-                                                {report.created_at}
-                                            </td>
-
                                             {/* Actions */}
                                             <td className="px-6 py-4 text-left">
                                                 <div className="flex items-center justify-end gap-2">
@@ -268,7 +246,7 @@ export default function AdReportsIndex({ reports, filters = {} }) {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="6" className="px-6 py-12 text-center text-gray-400">
+                                        <td colSpan="4" className="px-6 py-12 text-center text-gray-400">
                                             <div className="text-3xl mb-2">📊</div>
                                             <p className="font-bold text-gray-700 text-sm">لا توجد تقارير إعلانات حتى الآن</p>
                                             <p className="text-xs text-gray-400 mt-1">اضغط على زر "إضافة تقرير إعلان جديد" بالأعلى لإنشاء أول رابط تقرير مخصص.</p>
@@ -374,18 +352,21 @@ export default function AdReportsIndex({ reports, filters = {} }) {
                                 {errors.campaign_ids && <p className="text-rose-600 text-[11px] mt-1 font-semibold">{errors.campaign_ids}</p>}
                             </div>
 
-                            {/* Notes */}
+                            {/* Notes / Evaluation for Client */}
                             <div>
                                 <label className="block text-xs font-bold text-gray-700 mb-1">
-                                    ملاحظات داخلية (اختياري)
+                                    ملاحظات وتقييم الحملة للعميل (اختياري)
                                 </label>
                                 <textarea
-                                    rows="2"
+                                    rows="3"
                                     value={data.notes}
                                     onChange={(e) => setData('notes', e.target.value)}
-                                    placeholder="ملاحظات للاستخدام الداخلي فقط ولا تظهر للعميل..."
-                                    className="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    placeholder="اكتب تقييمك للحملات، ملحوظاتك، أو توصياتك لتظهر للعميل أعلى صفحة التقرير..."
+                                    className="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 leading-relaxed"
                                 />
+                                <p className="text-[11px] text-gray-400 mt-1">
+                                    💡 ستظهر هذه الملاحظات بشكل بارز أعلى الحملات في رابط التقرير للعميل، وكذلك في نص التقرير المنسوخ للواتساب.
+                                </p>
                             </div>
 
                             {/* Modal Actions */}
