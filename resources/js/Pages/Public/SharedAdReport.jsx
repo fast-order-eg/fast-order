@@ -208,7 +208,7 @@ export default function SharedAdReport({
             reportText += `\n`;
         });
 
-        reportText += `منصة FastOrder للتجارة الإلكترونية`;
+        reportText += `شركة Bird Technology للحلول التسويقية والتكنولوجية`;
 
         navigator.clipboard.writeText(reportText).then(() => {
             setCopied(true);
@@ -218,19 +218,21 @@ export default function SharedAdReport({
 
     return (
         <div className="min-h-screen bg-slate-50 text-gray-900 font-sans antialiased" dir="rtl">
-            <Head title={`تقرير إعلانات - ${report?.name || 'FastOrder'}`} />
+            <Head title={`تقرير إعلانات - ${report?.name || 'Bird Technology'}`} />
 
             {/* Public Standalone Top Navigation Bar */}
             <header className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm backdrop-blur-md bg-white/95">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-extrabold text-xl shadow-md shadow-blue-500/20">
-                            ⚡
-                        </div>
+                        <img
+                            src="/images/bird-technology-logo.png"
+                            alt="Bird Technology"
+                            className="h-11 w-auto object-contain rounded-lg"
+                        />
                         <div>
                             <div className="flex items-center gap-2">
-                                <span className="font-extrabold text-base sm:text-lg tracking-tight text-gray-900">
-                                    Fast<span className="text-blue-600">Order</span>
+                                <span className="font-extrabold text-base sm:text-lg tracking-tight text-gray-900 font-sans" dir="ltr">
+                                    Bird <span className="text-blue-600">Technology</span>
                                 </span>
                                 <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
                                     لوحة متابعة الإعلانات
@@ -791,7 +793,7 @@ export default function SharedAdReport({
 
             {/* Footer */}
             <footer className="border-t border-gray-200 bg-white py-6 text-center text-xs text-gray-500">
-                <p>جميع الحقوق محفوظة © {new Date().getFullYear()} لمنصة <span className="font-bold text-gray-700">FastOrder</span> للتجارة الإلكترونية.</p>
+                <p>جميع الحقوق محفوظة © {new Date().getFullYear()} لشركة <span className="font-bold text-gray-700" dir="ltr">Bird Technology</span> للحلول التسويقية والتكنولوجية.</p>
             </footer>
         </div>
     );
