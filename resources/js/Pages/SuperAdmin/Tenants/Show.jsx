@@ -392,15 +392,29 @@ export default function Show({ tenant, settings, plans, productsCount = 0, order
 
                         <form onSubmit={handleMetaSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                                    معرّفات الحملات (Campaign IDs)
-                                </label>
+                                <div className="flex items-center justify-between mb-1">
+                                    <label className="block text-xs font-semibold text-gray-700">
+                                        معرّفات الحملات (Campaign IDs)
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const current = (metaData.meta_campaign_ids || '').trim();
+                                            setMetaData('meta_campaign_ids', current ? current + "\n" : '');
+                                        }}
+                                        className="text-[11px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded-lg border border-blue-200 transition-colors"
+                                    >
+                                        <span>➕ سطر جديد</span>
+                                    </button>
+                                </div>
                                 <textarea
                                     rows={3}
+                                    dir="ltr"
+                                    style={{ direction: 'ltr', textAlign: 'left' }}
                                     value={metaData.meta_campaign_ids}
                                     onChange={(e) => setMetaData('meta_campaign_ids', e.target.value)}
-                                    placeholder="أدخل معرّفات الحملات مفصولة بفواصل أو أسطر، مثال: 120252521017770114"
-                                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dir-ltr text-left"
+                                    placeholder="120252521017770114&#10;120252521017770115"
+                                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-left tracking-wider"
                                 />
                                 {metaErrors?.meta_campaign_ids && (
                                     <p className="text-xs text-red-600 mt-1">{metaErrors.meta_campaign_ids}</p>

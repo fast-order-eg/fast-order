@@ -30,9 +30,10 @@ export default function AdReportsIndex({ reports, filters = {} }) {
     const openEditModal = (report) => {
         clearErrors();
         setEditingReport(report);
+        const cleanIds = (report.campaign_ids_raw || (report.campaign_ids || []).join("\n")).trim();
         setData({
             name: report.name,
-            campaign_ids: report.campaign_ids_raw || report.campaign_ids.join("\n"),
+            campaign_ids: cleanIds,
             notes: report.notes || '',
         });
         setShowModal(true);
@@ -342,16 +343,30 @@ export default function AdReportsIndex({ reports, filters = {} }) {
 
                             {/* Campaign IDs */}
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 mb-1">
-                                    معرفات الحملات الإعلانية (Campaign IDs) <span className="text-rose-500">*</span>
-                                </label>
+                                <div className="flex items-center justify-between mb-1">
+                                    <label className="block text-xs font-bold text-gray-700">
+                                        معرفات الحملات الإعلانية (Campaign IDs) <span className="text-rose-500">*</span>
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const current = (data.campaign_ids || '').trim();
+                                            setData('campaign_ids', current ? current + "\n" : '');
+                                        }}
+                                        className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-200 transition-colors"
+                                    >
+                                        <span>➕ إضافة سطر لمعرف آخر</span>
+                                    </button>
+                                </div>
                                 <textarea
                                     required
                                     rows="4"
+                                    dir="ltr"
+                                    style={{ direction: 'ltr', textAlign: 'left' }}
                                     value={data.campaign_ids}
                                     onChange={(e) => setData('campaign_ids', e.target.value)}
-                                    placeholder="أدخل أرقام الحملات الإعلانية هنا، مثل:&#10;120252902821480334&#10;120252902821480335"
-                                    className="w-full px-3.5 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono dir-ltr text-left"
+                                    placeholder="120252902821480334&#10;120252902821480335"
+                                    className="w-full px-3.5 py-2.5 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-left tracking-wider"
                                 />
                                 <p className="text-[11px] text-gray-400 mt-1">
                                     💡 يمكنك إضافة أكثر من معرف حملة، اكتب كل معرف في سطر مستقل أو افصل بينهم بفاصلة.
