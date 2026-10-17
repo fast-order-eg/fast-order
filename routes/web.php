@@ -53,6 +53,7 @@ Route::domain($baseDomain)->group(function () {
     Route::get('/terms', [\App\Http\Controllers\PlatformController::class, 'terms'])->name('main.terms');
     Route::get('/sla', [\App\Http\Controllers\PlatformController::class, 'sla'])->name('main.sla');
     Route::get('/help', [\App\Http\Controllers\PlatformController::class, 'help'])->name('main.help');
+    Route::get('/ad-reports/{token}', [\App\Http\Controllers\AdReportPublicController::class, 'show'])->name('main.ad-reports.show');
 });
 
 Route::domain('app.' . $baseDomain)->group(function () {
@@ -67,12 +68,22 @@ Route::domain('app.' . $baseDomain)->group(function () {
     // Super Admin Auth Routes — منفصلة تماماً عن التجار
     Route::middleware(['web'])->group(function () {
         require __DIR__ . '/auth_superadmin.php';
+        Route::get('/ad-reports/{token}', [\App\Http\Controllers\AdReportPublicController::class, 'show'])->name('public.ad-reports.show');
     });
 
     // Protected Super Admin Panel Routes
     Route::middleware(['web', 'auth', 'super_admin'])->group(function () {
         Route::get('/', [App\Http\Controllers\SuperAdmin\DashboardController::class, 'index'])->name('superadmin.dashboard');
         Route::get('/dashboard', [App\Http\Controllers\SuperAdmin\DashboardController::class, 'index'])->name('dashboard');
+
+        // External Ad Reports Management
+        Route::prefix('ad-reports')->name('superadmin.ad-reports.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\SuperAdmin\AdReportController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\SuperAdmin\AdReportController::class, 'store'])->name('store');
+            Route::put('/{adReport}', [\App\Http\Controllers\SuperAdmin\AdReportController::class, 'update'])->name('update');
+            Route::delete('/{adReport}', [\App\Http\Controllers\SuperAdmin\AdReportController::class, 'destroy'])->name('destroy');
+            Route::patch('/{adReport}/toggle-status', [\App\Http\Controllers\SuperAdmin\AdReportController::class, 'toggleStatus'])->name('toggle-status');
+        });
 
         // Tenants Management
         Route::get('/tenants', [App\Http\Controllers\SuperAdmin\TenantController::class, 'index'])->name('superadmin.tenants.index');

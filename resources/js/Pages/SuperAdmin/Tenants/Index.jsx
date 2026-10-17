@@ -499,44 +499,39 @@ export default function Index({ tenants, filters, plans, planCounts }) {
                                             </td>
                                             <td className="px-6 py-4 text-left">
                                                 <div className="flex items-center justify-end gap-2">
-                                                    <div className="relative group inline-block text-left">
-                                                        <button type="button" className="p-2 text-gray-500 hover:text-indigo-600 bg-gray-100 hover:bg-indigo-50 rounded-md transition-colors">
-                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                            </svg>
-                                                        </button>
-                                                        <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50">
-                                                            <div className="py-1">
-                                                                <a href={`${window.location.protocol}//${tenant.slug}.${window.location.host.replace('app.', '')}`} target="_blank" rel="noreferrer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-right">
-                                                                    فتح واجهة المتجر
-                                                                </a>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => window.open(route('superadmin.tenants.impersonate', tenant.id), '_blank')}
-                                                                    className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 text-right"
-                                                                >
-                                                                    دخول للوحة تحكم التاجر
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                    {/* زر فتح واجهة المتجر عبر أيقونة العين */}
+                                                    <a
+                                                        href={tenant.custom_domain ? `https://${tenant.custom_domain}` : `${window.location.protocol}//${tenant.slug}.${window.location.host.replace(/^app\./, '')}`}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="p-1.5 text-gray-500 hover:text-indigo-600 bg-gray-100 hover:bg-indigo-50 rounded-md transition-colors"
+                                                        title="فتح واجهة المتجر في صفحة جديدة"
+                                                    >
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                        </svg>
+                                                    </a>
+
+                                                    {/* زر لوحة التحكم للدخول المباشر لحساب التاجر */}
+                                                    <a
+                                                        href={route('superadmin.tenants.impersonate', tenant.id)}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-md text-xs font-bold transition-colors inline-flex items-center gap-1 shadow-2xs"
+                                                        title="الدخول إلى لوحة تحكم التاجر"
+                                                    >
+                                                        <span>لوحة التحكم</span>
+                                                        <span className="text-[10px]">↗</span>
+                                                    </a>
+
+                                                    {/* زر تفاصيل المتجر */}
                                                     <Link
                                                         href={route('superadmin.tenants.show', tenant.id)}
                                                         className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-xs font-semibold transition-colors"
                                                     >
                                                         تفاصيل
                                                     </Link>
-                                                    <button
-                                                        onClick={() => toggleStatus(tenant.id)}
-                                                        className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors text-white ${
-                                                            tenant.is_active
-                                                                ? 'bg-rose-500 hover:bg-rose-600'
-                                                                : 'bg-emerald-500 hover:bg-emerald-600'
-                                                        }`}
-                                                    >
-                                                        {tenant.is_active ? 'إيقاف' : 'تفعيل'}
-                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>

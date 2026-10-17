@@ -32,11 +32,31 @@ class AdScopeMarketingService
      */
     public function getCampaignsSummary(Tenant $tenant, string $datePreset = 'maximum', bool $forceRefresh = false): array
     {
+        return $this->getCampaignsSummaryByCampaignIds(
+            $tenant->getMetaCampaignIds(),
+            $datePreset,
+            $forceRefresh,
+            "meta_ads_tenant_{$tenant->id}_{$datePreset}"
+        );
+    }
+
+    /**
+     * Get marketing ads performance summary directly by campaign IDs.
+     *
+     * @param array $campaignIds
+     * @param string $datePreset
+     * @param bool $forceRefresh
+     * @param string|null $cacheKeyCustom
+     * @return array
+     */
+    public function getCampaignsSummaryByCampaignIds(array $campaignIds, string $datePreset = 'maximum', bool $forceRefresh = false, ?string $cacheKeyCustom = null): array
+    {
         if (!array_key_exists($datePreset, self::ALLOWED_PRESETS)) {
             $datePreset = 'maximum';
         }
 
-        $campaignIds = $tenant->getMetaCampaignIds();
+        // Clean campaign IDs array
+        $campaignIds = array_values(array_filter(array_map('trim', $campaignIds)));
 
         if (empty($campaignIds)) {
             return [
@@ -49,11 +69,11 @@ class AdScopeMarketingService
                 'campaigns'         => [],
                 'cached_at'         => null,
                 'last_updated_at'   => null,
-                'message'           => 'لم يتم ربط حملات إعلانية لهذا المتجر حتى الآن.',
+                'message'           => 'لم يتم تحديد أي معرفات حملات إعلانية لهذا التقرير.',
             ];
         }
 
-        $cacheKey = "meta_ads_tenant_{$tenant->id}_{$datePreset}";
+        $cacheKey = $cacheKeyCustom ?: ('meta_ads_ids_' . md5(implode(',', $campaignIds)) . "_{$datePreset}");
 
         if ($forceRefresh) {
             Cache::forget($cacheKey);

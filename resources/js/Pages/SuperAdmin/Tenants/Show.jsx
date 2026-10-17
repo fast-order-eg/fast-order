@@ -8,6 +8,7 @@ export default function Show({ tenant, settings, plans, productsCount = 0, order
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
     const [isDeductWalletModalOpen, setIsDeductWalletModalOpen] = useState(false);
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    const [visibleTxCount, setVisibleTxCount] = useState(10);
 
     const { data: assignData, setData: setAssignData, post: postAssign, processing: assigning, errors: assignErrors, reset: resetAssign } = useForm({
         plan_id: '',
@@ -550,9 +551,11 @@ export default function Show({ tenant, settings, plans, productsCount = 0, order
                                 <h4 className="text-md font-bold text-gray-800 flex items-center gap-2">
                                     <span>💳</span> سجل معاملات المحفظة والعمليات المالية
                                 </h4>
-                                <span className="text-xs text-gray-400 font-semibold bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100">
-                                    إجمالي المعاملات: {walletTransactions ? walletTransactions.length : 0}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-gray-500 font-semibold bg-gray-50 px-3 py-1 rounded-full border border-gray-200">
+                                        المعروض: {Math.min(visibleTxCount, (walletTransactions || []).length)} من أصل {(walletTransactions || []).length}
+                                    </span>
+                                </div>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-right border-collapse">
@@ -567,7 +570,7 @@ export default function Show({ tenant, settings, plans, productsCount = 0, order
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 text-xs">
                                         {walletTransactions && walletTransactions.length > 0 ? (
-                                            walletTransactions.map((tx) => (
+                                            walletTransactions.slice(0, visibleTxCount).map((tx) => (
                                                 <tr key={tx.id} className="hover:bg-gray-50/30 transition-colors">
                                                     <td className="px-4 py-3 font-semibold text-gray-800" title={tx.description}>
                                                         {tx.description}
@@ -602,6 +605,23 @@ export default function Show({ tenant, settings, plans, productsCount = 0, order
                                     </tbody>
                                 </table>
                             </div>
+
+                            {/* Load More Button */}
+                            {walletTransactions && walletTransactions.length > visibleTxCount && (
+                                <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+                                    <span className="text-xs text-gray-400 font-medium">
+                                        يتبقى {walletTransactions.length - visibleTxCount} معاملة غير معروضة
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setVisibleTxCount((prev) => prev + 10)}
+                                        className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg border border-indigo-200 transition-colors flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                                    >
+                                        <span>المزيد (عرض 10 معاملات إضافية)</span>
+                                        <span>⬇️</span>
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
 
