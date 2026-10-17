@@ -56,7 +56,7 @@ export default function Index({ tenants, filters, plans, planCounts }) {
 
         if (!tenant.is_active) {
             return (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-100">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-100 whitespace-nowrap">
                     <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
                     موقوف
                 </span>
@@ -65,7 +65,7 @@ export default function Index({ tenants, filters, plans, planCounts }) {
 
         if (isExpired) {
             return (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 whitespace-nowrap">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                     منتهي
                 </span>
@@ -73,7 +73,7 @@ export default function Index({ tenants, filters, plans, planCounts }) {
         }
 
         return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 whitespace-nowrap">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                 نشط
             </span>
@@ -84,7 +84,7 @@ export default function Index({ tenants, filters, plans, planCounts }) {
     const renderPlanBadge = (planObj, subStatus) => {
         if (!planObj) {
             return (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200 whitespace-nowrap">
                     لا يوجد اشتراك
                 </span>
             );
@@ -92,36 +92,40 @@ export default function Index({ tenants, filters, plans, planCounts }) {
         const slug = planObj.slug || '';
         const name = planObj.name || '';
 
-        if (slug === 'free' || name.includes('مجانية')) {
-            return (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200">
-                    🎁 {name}
-                </span>
-            );
-        }
-        if (slug === 'monthly' || name.includes('شهرية')) {
-            return (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                    📅 {name}
-                </span>
-            );
-        }
-        if (slug === 'yearly' || name.includes('سنوية')) {
-            return (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300">
-                    👑 {name}
-                </span>
-            );
-        }
         if (slug === 'commission' || name.includes('عمولة') || name.includes('محفظة')) {
             return (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    💰 {name}
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
+                    💰 باقة العمولة
                 </span>
             );
         }
+
+        if (slug === 'free' || name.includes('مجان')) {
+            return (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 whitespace-nowrap">
+                    🎁 اشتراك مجاني
+                </span>
+            );
+        }
+
+        if (slug === 'monthly' || name.includes('شهر')) {
+            return (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 whitespace-nowrap">
+                    📅 اشتراك شهري
+                </span>
+            );
+        }
+
+        if (slug === 'yearly' || name.includes('سنو')) {
+            return (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 whitespace-nowrap">
+                    👑 اشتراك سنوي
+                </span>
+            );
+        }
+
         return (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 whitespace-nowrap">
                 ✨ {name}
             </span>
         );
@@ -433,13 +437,13 @@ export default function Index({ tenants, filters, plans, planCounts }) {
                     <table className="w-full text-right border-collapse">
                         <thead>
                             <tr className="bg-gray-50 text-gray-500 text-xs font-semibold uppercase tracking-wider border-b border-gray-100">
-                                <th className="px-6 py-4">المتجر</th>
-                                <th className="px-6 py-4">المالك</th>
-                                <th className="px-6 py-4">المنتجات والطلبات</th>
-                                <th className="px-6 py-4">الاشتراك الحالي</th>
-                                <th className="px-6 py-4">تاريخ الانتهاء</th>
-                                <th className="px-6 py-4">الحالة</th>
-                                <th className="px-6 py-4 text-left">العمليات</th>
+                                <th className="px-6 py-4 whitespace-nowrap">المتجر</th>
+                                <th className="px-6 py-4 whitespace-nowrap">المالك</th>
+                                <th className="px-6 py-4 whitespace-nowrap">المنتجات والطلبات</th>
+                                <th className="px-6 py-4 whitespace-nowrap">الاشتراك الحالي</th>
+                                <th className="px-6 py-4 whitespace-nowrap">تاريخ الانتهاء</th>
+                                <th className="px-6 py-4 whitespace-nowrap">الحالة</th>
+                                <th className="px-6 py-4 whitespace-nowrap text-left">العمليات</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 text-sm">
@@ -452,7 +456,7 @@ export default function Index({ tenants, filters, plans, planCounts }) {
 
                                     return (
                                         <tr key={tenant.id} className="hover:bg-gray-50/50 transition-colors">
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-700 text-white flex items-center justify-center font-extrabold text-sm shadow-sm shrink-0">
                                                         #{tenant.id}
@@ -470,41 +474,43 @@ export default function Index({ tenants, filters, plans, planCounts }) {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-4 whitespace-nowrap">
                                                 <div>
                                                     <p className="font-medium text-gray-700">{tenant.owner?.name || 'غير معروف'}</p>
                                                     <p className="text-xs text-gray-400">{tenant.owner?.email || tenant.email}</p>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex flex-col gap-1.5 items-start">
-                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 shadow-2xs">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex flex-col gap-1 items-start">
+                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 shadow-2xs whitespace-nowrap">
                                                         <span>📦</span>
                                                         <span>{tenant.orders_count !== undefined ? tenant.orders_count : 0} طلب</span>
                                                     </span>
-                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 shadow-2xs">
+                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 shadow-2xs whitespace-nowrap">
                                                         <span>🛍️</span>
                                                         <span>{tenant.products_count !== undefined ? tenant.products_count : 0} منتج</span>
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-4 whitespace-nowrap">
                                                 {renderPlanBadge(planToShow, tenant.subscription_status)}
                                             </td>
-                                            <td className="px-6 py-4 text-gray-700 font-semibold font-mono text-xs">
-                                                {isCommission ? '-' : formatDate(tenant.subscription_ends_at)}
+                                            <td className="px-6 py-4 text-gray-700 font-semibold font-mono text-xs whitespace-nowrap">
+                                                <span className="whitespace-nowrap inline-block font-mono" dir="ltr">
+                                                    {isCommission ? '-' : formatDate(tenant.subscription_ends_at)}
+                                                </span>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-4 whitespace-nowrap">
                                                 {renderStatusBadge(tenant, planToShow)}
                                             </td>
-                                            <td className="px-6 py-4 text-left">
-                                                <div className="flex items-center justify-end gap-2">
+                                            <td className="px-6 py-4 text-left whitespace-nowrap">
+                                                <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
                                                     {/* زر فتح واجهة المتجر عبر أيقونة العين */}
                                                     <a
                                                         href={tenant.custom_domain ? `https://${tenant.custom_domain}` : `${window.location.protocol}//${tenant.slug}.${window.location.host.replace(/^app\./, '')}`}
                                                         target="_blank"
                                                         rel="noreferrer"
-                                                        className="p-1.5 text-gray-500 hover:text-indigo-600 bg-gray-100 hover:bg-indigo-50 rounded-md transition-colors"
+                                                        className="p-1.5 text-gray-500 hover:text-indigo-600 bg-gray-100 hover:bg-indigo-50 rounded-md transition-colors shrink-0"
                                                         title="فتح واجهة المتجر في صفحة جديدة"
                                                     >
                                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -513,22 +519,21 @@ export default function Index({ tenants, filters, plans, planCounts }) {
                                                         </svg>
                                                     </a>
 
-                                                    {/* زر لوحة التحكم للدخول المباشر لحساب التاجر */}
+                                                    {/* زر لوحة التحكم للدخول المباشر لحساب التاجر بدون أيقونة وعلى سطر واحد */}
                                                     <a
                                                         href={route('superadmin.tenants.impersonate', tenant.id)}
                                                         target="_blank"
                                                         rel="noreferrer"
-                                                        className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-md text-xs font-bold transition-colors inline-flex items-center gap-1 shadow-2xs"
+                                                        className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-md text-xs font-bold transition-colors whitespace-nowrap shadow-2xs"
                                                         title="الدخول إلى لوحة تحكم التاجر"
                                                     >
-                                                        <span>لوحة التحكم</span>
-                                                        <span className="text-[10px]">↗</span>
+                                                        لوحة التحكم
                                                     </a>
 
                                                     {/* زر تفاصيل المتجر */}
                                                     <Link
                                                         href={route('superadmin.tenants.show', tenant.id)}
-                                                        className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-xs font-semibold transition-colors"
+                                                        className="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-xs font-semibold transition-colors whitespace-nowrap"
                                                     >
                                                         تفاصيل
                                                     </Link>
