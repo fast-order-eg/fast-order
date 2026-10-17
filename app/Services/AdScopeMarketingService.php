@@ -170,12 +170,37 @@ class AdScopeMarketingService
             $name = $campaign['name'] ?? '';
 
             $hasMessageCta = false;
+            $hasWhatsappIndicator = false;
+            $hasMessengerIndicator = false;
+
             if (!empty($campaign['ads']) && is_array($campaign['ads'])) {
                 foreach ($campaign['ads'] as &$ad) {
                     $creative = $ad['creative'] ?? [];
-                    $cta = $creative['cta_type'] ?? '';
-                    if (in_array($cta, ['MESSAGE_PAGE', 'SEND_MESSAGE', 'WHATSAPP_MESSAGE'])) {
+                    $cta = strtoupper($creative['cta_type'] ?? '');
+                    if ($cta === 'WHATSAPP_MESSAGE') {
+                        $hasWhatsappIndicator = true;
                         $hasMessageCta = true;
+                    } elseif (in_array($cta, ['MESSAGE_PAGE', 'SEND_MESSAGE'])) {
+                        $hasMessengerIndicator = true;
+                        $hasMessageCta = true;
+                    } elseif (in_array($cta, ['CONTACT_US', 'GET_QUOTE'])) {
+                        $hasMessageCta = true;
+                    }
+
+                    $linkUrl = strtolower($creative['link_url'] ?? $creative['instagram_permalink_url'] ?? '');
+                    if (str_contains($linkUrl, 'wa.me') || str_contains($linkUrl, 'whatsapp')) {
+                        $hasWhatsappIndicator = true;
+                        $hasMessageCta = true;
+                    } elseif (str_contains($linkUrl, 'm.me') || str_contains($linkUrl, 'messenger')) {
+                        $hasMessengerIndicator = true;
+                        $hasMessageCta = true;
+                    }
+
+                    $adName = mb_strtolower($ad['name'] ?? '');
+                    if (str_contains($adName, 'واتس') || str_contains($adName, 'whatsapp')) {
+                        $hasWhatsappIndicator = true;
+                    } elseif (str_contains($adName, 'ماسنجر') || str_contains($adName, 'messenger')) {
+                        $hasMessengerIndicator = true;
                     }
 
                     // Extract Facebook post link
@@ -193,19 +218,64 @@ class AdScopeMarketingService
                 unset($ad);
             }
 
+            if (!empty($campaign['adsets']) && is_array($campaign['adsets'])) {
+                foreach ($campaign['adsets'] as $adset) {
+                    $dest = strtoupper($adset['destination_type'] ?? '');
+                    if (str_contains($dest, 'WHATSAPP')) {
+                        $hasWhatsappIndicator = true;
+                        $hasMessageCta = true;
+                    } elseif (str_contains($dest, 'MESSENGER')) {
+                        $hasMessengerIndicator = true;
+                        $hasMessageCta = true;
+                    }
+
+                    $adsetName = mb_strtolower($adset['name'] ?? '');
+                    if (str_contains($adsetName, 'واتس') || str_contains($adsetName, 'whatsapp')) {
+                        $hasWhatsappIndicator = true;
+                    } elseif (str_contains($adsetName, 'ماسنجر') || str_contains($adsetName, 'messenger')) {
+                        $hasMessengerIndicator = true;
+                    }
+                }
+            }
+
+            $campDest = strtoupper($campaign['destination_type'] ?? '');
+            if (str_contains($campDest, 'WHATSAPP')) {
+                $hasWhatsappIndicator = true;
+                $hasMessageCta = true;
+            } elseif (str_contains($campDest, 'MESSENGER')) {
+                $hasMessengerIndicator = true;
+                $hasMessageCta = true;
+            }
+
+            $nameLower = mb_strtolower($name);
+            if (str_contains($nameLower, 'واتس') || str_contains($nameLower, 'whatsapp')) {
+                $hasWhatsappIndicator = true;
+            } elseif (str_contains($nameLower, 'ماسنجر') || str_contains($nameLower, 'messenger')) {
+                $hasMessengerIndicator = true;
+            }
+
             $isMessages = $objective === 'OUTCOME_ENGAGEMENT'
                 || $objective === 'MESSAGES'
                 || str_contains($objective, 'ENGAGEMENT')
                 || str_contains($objective, 'MESSAGE')
                 || $hasMessageCta
-                || str_contains($name, 'رسايل')
-                || str_contains($name, 'رسائل');
+                || $hasWhatsappIndicator
+                || $hasMessengerIndicator
+                || str_contains($nameLower, 'رسايل')
+                || str_contains($nameLower, 'رسائل');
 
             if ($isMessages) {
-                $campaign['goal_type'] = 'messages';
-                $campaign['goal_badge'] = 'إعلان رسائل';
-                $campaign['result_label'] = 'رسائل';
-                $campaign['cpa_label'] = 'تكلفة الرسالة';
+                if ($hasWhatsappIndicator) {
+                    $campaign['goal_type'] = 'whatsapp';
+                    $campaign['goal_badge'] = 'رسائل واتساب';
+                    $campaign['result_label'] = 'رسائل واتساب';
+                    $campaign['cpa_label'] = 'تكلفة رسالة الواتساب';
+                } else {
+                    $campaign['goal_type'] = 'messenger';
+                    $campaign['goal_badge'] = 'رسائل ماسنجر';
+                    $campaign['result_label'] = 'رسائل ماسنجر';
+                    $campaign['cpa_label'] = 'تكلفة رسالة الماسنجر';
+                }
                 $campaign['show_roas'] = false;
             } else {
                 $campaign['goal_type'] = 'sales';

@@ -39,21 +39,62 @@ export default function SharedAdReport({
         }));
     };
 
-    // Helper: determine campaign goal type and badges (Strictly "إعلان مبيعات" or "إعلان رسائل")
+    // Helper: determine campaign goal type and badges ("إعلان مبيعات" أو "رسائل واتساب" أو "رسائل ماسنجر")
     const getCampaignGoalInfo = (campaign) => {
         const objective = (campaign.objective || '').toUpperCase();
-        const name = campaign.name || '';
+        const name = (campaign.name || '').toLowerCase();
+        const goalType = campaign.goal_type || '';
 
+        let hasWhatsappIndicator = goalType === 'whatsapp';
+        let hasMessengerIndicator = goalType === 'messenger';
         let hasMessageCta = false;
+
+        // Check campaign name
+        if (name.includes('واتس') || name.includes('whatsapp')) {
+            hasWhatsappIndicator = true;
+        }
+        if (name.includes('ماسنجر') || name.includes('messenger') || name.includes('ماسن')) {
+            hasMessengerIndicator = true;
+        }
+
+        // Check ads creative CTA & links
         if (campaign.ads && Array.isArray(campaign.ads)) {
-            hasMessageCta = campaign.ads.some((ad) => {
-                const cta = ad.creative?.cta_type || '';
-                return ['MESSAGE_PAGE', 'SEND_MESSAGE', 'WHATSAPP_MESSAGE'].includes(cta);
+            campaign.ads.forEach((ad) => {
+                const cta = (ad.creative?.cta_type || '').toUpperCase();
+                const link = (ad.creative?.link_url || ad.creative?.preview_url || ad.facebook_post_url || '').toLowerCase();
+                const adName = (ad.name || '').toLowerCase();
+
+                if (cta === 'WHATSAPP_MESSAGE' || link.includes('wa.me') || link.includes('whatsapp') || adName.includes('واتس') || adName.includes('whatsapp')) {
+                    hasWhatsappIndicator = true;
+                    hasMessageCta = true;
+                } else if (['MESSAGE_PAGE', 'SEND_MESSAGE'].includes(cta) || link.includes('m.me') || link.includes('messenger') || adName.includes('ماسنجر') || adName.includes('messenger')) {
+                    hasMessengerIndicator = true;
+                    hasMessageCta = true;
+                } else if (['CONTACT_US', 'GET_QUOTE'].includes(cta)) {
+                    hasMessageCta = true;
+                }
+            });
+        }
+
+        // Check adsets destination
+        if (campaign.adsets && Array.isArray(campaign.adsets)) {
+            campaign.adsets.forEach((adset) => {
+                const dest = (adset.destination_type || '').toUpperCase();
+                const adsetName = (adset.name || '').toLowerCase();
+                if (dest.includes('WHATSAPP') || adsetName.includes('واتس') || adsetName.includes('whatsapp')) {
+                    hasWhatsappIndicator = true;
+                    hasMessageCta = true;
+                } else if (dest.includes('MESSENGER') || adsetName.includes('ماسنجر') || adsetName.includes('messenger')) {
+                    hasMessengerIndicator = true;
+                    hasMessageCta = true;
+                }
             });
         }
 
         const isMessages =
-            campaign.goal_type === 'messages' ||
+            hasWhatsappIndicator ||
+            hasMessengerIndicator ||
+            goalType === 'messages' ||
             objective === 'OUTCOME_ENGAGEMENT' ||
             objective === 'MESSAGES' ||
             objective.includes('ENGAGEMENT') ||
@@ -63,19 +104,36 @@ export default function SharedAdReport({
             name.includes('رسائل');
 
         if (isMessages) {
+            // Prioritize WhatsApp if WhatsApp indicator exists
+            if (hasWhatsappIndicator) {
+                return {
+                    isMessages: true,
+                    goalType: 'whatsapp',
+                    badgeText: 'رسائل واتساب',
+                    badgeIcon: '💬',
+                    badgeClasses: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                    resultLabel: 'رسائل واتساب',
+                    cpaLabel: 'تكلفة رسالة الواتساب',
+                    showRoas: false,
+                };
+            }
+
+            // Default to Messenger
             return {
                 isMessages: true,
-                badgeText: 'إعلان رسائل',
+                goalType: 'messenger',
+                badgeText: 'رسائل ماسنجر',
                 badgeIcon: '💬',
                 badgeClasses: 'bg-purple-50 text-purple-700 border-purple-200',
-                resultLabel: 'رسائل',
-                cpaLabel: 'تكلفة الرسالة',
+                resultLabel: 'رسائل ماسنجر',
+                cpaLabel: 'تكلفة رسالة الماسنجر',
                 showRoas: false,
             };
         }
 
         return {
             isMessages: false,
+            goalType: 'sales',
             badgeText: 'إعلان مبيعات',
             badgeIcon: '🛍️',
             badgeClasses: 'bg-blue-50 text-blue-700 border-blue-200',
