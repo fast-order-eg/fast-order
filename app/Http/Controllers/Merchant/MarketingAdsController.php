@@ -30,6 +30,7 @@ class MarketingAdsController extends Controller
             'yesterday'  => [$now->copy()->subDay()->startOfDay(), $now->copy()->subDay()->endOfDay()],
             'last_7d'    => [$now->copy()->subDays(6)->startOfDay(), $now->copy()->endOfDay()],
             'this_month' => [$now->copy()->startOfMonth(), $now->copy()->endOfDay()],
+            'last_month' => [$now->copy()->subMonth()->startOfMonth(), $now->copy()->subMonth()->endOfMonth()],
             default      => [null, null], // maximum = no date filter
         };
     }
@@ -114,6 +115,7 @@ class MarketingAdsController extends Controller
             'allowedPresets' => AdScopeMarketingService::ALLOWED_PRESETS,
             'hasCampaigns'   => $adsData['has_campaigns'] ?? false,
             'campaignIds'    => $adsData['campaign_ids'] ?? [],
+            'show_summary'   => (bool) ($tenant->meta_show_summary ?? false),
             'storeStats'     => $storeStats,
             'tenant'         => $tenant ? [
                 'id'   => $tenant->id,

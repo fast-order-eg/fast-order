@@ -40,6 +40,7 @@ class AdReportController extends Controller
                 'public_url'   => $report->getPublicUrl(),
                 'is_active'    => (bool) $report->is_active,
                 'notes'        => $report->notes,
+                'show_summary' => (bool) $report->show_summary,
                 'creator_name' => $report->creator?->name ?? 'Super Admin',
                 'created_at'   => $report->created_at?->format('Y-m-d H:i'),
             ];
@@ -62,6 +63,7 @@ class AdReportController extends Controller
             'name'         => ['required', 'string', 'max:255'],
             'campaign_ids' => ['required', 'string'],
             'notes'        => ['nullable', 'string', 'max:5000'],
+            'show_summary' => ['nullable', 'boolean'],
         ], [
             'name.required'         => 'يرجى إدخال اسم العميل أو اسم التقرير.',
             'campaign_ids.required' => 'يرجى إدخال معرف حملة إعلانية واحدة على الأقل.',
@@ -81,6 +83,7 @@ class AdReportController extends Controller
             'token'        => $token,
             'is_active'    => true,
             'notes'        => $request->input('notes'),
+            'show_summary' => $request->boolean('show_summary'),
             'created_by'   => auth()->id(),
         ]);
 
@@ -97,6 +100,7 @@ class AdReportController extends Controller
             'name'         => ['required', 'string', 'max:255'],
             'campaign_ids' => ['required', 'string'],
             'notes'        => ['nullable', 'string', 'max:5000'],
+            'show_summary' => ['nullable', 'boolean'],
         ], [
             'name.required'         => 'يرجى إدخال اسم العميل أو اسم التقرير.',
             'campaign_ids.required' => 'يرجى إدخال معرف حملة إعلانية واحدة على الأقل.',
@@ -112,6 +116,7 @@ class AdReportController extends Controller
             'name'         => trim($request->input('name')),
             'campaign_ids' => $campaignIds,
             'notes'        => $request->input('notes'),
+            'show_summary' => $request->boolean('show_summary'),
         ]);
 
         return redirect()->route('superadmin.ad-reports.index')

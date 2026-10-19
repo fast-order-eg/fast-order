@@ -535,6 +535,7 @@ class TenantController extends Controller
     {
         $request->validate([
             'meta_campaign_ids' => ['nullable'],
+            'meta_show_summary' => ['nullable', 'boolean'],
         ]);
 
         $raw = $request->input('meta_campaign_ids');
@@ -551,6 +552,7 @@ class TenantController extends Controller
         }, $ids))));
 
         $tenant->meta_campaign_ids = !empty($cleanIds) ? $cleanIds : null;
+        $tenant->meta_show_summary = $request->boolean('meta_show_summary');
         $tenant->save();
 
         // Invalidate marketing ads cache for this tenant
@@ -558,8 +560,9 @@ class TenantController extends Controller
         \Illuminate\Support\Facades\Cache::forget("meta_ads_tenant_{$tenant->id}_yesterday");
         \Illuminate\Support\Facades\Cache::forget("meta_ads_tenant_{$tenant->id}_last_7d");
         \Illuminate\Support\Facades\Cache::forget("meta_ads_tenant_{$tenant->id}_this_month");
+        \Illuminate\Support\Facades\Cache::forget("meta_ads_tenant_{$tenant->id}_last_month");
         \Illuminate\Support\Facades\Cache::forget("meta_ads_tenant_{$tenant->id}_maximum");
 
-        return redirect()->back()->with('success', 'تم حفظ وتحديث معرّفات حملات فيسبوك بنجاح لهذا المتجر.');
+        return redirect()->back()->with('success', 'تم حفظ وتحديث إعدادات ومعرّفات حملات فيسبوك بنجاح لهذا المتجر.');
     }
 }

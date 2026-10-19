@@ -18,7 +18,8 @@ class AdScopeMarketingService
         'today'      => 'اليوم',
         'yesterday'  => 'أمس',
         'last_7d'    => 'آخر 7 أيام',
-        'this_month' => 'هذا الشهر',
+        'this_month' => 'الشهر الحالي',
+        'last_month' => 'الشهر السابق',
         'maximum'    => 'الإجمالي',
     ];
 

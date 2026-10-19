@@ -13,6 +13,7 @@ export default function AdReportsIndex({ reports, filters = {} }) {
         name: '',
         campaign_ids: '',
         notes: '',
+        show_summary: false,
     });
 
     const openCreateModal = () => {
@@ -23,6 +24,7 @@ export default function AdReportsIndex({ reports, filters = {} }) {
             name: '',
             campaign_ids: '',
             notes: '',
+            show_summary: false,
         });
         setShowModal(true);
     };
@@ -35,6 +37,7 @@ export default function AdReportsIndex({ reports, filters = {} }) {
             name: report.name,
             campaign_ids: cleanIds,
             notes: report.notes || '',
+            show_summary: Boolean(report.show_summary),
         });
         setShowModal(true);
     };
@@ -168,7 +171,14 @@ export default function AdReportsIndex({ reports, filters = {} }) {
                                         <tr key={report.id} className="hover:bg-gray-50/50 transition-colors">
                                             {/* Report Name & Notes */}
                                             <td className="px-6 py-4">
-                                                <div className="font-bold text-gray-900 text-sm">{report.name}</div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="font-bold text-gray-900 text-sm">{report.name}</div>
+                                                    {report.show_summary ? (
+                                                        <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full font-bold text-[10px] border border-emerald-200" title="المجموع معروض في تقرير العميل">
+                                                            المجموع مفعّل
+                                                        </span>
+                                                    ) : null}
+                                                </div>
                                                 {report.notes && (
                                                     <div className="text-[11px] text-gray-500 mt-1 flex items-center gap-1.5 line-clamp-1 max-w-[280px]" title={report.notes}>
                                                         <span>📝</span>
@@ -367,6 +377,40 @@ export default function AdReportsIndex({ reports, filters = {} }) {
                                 <p className="text-[11px] text-gray-400 mt-1">
                                     💡 ستظهر هذه الملاحظات بشكل بارز أعلى الحملات في رابط التقرير للعميل، وكذلك في نص التقرير المنسوخ للواتساب.
                                 </p>
+                            </div>
+
+                            {/* Show Summary Checkbox */}
+                            <div
+                                onClick={() => setData('show_summary', !data.show_summary)}
+                                className={`border rounded-xl p-3 flex items-center justify-between cursor-pointer transition-all ${
+                                    data.show_summary
+                                        ? 'bg-indigo-50/70 border-indigo-200'
+                                        : 'bg-gray-50 border-gray-200 hover:bg-gray-100/70'
+                                }`}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        type="checkbox"
+                                        id="show_summary"
+                                        checked={Boolean(data.show_summary)}
+                                        onChange={(e) => setData('show_summary', e.target.checked)}
+                                        className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer"
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
+                                    <div>
+                                        <label htmlFor="show_summary" className="text-xs font-bold text-gray-800 cursor-pointer block">
+                                            أظهر المجموع
+                                        </label>
+                                        <p className="text-[11px] text-gray-500 mt-0.5">
+                                            عند تفعيله، سيتم عرض كارد الإجمالي (المصروف، النتائج، ومتوسط التكلفة و CTR) في تقرير العميل. الافتراضي غير مفعل.
+                                        </p>
+                                    </div>
+                                </div>
+                                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${
+                                    data.show_summary ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600'
+                                }`}>
+                                    {data.show_summary ? 'مفعل' : 'مخفي'}
+                                </span>
                             </div>
 
                             {/* Modal Actions */}

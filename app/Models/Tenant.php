@@ -122,6 +122,7 @@ class Tenant extends Model
         'wallet_balance',
         'settings',
         'meta_campaign_ids',
+        'meta_show_summary',
         'theme_id',
         'custom_domain',
     ];
@@ -131,6 +132,7 @@ class Tenant extends Model
         'wallet_balance' => 'integer',
         'settings' => 'array',
         'meta_campaign_ids' => 'array',
+        'meta_show_summary' => 'boolean',
         'trial_ends_at' => 'datetime',
         'subscription_ends_at' => 'datetime',
     ];

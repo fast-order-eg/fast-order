@@ -55,12 +55,14 @@ class AdReportPublicController extends Controller
 
         return Inertia::render('Public/SharedAdReport', [
             'report'         => [
-                'id'         => $report->id,
-                'name'       => $report->name,
-                'token'      => $report->token,
-                'notes'      => $report->notes,
-                'created_at' => $report->created_at?->format('Y-m-d'),
+                'id'           => $report->id,
+                'name'         => $report->name,
+                'token'        => $report->token,
+                'notes'        => $report->notes,
+                'show_summary' => (bool) $report->show_summary,
+                'created_at'   => $report->created_at?->format('Y-m-d'),
             ],
+            'show_summary'   => (bool) $report->show_summary,
             'adsData'        => $adsData,
             'datePreset'     => $datePreset,
             'allowedPresets' => AdScopeMarketingService::ALLOWED_PRESETS,

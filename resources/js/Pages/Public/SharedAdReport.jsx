@@ -8,6 +8,7 @@ export default function SharedAdReport({
     allowedPresets = {},
     hasCampaigns = false,
     campaignIds = [],
+    show_summary = false,
 }) {
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -16,6 +17,34 @@ export default function SharedAdReport({
     const campaigns = adsData?.campaigns || [];
     const currency = adsData?.currency || 'EGP';
     const lastUpdatedFormatted = adsData?.last_updated_formatted || null;
+
+    const isSummaryVisible = Boolean(show_summary || report?.show_summary);
+
+    // Compute aggregated summary across campaigns or from API summary
+    const totalSpend = campaigns.reduce((acc, c) => acc + (parseFloat(c.spend) || 0), 0);
+    const totalResults = campaigns.reduce((acc, c) => acc + (parseInt(c.results) || 0), 0);
+    const totalImpressions = campaigns.reduce((acc, c) => acc + (parseInt(c.impressions) || 0), 0);
+    const totalReach = campaigns.reduce((acc, c) => acc + (parseInt(c.reach) || 0), 0);
+    const totalClicks = campaigns.reduce((acc, c) => acc + (parseInt(c.clicks) || 0), 0);
+    const totalPurchaseValue = campaigns.reduce((acc, c) => acc + (parseFloat(c.purchase_value) || 0), 0);
+
+    const apiSummary = adsData?.summary || {};
+    const summaryData = {
+        spend: apiSummary.spend !== undefined && apiSummary.spend !== null ? parseFloat(apiSummary.spend) : totalSpend,
+        results: apiSummary.results !== undefined && apiSummary.results !== null ? parseInt(apiSummary.results) : totalResults,
+        impressions: apiSummary.impressions !== undefined && apiSummary.impressions !== null ? parseInt(apiSummary.impressions) : totalImpressions,
+        reach: apiSummary.reach !== undefined && apiSummary.reach !== null ? parseInt(apiSummary.reach) : totalReach,
+        clicks: apiSummary.clicks !== undefined && apiSummary.clicks !== null ? parseInt(apiSummary.clicks) : totalClicks,
+        cpa: apiSummary.cpa !== undefined && apiSummary.cpa !== null
+            ? parseFloat(apiSummary.cpa)
+            : (totalResults > 0 ? totalSpend / totalResults : 0),
+        ctr: apiSummary.ctr !== undefined && apiSummary.ctr !== null
+            ? parseFloat(apiSummary.ctr)
+            : (totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0),
+        roas: apiSummary.roas !== undefined && apiSummary.roas !== null
+            ? parseFloat(apiSummary.roas)
+            : (totalSpend > 0 && totalPurchaseValue > 0 ? totalPurchaseValue / totalSpend : 0),
+    };
 
     // Helper: format numbers in English (en-US)
     const formatNumber = (num, decimals = 0) => {
@@ -239,6 +268,27 @@ export default function SharedAdReport({
 
         if (report?.notes) {
             reportText += `📝 تقييم وملاحظات الحملة:\n${report.notes}\n\n`;
+        }
+
+        if (isSummaryVisible) {
+            reportText += `═══════════════════════\n`;
+            reportText += `📌 إجمالي نتائج الفترة (${presetLabel}):\n`;
+            reportText += `💰 إجمالي المصروف: ${formatCurrency(summaryData.spend, 0)}\n`;
+            reportText += `🎯 إجمالي النتائج: ${formatNumber(summaryData.results)}\n`;
+            reportText += `🏷️ متوسط تكلفة النتيجة: ${formatCurrency(summaryData.cpa, 2)}\n`;
+            if (summaryData.ctr > 0) {
+                reportText += `👆 متوسط نسبة النقر (CTR): ${formatNumber(summaryData.ctr, 2)}%\n`;
+            }
+            if (summaryData.reach > 0) {
+                reportText += `👥 إجمالي الوصول: ${formatNumber(summaryData.reach)}\n`;
+            }
+            if (summaryData.impressions > 0) {
+                reportText += `👁️ مرات الظهور: ${formatNumber(summaryData.impressions)}\n`;
+            }
+            if (summaryData.roas > 0) {
+                reportText += `📈 متوسط العائد (ROAS): ${formatNumber(summaryData.roas, 2)}x\n`;
+            }
+            reportText += `═══════════════════════\n\n`;
         }
 
         campaigns.forEach((c) => {
@@ -502,6 +552,91 @@ export default function SharedAdReport({
                                             {report.notes}
                                         </p>
                                     </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Overall Summary Card (Only if show_summary is enabled) */}
+                        {isSummaryVisible && (
+                            <div className="bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-950 text-white rounded-2xl p-5 sm:p-6 shadow-lg border border-indigo-950/50 space-y-4">
+                                <div className="flex items-center justify-between border-b border-white/10 pb-3 flex-wrap gap-2">
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="w-8 h-8 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-lg">
+                                            📊
+                                        </span>
+                                        <div>
+                                            <h3 className="text-sm sm:text-base font-extrabold text-white flex items-center gap-2">
+                                                <span>إجمالي نتائج الحملات ({allowedPresets[datePreset] || datePreset})</span>
+                                            </h3>
+                                            <p className="text-[11px] text-indigo-200/70 font-medium">
+                                                ملخص المجموع الإجمالي لكافة الحملات الإعلانية المحددة
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 font-mono">
+                                        {campaigns.length} حملات
+                                    </span>
+                                </div>
+
+                                {/* Metric Cards Grid */}
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                                    {/* Total Spend */}
+                                    <div className="bg-white/5 hover:bg-white/10 transition-colors rounded-xl p-3 sm:p-4 border border-white/10">
+                                        <span className="text-[11px] sm:text-xs text-indigo-200 block mb-1">💰 إجمالي المصروف</span>
+                                        <strong className="text-lg sm:text-2xl font-extrabold font-mono text-emerald-400 block tracking-tight">
+                                            {formatCurrency(summaryData.spend, 0)}
+                                        </strong>
+                                        <span className="text-[10px] text-gray-400 block mt-0.5">الإنفاق الإعلاني الكلي</span>
+                                    </div>
+
+                                    {/* Total Results */}
+                                    <div className="bg-white/5 hover:bg-white/10 transition-colors rounded-xl p-3 sm:p-4 border border-white/10">
+                                        <span className="text-[11px] sm:text-xs text-indigo-200 block mb-1">🎯 إجمالي النتائج</span>
+                                        <strong className="text-lg sm:text-2xl font-extrabold font-mono text-blue-300 block tracking-tight">
+                                            {formatNumber(summaryData.results)}
+                                        </strong>
+                                        <span className="text-[10px] text-gray-400 block mt-0.5">تفاعلات / طلبات</span>
+                                    </div>
+
+                                    {/* Average CPA */}
+                                    <div className="bg-white/5 hover:bg-white/10 transition-colors rounded-xl p-3 sm:p-4 border border-white/10">
+                                        <span className="text-[11px] sm:text-xs text-indigo-200 block mb-1">🏷️ متوسط تكلفة النتيجة</span>
+                                        <strong className="text-lg sm:text-2xl font-extrabold font-mono text-amber-300 block tracking-tight">
+                                            {formatCurrency(summaryData.cpa, 2)}
+                                        </strong>
+                                        <span className="text-[10px] text-gray-400 block mt-0.5">متوسط CPA</span>
+                                    </div>
+
+                                    {/* Average CTR */}
+                                    <div className="bg-white/5 hover:bg-white/10 transition-colors rounded-xl p-3 sm:p-4 border border-white/10">
+                                        <span className="text-[11px] sm:text-xs text-indigo-200 block mb-1">👆 متوسط نسبة النقر (CTR)</span>
+                                        <strong className="text-lg sm:text-2xl font-extrabold font-mono text-purple-300 block tracking-tight">
+                                            {formatNumber(summaryData.ctr, 2)}%
+                                        </strong>
+                                        <span className="text-[10px] text-gray-400 block mt-0.5">تفاعل النقرات للظهور</span>
+                                    </div>
+                                </div>
+
+                                {/* Secondary Metrics Bar: Reach, Impressions, Clicks, ROAS */}
+                                <div className="bg-black/20 rounded-xl p-3 flex flex-wrap items-center justify-around gap-4 text-xs border border-white/5">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-gray-400">👥 إجمالي الوصول:</span>
+                                        <strong className="text-white font-mono font-bold">{formatNumber(summaryData.reach)}</strong>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-gray-400">👁️ مرات الظهور:</span>
+                                        <strong className="text-white font-mono font-bold">{formatNumber(summaryData.impressions)}</strong>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-gray-400">🖱️ النقرات:</span>
+                                        <strong className="text-white font-mono font-bold">{formatNumber(summaryData.clicks)}</strong>
+                                    </div>
+                                    {summaryData.roas > 0 && (
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-gray-400">📈 متوسط العائد (ROAS):</span>
+                                            <strong className="text-emerald-400 font-mono font-bold">{formatNumber(summaryData.roas, 2)}x</strong>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}

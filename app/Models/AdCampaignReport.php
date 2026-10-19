@@ -16,12 +16,14 @@ class AdCampaignReport extends Model
         'token',
         'is_active',
         'notes',
+        'show_summary',
         'created_by',
     ];
 
     protected $casts = [
         'campaign_ids' => 'array',
         'is_active'    => 'boolean',
+        'show_summary' => 'boolean',
     ];
 
     /**

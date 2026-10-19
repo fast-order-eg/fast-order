@@ -48,6 +48,7 @@ export default function Show({ tenant, settings, plans, productsCount = 0, order
         errors: metaErrors,
     } = useForm({
         meta_campaign_ids: initialCampaignIds,
+        meta_show_summary: Boolean(tenant.meta_show_summary),
     });
 
     const handleMetaSubmit = (e) => {
@@ -433,6 +434,40 @@ export default function Show({ tenant, settings, plans, productsCount = 0, order
                                     ))}
                                 </div>
                             )}
+
+                            {/* Show Summary Checkbox */}
+                            <div
+                                onClick={() => setMetaData('meta_show_summary', !metaData.meta_show_summary)}
+                                className={`border rounded-xl p-3 flex items-center justify-between cursor-pointer transition-all ${
+                                    metaData.meta_show_summary
+                                        ? 'bg-blue-50/70 border-blue-200'
+                                        : 'bg-gray-50 border-gray-200 hover:bg-gray-100/70'
+                                }`}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        type="checkbox"
+                                        id="meta_show_summary"
+                                        checked={Boolean(metaData.meta_show_summary)}
+                                        onChange={(e) => setMetaData('meta_show_summary', e.target.checked)}
+                                        className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
+                                    <div>
+                                        <label htmlFor="meta_show_summary" className="text-xs font-bold text-gray-800 cursor-pointer block">
+                                            أظهر المجموع
+                                        </label>
+                                        <p className="text-[11px] text-gray-500 mt-0.5">
+                                            إظهار كارد إجمالي المصروف والنتائج ومتوسط التكلفة و CTR في صفحة إعلانات التاجر. الافتراضي غير مفعّل.
+                                        </p>
+                                    </div>
+                                </div>
+                                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${
+                                    metaData.meta_show_summary ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+                                }`}>
+                                    {metaData.meta_show_summary ? 'مفعل' : 'مخفي'}
+                                </span>
+                            </div>
 
                             <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                                 <button
