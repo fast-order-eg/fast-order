@@ -1,16 +1,16 @@
 {
-    "name": "Luxury Brand Store",
-    "name_ar": "ثيم الماركات الفاخرة (Luxury Brand Store)",
+    "name": "المتجر الفاخر (Luxury Store)",
+    "name_ar": "المتجر الفاخر (Luxury Store)",
     "slug": "luxury_store",
     "version": "1.0.0",
     "author": "Fast Order Team",
-    "description": "تصميم راقٍ وفخم مستوحى من كبرى متاجر شوبيفاي وبراندات الموضة العالمية كزارة وH&M. يتميز بتخطيط إيديتوريال أنيق، فلاتر منتجات متقدمة، سلة مشتريات أنيقة، وشبكة صور عصرية.",
+    "description": "تصميم راقٍ وفخم لعلامتك التجارية، يتميز بتخطيط إيديتوريال أنيق، فلاتر منتجات متقدمة، سلة مشتريات سلسة، وشبكة صور عصرية.",
     "thumbnail": "/shop/images/themes/luxury_store-preview.webp",
     "support_rtl": true,
     "direction": "rtl,ltr",
     "layouts": {
         "header": [
-            { "id": "Minimal", "name": "شوبيفاي مينيمال راقي", "name_en": "Shopify Minimal" },
+            { "id": "Minimal", "name": "مينيمال راقي", "name_en": "Luxury Minimal" },
             { "id": "Classic", "name": "كلاسيكي فاخر", "name_en": "Luxury Classic" }
         ],
         "banner": [

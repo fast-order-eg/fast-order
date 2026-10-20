@@ -1,10 +1,10 @@
 {
-    "name": "Fast COD Express",
-    "name_ar": "ثيم إيزي أوردر السريع (Fast COD Express)",
+    "name": "سريع كود (COD Express)",
+    "name_ar": "سريع كود (COD Express)",
     "slug": "fast_cod",
     "version": "1.0.0",
     "author": "Fast Order Team",
-    "description": "ثيم فائق السرعة والأعلى تحويلاً مستوحى من نظام إيزي أوردر. يتميز بفورم طلب مباشر ومدمج بصفحة المنتج (One-Page Product Checkout)، شريط شراء عائم للموبايل، باقات توفير للكميات، وزر طلب مباشر عبر واتساب.",
+    "description": "ثيم فائق السرعة والأعلى تحويلاً، يتميز بنموذج طلب مباشر ومدمج بصفحة المنتج، شريط شراء عائم، باقات توفير للكميات، وزر طلب سريع عبر واتساب.",
     "thumbnail": "/shop/images/themes/fast_cod-preview.webp",
     "support_rtl": true,
     "direction": "rtl,ltr",

@@ -108,20 +108,25 @@ export default function ThemeIndex({ themeCustomization, activeTheme = 'default'
     const getActiveThemeTitle = () => {
         switch (activeTheme) {
             case 'fast_cod':
-                return 'ثيم Fast COD Express (إيزي أوردر)';
+                return 'سريع كود (COD Express)';
             case 'luxury_store':
-                return 'ثيم Luxury Brand Store (شوبيفاي وزاره)';
+                return 'المتجر الفاخر (Luxury Store)';
             case 'default':
-                return 'الثيم الافتراضي الكلاسيكي';
+                return 'المتجر الكلاسيكي';
             case 'starter':
-                return 'ثيم البداية السريعة (Starter)';
+                return 'المتجر السريع (Starter)';
             case 'bold':
-                return 'الثيم الجريء (Bold & Vibrant)';
+                return 'المتجر الحيوي (Vibrant)';
             case 'modern':
-                return 'الثيم العصري (Modern Minimal)';
+                return 'المتجر العصري (Modern Minimal)';
             default:
                 return activeTheme;
         }
+    };
+
+    const handleOpenPreview = (slug) => {
+        const previewUrl = `/admin/themes/preview/frame/${slug}/index.html`;
+        window.open(previewUrl, '_blank');
     };
 
     return (
@@ -166,7 +171,7 @@ export default function ThemeIndex({ themeCustomization, activeTheme = 'default'
                             </div>
                             <h3 className="text-xl font-bold mt-2">اختر وبدّل ثيم متجرك فوراً</h3>
                             <p className="text-xs text-indigo-200 mt-1">
-                                يمكنك تغيير تصميم وشكل متجرك بالكامل بنقرة زر واحدة بين ثيم إيزي أوردر السريع وثيم الماركات الفاخرة
+                                يمكنك تبديل مظهر متجرك بين القوالب المتاحة بنقرة زر واحدة مع المعاينة المباشرة
                             </p>
                         </div>
                         <Link
@@ -183,66 +188,108 @@ export default function ThemeIndex({ themeCustomization, activeTheme = 'default'
                     {/* 3 Quick Switch Theme Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         {/* Fast COD */}
-                        <div className={`p-4 rounded-xl border transition ${activeTheme === 'fast_cod' ? 'bg-emerald-500/20 border-emerald-400 ring-1 ring-emerald-400' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs font-bold text-emerald-300">Fast COD (إيزي أوردر)</span>
-                                <span className="text-[10px] bg-emerald-500 text-white px-2 py-0.5 rounded-full font-bold">الأعلى تحويلاً 🔥</span>
+                        <div className={`p-4 rounded-xl border transition flex flex-col justify-between ${activeTheme === 'fast_cod' ? 'bg-emerald-500/20 border-emerald-400 ring-1 ring-emerald-400' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
+                            <div>
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <span className="text-xs font-extrabold text-emerald-300">سريع كود (COD Express)</span>
+                                    <span className="text-[10px] bg-emerald-500 text-white px-2 py-0.5 rounded-full font-bold">تحويل فوري 🔥</span>
+                                </div>
                             </div>
-                            <p className="text-[11px] text-gray-300 line-clamp-2 mb-3">فورم طلب مباشر بصفحة المنتج، شريط عائم سفلي للموبايل، وباقات كميات.</p>
-                            {activeTheme === 'fast_cod' ? (
-                                <span className="text-xs text-emerald-400 font-bold flex items-center gap-1">✓ الثيم النشط الآن</span>
-                            ) : (
+                            <div className="mt-4 pt-2.5 border-t border-white/10 flex items-center gap-2">
                                 <button
                                     type="button"
-                                    onClick={() => handleSwitchTheme('fast_cod')}
-                                    disabled={activatingSlug === 'fast_cod'}
-                                    className="w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition"
+                                    onClick={() => handleOpenPreview('fast_cod')}
+                                    className="py-1.5 px-2.5 bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold rounded-lg transition flex items-center gap-1"
                                 >
-                                    {activatingSlug === 'fast_cod' ? 'جاري التفعيل...' : 'تفعيل ثيم إيزي أوردر'}
+                                    <svg className="w-3.5 h-3.5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    معاينة
                                 </button>
-                            )}
+                                {activeTheme === 'fast_cod' ? (
+                                    <span className="flex-1 text-center py-1.5 text-xs text-emerald-400 font-bold bg-emerald-500/20 rounded-lg">✓ مفعل الآن</span>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleSwitchTheme('fast_cod')}
+                                        disabled={activatingSlug === 'fast_cod'}
+                                        className="flex-1 py-1.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition"
+                                    >
+                                        {activatingSlug === 'fast_cod' ? 'جاري التفعيل...' : 'تفعيل'}
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         {/* Luxury Store */}
-                        <div className={`p-4 rounded-xl border transition ${activeTheme === 'luxury_store' ? 'bg-purple-500/20 border-purple-400 ring-1 ring-purple-400' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs font-bold text-purple-300">Luxury Store (شوبيفاي)</span>
-                                <span className="text-[10px] bg-purple-500 text-white px-2 py-0.5 rounded-full font-bold">ماركات فاخرة ✨</span>
+                        <div className={`p-4 rounded-xl border transition flex flex-col justify-between ${activeTheme === 'luxury_store' ? 'bg-purple-500/20 border-purple-400 ring-1 ring-purple-400' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
+                            <div>
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <span className="text-xs font-extrabold text-purple-300">المتجر الفاخر (Luxury Store)</span>
+                                    <span className="text-[10px] bg-purple-500 text-white px-2 py-0.5 rounded-full font-bold">براند فاخر ✨</span>
+                                </div>
                             </div>
-                            <p className="text-[11px] text-gray-300 line-clamp-2 mb-3">تصميم شوبيفاي وزاره، فلاتر جانبية متقدمة، وأكورديون تفاصيل أنيق.</p>
-                            {activeTheme === 'luxury_store' ? (
-                                <span className="text-xs text-purple-400 font-bold flex items-center gap-1">✓ الثيم النشط الآن</span>
-                            ) : (
+                            <div className="mt-4 pt-2.5 border-t border-white/10 flex items-center gap-2">
                                 <button
                                     type="button"
-                                    onClick={() => handleSwitchTheme('luxury_store')}
-                                    disabled={activatingSlug === 'luxury_store'}
-                                    className="w-full py-1.5 px-3 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition"
+                                    onClick={() => handleOpenPreview('luxury_store')}
+                                    className="py-1.5 px-2.5 bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold rounded-lg transition flex items-center gap-1"
                                 >
-                                    {activatingSlug === 'luxury_store' ? 'جاري التفعيل...' : 'تفعيل ثيم شوبيفاي'}
+                                    <svg className="w-3.5 h-3.5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    معاينة
                                 </button>
-                            )}
+                                {activeTheme === 'luxury_store' ? (
+                                    <span className="flex-1 text-center py-1.5 text-xs text-purple-400 font-bold bg-purple-500/20 rounded-lg">✓ مفعل الآن</span>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleSwitchTheme('luxury_store')}
+                                        disabled={activatingSlug === 'luxury_store'}
+                                        className="flex-1 py-1.5 px-3 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition"
+                                    >
+                                        {activatingSlug === 'luxury_store' ? 'جاري التفعيل...' : 'تفعيل'}
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         {/* Default Classic */}
-                        <div className={`p-4 rounded-xl border transition ${activeTheme === 'default' ? 'bg-blue-500/20 border-blue-400 ring-1 ring-blue-400' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs font-bold text-blue-300">Default Classic</span>
-                                <span className="text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-full font-bold">كلاسيك شامل 🛍️</span>
+                        <div className={`p-4 rounded-xl border transition flex flex-col justify-between ${activeTheme === 'default' ? 'bg-blue-500/20 border-blue-400 ring-1 ring-blue-400' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
+                            <div>
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <span className="text-xs font-extrabold text-blue-300">المتجر الكلاسيكي</span>
+                                    <span className="text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-full font-bold">كلاسيك شامل 🛍️</span>
+                                </div>
                             </div>
-                            <p className="text-[11px] text-gray-300 line-clamp-2 mb-3">التصميم الكلاسيكي الافتراضي المتوازن لكافة أنواع المتاجر والمنتجات.</p>
-                            {activeTheme === 'default' ? (
-                                <span className="text-xs text-blue-400 font-bold flex items-center gap-1">✓ الثيم النشط الآن</span>
-                            ) : (
+                            <div className="mt-4 pt-2.5 border-t border-white/10 flex items-center gap-2">
                                 <button
                                     type="button"
-                                    onClick={() => handleSwitchTheme('default')}
-                                    disabled={activatingSlug === 'default'}
-                                    className="w-full py-1.5 px-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition"
+                                    onClick={() => handleOpenPreview('default')}
+                                    className="py-1.5 px-2.5 bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold rounded-lg transition flex items-center gap-1"
                                 >
-                                    {activatingSlug === 'default' ? 'جاري التفعيل...' : 'تفعيل الثيم الكلاسيكي'}
+                                    <svg className="w-3.5 h-3.5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    معاينة
                                 </button>
-                            )}
+                                {activeTheme === 'default' ? (
+                                    <span className="flex-1 text-center py-1.5 text-xs text-blue-400 font-bold bg-blue-500/20 rounded-lg">✓ مفعل الآن</span>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleSwitchTheme('default')}
+                                        disabled={activatingSlug === 'default'}
+                                        className="flex-1 py-1.5 px-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition"
+                                    >
+                                        {activatingSlug === 'default' ? 'جاري التفعيل...' : 'تفعيل'}
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

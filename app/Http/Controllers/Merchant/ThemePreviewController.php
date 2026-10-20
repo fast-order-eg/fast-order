@@ -159,15 +159,30 @@ class ThemePreviewController extends Controller
             $page .= '.html';
         }
 
-        $filePath = resource_path("views/shop/{$page}");
-        if (!file_exists($filePath)) {
-            $filePath = resource_path("views/shop/index.html");
+        // Check theme folder first
+        $themeFilePath = resource_path("views/shop/themes/{$slug}/{$page}");
+        if (file_exists($themeFilePath)) {
+            $filePath = $themeFilePath;
+        } else {
+            $filePath = resource_path("views/shop/{$page}");
             if (!file_exists($filePath)) {
-                return response()->make('<h1>خطأ: ملف معاينة واجهة المتجر غير موجود</h1>', 404);
+                $filePath = resource_path("views/shop/themes/{$slug}/index.html");
+                if (!file_exists($filePath)) {
+                    $filePath = resource_path("views/shop/index.html");
+                    if (!file_exists($filePath)) {
+                        return response()->make('<h1>خطأ: ملف معاينة واجهة المتجر غير موجود</h1>', 404);
+                    }
+                }
             }
         }
 
         $html = file_get_contents($filePath);
+
+        // Include theme custom CSS if exists
+        $themeCssTag = '';
+        if (file_exists(public_path("shop/themes/{$slug}/style.css"))) {
+            $themeCssTag = '<link rel="stylesheet" href="/shop/themes/' . e($slug) . '/style.css?v=' . time() . '">';
+        }
 
         // Get live unsaved customizations from request query params or session
         $sessionCustoms = session()->get("theme_preview_customs_{$slug}", []);
@@ -212,6 +227,7 @@ class ThemePreviewController extends Controller
         // Inject dynamic theme styles and live postMessage listener script
         $injections = '
 <!-- Fast Order Live Theme Preview Injection -->
+' . $themeCssTag . '
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="' . e($fontUrl) . '" rel="stylesheet" id="live-theme-font">

@@ -397,11 +397,11 @@ class ThemeService
                 'layouts' => ['index', 'product', 'cart', 'checkout', 'categories', 'search', 'wishlist', 'order-success', 'tracking', 'account', 'landing', 'promotions', 'contact'],
             ],
             'fast_cod' => [
-                'name' => 'ثيم Fast COD Express (إيزي أوردر)',
+                'name' => 'سريع كود (COD Express)',
                 'slug' => 'fast_cod',
                 'version' => '1.0.0',
                 'author' => 'Fast Order Lab',
-                'description' => 'ثيم مخصص لأعلى معدلات تحويل (High-Conversion COD) مستوحى من نظام إيزي أوردر. يتميز بفورم طلب فوري مدمج أسفل المنتج، شريط شراء عائم، باقات توفير للكميات، وزر طلب مباشر عبر واتساب.',
+                'description' => 'ثيم مخصص لأعلى معدلات تحويل للطلب السريع بالدفع عند الاستلام مع نموذج طلب فوري مدمج في صفحة المنتج وشريط شراء عائم.',
                 'preview_image' => '/shop/images/themes/fast_cod-preview.webp',
                 'support_rtl' => true,
                 'css_variables' => [
@@ -417,11 +417,11 @@ class ThemeService
                 'layouts' => ['index', 'product', 'cart', 'checkout', 'categories', 'search', 'wishlist', 'order-success', 'tracking', 'account', 'landing', 'promotions', 'contact'],
             ],
             'luxury_store' => [
-                'name' => 'ثيم Luxury Brand Store (شوبيفاي وزاره)',
+                'name' => 'المتجر الفاخر (Luxury Store)',
                 'slug' => 'luxury_store',
                 'version' => '1.0.0',
                 'author' => 'Fast Order Lab',
-                'description' => 'تصميم فخم وعصري مستوحى من متاجر شوبيفاي الكبرى وبراندات الموضة العالمية كزارة وH&M. يتميز بتخطيط إيديتوريال أنيق، فلاتر منتجات متقدمة، أزرار مقاسات سريعة، وسلة مشتريات راقية.',
+                'description' => 'تصميم راقٍ وفخم لعلامتك التجارية والبراندات، يتميز بتخطيط إيديتوريال أنيق وفلاتر متقدمة وسلة مشتريات سلسة.',
                 'preview_image' => '/shop/images/themes/luxury_store-preview.webp',
                 'support_rtl' => true,
                 'css_variables' => [

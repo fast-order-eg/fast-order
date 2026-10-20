@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage, Link } from '@inertiajs/react';
 import MerchantLayout from '@/Layouts/MerchantLayout';
 
-export default function ThemesIndex({ themes = {}, active_theme = 'default', active_theme_config = null }) {
+export default function ThemesIndex({ themes = {}, active_theme = 'default', activeTheme = null, active_theme_config = null }) {
     const { flash = {} } = usePage().props;
     const [activatingSlug, setActivatingSlug] = useState(null);
 
-    // Transform themes object or array to array with keys
+    const currentActiveTheme = activeTheme || active_theme || 'default';
+
+    // Normalize themes to list
     const themesList = Object.entries(themes).map(([key, value]) => {
         return {
             ...value,
@@ -14,15 +16,56 @@ export default function ThemesIndex({ themes = {}, active_theme = 'default', act
         };
     });
 
-    const activeThemeObj = themesList.find(t => t.slug === active_theme) || active_theme_config || {
-        slug: active_theme,
-        name: active_theme === 'fast_cod' ? 'ثيم Fast COD Express (إيزي أوردر)' : (active_theme === 'luxury_store' ? 'ثيم Luxury Brand Store' : 'الثيم الافتراضي'),
-        description: 'الثيم المفعّل حالياً في متجرك',
-        version: '1.0.0',
+    // Clean Arabic Theme Name Helper (No competitor names)
+    const getCleanThemeName = (theme) => {
+        switch (theme.slug) {
+            case 'fast_cod':
+                return 'سريع كود (COD Express)';
+            case 'luxury_store':
+                return 'المتجر الفاخر (Luxury Store)';
+            case 'default':
+                return 'المتجر الكلاسيكي (Classic Store)';
+            case 'modern':
+            case 'modern_minimalist':
+                return 'المتجر العصري (Modern Minimal)';
+            case 'bold':
+                return 'المتجر الحيوي (Vibrant Store)';
+            case 'dark_elegance':
+                return 'المتجر الداكن (Dark Elegance)';
+            case 'fresh_market':
+                return 'سوق المنتجات الطازجة (Fresh Market)';
+            case 'tech_store':
+            case 'tech_pro':
+                return 'متجر التقنية والإلكترونيات (Tech Pro)';
+            case 'starter':
+                return 'المتجر السريع (Starter)';
+            default:
+                return theme.name_ar || theme.name || theme.slug;
+        }
     };
 
+    // Preview image path helper (Desktop + Mobile Mockup)
+    const getThemeMockupImage = (slug) => {
+        switch (slug) {
+            case 'fast_cod':
+                return '/shop/images/themes/fast_cod-preview.svg';
+            case 'luxury_store':
+                return '/shop/images/themes/luxury_store-preview.svg';
+            case 'default':
+                return '/shop/images/themes/default-preview.svg';
+            case 'modern':
+            case 'modern_minimalist':
+                return '/shop/images/themes/modern-preview.svg';
+            case 'bold':
+                return '/shop/images/themes/bold-preview.svg';
+            default:
+                return '/shop/images/themes/default-preview.svg';
+        }
+    };
+
+    // Activate Theme Handler
     const handleActivate = (slug) => {
-        if (slug === active_theme) return;
+        if (slug === currentActiveTheme) return;
         setActivatingSlug(slug);
 
         router.post('/admin/themes/activate', {
@@ -33,46 +76,10 @@ export default function ThemesIndex({ themes = {}, active_theme = 'default', act
         });
     };
 
-    // Helper for theme badges and tags
-    const getThemeBadge = (slug) => {
-        switch (slug) {
-            case 'fast_cod':
-                return { text: 'الأعلى تحويلاً وإيزي أوردر 🔥', bg: 'bg-emerald-500/10 text-emerald-600 border-emerald-200' };
-            case 'luxury_store':
-                return { text: 'شوبيفاي & براندات الموضة ✨', bg: 'bg-purple-500/10 text-purple-600 border-purple-200' };
-            case 'default':
-                return { text: 'كلاسيكي شامل وموثوق 🛍️', bg: 'bg-blue-500/10 text-blue-600 border-blue-200' };
-            case 'modern':
-            case 'modern_minimalist':
-                return { text: 'عصري وناعم (Minimal) 💎', bg: 'bg-slate-500/10 text-slate-700 border-slate-200' };
-            case 'bold':
-                return { text: 'جريء ونابض بالألوان 🎨', bg: 'bg-rose-500/10 text-rose-600 border-rose-200' };
-            case 'starter':
-                return { text: 'خفيف وفائق السرعة ⚡', bg: 'bg-amber-500/10 text-amber-700 border-amber-200' };
-            default:
-                return { text: 'ثيم متكامل 🌟', bg: 'bg-gray-100 text-gray-700 border-gray-200' };
-        }
-    };
-
-    // Helper for visual theme gradients
-    const getThemeBannerGradient = (slug) => {
-        switch (slug) {
-            case 'fast_cod':
-                return 'from-emerald-600 via-green-600 to-teal-700';
-            case 'luxury_store':
-                return 'from-zinc-900 via-neutral-900 to-stone-800';
-            case 'default':
-                return 'from-indigo-600 via-blue-600 to-indigo-800';
-            case 'modern':
-            case 'modern_minimalist':
-                return 'from-slate-800 via-slate-900 to-zinc-950';
-            case 'bold':
-                return 'from-pink-600 via-rose-600 to-orange-500';
-            case 'starter':
-                return 'from-amber-500 via-orange-500 to-red-500';
-            default:
-                return 'from-indigo-600 to-blue-700';
-        }
+    // Open Live Full Preview in new tab (identical to landing pages)
+    const handleOpenPreview = (slug) => {
+        const previewUrl = `/admin/themes/preview/frame/${slug}/index.html`;
+        window.open(previewUrl, '_blank');
     };
 
     return (
@@ -81,7 +88,7 @@ export default function ThemesIndex({ themes = {}, active_theme = 'default', act
                 <title>الثيمات والقوالب — فاست أوردر</title>
             </Head>
 
-            <div className="max-w-7xl mx-auto space-y-8 pb-16">
+            <div className="max-w-7xl mx-auto space-y-6 pb-16 rtl text-right" dir="rtl">
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                     <div>
@@ -92,34 +99,23 @@ export default function ThemesIndex({ themes = {}, active_theme = 'default', act
                                 </svg>
                             </span>
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900">مكتبة الثيمات والقوالب</h1>
-                                <p className="text-sm text-gray-500 mt-1">
-                                    بدّل مظهر وتجربة متجرك فوراً بنقرة واحدة — اختر بين أسلوب إيزي أوردر السريع وشوبيفاي للماركات
+                                <h1 className="text-2xl font-bold text-gray-900">الثيمات والقوالب</h1>
+                                <p className="text-sm text-gray-500 mt-0.5">
+                                    اختر الثيم الأنسب لمتجرك لتقديم أفضل تجربة تسوق لعملائك وزيادة معدل التحويل
                                 </p>
                             </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <a
+                        <Link
                             href="/admin/theme"
-                            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition duration-150"
+                            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition duration-150"
                         >
                             <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                             </svg>
                             تخصيص الألوان والخطوط
-                        </a>
-                        <a
-                            href="/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition duration-150"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                            زيارة واجهة المتجر الحية
-                        </a>
+                        </Link>
                     </div>
                 </div>
 
@@ -133,70 +129,13 @@ export default function ThemesIndex({ themes = {}, active_theme = 'default', act
                     </div>
                 )}
 
-                {/* Active Theme Highlight Hero Card */}
-                <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-                    <div className="p-6 md:p-8">
-                        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-                                <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${getThemeBannerGradient(active_theme)} flex items-center justify-center text-white shadow-md flex-shrink-0`}>
-                                    <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <div className="flex items-center gap-3 flex-wrap">
-                                        <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full flex items-center gap-1.5 border border-emerald-200">
-                                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                            الثيم النشط حالياً في متجرك
-                                        </span>
-                                        <span className="text-xs font-medium text-gray-400">الإصدار {activeThemeObj.version || '1.0.0'}</span>
-                                    </div>
-                                    <h2 className="text-2xl font-extrabold text-gray-900 mt-2">
-                                        {activeThemeObj.name}
-                                    </h2>
-                                    <p className="text-gray-600 text-sm mt-1 max-w-2xl leading-relaxed">
-                                        {activeThemeObj.description}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-3 w-full lg:w-auto">
-                                <a
-                                    href="/admin/theme"
-                                    className="flex-1 lg:flex-none text-center px-5 py-3 text-sm font-bold text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-xl transition duration-150"
-                                >
-                                    تخصيص الثيم
-                                </a>
-                                <a
-                                    href="/"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex-1 lg:flex-none text-center px-6 py-3 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition duration-150"
-                                >
-                                    معاينة المتجر الحي
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Available Themes Section Header */}
-                <div className="flex items-center justify-between border-b border-gray-200 pb-4">
-                    <div>
-                        <h2 className="text-xl font-bold text-gray-900">مكتبة الثيمات المتاحة</h2>
-                        <p className="text-xs text-gray-500 mt-1">اختر أي ثيم للتبديل الفوري دون فقدان أي بيانات لمنتجاتك أو إعداداتك</p>
-                    </div>
-                    <span className="text-sm font-semibold text-gray-500 bg-gray-100 px-3 py-1 rounded-lg">
-                        {themesList.length} قوالب متاحة
-                    </span>
-                </div>
-
                 {/* Themes Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {themesList.map((theme) => {
-                        const isActive = theme.slug === active_theme;
-                        const badge = getThemeBadge(theme.slug);
+                        const isActive = theme.slug === currentActiveTheme;
                         const isActivating = activatingSlug === theme.slug;
+                        const themeName = getCleanThemeName(theme);
+                        const mockupSrc = getThemeMockupImage(theme.slug);
 
                         return (
                             <div
@@ -207,104 +146,92 @@ export default function ThemesIndex({ themes = {}, active_theme = 'default', act
                                         : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
                                 }`}
                             >
-                                {/* Theme Visual Preview Header */}
-                                <div className={`h-40 bg-gradient-to-br ${getThemeBannerGradient(theme.slug)} p-6 flex flex-col justify-between text-white relative overflow-hidden`}>
-                                    <div className="flex items-center justify-between z-10">
-                                        <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border bg-white/95 backdrop-blur-sm shadow-sm ${badge.bg}`}>
-                                            {badge.text}
-                                        </span>
-                                        {isActive && (
-                                            <span className="px-2.5 py-1 bg-emerald-500 text-white text-[11px] font-bold rounded-full flex items-center gap-1 shadow-sm">
-                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                {/* 1. Mockup Image with Active Badge */}
+                                <div className="relative aspect-[16/10] bg-gray-100 overflow-hidden group cursor-pointer" onClick={() => handleOpenPreview(theme.slug)}>
+                                    <img
+                                        src={mockupSrc}
+                                        alt={themeName}
+                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = '/shop/images/themes/default-preview.svg';
+                                        }}
+                                    />
+
+                                    {/* Active Badge */}
+                                    {isActive && (
+                                        <div className="absolute top-3 right-3 z-10">
+                                            <span className="px-3 py-1 bg-emerald-600 text-white text-xs font-bold rounded-full flex items-center gap-1.5 shadow-md">
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
                                                 </svg>
-                                                نشط الآن
+                                                ثيمك الحالي
                                             </span>
-                                        )}
-                                    </div>
+                                        </div>
+                                    )}
 
-                                    <div className="z-10">
-                                        <h3 className="text-lg font-bold text-white drop-shadow-sm">
-                                            {theme.name}
-                                        </h3>
-                                        <p className="text-xs text-white/80 line-clamp-1 mt-0.5">
-                                            {theme.author || 'Fast Order Team'}
-                                        </p>
+                                    {/* Hover Overlay with Quick Preview Hint */}
+                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <span className="px-4 py-2 bg-white/95 text-gray-900 text-xs font-bold rounded-xl shadow-lg flex items-center gap-2">
+                                            <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                            انقر للمعاينة الكاملة
+                                        </span>
                                     </div>
-
-                                    {/* Subtle decorative circles */}
-                                    <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
-                                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-black/10 rounded-full blur-xl"></div>
                                 </div>
 
-                                {/* Card Body */}
-                                <div className="p-5 flex-1 flex flex-col justify-between">
-                                    <div>
-                                        <p className="text-xs text-gray-600 leading-relaxed min-h-[48px]">
-                                            {theme.description}
-                                        </p>
-
-                                        {/* Highlights */}
-                                        <div className="mt-4 pt-3 border-t border-gray-100 flex flex-wrap gap-1.5">
-                                            {theme.slug === 'fast_cod' && (
-                                                <>
-                                                    <span className="px-2 py-0.5 bg-gray-50 border border-gray-200 text-gray-600 text-[11px] rounded-md font-medium">فورم بالصفحة</span>
-                                                    <span className="px-2 py-0.5 bg-gray-50 border border-gray-200 text-gray-600 text-[11px] rounded-md font-medium">شريط عائم</span>
-                                                    <span className="px-2 py-0.5 bg-gray-50 border border-gray-200 text-gray-600 text-[11px] rounded-md font-medium">باقات كميات</span>
-                                                </>
-                                            )}
-                                            {theme.slug === 'luxury_store' && (
-                                                <>
-                                                    <span className="px-2 py-0.5 bg-gray-50 border border-gray-200 text-gray-600 text-[11px] rounded-md font-medium">ستايل شوبيفاي</span>
-                                                    <span className="px-2 py-0.5 bg-gray-50 border border-gray-200 text-gray-600 text-[11px] rounded-md font-medium">فلاتر جانبية</span>
-                                                    <span className="px-2 py-0.5 bg-gray-50 border border-gray-200 text-gray-600 text-[11px] rounded-md font-medium">سلة أنيقة</span>
-                                                </>
-                                            )}
-                                            {theme.slug === 'default' && (
-                                                <>
-                                                    <span className="px-2 py-0.5 bg-gray-50 border border-gray-200 text-gray-600 text-[11px] rounded-md font-medium">كلاسيك شامل</span>
-                                                    <span className="px-2 py-0.5 bg-gray-50 border border-gray-200 text-gray-600 text-[11px] rounded-md font-medium">RTL كامل</span>
-                                                </>
-                                            )}
-                                        </div>
+                                {/* 2. Theme Name and Action Buttons */}
+                                <div className="p-4 flex flex-col justify-between flex-1 gap-4">
+                                    {/* Name */}
+                                    <div className="text-center pt-1">
+                                        <h3 className="text-base font-extrabold text-gray-900">
+                                            {themeName}
+                                        </h3>
                                     </div>
 
-                                    {/* Action Buttons */}
-                                    <div className="mt-5 pt-3 border-t border-gray-100">
+                                    {/* 3. Actions: Preview button + Activate button ONLY */}
+                                    <div className="pt-3 border-t border-gray-100 flex items-center gap-2.5">
+                                        {/* زرار المعاينة */}
+                                        <button
+                                            type="button"
+                                            onClick={() => handleOpenPreview(theme.slug)}
+                                            className="flex-1 py-2.5 px-3 text-xs font-bold text-gray-700 hover:text-indigo-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-indigo-200 rounded-xl transition flex items-center justify-center gap-1.5"
+                                        >
+                                            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                            معاينة
+                                        </button>
+
+                                        {/* زرار التفعيل */}
                                         {isActive ? (
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex-1 py-2.5 px-3 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-xl text-center border border-emerald-200 flex items-center justify-center gap-1.5">
-                                                    <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-                                                    </svg>
-                                                    هو الثيم النشط لمتجرك
-                                                </div>
-                                                <a
-                                                    href="/admin/theme"
-                                                    className="py-2.5 px-3 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition"
-                                                >
-                                                    تخصيص
-                                                </a>
-                                            </div>
+                                            <button
+                                                type="button"
+                                                disabled
+                                                className="flex-1 py-2.5 px-3 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-300 rounded-xl flex items-center justify-center gap-1 cursor-default"
+                                            >
+                                                <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                ثيمك الحالي
+                                            </button>
                                         ) : (
                                             <button
                                                 type="button"
                                                 onClick={() => handleActivate(theme.slug)}
                                                 disabled={isActivating}
-                                                className="w-full py-2.5 px-4 text-xs font-bold text-white bg-gray-900 hover:bg-indigo-600 disabled:bg-gray-400 rounded-xl shadow-sm transition duration-150 flex items-center justify-center gap-2"
+                                                className="flex-1 py-2.5 px-3 text-xs font-bold text-white bg-gray-900 hover:bg-indigo-600 disabled:bg-gray-400 rounded-xl shadow-sm transition duration-150 flex items-center justify-center gap-1.5"
                                             >
                                                 {isActivating ? (
                                                     <>
-                                                        <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                                        <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                                         جاري التفعيل...
                                                     </>
                                                 ) : (
-                                                    <>
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                        تفعيل هذا الثيم
-                                                    </>
+                                                    'تفعيل'
                                                 )}
                                             </button>
                                         )}

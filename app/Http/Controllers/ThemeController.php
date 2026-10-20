@@ -39,17 +39,17 @@ class ThemeController extends Controller
             'css_variables' => $cssVariables,
         ];
 
-        // 1. API or AJAX Request
+        // 1. React / Inertia Support (Check Inertia first)
+        if ($request->header('X-Inertia') || (class_exists(\Inertia\Inertia::class) && !$request->wantsJson())) {
+            return \Inertia\Inertia::render('Merchant/Themes/Index', $data);
+        }
+
+        // 2. API or AJAX Request (non-Inertia only)
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'status' => 'success',
                 'data' => $data,
             ]);
-        }
-
-        // 2. React / Inertia Support (if Inertia is installed and requested)
-        if (class_exists(\Inertia\Inertia::class) && ($request->header('X-Inertia') || $request->is('merchant/*'))) {
-            return \Inertia\Inertia::render('Merchant/Themes/Index', $data);
         }
 
         // 3. Blade Views Fallback
@@ -108,6 +108,9 @@ class ThemeController extends Controller
         $themeSlug = $request->input('theme') ?? $request->input('slug');
 
         if (empty($themeSlug)) {
+            if ($request->header('X-Inertia')) {
+                return Redirect::back()->withErrors(['theme' => 'يرجى تحديد الثيم المطلوب تفعيله']);
+            }
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'status' => 'error',
@@ -118,6 +121,9 @@ class ThemeController extends Controller
         }
 
         if (!$this->themeService->isThemeAvailable($themeSlug)) {
+            if ($request->header('X-Inertia')) {
+                return Redirect::back()->withErrors(['theme' => 'هذا الثيم غير متاح أو تعذر الوصول لمجلد ملفاته']);
+            }
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'status' => 'error',
@@ -138,6 +144,10 @@ class ThemeController extends Controller
         $themes = $this->themeService->getAllThemes();
         $themeName = $themes[$themeSlug]['name'] ?? $themeSlug;
         $successMessage = "تم تفعيل الثيم بنجاح: {$themeName}";
+
+        if ($request->header('X-Inertia')) {
+            return Redirect::back()->with('status', $successMessage)->with('success', $successMessage);
+        }
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
