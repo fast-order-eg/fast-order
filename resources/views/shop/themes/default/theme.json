@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "author": "Fast Order Team",
     "description": "تصميم كلاسيكي نظيف وأنيق مناسب لكافة أنواع المتاجر الإلكترونية، يتميز بتجاوب كامل مع الشاشات، دعم كامل للاتجاهين RTL و LTR، وتخصيص مرن للألوان والخطوط عبر متغيرات CSS.",
-    "thumbnail": "/shop/themes/default/thumbnail.png",
+    "thumbnail": "/shop/images/themes/default_mockup.webp",
     "layouts": {
         "header": [
             { "id": "Classic", "name": "كلاسيكي تقليدي", "name_en": "Classic" },

@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>أورا سمارت — AURA TECH | متجر الأجهزة الذكية الأصلي</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #16a34a;
+      --primary-dark: #15803d;
+      --primary-light: #f0fdf4;
+      --secondary: #0f172a;
+      --accent: #f97316;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-top: 48px;
+    }
+    /* Demo Top Bar */
+    .demo-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 99999;
+      background: #0f172a;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .demo-bar-info { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+    .demo-bar-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 8px #22c55e; }
+    .demo-bar-actions { display: flex; align-items: center; gap: 10px; }
+    .btn-demo-activate {
+      background: #16a34a;
+      color: #fff;
+      padding: 6px 16px;
+      border-radius: 8px;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      transition: .2s;
+    }
+    .btn-demo-activate:hover { background: #15803d; }
+    .btn-demo-back {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      text-decoration: none;
+    }
+
+    /* Store Header */
+    .promo-strip {
+      background: linear-gradient(90deg, #15803d, #16a34a);
+      color: #fff;
+      text-align: center;
+      padding: 7px 16px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .main-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 48px;
+      z-index: 1000;
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--secondary);
+    }
+    .logo-badge {
+      width: 40px; height: 40px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 900;
+    }
+    .logo-name { font-size: 19px; font-weight: 900; }
+    .logo-sub { font-size: 10px; color: var(--muted); font-weight: 700; display: block; }
+    .nav-links { display: flex; align-items: center; gap: 20px; }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--secondary);
+      font-size: 13px;
+      font-weight: 700;
+      transition: color .2s;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--primary); }
+    .header-cta { display: flex; align-items: center; gap: 12px; }
+    .btn-header-cart {
+      background: #f1f5f9;
+      color: var(--secondary);
+      padding: 8px 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cart-count { background: var(--primary); color: #fff; font-size: 11px; padding: 2px 7px; border-radius: 10px; }
+
+    /* Hero Banner */
+    .hero-sec {
+      background: linear-gradient(135deg, #064e3b 0%, #0f172a 100%);
+      color: #ffffff;
+      padding: 60px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-sec::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+      opacity: 0.15;
+    }
+    .hero-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      align-items: center;
+      gap: 40px;
+      position: relative;
+    }
+    @media (max-width: 820px) {
+      .hero-container { grid-template-columns: 1fr; text-align: center; }
+      .nav-links { display: none; }
+    }
+    .hero-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+    .hero-title {
+      font-size: clamp(28px, 4.5vw, 46px);
+      font-weight: 900;
+      line-height: 1.3;
+      margin-bottom: 16px;
+    }
+    .hero-desc { font-size: 16px; color: #cbd5e1; margin-bottom: 24px; line-height: 1.7; }
+    .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+    @media (max-width: 820px) { .hero-btns { justify-content: center; } }
+    .btn-hero-primary {
+      background: var(--primary);
+      color: #fff;
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-weight: 900;
+      font-size: 15px;
+      text-decoration: none;
+      box-shadow: 0 10px 25px rgba(22, 163, 74, 0.4);
+      transition: .2s;
+    }
+    .btn-hero-primary:hover { transform: translateY(-2px); background: var(--primary-dark); }
+    .btn-hero-secondary {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 14px;
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .hero-img-wrap {
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+      border: 3px solid rgba(255,255,255,0.1);
+    }
+    .hero-img-wrap img { width: 100%; height: auto; display: block; }
+
+    /* Features Grid */
+    .features-strip {
+      max-width: 1200px;
+      margin: -25px auto 40px;
+      padding: 0 20px;
+      position: relative;
+      z-index: 10;
+    }
+    .features-card-grid {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 20px 24px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+    }
+    @media (max-width: 768px) { .features-card-grid { grid-template-columns: repeat(2, 1fr); } }
+    .feature-box { display: flex; align-items: center; gap: 12px; }
+    .feature-icon { font-size: 26px; }
+    .feature-title { font-size: 13px; font-weight: 800; color: var(--secondary); }
+    .feature-sub { font-size: 11px; color: var(--muted); }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-title { font-size: 22px; font-weight: 900; color: var(--secondary); }
+    .section-link { font-size: 13px; font-weight: 800; color: var(--primary); text-decoration: none; }
+
+    /* Products Grid */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
+      margin-bottom: 50px;
+    }
+    @media (max-width: 960px) { .products-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 540px) { .products-grid { grid-template-columns: 1fr; } }
+
+    .product-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.06); }
+    .product-img-wrap {
+      height: 220px;
+      background: #f1f5f9;
+      position: relative;
+      overflow: hidden;
+    }
+    .product-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .discount-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+    .product-content { padding: 16px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .product-cat { font-size: 11px; color: var(--muted); font-weight: 700; margin-bottom: 4px; }
+    .product-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--secondary);
+      line-height: 1.4;
+      margin-bottom: 10px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .price-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+    .price-now { font-size: 18px; font-weight: 900; color: var(--primary); }
+    .price-was { font-size: 13px; color: #94a3b8; text-decoration: line-through; }
+    .btn-card-buy {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      padding: 10px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background .2s;
+    }
+    .btn-card-buy:hover { background: var(--primary-dark); }
+
+    /* Footer */
+    .store-footer {
+      background: #0f172a;
+      color: #cbd5e1;
+      padding: 40px 20px 20px;
+      margin-top: 60px;
+      font-size: 13px;
+    }
+    .footer-grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 30px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr; } }
+    .footer-col h4 { color: #fff; font-size: 15px; font-weight: 800; margin-bottom: 12px; }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 8px; }
+    .footer-col ul li a { color: #94a3b8; text-decoration: none; }
+    .footer-col ul li a:hover { color: #fff; }
+    .footer-bottom {
+      max-width: 1200px;
+      margin: 20px auto 0;
+      text-align: center;
+      font-size: 12px;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Demo Bar -->
+  <div class="demo-bar">
+    <div class="demo-bar-info">
+      <span class="demo-bar-dot"></span>
+      <span>معاينة حية لمتجر متكامل: ثيم سريع كود (COD Express)</span>
+    </div>
+    <div class="demo-bar-actions">
+      <button onclick="activateTheme('fast_cod')" class="btn-demo-activate">تفعيل هذا الثيم لمتجري الآن ✓</button>
+      <a href="https://dokan.fast-order-eg.tech/admin/themes" class="btn-demo-back">الرجوع للوحة التحكم</a>
+    </div>
+  </div>
+
+  <!-- Announcement -->
+  <div class="promo-strip">
+    ⚡ عروض حصرية اليوم: شحن مجاني لكافة محافظات مصر + الدفع والمعاينة عند الاستلام!
+  </div>
+
+  <!-- Header -->
+  <header class="main-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <div class="logo-badge">A</div>
+        <div>
+          <span class="logo-name">أورا سمارت — AURA TECH</span>
+          <span class="logo-sub">المتجر الأول للأجهزة الذكية والأناقة</span>
+        </div>
+      </a>
+
+      <nav class="nav-links">
+        <a href="index.html" class="active">الرئيسية</a>
+        <a href="products.html">جميع المنتجات</a>
+        <a href="product.html">عرض الساعة الذكية ⚡</a>
+        <a href="cart.html">السلة</a>
+        <a href="checkout.html">إتمام الطلب</a>
+      </nav>
+
+      <div class="header-cta">
+        <a href="cart.html" class="btn-header-cart">
+          <span>🛒 السلة</span>
+          <span class="cart-count">1</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-sec">
+    <div class="hero-container">
+      <div>
+        <span class="hero-badge">🔥 العرض الأكثر طلباً هذا الأسبوع</span>
+        <h1 class="hero-title">ساعة الترا ماكس 9 الذكية + سماعة برو هدية مجانية</h1>
+        <p class="hero-desc">
+          شاشة أموليد عملاقة ضد الصدمات، مكالمات بلوتوث، بطارية تدوم 5 أيام، مع 3 أساور إضافية تناسب كل إطلالاتك. الدفع عند الاستلام بعد المعاينة!
+        </p>
+        <div class="hero-btns">
+          <a href="product.html" class="btn-hero-primary">اطلب العرض الآن — 599 ج.م ⚡</a>
+          <a href="products.html" class="btn-hero-secondary">تصفح باقي المنتجات</a>
+        </div>
+      </div>
+      <div class="hero-img-wrap">
+        <img src="https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=800&q=80" alt="ساعة الترا ماكس">
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Strip -->
+  <div class="features-strip">
+    <div class="features-card-grid">
+      <div class="feature-box">
+        <span class="feature-icon">🚚</span>
+        <div>
+          <div class="feature-title">شحن سريع 24-48 ساعة</div>
+          <div class="feature-sub">توصيل لحد باب بيتك بجميع المحافظات</div>
+        </div>
+      </div>
+      <div class="feature-box">
+        <span class="feature-icon">📦</span>
+        <div>
+          <div class="feature-title">معاينة قبل الدفع</div>
+          <div class="feature-sub">افتح الشحنة واتأكد بنفسك قبل ما تدفع</div>
+        </div>
+      </div>
+      <div class="feature-box">
+        <span class="feature-icon">💵</span>
+        <div>
+          <div class="feature-title">الدفع عند الاستلام</div>
+          <div class="feature-sub">تسوق بكل أمان وراحة بال كاش</div>
+        </div>
+      </div>
+      <div class="feature-box">
+        <span class="feature-icon">🛡️</span>
+        <div>
+          <div class="feature-title">ضمان استبدال 14 يوم</div>
+          <div class="feature-sub">استبدال فوري في حالة أي عيب صناعة</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Featured Products Catalog Grid -->
+  <main class="container">
+    <div class="section-head">
+      <h2 class="section-title">الأكثر مبيعاً في الأجهزة الذكية</h2>
+      <a href="products.html" class="section-link">عرض كافة المنتجات (12) ←</a>
+    </div>
+
+    <div class="products-grid">
+      <!-- Product 1 (Featured) -->
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <span class="discount-badge">وفر 351 ج.م</span>
+          <img src="https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=600&q=80" alt="ساعة الترا ماكس">
+        </div>
+        <div class="product-content">
+          <div>
+            <div class="product-cat">ساعات ذكية</div>
+            <h3 class="product-name">ساعة الترا ماكس 9 الذكية + سماعة برو + 3 أساور</h3>
+            <div class="price-row">
+              <span class="price-now">599 ج.م</span>
+              <span class="price-was">950 ج.م</span>
+            </div>
+          </div>
+          <a href="product.html" class="btn-card-buy">طلب فوري بالدفع عند الاستلام ⚡</a>
+        </div>
+      </div>
+
+      <!-- Product 2 -->
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <span class="discount-badge">وفر 200 ج.م</span>
+          <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80" alt="سماعات برو">
+        </div>
+        <div class="product-content">
+          <div>
+            <div class="product-cat">صوتيات</div>
+            <h3 class="product-name">سماعة رأس لاسلكية بخاصية عزل الضوضاء التفاعلي</h3>
+            <div class="price-row">
+              <span class="price-now">799 ج.م</span>
+              <span class="price-was">999 ج.م</span>
+            </div>
+          </div>
+          <a href="product.html" class="btn-card-buy">طلب فوري بالدفع عند الاستلام ⚡</a>
+        </div>
+      </div>
+
+      <!-- Product 3 -->
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <span class="discount-badge">وفر 150 ج.م</span>
+          <img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=600&q=80" alt="سوار رياضي">
+        </div>
+        <div class="product-content">
+          <div>
+            <div class="product-cat">إكسسوارات</div>
+            <h3 class="product-name">سوار ذكي لتتبع اللياقة ونبضات القلب ضد الماء</h3>
+            <div class="price-row">
+              <span class="price-now">399 ج.م</span>
+              <span class="price-was">549 ج.م</span>
+            </div>
+          </div>
+          <a href="product.html" class="btn-card-buy">طلب فوري بالدفع عند الاستلام ⚡</a>
+        </div>
+      </div>
+
+      <!-- Product 4 -->
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <span class="discount-badge">وفر 250 ج.م</span>
+          <img src="https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=600&q=80" alt="شاحن لاسلكي">
+        </div>
+        <div class="product-content">
+          <div>
+            <div class="product-cat">شواحن وبطاريات</div>
+            <h3 class="product-name">قاعدة شحن لاسلكي 3 في 1 للساعة والموبايل والسماعة</h3>
+            <div class="price-row">
+              <span class="price-now">499 ج.م</span>
+              <span class="price-was">749 ج.م</span>
+            </div>
+          </div>
+          <a href="product.html" class="btn-card-buy">طلب فوري بالدفع عند الاستلام ⚡</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="store-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>أورا سمارت — AURA TECH</h4>
+        <p style="line-height: 1.8; color: #94a3b8;">
+          متجرك الموثوق للأجهزة الذكية والأناقة الأصلية في مصر. نقدم منتجات أصلية مع ضمان المعاينة قبل الدفع والتوصيل السريع خلال 24-48 ساعة لجميع المحافظات.
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4>روابط سريعة</h4>
+        <ul>
+          <li><a href="index.html">الرئيسية</a></li>
+          <li><a href="products.html">جميع المنتجات</a></li>
+          <li><a href="cart.html">سلة الشراء</a></li>
+          <li><a href="checkout.html">إتمام الطلب</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>خدمة العملاء</h4>
+        <ul>
+          <li>واتساب: 01098765432</li>
+          <li>أوقات العمل: يومياً من 10 ص حتى 10 م</li>
+          <li>الدفع: نقدياً عند الاستلام بعد المعاينة</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      جميع الحقوق محفوظة © 2026 متجر أورا سمارت — مشغل بواسطة منصة فاست أوردر
+    </div>
+  </footer>
+
+  <script>
+    function activateTheme(slug) {
+      if (window.opener && !window.opener.closed) {
+        try {
+          window.opener.location.href = '/admin/themes?activate=' + slug;
+          window.close();
+          return;
+        } catch(e) {}
+      }
+      window.location.href = 'https://dokan.fast-order-eg.tech/admin/themes?activate=' + slug;
+    }
+  </script>
+</body>
+</html>

@@ -58,16 +58,16 @@ export default function ThemesIndex({ themes = {}, active_theme = 'default', act
         }
     };
 
-    // Preview image path helper (Desktop + Mobile Mockup)
+    // Preview image path helper (Desktop + Mobile Mockup from actual site)
     const getThemeMockupImage = (slug) => {
         switch (slug) {
             case 'fast_cod':
-                return '/shop/images/themes/fast_cod-preview.svg';
+                return '/shop/images/themes/fast_cod_mockup.webp';
             case 'luxury_store':
-                return '/shop/images/themes/luxury_store-preview.svg';
+                return '/shop/images/themes/luxury_store_mockup.webp';
             case 'default':
             default:
-                return '/shop/images/themes/default-preview.svg';
+                return '/shop/images/themes/default_mockup.webp';
         }
     };
 
@@ -84,16 +84,16 @@ export default function ThemesIndex({ themes = {}, active_theme = 'default', act
         });
     };
 
-    // Standalone Demo Store Preview URLs
+    // Standalone Multi-Page Demo Store URLs (Permanent Official Main Domain)
     const PREVIEW_DEMO_URLS = {
-        fast_cod: '/theme-previews/fast_cod.html',
-        luxury_store: '/theme-previews/luxury_store.html',
-        default: '/theme-previews/fast_cod.html',
+        fast_cod: 'https://fast-order-eg.tech/demo-stores/fast-cod/',
+        luxury_store: 'https://fast-order-eg.tech/demo-stores/luxury-store/',
+        default: 'https://fast-order-eg.tech/demo-stores/fast-cod/',
     };
 
     // Open Live Full Preview in new tab (standalone demo store)
     const handleOpenPreview = (slug) => {
-        const previewUrl = PREVIEW_DEMO_URLS[slug] || `/theme-previews/${slug}.html`;
+        const previewUrl = PREVIEW_DEMO_URLS[slug] || `https://fast-order-eg.tech/demo-stores/${slug}/`;
         window.open(previewUrl, '_blank');
     };
 

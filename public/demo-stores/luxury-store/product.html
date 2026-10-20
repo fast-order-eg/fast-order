@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>عطر رويال عود إمبريال | LUMIÈRE PARIS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #18181b;
+      --primary-hover: #09090b;
+      --secondary: #71717a;
+      --accent: #d97706;
+      --bg: #fafafa;
+      --card-bg: #ffffff;
+      --border: #e4e4e7;
+      --text: #18181b;
+      --muted: #71717a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-top: 50px;
+    }
+
+    /* Top Demo Bar */
+    .demo-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 99999;
+      background: #18181b;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 24px;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .demo-bar .info { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+    .demo-bar .dot { width: 8px; height: 8px; background: #eab308; border-radius: 50%; box-shadow: 0 0 10px #eab308; }
+    .demo-bar .btn-activate {
+      background: #ffffff;
+      color: #18181b;
+      padding: 6px 18px;
+      border-radius: 6px;
+      font-weight: 800;
+      text-decoration: none;
+      font-size: 12px;
+      cursor: pointer;
+      border: none;
+      transition: .2s;
+    }
+    .demo-bar .btn-activate:hover { background: #e4e4e7; }
+    .demo-bar .btn-close {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      text-decoration: none;
+    }
+
+    /* Store Header */
+    .store-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 48px;
+      z-index: 1000;
+    }
+    .top-promo {
+      background: #18181b;
+      color: #fafafa;
+      text-align: center;
+      padding: 7px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .header-main {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-nav { display: flex; align-items: center; gap: 24px; }
+    .header-nav a {
+      text-decoration: none;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      transition: color .2s;
+    }
+    .header-nav a:hover, .header-nav a.active { color: var(--accent); }
+    .brand-logo { text-decoration: none; text-align: center; }
+    .brand-logo-text {
+      font-family: 'Times New Roman', serif;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 4px;
+      color: #18181b;
+      display: block;
+    }
+    .brand-logo-sub { font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+
+    .btn-cart-toggle {
+      background: #f4f4f5;
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: .2s;
+    }
+    .btn-cart-toggle:hover { background: #18181b; color: #fff; }
+    .cart-badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Container */
+    .container { max-width: 1240px; margin: 40px auto; padding: 0 24px; }
+
+    /* Breadcrumbs */
+    .breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    .breadcrumbs a { color: var(--muted); text-decoration: none; }
+    .breadcrumbs a:hover { color: var(--text); }
+
+    /* Product Main Grid */
+    .product-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 50px;
+      align-items: start;
+      margin-bottom: 60px;
+    }
+    @media (max-width: 900px) {
+      .product-layout { grid-template-columns: 1fr; gap: 30px; }
+    }
+
+    /* Gallery */
+    .lux-gallery { display: flex; flex-direction: column; gap: 16px; }
+    .lux-main-photo {
+      background: #f4f4f5;
+      border-radius: 8px;
+      overflow: hidden;
+      aspect-ratio: 1/1;
+      position: relative;
+      border: 1px solid var(--border);
+    }
+    .lux-main-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .4s ease;
+    }
+    .lux-main-photo:hover img { transform: scale(1.03); }
+    .lux-badge-exclusive {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: #18181b;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      padding: 6px 14px;
+      border-radius: 4px;
+    }
+
+    .lux-thumbs-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .lux-thumb {
+      aspect-ratio: 1/1;
+      background: #f4f4f5;
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: .2s;
+    }
+    .lux-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .lux-thumb.active { border-color: #18181b; box-shadow: 0 0 0 1px #18181b; }
+
+    /* Details */
+    .lux-details { display: flex; flex-direction: column; gap: 20px; }
+    .lux-brand-name { font-size: 12px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; font-weight: 800; }
+    .lux-title { font-size: 30px; font-weight: 900; line-height: 1.3; color: #18181b; }
+    .lux-rating { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    .lux-stars { color: #d97706; }
+
+    .lux-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      padding: 14px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .lux-current-price { font-size: 32px; font-weight: 900; color: #18181b; }
+    .lux-old-price { font-size: 18px; color: #a1a1aa; text-decoration: line-through; }
+    .lux-price-note { font-size: 12px; color: var(--accent); font-weight: 700; margin-right: auto; }
+
+    .lux-notes-box {
+      background: #fbfbfb;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px;
+      font-size: 13px;
+    }
+    .lux-notes-title { font-weight: 800; margin-bottom: 8px; color: #18181b; }
+    .lux-note-pill {
+      display: inline-block;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin: 3px;
+      color: #3f3f46;
+    }
+
+    /* Size Selector */
+    .lux-sizes { display: flex; gap: 12px; }
+    .lux-size-btn {
+      flex: 1;
+      padding: 14px;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: .2s;
+    }
+    .lux-size-btn.active {
+      border-color: #18181b;
+      background: #18181b;
+      color: #fff;
+    }
+
+    /* COD Form Box */
+    .cod-box {
+      background: #ffffff;
+      border: 1.5px solid #18181b;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+    }
+    .cod-box-header { margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+    .cod-box-title { font-size: 16px; font-weight: 900; color: #18181b; display: flex; align-items: center; gap: 8px; }
+    .cod-box-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; color: #3f3f46; }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .form-input:focus, .form-select:focus { border-color: #18181b; }
+
+    .btn-submit-order {
+      width: 100%;
+      background: #18181b;
+      color: #ffffff;
+      padding: 18px;
+      border-radius: 4px;
+      border: none;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: .2s;
+      margin-top: 10px;
+    }
+    .btn-submit-order:hover { background: #09090b; transform: translateY(-1px); }
+
+    /* Trust Pillars */
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      padding: 40px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin: 50px 0;
+    }
+    @media (max-width: 768px) { .pillars-grid { grid-template-columns: repeat(2, 1fr); } }
+    .pillar-item { text-align: center; }
+    .pillar-icon { font-size: 26px; margin-bottom: 8px; display: block; }
+    .pillar-title { font-size: 13px; font-weight: 800; color: #18181b; margin-bottom: 4px; }
+    .pillar-desc { font-size: 11px; color: var(--muted); }
+
+    /* Curated Grid */
+    .curated-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-top: 24px;
+    }
+    @media (max-width: 990px) { .curated-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { .curated-grid { grid-template-columns: 1fr; } }
+    .curated-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: box-shadow .2s;
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      color: inherit;
+    }
+    .curated-card:hover { box-shadow: 0 10px 25px rgba(0,0,0,0.06); }
+    .curated-img { height: 260px; background: #f4f4f5; overflow: hidden; }
+    .curated-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+    .curated-card:hover .curated-img img { transform: scale(1.04); }
+    .curated-body { padding: 18px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; }
+    .curated-cat { font-size: 10px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+    .curated-name { font-size: 14px; font-weight: 800; color: #18181b; }
+    .curated-price { font-size: 15px; font-weight: 900; color: #18181b; }
+
+    /* Reviews */
+    .reviews-section { margin-top: 60px; }
+    .reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
+    @media (max-width: 768px) { .reviews-grid { grid-template-columns: 1fr; } }
+    .review-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px;
+    }
+    .review-author { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .review-name { font-weight: 800; font-size: 13px; }
+    .review-badge { font-size: 11px; color: #16a34a; font-weight: 700; }
+    .review-text { font-size: 13px; color: #52525b; line-height: 1.7; }
+
+    /* Footer */
+    .lux-footer {
+      background: #18181b;
+      color: #a1a1aa;
+      padding: 60px 24px 30px;
+      margin-top: 80px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      font-size: 13px;
+    }
+    .footer-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    @media (max-width: 768px) { .footer-inner { grid-template-columns: 1fr; } }
+    .lux-footer h4 { color: #fff; font-size: 15px; font-weight: 800; margin-bottom: 14px; letter-spacing: 1px; }
+    .lux-footer ul { list-style: none; }
+    .lux-footer ul li { margin-bottom: 10px; }
+    .lux-footer ul li a { color: #a1a1aa; text-decoration: none; }
+    .lux-footer ul li a:hover { color: #fff; }
+    .footer-copy { text-align: center; margin-top: 24px; font-size: 12px; color: #71717a; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100000;
+      padding: 20px;
+    }
+    .modal-card {
+      background: #fff;
+      border-radius: 8px;
+      max-width: 480px;
+      width: 100%;
+      padding: 36px 28px;
+      text-align: center;
+    }
+    .modal-icon { width: 64px; height: 64px; background: #18181b; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 16px; }
+  </style>
+</head>
+<body>
+
+  <!-- Demo Bar -->
+  <div class="demo-bar">
+    <div class="info">
+      <span class="dot"></span>
+      <span>معاينة حية لمتجر متكامل: ثيم المتجر الفاخر (Luxury Store)</span>
+    </div>
+    <div class="actions">
+      <button onclick="activateTheme('luxury_store')" class="btn-activate">تفعيل هذا الثيم لمتجري الآن ✓</button>
+      <a href="https://dokan.fast-order-eg.tech/admin/themes" class="btn-close">الرجوع للوحة التحكم</a>
+    </div>
+  </div>
+
+  <!-- Store Header -->
+  <header class="store-header">
+    <div class="top-promo">
+      شحن حصري مجاني مع تغليف الهدايا المخملي الفاخر لجميع المحافظات
+    </div>
+    <div class="header-main">
+      <nav class="header-nav">
+        <a href="index.html">الرئيسية</a>
+        <a href="products.html">التشكيلة الكاملة</a>
+        <a href="product.html" class="active">عطر رويال عود الملكي ✨</a>
+      </nav>
+
+      <a href="index.html" class="brand-logo">
+        <span class="brand-logo-text">L U M I È R E</span>
+        <span class="brand-logo-sub">Haute Parfumerie & Luxe</span>
+      </a>
+
+      <button class="btn-cart-toggle" onclick="document.getElementById('codBox').scrollIntoView({behavior: 'smooth'})">
+        <span>طلب فوري</span>
+        <span class="cart-badge">1</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs">
+      <a href="index.html">الرئيسية</a>
+      <span>/</span>
+      <a href="products.html">العطور الملكية</a>
+      <span>/</span>
+      <span>عطر رويال عود إمبريال</span>
+    </div>
+
+    <!-- Product Layout -->
+    <div class="product-layout">
+      <!-- Gallery -->
+      <div class="lux-gallery">
+        <div class="lux-main-photo">
+          <span class="lux-badge-exclusive">ÉDITION ROYALE</span>
+          <img id="luxMainImage" src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=900&q=80" alt="عطر رويال عود">
+        </div>
+
+        <div class="lux-thumbs-row">
+          <div class="lux-thumb active" onclick="switchLuxImage('https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=900&q=80', this)">
+            <img src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=300&q=80" alt="الزجاجة الكريستالية">
+          </div>
+          <div class="lux-thumb" onclick="switchLuxImage('https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=900&q=80', this)">
+            <img src="https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=300&q=80" alt="المكونات الطبيعية">
+          </div>
+          <div class="lux-thumb" onclick="switchLuxImage('https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80', this)">
+            <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80" alt="الفخامة الملكية">
+          </div>
+          <div class="lux-thumb" onclick="switchLuxImage('https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=900&q=80', this)">
+            <img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=300&q=80" alt="التغليف المخملي">
+          </div>
+        </div>
+      </div>
+
+      <!-- Details + Direct COD Form -->
+      <div class="lux-details">
+        <span class="lux-brand-name">LUMIÈRE PRIVATE COLLECTION</span>
+        <h1 class="lux-title">عطر رويال عود إمبريال — Royal Oud Impérial</h1>
+        
+        <div class="lux-rating">
+          <div class="lux-stars">★★★★★</div>
+          <span style="font-weight: 700; color: #18181b;">5.0</span>
+          <span style="color: var(--muted);">(380 تقييم من النخبة)</span>
+        </div>
+
+        <div class="lux-price-row">
+          <span class="lux-current-price" id="luxPrice">1,850 ج.م</span>
+          <span class="lux-old-price" id="luxOldPrice">2,450 ج.م</span>
+          <span class="lux-price-note">✓ وفر 600 ج.م + شحن مجاني</span>
+        </div>
+
+        <p style="font-size: 14px; color: #52525b; line-height: 1.8;">
+          توليفة استثنائية ونادرة تمزج عبق العود الكمبودي الملكي المعتق مع نفحات البرغموت الإيطالي والزعفران الإيراني وقاعدة من خشب الصندل والعنبر الأبيض. تركيز Extrait de Parfum فائق الثبات يدوم لأكثر من 48 ساعة.
+        </p>
+
+        <!-- Scent Pyramid -->
+        <div class="lux-notes-box">
+          <div class="lux-notes-title">الهرم العطري النادر:</div>
+          <div>
+            <span class="lux-note-pill">القمة: برغموت إيطالي، هيل ملكي</span>
+            <span class="lux-note-pill">القلب: ورد دمشقي، زعفران معتق</span>
+            <span class="lux-note-pill">القاعدة: عود كمبودي، عنبر أبيض، خشب الصندل</span>
+          </div>
+        </div>
+
+        <!-- Size Options -->
+        <div>
+          <label style="font-size: 12px; font-weight: 800; display: block; margin-bottom: 8px;">اختر سعة الزجاجة الكريستالية:</label>
+          <div class="lux-sizes">
+            <button type="button" class="lux-size-btn" onclick="selectVolume(50, 1250, 1650, this)">50 مل — 1,250 ج.م</button>
+            <button type="button" class="lux-size-btn active" onclick="selectVolume(100, 1850, 2450, this)">100 مل — 1,850 ج.م (الأكثر طلباً)</button>
+          </div>
+        </div>
+
+        <!-- Direct COD Form -->
+        <div class="cod-box" id="codBox">
+          <div class="cod-box-header">
+            <h3 class="cod-box-title">
+              <span>طلب مباشر — الدفع عند الاستلام بعد المعاينة</span>
+            </h3>
+            <p class="cod-box-sub">املأ بياناتك للشحن الفوري، لن تدفع أي مبالغ الآن حتى تعاين العطر بنفسك</p>
+          </div>
+
+          <form id="orderForm" onsubmit="handlePlaceOrder(event)">
+            <div class="form-group">
+              <label class="form-label">الاسم بالكامل *</label>
+              <input type="text" class="form-input" required placeholder="مثال: أحمد عبد الرحمن" value="د. هاني الشافعي">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">رقم الهاتف المحمول *</label>
+              <input type="tel" class="form-input" required placeholder="010XXXXXXXX" value="01012345678">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">المحافظة *</label>
+              <select class="form-select" required>
+                <option value="cairo" selected>القاهرة (شحن مجاني VIP)</option>
+                <option value="giza">الجيزة (شحن مجاني VIP)</option>
+                <option value="alex">الإسكندرية (شحن مجاني VIP)</option>
+                <option value="mansoura">المنصورة والدقهلية</option>
+                <option value="tanta">الغربية وطنطا</option>
+                <option value="other">باقي المحافظات</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">العنوان بالتفصيل *</label>
+              <input type="text" class="form-input" required placeholder="المدينة، اسم الشارع، رقم العمارة والشقة" value="حي الزمالك، شارع الجزيرة الوسطى، برج النيل">
+            </div>
+
+            <div style="background: #fbfbfb; padding: 12px; border-radius: 4px; margin-bottom: 14px; font-size: 13px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>قيمة العطر:</span>
+                <span id="formSubtotal" style="font-weight: 800;">1,850 ج.م</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px; color: #16a34a;">
+                <span>الشحن الملكي والتغليف:</span>
+                <span style="font-weight: 800;">مجاناً (0 ج.م)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 15px; border-top: 1px solid var(--border); padding-top: 6px; margin-top: 6px;">
+                <span>المبلغ المطلوب عند الاستلام:</span>
+                <span id="formTotal" style="color: #18181b;">1,850 ج.م</span>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit-order">
+              <span>تأكيد حجز العطر الملكي الآن ✓</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trust Pillars -->
+    <div class="pillars-grid">
+      <div class="pillar-item">
+        <span class="pillar-icon">⚜️</span>
+        <div class="pillar-title">أصالة وجودة مضمونة 100%</div>
+        <div class="pillar-desc">مكونات نقية مع شهادة أصالة ورقم تسلسلي خاص</div>
+      </div>
+      <div class="pillar-item">
+        <span class="pillar-icon">📦</span>
+        <div class="pillar-title">تغليف مخملي فاخر مجاناً</div>
+        <div class="pillar-desc">علبة خشبية مبطنة بالمخمل الأسود مناسبة للإهداء</div>
+      </div>
+      <div class="pillar-item">
+        <span class="pillar-icon">🚚</span>
+        <div class="pillar-title">معاينة وتجربة قبل الدفع</div>
+        <div class="pillar-desc">حق كامل في فحص الشحنة وتجربة العينة قبل السداد</div>
+      </div>
+      <div class="pillar-item">
+        <span class="pillar-icon">💎</span>
+        <div class="pillar-title">خدمة عملاء VIP خاصة</div>
+        <div class="pillar-desc">مستشار عطور متاح دائماً عبر الواتساب لخدمتك</div>
+      </div>
+    </div>
+
+    <!-- Customer Reviews -->
+    <div class="reviews-section">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <span style="font-size: 11px; letter-spacing: 2px; color: var(--accent); font-weight: 800; text-transform: uppercase;">تجارب العملاء</span>
+        <h2 style="font-size: 24px; font-weight: 900; margin-top: 4px;">تقييمات النخبة لعطر رويال عود</h2>
+      </div>
+
+      <div class="reviews-grid">
+        <div class="review-card">
+          <div class="review-author">
+            <span class="review-name">م. طارق العسقلاني</span>
+            <span class="review-badge">✓ مشترٍ موثق</span>
+          </div>
+          <div class="lux-stars" style="margin-bottom: 8px;">★★★★★</div>
+          <p class="review-text">
+            "العطر يفوق الوصف بمراحل، ثبات فظيع ريحته بتفضل في البدلة لثلاث أيام، والتغليف المخملي فخم جداً ينفع هدية راقية جداً."
+          </p>
+        </div>
+
+        <div class="review-card">
+          <div class="review-author">
+            <span class="review-name">د. نورهان عبد الوهاب</span>
+            <span class="review-badge">✓ مشترٍ موثق</span>
+          </div>
+          <div class="lux-stars" style="margin-bottom: 8px;">★★★★★</div>
+          <p class="review-text">
+            "المندوب كان محترم جداً وخلاني أعاين وأجرب قبل ما أدفع مليم واحد. التوصيل في التجمع وصل تاني يوم الصبح."
+          </p>
+        </div>
+
+        <div class="review-card">
+          <div class="review-author">
+            <span class="review-name">أ. عمر فهمي</span>
+            <span class="review-badge">✓ مشترٍ موثق</span>
+          </div>
+          <div class="lux-stars" style="margin-bottom: 8px;">★★★★★</div>
+          <p class="review-text">
+            "نقاء الزيوت العطرية باين من أول رشة. مفيش ريحة كحول نهائي والفوحان هادي وفاخر جداً. أنصح بيه بشدة."
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Products -->
+    <div style="margin-top: 70px;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 11px; letter-spacing: 2px; color: var(--accent); font-weight: 800; text-transform: uppercase;">مقتنيات تكميلية</span>
+        <h2 style="font-size: 24px; font-weight: 900; margin-top: 4px;">قطع استثنائية تناسب ذوقك</h2>
+      </div>
+
+      <div class="curated-grid">
+        <a href="product.html" class="curated-card">
+          <div class="curated-img">
+            <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80" alt="ساعة">
+          </div>
+          <div class="curated-body">
+            <div>
+              <div class="curated-cat">ساعات ملكية</div>
+              <h3 class="curated-name">ساعة رويال كرونوغراف الملكية</h3>
+            </div>
+            <div class="curated-price">3,400 ج.م</div>
+          </div>
+        </a>
+
+        <a href="product.html" class="curated-card">
+          <div class="curated-img">
+            <img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80" alt="حقيبة">
+          </div>
+          <div class="curated-body">
+            <div>
+              <div class="curated-cat">جلديات فاخرة</div>
+              <h3 class="curated-name">حقيبة يد جلد طبيعي سافيانو</h3>
+            </div>
+            <div class="curated-price">2,250 ج.م</div>
+          </div>
+        </a>
+
+        <a href="product.html" class="curated-card">
+          <div class="curated-img">
+            <img src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=600&q=80" alt="نظارة">
+          </div>
+          <div class="curated-body">
+            <div>
+              <div class="curated-cat">إكسسوارات فاخرة</div>
+              <h3 class="curated-name">نظارة بإطار تيتانيوم ذهبي</h3>
+            </div>
+            <div class="curated-price">1,150 ج.م</div>
+          </div>
+        </a>
+
+        <a href="product.html" class="curated-card">
+          <div class="curated-img">
+            <img src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=600&q=80" alt="عطر">
+          </div>
+          <div class="curated-body">
+            <div>
+              <div class="curated-cat">عطور نادرة</div>
+              <h3 class="curated-name">عطر مسك نوبل بيور — 100ml</h3>
+            </div>
+            <div class="curated-price">1,450 ج.م</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="lux-footer">
+    <div class="footer-inner">
+      <div>
+        <h4>LUMIÈRE HAUTE PARFUMERIE</h4>
+        <p style="line-height: 1.8; max-width: 440px;">
+          دار العطور الفاخرة التي تمزج التراث الملكي الأصيل باللمسات الباريسية المعاصرة. جميع منتجاتنا مصحوبة بشهادة أصالة ومعاينة مجانية قبل الاستلام.
+        </p>
+      </div>
+      <div>
+        <h4>التشكيلات</h4>
+        <ul>
+          <li><a href="products.html">العطور الملكية</a></li>
+          <li><a href="products.html">الساعات الفاخرة</a></li>
+          <li><a href="products.html">الجلديات النادرة</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>خدمة العملاء VIP</h4>
+        <ul>
+          <li>واتساب: 01012345678</li>
+          <li>شحن VIP وتغليف هدايا مجاناً</li>
+          <li>المعاينة قبل الاستلام متاحة</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-copy">
+      LUMIÈRE © 2026 — جميع الحقوق محفوظة • مشغل بواسطة فاست أوردر
+    </div>
+  </footer>
+
+  <!-- Success Modal -->
+  <div class="modal-overlay" id="successModal">
+    <div class="modal-card">
+      <div class="modal-icon">✓</div>
+      <h3 style="font-size: 20px; font-weight: 900; margin-bottom: 8px;">تم تأكيد حجز طلبك بنجاح!</h3>
+      <p style="font-size: 13px; color: #52525b; line-height: 1.7; margin-bottom: 20px;">
+        شكراً لاختيارك دار LUMIÈRE. سيقوم مستشار خدمة العملاء VIP بالتواصل معك هاتفياً لتأكيد موعد التسليم والشحن مع المعاينة قبل الاستلام.
+      </p>
+      <div style="background: #fbfbfb; border: 1px solid var(--border); padding: 14px; border-radius: 6px; font-size: 13px; margin-bottom: 20px;">
+        <div>رقم الطلب: <strong>#LM-89241</strong></div>
+        <div style="margin-top: 4px;">المبلغ المطلوب عند الاستلام: <strong id="modalTotal" style="color: #18181b;">1,850 ج.م</strong></div>
+      </div>
+      <button onclick="document.getElementById('successModal').style.display='none'" style="background: #18181b; color: #fff; padding: 12px 24px; border: none; border-radius: 4px; font-weight: 800; cursor: pointer;">
+        العودة للمتجر
+      </button>
+    </div>
+  </div>
+
+  <script>
+    function switchLuxImage(src, el) {
+      document.getElementById('luxMainImage').src = src;
+      document.querySelectorAll('.lux-thumb').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    let currentPrice = 1850;
+
+    function selectVolume(ml, price, oldPrice, el) {
+      document.querySelectorAll('.lux-size-btn').forEach(btn => btn.classList.remove('active'));
+      el.classList.add('active');
+      currentPrice = price;
+      const formatted = price.toLocaleString('en-US') + ' ج.م';
+      document.getElementById('luxPrice').innerText = formatted;
+      document.getElementById('luxOldPrice').innerText = oldPrice.toLocaleString('en-US') + ' ج.م';
+      document.getElementById('formSubtotal').innerText = formatted;
+      document.getElementById('formTotal').innerText = formatted;
+      document.getElementById('modalTotal').innerText = formatted;
+    }
+
+    function handlePlaceOrder(e) {
+      e.preventDefault();
+      document.getElementById('successModal').style.display = 'flex';
+    }
+
+    function activateTheme(slug) {
+      if (window.opener && !window.opener.closed) {
+        try {
+          window.opener.location.href = '/admin/themes?activate=' + slug;
+          window.close();
+          return;
+        } catch(e) {}
+      }
+      window.location.href = 'https://dokan.fast-order-eg.tech/admin/themes?activate=' + slug;
+    }
+  </script>
+</body>
+</html>

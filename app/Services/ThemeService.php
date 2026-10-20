@@ -377,12 +377,12 @@ class ThemeService
     {
         return [
             'default' => [
-                'name' => 'الثيم الافتراضي (Default Theme)',
+                'name' => 'المتجر الكلاسيكي (Classic Store)',
                 'slug' => 'default',
                 'version' => '1.0.0',
                 'author' => 'Fast Order Team',
-                'description' => 'الثيم الافتراضي السريع والمتجاوب لجميع المتاجر، مصمم لتجربة تسوق سلسة ودعم كامل للغتين العربية والإنجليزية.',
-                'preview_image' => '/shop/images/themes/default-preview.webp',
+                'description' => 'المتجر الكلاسيكي السريع والمتجاوب لجميع المتاجر، مصمم لتجربة تسوق سلسة ودعم كامل للغة العربية.',
+                'preview_image' => '/shop/images/themes/default_mockup.webp',
                 'support_rtl' => true,
                 'css_variables' => [
                     'primary_color' => '#4f46e5',
@@ -402,7 +402,7 @@ class ThemeService
                 'version' => '1.0.0',
                 'author' => 'Fast Order Lab',
                 'description' => 'ثيم مخصص لأعلى معدلات تحويل للطلب السريع بالدفع عند الاستلام مع نموذج طلب فوري مدمج في صفحة المنتج وشريط شراء عائم.',
-                'preview_image' => '/shop/images/themes/fast_cod-preview.webp',
+                'preview_image' => '/shop/images/themes/fast_cod_mockup.webp',
                 'support_rtl' => true,
                 'css_variables' => [
                     'primary_color' => '#16a34a',
@@ -422,7 +422,7 @@ class ThemeService
                 'version' => '1.0.0',
                 'author' => 'Fast Order Lab',
                 'description' => 'تصميم راقٍ وفخم لعلامتك التجارية والبراندات، يتميز بتخطيط إيديتوريال أنيق وفلاتر متقدمة وسلة مشتريات سلسة.',
-                'preview_image' => '/shop/images/themes/luxury_store-preview.webp',
+                'preview_image' => '/shop/images/themes/luxury_store_mockup.webp',
                 'support_rtl' => true,
                 'css_variables' => [
                     'primary_color' => '#18181b',

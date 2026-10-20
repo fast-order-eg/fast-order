@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>التشكيلة الكاملة | LUMIÈRE PARIS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #18181b;
+      --secondary: #71717a;
+      --accent: #d97706;
+      --bg: #fafafa;
+      --border: #e4e4e7;
+      --text: #18181b;
+      --muted: #71717a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-top: 50px;
+    }
+
+    /* Top Demo Bar */
+    .demo-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 99999;
+      background: #18181b;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 24px;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .demo-bar .info { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+    .demo-bar .dot { width: 8px; height: 8px; background: #eab308; border-radius: 50%; box-shadow: 0 0 10px #eab308; }
+    .demo-bar .btn-activate {
+      background: #ffffff;
+      color: #18181b;
+      padding: 6px 18px;
+      border-radius: 6px;
+      font-weight: 800;
+      text-decoration: none;
+      font-size: 12px;
+      cursor: pointer;
+      border: none;
+      transition: .2s;
+    }
+    .demo-bar .btn-activate:hover { background: #e4e4e7; }
+    .demo-bar .btn-close {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      text-decoration: none;
+    }
+
+    /* Store Header */
+    .store-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 48px;
+      z-index: 1000;
+    }
+    .top-promo {
+      background: #18181b;
+      color: #fafafa;
+      text-align: center;
+      padding: 7px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .header-main {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-nav { display: flex; align-items: center; gap: 24px; }
+    .header-nav a {
+      text-decoration: none;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      transition: color .2s;
+    }
+    .header-nav a:hover, .header-nav a.active { color: var(--accent); }
+    .brand-logo { text-decoration: none; text-align: center; }
+    .brand-logo-text {
+      font-family: 'Times New Roman', serif;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 4px;
+      color: #18181b;
+      display: block;
+    }
+    .brand-logo-sub { font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+
+    /* Container */
+    .container { max-width: 1240px; margin: 40px auto; padding: 0 24px; }
+    .page-header { text-align: center; margin-bottom: 36px; }
+    .page-tag { font-size: 11px; letter-spacing: 2px; color: var(--accent); font-weight: 800; text-transform: uppercase; }
+    .page-title { font-size: 28px; font-weight: 900; color: #18181b; margin-top: 4px; }
+
+    /* Filter Bar */
+    .filters-bar {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .category-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .cat-pill {
+      background: #f4f4f5;
+      color: #3f3f46;
+      border: 1px solid transparent;
+      padding: 6px 14px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .2s;
+    }
+    .cat-pill:hover, .cat-pill.active {
+      background: #18181b;
+      color: #fff;
+    }
+
+    /* Curated 4-column Grid */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-bottom: 60px;
+    }
+    @media (max-width: 990px) { .products-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { .products-grid { grid-template-columns: 1fr; } }
+
+    .product-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: box-shadow .2s;
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      color: inherit;
+    }
+    .product-card:hover { box-shadow: 0 10px 25px rgba(0,0,0,0.06); }
+    .product-img { height: 280px; background: #f4f4f5; overflow: hidden; position: relative; }
+    .product-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+    .product-card:hover .product-img img { transform: scale(1.04); }
+    .product-body { padding: 18px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; }
+    .product-cat { font-size: 10px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+    .product-name { font-size: 15px; font-weight: 800; color: #18181b; }
+    .product-price { font-size: 16px; font-weight: 900; color: #18181b; }
+    .btn-card-action {
+      background: #f4f4f5;
+      border: 1px solid var(--border);
+      color: #18181b;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      transition: .2s;
+    }
+    .product-card:hover .btn-card-action { background: #18181b; color: #fff; }
+
+    /* Footer */
+    .lux-footer {
+      background: #18181b;
+      color: #a1a1aa;
+      padding: 60px 24px 30px;
+      margin-top: 80px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      font-size: 13px;
+    }
+    .footer-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    @media (max-width: 768px) { .footer-inner { grid-template-columns: 1fr; } }
+    .lux-footer h4 { color: #fff; font-size: 15px; font-weight: 800; margin-bottom: 14px; letter-spacing: 1px; }
+    .lux-footer ul { list-style: none; }
+    .lux-footer ul li { margin-bottom: 10px; }
+    .lux-footer ul li a { color: #a1a1aa; text-decoration: none; }
+    .lux-footer ul li a:hover { color: #fff; }
+    .footer-copy { text-align: center; margin-top: 24px; font-size: 12px; color: #71717a; }
+  </style>
+</head>
+<body>
+
+  <!-- Demo Bar -->
+  <div class="demo-bar">
+    <div class="info">
+      <span class="dot"></span>
+      <span>معاينة حية لمتجر متكامل: ثيم المتجر الفاخر (Luxury Store)</span>
+    </div>
+    <div class="actions">
+      <button onclick="activateTheme('luxury_store')" class="btn-activate">تفعيل هذا الثيم لمتجري الآن ✓</button>
+      <a href="https://dokan.fast-order-eg.tech/admin/themes" class="btn-close">الرجوع للوحة التحكم</a>
+    </div>
+  </div>
+
+  <!-- Store Header -->
+  <header class="store-header">
+    <div class="top-promo">
+      شحن حصري مجاني مع تغليف الهدايا المخملي الفاخر لجميع المحافظات
+    </div>
+    <div class="header-main">
+      <nav class="header-nav">
+        <a href="index.html">الرئيسية</a>
+        <a href="products.html" class="active">التشكيلة الكاملة</a>
+        <a href="product.html">عطر رويال عود الملكي ✨</a>
+      </nav>
+
+      <a href="index.html" class="brand-logo">
+        <span class="brand-logo-text">L U M I È R E</span>
+        <span class="brand-logo-sub">Haute Parfumerie & Luxe</span>
+      </a>
+
+      <div style="font-size: 13px; font-weight: 700; color: #18181b;">
+        <span>القاهرة — باريس</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-header">
+      <span class="page-tag">KATALOG ROYALE</span>
+      <h1 class="page-title">التشكيلة الملكية الحصرية</h1>
+      <p style="color: var(--muted); font-size: 13px; margin-top: 6px;">مجموعة مختارة بعناية من أرقى العطور النادرة والجلديات الفاخرة</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+      <div class="category-pills">
+        <button class="cat-pill active" onclick="filterCat('all', this)">جميع القطع (8)</button>
+        <button class="cat-pill" onclick="filterCat('perfume', this)">العطور الملكية</button>
+        <button class="cat-pill" onclick="filterCat('watches', this)">الساعات النادرة</button>
+        <button class="cat-pill" onclick="filterCat('leather', this)">الجلديات الفاخرة</button>
+        <button class="cat-pill" onclick="filterCat('accessories', this)">الإكسسوارات</button>
+      </div>
+
+      <div style="font-size: 12px; color: var(--muted); font-weight: 700;">
+        معاينة مجانية وشحن VIP لجميع القطع
+      </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="products-grid">
+      <!-- Item 1 -->
+      <a href="product.html" class="product-card" data-cat="perfume">
+        <div class="product-img">
+          <img src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=600&q=80" alt="عطر رويال عود">
+        </div>
+        <div class="product-body">
+          <div>
+            <div class="product-cat">عطور ملكية</div>
+            <h3 class="product-name">عطر رويال عود إمبريال — 100ml</h3>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span class="product-price">1,850 ج.م</span>
+            <span class="btn-card-action">طلب فوري ←</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Item 2 -->
+      <a href="product.html" class="product-card" data-cat="watches">
+        <div class="product-img">
+          <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80" alt="ساعة رويال">
+        </div>
+        <div class="product-body">
+          <div>
+            <div class="product-cat">ساعات نادرة</div>
+            <h3 class="product-name">ساعة رويال كرونوغراف الملكية</h3>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span class="product-price">3,400 ج.م</span>
+            <span class="btn-card-action">طلب فوري ←</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Item 3 -->
+      <a href="product.html" class="product-card" data-cat="leather">
+        <div class="product-img">
+          <img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80" alt="حقيبة سافيانو">
+        </div>
+        <div class="product-body">
+          <div>
+            <div class="product-cat">جلديات فاخرة</div>
+            <h3 class="product-name">حقيبة يد جلد طبيعي سافيانو</h3>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span class="product-price">2,250 ج.م</span>
+            <span class="btn-card-action">طلب فوري ←</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Item 4 -->
+      <a href="product.html" class="product-card" data-cat="accessories">
+        <div class="product-img">
+          <img src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=600&q=80" alt="نظارة تيتانيوم">
+        </div>
+        <div class="product-body">
+          <div>
+            <div class="product-cat">إكسسوارات فاخرة</div>
+            <h3 class="product-name">نظارة بإطار تيتانيوم ذهبي</h3>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span class="product-price">1,150 ج.م</span>
+            <span class="btn-card-action">طلب فوري ←</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Item 5 -->
+      <a href="product.html" class="product-card" data-cat="perfume">
+        <div class="product-img">
+          <img src="https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=600&q=80" alt="عطر مسك نوبل">
+        </div>
+        <div class="product-body">
+          <div>
+            <div class="product-cat">عطور ملكية</div>
+            <h3 class="product-name">عطر مسك نوبل بيور — 100ml</h3>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span class="product-price">1,450 ج.م</span>
+            <span class="btn-card-action">طلب فوري ←</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Item 6 -->
+      <a href="product.html" class="product-card" data-cat="watches">
+        <div class="product-img">
+          <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80" alt="ساعة نوار برستيج">
+        </div>
+        <div class="product-body">
+          <div>
+            <div class="product-cat">ساعات نادرة</div>
+            <h3 class="product-name">ساعة نوار برستيج سيراميك أسود</h3>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span class="product-price">2,850 ج.م</span>
+            <span class="btn-card-action">طلب فوري ←</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Item 7 -->
+      <a href="product.html" class="product-card" data-cat="leather">
+        <div class="product-img">
+          <img src="https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=600&q=80" alt="محفظة كافيار">
+        </div>
+        <div class="product-body">
+          <div>
+            <div class="product-cat">جلديات فاخرة</div>
+            <h3 class="product-name">محفظة كافيار جلد طبيعي ملكي</h3>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span class="product-price">850 ج.م</span>
+            <span class="btn-card-action">طلب فوري ←</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Item 8 -->
+      <a href="product.html" class="product-card" data-cat="perfume">
+        <div class="product-img">
+          <img src="https://images.unsplash.com/photo-1528740561666-dc2479dc08ab?auto=format&fit=crop&w=600&q=80" alt="عطر عنبر سلطاني">
+        </div>
+        <div class="product-body">
+          <div>
+            <div class="product-cat">عطور ملكية</div>
+            <h3 class="product-name">عطر عنبر سلطاني معتق — 100ml</h3>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span class="product-price">1,650 ج.م</span>
+            <span class="btn-card-action">طلب فوري ←</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="lux-footer">
+    <div class="footer-inner">
+      <div>
+        <h4>LUMIÈRE HAUTE PARFUMERIE</h4>
+        <p style="line-height: 1.8; max-width: 440px;">
+          دار العطور الفاخرة التي تمزج التراث الملكي الأصيل باللمسات الباريسية المعاصرة. جميع منتجاتنا مصحوبة بشهادة أصالة ومعاينة مجانية قبل الاستلام.
+        </p>
+      </div>
+      <div>
+        <h4>التشكيلات</h4>
+        <ul>
+          <li><a href="products.html">العطور الملكية</a></li>
+          <li><a href="products.html">الساعات الفاخرة</a></li>
+          <li><a href="products.html">الجلديات النادرة</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>خدمة العملاء VIP</h4>
+        <ul>
+          <li>واتساب: 01012345678</li>
+          <li>شحن VIP وتغليف هدايا مجاناً</li>
+          <li>المعاينة قبل الاستلام متاحة</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-copy">
+      LUMIÈRE © 2026 — جميع الحقوق محفوظة • مشغل بواسطة فاست أوردر
+    </div>
+  </footer>
+
+  <script>
+    function filterCat(cat, el) {
+      document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+      el.classList.add('active');
+
+      const cards = document.querySelectorAll('.product-card');
+      cards.forEach(card => {
+        if (cat === 'all' || card.getAttribute('data-cat') === cat) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function activateTheme(slug) {
+      if (window.opener && !window.opener.closed) {
+        try {
+          window.opener.location.href = '/admin/themes?activate=' + slug;
+          window.close();
+          return;
+        } catch(e) {}
+      }
+      window.location.href = 'https://dokan.fast-order-eg.tech/admin/themes?activate=' + slug;
+    }
+  </script>
+</body>
+</html>
