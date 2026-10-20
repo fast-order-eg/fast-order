@@ -48,8 +48,22 @@ const COLOR_PRESETS = [
     }
 ];
 
-export default function ThemeIndex({ themeCustomization }) {
+import { Link, router } from '@inertiajs/react';
+
+export default function ThemeIndex({ themeCustomization, activeTheme = 'default', themes = {} }) {
     const { flash } = usePage().props;
+    const [activatingSlug, setActivatingSlug] = useState(null);
+
+    const handleSwitchTheme = (slug) => {
+        if (slug === activeTheme) return;
+        setActivatingSlug(slug);
+        router.post('/admin/themes/activate', {
+            theme: slug,
+        }, {
+            preserveScroll: true,
+            onFinish: () => setActivatingSlug(null)
+        });
+    };
 
     // Form setup using Inertia's useForm helper
     const { data, setData, put, processing, errors, hasChanges } = useForm({
@@ -91,6 +105,25 @@ export default function ThemeIndex({ themeCustomization }) {
         }
     };
 
+    const getActiveThemeTitle = () => {
+        switch (activeTheme) {
+            case 'fast_cod':
+                return 'ثيم Fast COD Express (إيزي أوردر)';
+            case 'luxury_store':
+                return 'ثيم Luxury Brand Store (شوبيفاي وزاره)';
+            case 'default':
+                return 'الثيم الافتراضي الكلاسيكي';
+            case 'starter':
+                return 'ثيم البداية السريعة (Starter)';
+            case 'bold':
+                return 'الثيم الجريء (Bold & Vibrant)';
+            case 'modern':
+                return 'الثيم العصري (Modern Minimal)';
+            default:
+                return activeTheme;
+        }
+    };
+
     return (
         <MerchantLayout title="مظهر وتصميم المتجر">
             <Head>
@@ -99,12 +132,127 @@ export default function ThemeIndex({ themeCustomization }) {
             </Head>
 
             <div className="space-y-6 rtl text-right" dir="rtl">
+                {/* Navigation Tabs between Theme Switcher & Colors */}
+                <div className="flex border-b border-gray-200 gap-4">
+                    <Link
+                        href="/admin/themes"
+                        className="pb-3 px-2 text-sm font-bold text-gray-500 hover:text-indigo-600 flex items-center gap-2 border-b-2 border-transparent transition"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                        </svg>
+                        مكتبة الثيمات والقوالب
+                        <span className="px-2 py-0.5 text-xs bg-emerald-100 text-emerald-800 rounded-full font-bold">جديد</span>
+                    </Link>
+                    <button
+                        type="button"
+                        className="pb-3 px-2 text-sm font-bold text-indigo-600 border-b-2 border-indigo-600 flex items-center gap-2"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                        </svg>
+                        تخصيص الألوان والخطوط
+                    </button>
+                </div>
+
+                {/* Quick Theme Switcher Card Banner */}
+                <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 text-white shadow-lg border border-indigo-900/50">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 pb-4 border-b border-white/10">
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <span className="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold rounded-full">
+                                    الثيم النشط حالياً: {getActiveThemeTitle()}
+                                </span>
+                            </div>
+                            <h3 className="text-xl font-bold mt-2">اختر وبدّل ثيم متجرك فوراً</h3>
+                            <p className="text-xs text-indigo-200 mt-1">
+                                يمكنك تغيير تصميم وشكل متجرك بالكامل بنقرة زر واحدة بين ثيم إيزي أوردر السريع وثيم الماركات الفاخرة
+                            </p>
+                        </div>
+                        <Link
+                            href="/admin/themes"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-900 hover:bg-indigo-50 font-bold text-xs rounded-xl shadow-sm transition"
+                        >
+                            فتح صفحة الثيمات الكاملة
+                            <svg className="w-3.5 h-3.5 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                        </Link>
+                    </div>
+
+                    {/* 3 Quick Switch Theme Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {/* Fast COD */}
+                        <div className={`p-4 rounded-xl border transition ${activeTheme === 'fast_cod' ? 'bg-emerald-500/20 border-emerald-400 ring-1 ring-emerald-400' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-xs font-bold text-emerald-300">Fast COD (إيزي أوردر)</span>
+                                <span className="text-[10px] bg-emerald-500 text-white px-2 py-0.5 rounded-full font-bold">الأعلى تحويلاً 🔥</span>
+                            </div>
+                            <p className="text-[11px] text-gray-300 line-clamp-2 mb-3">فورم طلب مباشر بصفحة المنتج، شريط عائم سفلي للموبايل، وباقات كميات.</p>
+                            {activeTheme === 'fast_cod' ? (
+                                <span className="text-xs text-emerald-400 font-bold flex items-center gap-1">✓ الثيم النشط الآن</span>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => handleSwitchTheme('fast_cod')}
+                                    disabled={activatingSlug === 'fast_cod'}
+                                    className="w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition"
+                                >
+                                    {activatingSlug === 'fast_cod' ? 'جاري التفعيل...' : 'تفعيل ثيم إيزي أوردر'}
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Luxury Store */}
+                        <div className={`p-4 rounded-xl border transition ${activeTheme === 'luxury_store' ? 'bg-purple-500/20 border-purple-400 ring-1 ring-purple-400' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-xs font-bold text-purple-300">Luxury Store (شوبيفاي)</span>
+                                <span className="text-[10px] bg-purple-500 text-white px-2 py-0.5 rounded-full font-bold">ماركات فاخرة ✨</span>
+                            </div>
+                            <p className="text-[11px] text-gray-300 line-clamp-2 mb-3">تصميم شوبيفاي وزاره، فلاتر جانبية متقدمة، وأكورديون تفاصيل أنيق.</p>
+                            {activeTheme === 'luxury_store' ? (
+                                <span className="text-xs text-purple-400 font-bold flex items-center gap-1">✓ الثيم النشط الآن</span>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => handleSwitchTheme('luxury_store')}
+                                    disabled={activatingSlug === 'luxury_store'}
+                                    className="w-full py-1.5 px-3 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg transition"
+                                >
+                                    {activatingSlug === 'luxury_store' ? 'جاري التفعيل...' : 'تفعيل ثيم شوبيفاي'}
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Default Classic */}
+                        <div className={`p-4 rounded-xl border transition ${activeTheme === 'default' ? 'bg-blue-500/20 border-blue-400 ring-1 ring-blue-400' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-xs font-bold text-blue-300">Default Classic</span>
+                                <span className="text-[10px] bg-blue-500 text-white px-2 py-0.5 rounded-full font-bold">كلاسيك شامل 🛍️</span>
+                            </div>
+                            <p className="text-[11px] text-gray-300 line-clamp-2 mb-3">التصميم الكلاسيكي الافتراضي المتوازن لكافة أنواع المتاجر والمنتجات.</p>
+                            {activeTheme === 'default' ? (
+                                <span className="text-xs text-blue-400 font-bold flex items-center gap-1">✓ الثيم النشط الآن</span>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => handleSwitchTheme('default')}
+                                    disabled={activatingSlug === 'default'}
+                                    className="w-full py-1.5 px-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition"
+                                >
+                                    {activatingSlug === 'default' ? 'جاري التفعيل...' : 'تفعيل الثيم الكلاسيكي'}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
                 {/* Title & Desc */}
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
-                        <h2 className="text-2xl font-extrabold text-gray-900">تصميم وتخصيص مظهر المتجر</h2>
+                        <h2 className="text-xl font-extrabold text-gray-900">تخصيص الألوان وتفاصيل الهيدر</h2>
                         <p className="text-sm text-gray-500 mt-1">
-                            خصص هوية متجرك البصرية، الألوان، الخطوط، وتخطيط الصفحة الرئيسية ليتناسب مع علامتك التجارية.
+                            عدّل ألوان الثيم المختار والخط ونسب الحواف ليتوافق مع علامتك التجارية
                         </p>
                     </div>
                 </div>

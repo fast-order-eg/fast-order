@@ -15,6 +15,9 @@ class ThemeController extends Controller
     public function index()
     {
         $themeCustomizationJson = Setting::get('theme_customization');
+        $themeService = app(\App\Services\ThemeService::class);
+        $activeTheme = $themeService->getActiveTheme();
+        $themes = $themeService->getAllThemes();
         
         $themeCustomization = $themeCustomizationJson ? json_decode($themeCustomizationJson, true) : [
             'primary_color' => Setting::get('primary_color', '#F97316'),
@@ -28,6 +31,8 @@ class ThemeController extends Controller
 
         return Inertia::render('Merchant/Theme/Index', [
             'themeCustomization' => $themeCustomization,
+            'activeTheme' => $activeTheme,
+            'themes' => $themes,
         ]);
     }
 
