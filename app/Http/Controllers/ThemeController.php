@@ -105,13 +105,17 @@ class ThemeController extends Controller
      */
     public function activate(Request $request)
     {
-        $request->validate([
-            'theme' => ['required', 'string', 'max:100'],
-        ], [
-            'theme.required' => 'يرجى تحديد الثيم المطلوب تفعيله',
-        ]);
+        $themeSlug = $request->input('theme') ?? $request->input('slug');
 
-        $themeSlug = $request->input('theme');
+        if (empty($themeSlug)) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'يرجى تحديد الثيم المطلوب تفعيله'
+                ], 422);
+            }
+            return Redirect::back()->withErrors(['theme' => 'يرجى تحديد الثيم المطلوب تفعيله']);
+        }
 
         if (!$this->themeService->isThemeAvailable($themeSlug)) {
             if ($request->wantsJson() || $request->ajax()) {

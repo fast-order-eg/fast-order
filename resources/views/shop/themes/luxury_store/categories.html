@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="facebook-domain-verification" content="thjq95dh1a88yu3cmr55fhq2xqvxr3" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>الأقسام - Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shop/styles.css?v=202604021">
+  <link rel="stylesheet" href="/shop/themes/luxury_store/style.css?v=1.0.0">
+  <link rel="stylesheet" href="/shop/themes/default/style.css?v=1.0.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta name="robots" content="noindex">
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <link rel="icon" href="data:,">
+  <style>
+    body {
+      opacity: 0;
+      transition: opacity .15s ease
+    }
+
+    .ready body {
+      opacity: 1
+    }
+  </style>
+  <script>document.documentElement.classList.add('ready');</script>
+</head>
+
+<body class="theme-default classic-theme">
+  <div class="lux-announcement">
+    <span>✨ شحن مجاني لجميع الطلبات المؤكدة اليوم | إمكانية المعاينة والاستبدال خلال 14 يوماً</span>
+  </div>
+  <header class="container header">
+    <a href="/shop/index.html" class="brand" style="text-decoration:none;color:inherit">
+      <img src="/images/logo.png?v=202604031" alt="Store"
+        onerror="this.src='https://dummyimage.com/48x48/111827/ffffff&text=K'" />
+      <span>Store</span>
+    </a>
+    <button class="menu-toggle" aria-label="القائمة"><span></span><span></span><span></span></button>
+    <div class="icons">
+      <a href="#" class="icon-round search-trigger" title="بحث" aria-label="بحث"><i class="fa fa-search"></i></a>
+      <a id="cartIcon" class="icon-round" href="/shop/cart.html" title="السلة" aria-label="السلة"><i
+          class="fa fa-shopping-cart"></i><span id="cartCount"></span></a>
+    </div>
+    <nav class="nav">
+      <a href="/shop/index.html">الرئيسية</a>
+      <a href="/shop/categories.html" class="active">الأقسام</a>
+      <a href="/shop/products.html">المنتجات</a>
+      <a style="display:none !important;" href="/shop/contact.html">اتصل بنا</a>
+      <a href="tel:01146520922" class="call-now" style="display:none !important;">اتصل الآن</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1 class="page-title">الأقسام</h1>
+    <div id="categoriesContainer"></div>
+  </main>
+
+    <footer class="container footer" style="text-align: center; padding: 24px 16px; color: #64748b; font-size: 14px; border-top: 1px solid #f1f5f9; margin-top: 40px; margin-bottom: 20px;">
+    <div dir="ltr" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500; direction: ltr;">
+      <span>Powered by</span>
+      <a href="https://fast-order-eg.tech" target="_blank" rel="noopener noreferrer" style="font-weight: 800; color: #4f46e5; text-decoration: none; transition: color 0.2s;">Fastorder</a>
+    </div>
+  </footer>
+
+  <!-- <a class="wapp-float" href="https://wa.me/201146520922" target="_blank" aria-label="WhatsApp"><i
+      class="fa-brands fa-whatsapp"></i></a> -->
+  <script>window.API_BASE = '/public-api';</script>
+  <script src="/shop/shared.js?v=20260714"></script>
+  <script>
+    fetch(window.API_BASE + '/categories').then(r => r.json()).then(({ data }) => {
+      renderHierarchicalCategories(document.getElementById('categoriesContainer'), data);
+    }).catch(() => {
+      document.getElementById('categoriesContainer').innerHTML = '<p class="muted">لا يمكن تحميل الأقسام الآن.</p>';
+    });
+
+    function renderHierarchicalCategories(container, categories) {
+      if (!categories || !categories.length) {
+        container.innerHTML = '<p class="muted">لا توجد أقسام لعرضها.</p>';
+        return;
+      }
+
+      // Group categories by main_category
+      const categoriesByMainCategory = {};
+      const categoriesWithoutMainCategory = [];
+
+      categories.forEach(cat => {
+        if (cat.main_category) {
+          if (!categoriesByMainCategory[cat.main_category]) {
+            categoriesByMainCategory[cat.main_category] = [];
+          }
+          categoriesByMainCategory[cat.main_category].push(cat);
+        } else {
+          categoriesWithoutMainCategory.push(cat);
+        }
+      });
+
+      let html = '';
+
+      function buildHTML(mainCategoryOrder) {
+        mainCategoryOrder.forEach((mainCategoryName) => {
+          const subcategories = categoriesByMainCategory[mainCategoryName];
+          if (subcategories && subcategories.length > 0) {
+            html += '<div class="category-section" style="margin-bottom: 2.5rem;">';
+            html += '<div class="main-category-header" style="text-align: center; margin-bottom: 1.5rem; background: #0f172a; border-radius: 12px; box-shadow: 0 4px 18px rgba(0,0,0,0.15);">';
+            html += '<h2 style="color: #ffffff; font-size: 1.35rem; margin: 0; font-weight: 800; padding: 0.85rem 1.25rem;">' + mainCategoryName + '</h2>';
+            html += '</div>';
+            html += '<div class="subcategories-grid grid">';
+
+            subcategories.forEach(sub => {
+              html += '<div class="card category-card" style="cursor: pointer;" onclick="location.href=\'/shop/category-products.html?id=' + sub.id + '&name=' + encodeURIComponent(sub.name) + '\'">';
+              html += '<img src="' + (sub.image_url || 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image') + '" alt="' + sub.name + '" style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block;">';
+              html += '<div class="body">';
+              html += '<h3 class="title">' + sub.name + '</h3>';
+              html += '</div>';
+              html += '</div>';
+            });
+
+            html += '</div>';
+            html += '</div>';
+          }
+        });
+
+        // عرض أي أقسام عندها main_category مش موجود في الـ order
+        Object.keys(categoriesByMainCategory).forEach((mainCategoryName) => {
+          if (!mainCategoryOrder.includes(mainCategoryName)) {
+            const subcategories = categoriesByMainCategory[mainCategoryName];
+            html += '<div class="category-section" style="margin-bottom: 2.5rem;">';
+            html += '<div class="main-category-header" style="text-align: center; margin-bottom: 1.5rem; background: #0f172a; border-radius: 12px; box-shadow: 0 4px 18px rgba(0,0,0,0.15);">';
+            html += '<h2 style="color: #ffffff; font-size: 1.35rem; margin: 0; font-weight: 800; padding: 0.85rem 1.25rem;">' + mainCategoryName + '</h2>';
+            html += '</div>';
+            html += '<div class="subcategories-grid grid">';
+            subcategories.forEach(sub => {
+              html += '<div class="card category-card" style="cursor: pointer;" onclick="location.href=\'/shop/category-products.html?id=' + sub.id + '&name=' + encodeURIComponent(sub.name) + '\'">';
+              html += '<img src="' + (sub.image_url || 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image') + '" alt="' + sub.name + '" style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block;">';
+              html += '<div class="body"><h3 class="title">' + sub.name + '</h3>';
+              html += '</div></div>';
+            });
+            html += '</div></div>';
+          }
+        });
+
+        // عرض الأقسام بدون main_category
+        if (categoriesWithoutMainCategory.length > 0) {
+          html += '<div class="category-section" style="margin-bottom: 2.5rem;">';
+          html += '<div class="main-category-header" style="text-align: center; margin-bottom: 1.5rem; background: #0f172a; border-radius: 12px; box-shadow: 0 4px 18px rgba(0,0,0,0.15);">';
+          html += '<h2 style="color: #ffffff; font-size: 1.35rem; margin: 0; font-weight: 800; padding: 0.85rem 1.25rem;">أقسام أخرى</h2>';
+          html += '</div><div class="subcategories-grid grid">';
+          categoriesWithoutMainCategory.forEach(cat => {
+            html += '<div class="card category-card" style="cursor: pointer;" onclick="location.href=\'/shop/category-products.html?id=' + cat.id + '&name=' + encodeURIComponent(cat.name) + '\'">';
+            html += '<img src="' + (cat.image_url || 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image') + '" alt="' + cat.name + '" style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block;">';
+            html += '<div class="body"><h3 class="title">' + cat.name + '</h3>';
+            html += '</div></div>';
+          });
+          html += '</div></div>';
+        }
+
+        container.innerHTML = html || '<p class="muted">لا توجد أقسام لعرضها.</p>';
+      }
+
+      // نجيب الأقسام الرئيسية من الـ settings API ونبني الصفحة
+      var settingsPromise = window.__SITE_SETTINGS__
+        ? Promise.resolve(window.__SITE_SETTINGS__)
+        : fetch('/public-api/settings').then(function (r) { return r.json(); }).then(function (j) { return j.data || {}; }).catch(function () { return {}; });
+
+      settingsPromise.then(function (settingsData) {
+        // الأقسام الرئيسية من الـ settings أو من البيانات الموجودة
+        var storedOrder = (settingsData && settingsData.main_categories) ? settingsData.main_categories : null;
+        var mainCategoryOrder = storedOrder && storedOrder.length
+          ? storedOrder
+          : Object.keys(categoriesByMainCategory);
+        buildHTML(mainCategoryOrder);
+      });
+    }
+  </script>
+
+  <script>
+    // Load settings dynamically (logo, phone, whatsapp)
+    (function () {
+      var API = window.API_BASE || '/public-api';
+      fetch(API + '/settings').then(function (r) { return r.json(); }).then(function (res) {
+        var data = res.data;
+        if (!data) return;
+        if (data.logo_url) {
+          var logos = document.querySelectorAll('img.site-logo, .brand img:first-child, .brand img');
+          logos.forEach(function (el) { el.src = data.logo_url; });
+        }
+        if (data.store_name) {
+          var names = document.querySelectorAll('.site-name, .brand span:first-of-type');
+          names.forEach(function (el) { el.textContent = data.store_name; });
+        }
+        if (data.phone) {
+          var callBtns = document.querySelectorAll('a.call-now, a[href^="tel:"]');
+          callBtns.forEach(function (el) { el.href = 'tel:' + data.phone; });
+        }
+        if (data.whatsapp) {
+          var waBtns = document.querySelectorAll('a.wapp-float, a[href*="wa.me"]');
+          waBtns.forEach(function (el) { el.href = 'https://wa.me/' + data.whatsapp; });
+        }
+        if (data.facebook_page) {
+          var fbBtns = document.querySelectorAll('a[href*="facebook.com"]');
+          fbBtns.forEach(function (el) { el.href = data.facebook_page; });
+        }
+      }).catch(function () { });
+    })();
+  </script>
+</body>
+
+</html>

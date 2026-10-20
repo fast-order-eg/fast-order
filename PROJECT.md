@@ -119,14 +119,16 @@ protected $casts = [
 
 ## واجهة المتجر (Storefront) — HTML Themes
 
-### مسار الثيمات (5 ملفات — أي تعديل يطبق على الكل)
+### مسار الثيمات
 ```
 resources/views/shop/
 ├── product.html
 └── themes/
+    ├── default/product.html
+    ├── fast_cod/product.html          ← ثيم إيزي أوردر السريع (فورم طلب مدمج بالصفحة + ستيكي بار + باقات توفير)
+    ├── luxury_store/product.html      ← ثيم الماركات الفاخرة (ستايل شوبيفاي وزاره + فلاتر جانبية + شبكة عصرية)
     ├── starter/product.html
     ├── bold/product.html
-    ├── default/product.html
     └── modern/product.html
 ```
 

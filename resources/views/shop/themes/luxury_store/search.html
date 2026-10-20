@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نتائج البحث</title>
+    <link rel="stylesheet" href="/shop/styles.css">
+  <link rel="stylesheet" href="/shop/themes/luxury_store/style.css?v=1.0.0">
+  <link rel="stylesheet" href="/shop/themes/default/style.css?v=1.0.0">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        .search-container { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
+        .search-bar-wrap { position: relative; margin-bottom: 2rem; }
+        .search-bar-big { width: 100%; padding: 1rem 1.5rem; font-size: 1.1rem; border: 2px solid #e5e7eb; border-radius: 16px; font-family: 'Cairo', sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: all 0.3s; box-sizing: border-box; }
+        .search-bar-big:focus { outline: none; border-color: var(--primary-color, #6c63ff); box-shadow: 0 4px 20px rgba(108,99,255,0.2); }
+        .search-suggestions { position: absolute; top: 100%; right: 0; left: 0; background: white; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); z-index: 100; overflow: hidden; display: none; }
+        .suggestion-item { padding: 0.75rem 1.25rem; cursor: pointer; transition: background 0.15s; font-size: 0.95rem; }
+        .suggestion-item:hover { background: #f5f5ff; color: var(--primary-color, #6c63ff); }
+        .filter-tabs { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 0.5rem; }
+        .filter-tab { padding: 0.5rem 1.25rem; background: #f0f0f0; border: none; border-radius: 20px; cursor: pointer; font-family: 'Cairo', sans-serif; font-size: 0.9rem; white-space: nowrap; transition: all 0.2s; }
+        .filter-tab.active { background: var(--primary-color, #6c63ff); color: white; }
+        .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.25rem; }
+        .result-card { background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); transition: all 0.3s; text-decoration: none; color: inherit; display: block; }
+        .result-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,0.12); }
+        .result-img { width: 100%; height: 180px; object-fit: cover; }
+        .result-body { padding: 0.85rem; }
+        .result-name { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; }
+        .result-price { color: var(--primary-color, #6c63ff); font-weight: 800; }
+        .result-category { font-size: 0.75rem; color: #888; margin-bottom: 0.35rem; }
+        .no-results { text-align: center; padding: 4rem 0; }
+        .history-chips { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .history-chip { padding: 0.35rem 0.85rem; background: #f0f0f0; border-radius: 20px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+        .history-chip:hover { background: var(--primary-color, #6c63ff); color: white; }
+    </style>
+</head>
+<body class="theme-default classic-theme">
+    <div id="header-placeholder"></div>
+
+    <div class="search-container">
+        <div class="search-bar-wrap">
+            <input type="text" id="search-input" class="search-bar-big" placeholder="🔍 ابحث عن منتجات، أقسام..." autocomplete="off">
+            <div class="search-suggestions" id="suggestions-box"></div>
+        </div>
+
+        <div id="history-section">
+            <p style="font-size:0.85rem; color:#888; margin-bottom:0.5rem;">⏱️ عمليات البحث الأخيرة</p>
+            <div class="history-chips" id="history-chips"></div>
+        </div>
+
+        <div id="results-section" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h2 id="results-title" style="font-size:1.1rem; font-weight:700;"></h2>
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="sortResults('relevance', this)">الأكثر صلة</button>
+                    <button class="filter-tab" onclick="sortResults('price_asc', this)">السعر: الأقل</button>
+                    <button class="filter-tab" onclick="sortResults('price_desc', this)">السعر: الأعلى</button>
+                </div>
+            </div>
+            <div class="results-grid" id="results-grid"></div>
+        </div>
+
+        <div id="no-results" class="no-results" style="display:none;">
+            <div style="font-size:4rem; opacity:0.3;">🔍</div>
+            <h2>لا توجد نتائج</h2>
+            <p style="color:#888;">جرب كلمات مختلفة أو تصفح الأقسام</p>
+            <a href="/products" style="display:inline-block; margin-top:1rem; padding:0.75rem 2rem; background:var(--primary-color,#6c63ff); color:white; border-radius:12px; text-decoration:none; font-weight:700;">تصفح المنتجات</a>
+        </div>
+    </div>
+
+    
+    <footer class="container footer" style="text-align: center; padding: 24px 16px; color: #64748b; font-size: 14px; border-top: 1px solid #f1f5f9; margin-top: 40px; margin-bottom: 20px;">
+    <div dir="ltr" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500; direction: ltr;">
+      <span>Powered by</span>
+      <a href="https://fast-order-eg.tech" target="_blank" rel="noopener noreferrer" style="font-weight: 800; color: #4f46e5; text-decoration: none; transition: color 0.2s;">Fastorder</a>
+    </div>
+  </footer>
+
+
+    <script src="/shop/shared.js?v=20260714"></script>
+    <script>
+        let allResults = [];
+        let searchTimeout;
+        const searchInput = document.getElementById('search-input');
+
+        // Load search history
+        async function loadHistory() {
+            try {
+                const res = await fetch('/api/search/history');
+                const data = await res.json();
+                const chips = document.getElementById('history-chips');
+                if (data.history.length === 0) { document.getElementById('history-section').style.display = 'none'; return; }
+                chips.innerHTML = data.history.map(q => `<span class="history-chip" onclick="doSearch('${q}')">${q}</span>`).join('');
+            } catch(e) {}
+        }
+
+        // Suggestions
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const q = this.value.trim();
+            if (q.length < 2) { document.getElementById('suggestions-box').style.display = 'none'; return; }
+            searchTimeout = setTimeout(() => loadSuggestions(q), 300);
+        });
+
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { doSearch(this.value.trim()); }
+        });
+
+        async function loadSuggestions(q) {
+            try {
+                const res = await fetch(`/api/search/suggestions?q=${encodeURIComponent(q)}`);
+                const data = await res.json();
+                const box = document.getElementById('suggestions-box');
+                if (data.suggestions.length === 0) { box.style.display = 'none'; return; }
+                box.innerHTML = data.suggestions.map(s => `<div class="suggestion-item" onclick="doSearch('${s.replace(/[^\w\s\u0600-\u06FF]/g, '')}')">${s}</div>`).join('');
+                box.style.display = 'block';
+            } catch(e) {}
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-bar-wrap')) document.getElementById('suggestions-box').style.display = 'none';
+        });
+
+        async function doSearch(query) {
+            if (!query) return;
+            searchInput.value = query;
+            document.getElementById('suggestions-box').style.display = 'none';
+            document.getElementById('history-section').style.display = 'none';
+
+            try {
+                const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                allResults = data.products || [];
+                renderResults(allResults, query, data.total);
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        function renderResults(products, query, total) {
+            document.getElementById('results-section').style.display = products.length > 0 ? 'block' : 'none';
+            document.getElementById('no-results').style.display = products.length === 0 ? 'block' : 'none';
+
+            if (products.length === 0) return;
+
+            document.getElementById('results-title').textContent = `نتائج البحث عن "${query}" - ${total} نتيجة`;
+            document.getElementById('results-grid').innerHTML = products.map(p => `
+                <a href="/products/${p.slug}" class="result-card">
+                    <img src="${p.image || '/shop/placeholder.jpg'}" class="result-img" alt="${p.name}" onerror="this.src='/shop/placeholder.jpg'">
+                    <div class="result-body">
+                        ${p.category ? `<p class="result-category">${p.category}</p>` : ''}
+                        <p class="result-name">${p.name}</p>
+                        <p class="result-price">${parseFloat(p.sale_price || p.price).toFixed(0)} ج.م</p>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        function sortResults(type, btn) {
+            document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            let sorted = [...allResults];
+            if (type === 'price_asc') sorted.sort((a, b) => (a.sale_price || a.price) - (b.sale_price || b.price));
+            if (type === 'price_desc') sorted.sort((a, b) => (b.sale_price || b.price) - (a.sale_price || a.price));
+            renderResults(sorted, searchInput.value, sorted.length);
+        }
+
+        // Check URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        const initQuery = urlParams.get('q');
+        if (initQuery) doSearch(initQuery);
+        else loadHistory();
+    </script>
+</body>
+</html>

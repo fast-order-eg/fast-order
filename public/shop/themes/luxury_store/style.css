@@ -1,0 +1,330 @@
+/**
+ * Luxury Brand Store Theme Styles (Shopify & Zara Inspired)
+ * Focus: High-End Fashion & Editorial Aesthetics, Minimal Clean Whitespace, Side Filters, Refined Typography
+ */
+
+:root {
+  --lux-dark: #18181b;
+  --lux-gray: #71717a;
+  --lux-light-gray: #f4f4f5;
+  --lux-border: #e4e4e7;
+  --lux-bg: #fafafa;
+  --lux-accent: #d97706;
+  --lux-radius: 4px;
+}
+
+body {
+  background-color: var(--lux-bg);
+  color: var(--lux-dark);
+  letter-spacing: -0.01em;
+}
+
+/* Luxury Announcement Bar */
+.lux-announcement {
+  background: var(--lux-dark);
+  color: #fafafa;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  padding: 8px 16px;
+  text-transform: uppercase;
+}
+
+/* Minimalist Editorial Header */
+.header.lux-header {
+  border-bottom: 1px solid var(--lux-border);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 16px 24px;
+}
+.lux-brand-name {
+  font-family: inherit;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lux-dark);
+}
+
+/* Editorial Products Grid (3:4 Aspect Ratio, Minimalist Card) */
+.lux-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+  margin: 32px 0;
+}
+@media (max-width: 640px) {
+  .lux-products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+}
+
+.lux-product-card {
+  background: #ffffff;
+  border: 1px solid var(--lux-border);
+  border-radius: var(--lux-radius);
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.lux-product-card:hover {
+  border-color: #a1a1aa;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+.lux-card-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: #f4f4f5;
+}
+.lux-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.lux-product-card:hover .lux-card-img {
+  transform: scale(1.04);
+}
+
+.lux-card-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--lux-dark);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 2px;
+}
+
+.lux-card-details {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
+}
+.lux-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--lux-dark);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+.lux-card-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 4px;
+}
+.lux-card-price {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--lux-dark);
+}
+.lux-card-price-old {
+  font-size: 13px;
+  color: var(--lux-gray);
+  text-decoration: line-through;
+}
+
+/* Side Filter Layout for Products Page */
+.lux-catalog-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 32px;
+  margin: 32px 0;
+}
+@media (max-width: 900px) {
+  .lux-catalog-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lux-filter-sidebar {
+  background: #ffffff;
+  border: 1px solid var(--lux-border);
+  border-radius: var(--lux-radius);
+  padding: 20px;
+  height: fit-content;
+  position: sticky;
+  top: 90px;
+}
+.lux-filter-title {
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--lux-border);
+  margin-bottom: 16px;
+}
+.lux-filter-group {
+  margin-bottom: 20px;
+}
+.lux-filter-group-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--lux-dark);
+  margin-bottom: 8px;
+  display: block;
+}
+.lux-filter-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #4b5563;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+
+/* Luxury Product Detail Page (Minimalist & Editorial) */
+.lux-product-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 48px;
+  margin: 40px 0;
+}
+@media (max-width: 860px) {
+  .lux-product-layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+.lux-gallery-main {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border: 1px solid var(--lux-border);
+  border-radius: var(--lux-radius);
+  overflow: hidden;
+  background: #f4f4f5;
+}
+.lux-gallery-main img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lux-pills-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 20px 0;
+}
+.lux-pill-btn {
+  border: 1.5px solid var(--lux-border);
+  background: #ffffff;
+  color: var(--lux-dark);
+  padding: 8px 16px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.lux-pill-btn:hover {
+  border-color: var(--lux-dark);
+}
+.lux-pill-btn.active {
+  background: var(--lux-dark);
+  color: #ffffff;
+  border-color: var(--lux-dark);
+}
+
+/* Luxury Buttons */
+.btn-lux-primary {
+  width: 100%;
+  padding: 16px 24px;
+  background: var(--lux-dark);
+  color: #ffffff;
+  border: 1.5px solid var(--lux-dark);
+  border-radius: var(--lux-radius);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-lux-primary:hover {
+  background: #27272a;
+  border-color: #27272a;
+}
+
+.btn-lux-outline {
+  width: 100%;
+  padding: 14px 24px;
+  background: transparent;
+  color: var(--lux-dark);
+  border: 1.5px solid var(--lux-dark);
+  border-radius: var(--lux-radius);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 10px;
+}
+.btn-lux-outline:hover {
+  background: var(--lux-dark);
+  color: #ffffff;
+}
+
+/* Luxury Accordion for Product Details */
+.lux-accordion {
+  border-top: 1px solid var(--lux-border);
+  margin-top: 32px;
+}
+.lux-accordion-item {
+  border-bottom: 1px solid var(--lux-border);
+}
+.lux-accordion-header {
+  padding: 16px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+}
+.lux-accordion-body {
+  padding-bottom: 16px;
+  font-size: 13px;
+  color: #52525b;
+  line-height: 1.7;
+}
+
+/* Luxury Cart Page Layout */
+.lux-cart-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 32px;
+  margin: 40px 0;
+}
+@media (max-width: 860px) {
+  .lux-cart-layout {
+    grid-template-columns: 1fr;
+  }
+}
+.lux-cart-box {
+  background: #ffffff;
+  border: 1px solid var(--lux-border);
+  border-radius: var(--lux-radius);
+  padding: 24px;
+}

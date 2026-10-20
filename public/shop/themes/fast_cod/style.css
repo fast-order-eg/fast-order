@@ -1,0 +1,344 @@
+/**
+ * Fast COD Express Theme Styles (EasyOrder Inspired)
+ * Focus: High Conversion, Cash on Delivery, Mobile Sticky Buy Bar, Embedded Checkout Form
+ */
+
+:root {
+  --cod-green: #16a34a;
+  --cod-green-hover: #15803d;
+  --cod-green-light: #f0fdf4;
+  --cod-orange: #f97316;
+  --cod-orange-light: #fff7ed;
+  --cod-dark: #0f172a;
+  --cod-radius: 12px;
+}
+
+/* Fast COD Header */
+.header {
+  border-bottom: 2px solid #f1f5f9;
+  background: #ffffff;
+}
+
+/* Top Urgency Announcement Bar */
+.cod-top-announcement {
+  background: var(--cod-orange);
+  color: #ffffff;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Urgency Timer Box */
+.cod-urgency-box {
+  background: var(--cod-orange-light);
+  border: 1px dashed var(--cod-orange);
+  border-radius: var(--cod-radius);
+  padding: 12px 16px;
+  margin: 14px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.cod-urgency-title {
+  color: #c2410c;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cod-urgency-timer {
+  background: #ffffff;
+  color: #ea580c;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Social Proof & Stock Notification */
+.cod-stock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fef2f2;
+  color: #dc2626;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid #fee2e2;
+  margin-bottom: 10px;
+}
+
+/* Quantity Bundles (Tiered Offers) */
+.cod-bundles-container {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cod-bundle-card {
+  border: 2px solid #e2e8f0;
+  border-radius: var(--cod-radius);
+  padding: 12px 16px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cod-bundle-card:hover {
+  border-color: #cbd5e1;
+}
+.cod-bundle-card.active {
+  border-color: var(--cod-green);
+  background: var(--cod-green-light);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.12);
+}
+.cod-bundle-badge {
+  position: absolute;
+  top: -10px;
+  left: 14px;
+  background: var(--cod-orange);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Embedded One-Page Checkout Box (The Core EasyOrder Component) */
+.cod-checkout-container {
+  background: #ffffff;
+  border: 2px solid var(--cod-green);
+  border-radius: 16px;
+  padding: 24px;
+  margin: 32px 0 24px 0;
+  box-shadow: 0 10px 30px rgba(22, 163, 74, 0.08);
+}
+.cod-checkout-header {
+  text-align: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 20px;
+}
+.cod-checkout-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.cod-checkout-subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 6px;
+}
+
+.cod-form-group {
+  margin-bottom: 16px;
+}
+.cod-form-label {
+  display: block;
+  font-weight: 700;
+  font-size: 13px;
+  color: #1e293b;
+  margin-bottom: 6px;
+}
+.cod-form-label span.req {
+  color: #ef4444;
+}
+.cod-form-input, .cod-form-select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+  background-color: #f8fafc;
+}
+.cod-form-input:focus, .cod-form-select:focus {
+  outline: none;
+  border-color: var(--cod-green);
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+}
+
+/* Dynamic Order Summary inside Checkout */
+.cod-invoice-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 20px 0;
+}
+.cod-invoice-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: #475569;
+  margin-bottom: 8px;
+}
+.cod-invoice-row.total {
+  border-top: 1.5px dashed #cbd5e1;
+  padding-top: 10px;
+  margin-top: 10px;
+  margin-bottom: 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: #0f172a;
+}
+.cod-invoice-total-amount {
+  color: var(--cod-green);
+  font-size: 20px;
+}
+
+/* Submit Big Button */
+.btn-cod-submit {
+  width: 100%;
+  padding: 16px 24px;
+  background: var(--cod-green);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 6px 20px rgba(22, 163, 74, 0.35);
+  transition: all 0.2s ease;
+  animation: codPulse 2.5s infinite;
+}
+.btn-cod-submit:hover {
+  background: var(--cod-green-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.45);
+}
+
+@keyframes codPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.015); }
+  100% { transform: scale(1); }
+}
+
+/* WhatsApp Direct Button */
+.btn-cod-whatsapp {
+  width: 100%;
+  padding: 14px 20px;
+  background: #25D366;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  margin-top: 12px;
+  transition: all 0.2s ease;
+}
+.btn-cod-whatsapp:hover {
+  background: #20ba59;
+}
+
+/* Trust Badges Grid */
+.cod-trust-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 24px 0;
+  text-align: center;
+}
+.cod-trust-item {
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 12px 8px;
+}
+.cod-trust-icon {
+  font-size: 22px;
+  color: var(--cod-green);
+  margin-bottom: 4px;
+}
+.cod-trust-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+}
+.cod-trust-desc {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* Sticky Buy Bar for Mobile (EasyOrder feature) */
+.cod-sticky-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 2px solid #e2e8f0;
+  padding: 10px 16px;
+  z-index: 9999;
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+}
+@media (max-width: 768px) {
+  .cod-sticky-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+}
+.cod-sticky-price {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--cod-green);
+}
+.cod-sticky-price-before {
+  font-size: 11px;
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+.cod-sticky-btn {
+  flex: 1;
+  padding: 12px 18px;
+  background: var(--cod-green);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+}

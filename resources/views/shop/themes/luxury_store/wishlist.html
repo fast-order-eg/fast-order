@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة الأمنيات</title>
+    <link rel="stylesheet" href="/shop/styles.css">
+  <link rel="stylesheet" href="/shop/themes/luxury_store/style.css?v=1.0.0">
+  <link rel="stylesheet" href="/shop/themes/default/style.css?v=1.0.0">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        .wishlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; padding: 2rem 0; }
+        .wishlist-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); transition: all 0.3s; }
+        .wishlist-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
+        .wishlist-img { width: 100%; height: 200px; object-fit: cover; }
+        .wishlist-card-body { padding: 1rem; }
+        .wishlist-card-name { font-weight: 700; margin-bottom: 0.5rem; }
+        .wishlist-card-price { color: var(--primary-color, #6c63ff); font-weight: 800; font-size: 1.1rem; margin-bottom: 0.75rem; }
+        .wishlist-actions { display: flex; gap: 0.5rem; }
+        .btn-add-cart { flex: 1; padding: 0.6rem; background: var(--primary-color, #6c63ff); color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: 600; transition: all 0.2s; }
+        .btn-add-cart:hover { opacity: 0.9; }
+        .btn-remove { padding: 0.6rem 0.75rem; background: #fee2e2; color: #ef4444; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .btn-remove:hover { background: #ef4444; color: white; }
+        .out-of-stock-badge { background: #fee2e2; color: #ef4444; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 20px; }
+    </style>
+</head>
+<body class="theme-default classic-theme">
+    <div id="header-placeholder"></div>
+    <div class="container" style="padding: 2rem 1rem;">
+        <h1 style="font-size:1.8rem; font-weight:800; margin-bottom:0.5rem;">❤️ قائمة الأمنيات</h1>
+        <p id="wishlist-count" style="color:#888;">جاري التحميل...</p>
+
+        <div id="wishlist-empty" style="display:none; text-align:center; padding:4rem 0;">
+            <div style="font-size:4rem; opacity:0.3;">💔</div>
+            <h2>قائمتك فارغة</h2>
+            <p style="color:#888; margin:1rem 0;">أضف منتجات للمفضلة لتجدها هنا</p>
+            <a href="/products" style="display:inline-block; padding:0.85rem 2rem; background:var(--primary-color,#6c63ff); color:white; border-radius:12px; font-weight:700; text-decoration:none;">تصفح المنتجات</a>
+        </div>
+
+        <div class="wishlist-grid" id="wishlist-grid"></div>
+    </div>
+    
+    <footer class="container footer" style="text-align: center; padding: 24px 16px; color: #64748b; font-size: 14px; border-top: 1px solid #f1f5f9; margin-top: 40px; margin-bottom: 20px;">
+    <div dir="ltr" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500; direction: ltr;">
+      <span>Powered by</span>
+      <a href="https://fast-order-eg.tech" target="_blank" rel="noopener noreferrer" style="font-weight: 800; color: #4f46e5; text-decoration: none; transition: color 0.2s;">Fastorder</a>
+    </div>
+  </footer>
+
+
+    <script src="/shop/shared.js?v=20260714"></script>
+    <script>
+        async function loadWishlist() {
+            const res = await fetch('/api/wishlist', { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const data = await res.json();
+
+            if (!data.success && data.requires_auth) {
+                window.location.href = '/login';
+                return;
+            }
+
+            const { items } = data;
+            document.getElementById('wishlist-count').textContent = items.length + ' منتج';
+
+            if (items.length === 0) {
+                document.getElementById('wishlist-empty').style.display = 'block';
+                document.getElementById('wishlist-grid').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('wishlist-grid').innerHTML = items.map(item => `
+                <div class="wishlist-card" id="wl-${item.id}">
+                    <a href="/products/${item.slug}"><img src="${item.image || '/shop/placeholder.jpg'}" class="wishlist-img" alt="${item.name}" onerror="this.src='/shop/placeholder.jpg'"></a>
+                    <div class="wishlist-card-body">
+                        <p class="wishlist-card-name">${item.name}</p>
+                        ${!item.in_stock ? '<span class="out-of-stock-badge">نفذت الكمية</span>' : ''}
+                        <div class="wishlist-card-price">${parseFloat(item.sale_price || item.price).toFixed(0)} ج.م</div>
+                        <div class="wishlist-actions">
+                            <button class="btn-add-cart" onclick="addToCartWL(${item.product_id})" ${!item.in_stock ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>🛒 أضف للسلة</button>
+                            <button class="btn-remove" onclick="removeFromWishlist(${item.id})">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function removeFromWishlist(id) {
+            await fetch(`/api/wishlist/${id}`, {
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || '' }
+            });
+            document.getElementById('wl-' + id)?.remove();
+            loadWishlist();
+        }
+
+        async function addToCartWL(productId) {
+            const res = await fetch('/api/cart/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || '' },
+                body: JSON.stringify({ product_id: productId, quantity: 1 })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('تمت الإضافة للسلة ✓');
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#22c55e;color:white;padding:0.75rem 1.5rem;border-radius:12px;z-index:9999;font-weight:600;animation:fadeIn 0.3s ease;';
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        loadWishlist();
+    </script>
+</body>
+</html>

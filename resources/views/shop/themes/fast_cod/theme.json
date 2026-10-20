@@ -1,0 +1,79 @@
+{
+    "name": "Fast COD Express",
+    "name_ar": "ثيم إيزي أوردر السريع (Fast COD Express)",
+    "slug": "fast_cod",
+    "version": "1.0.0",
+    "author": "Fast Order Team",
+    "description": "ثيم فائق السرعة والأعلى تحويلاً مستوحى من نظام إيزي أوردر. يتميز بفورم طلب مباشر ومدمج بصفحة المنتج (One-Page Product Checkout)، شريط شراء عائم للموبايل، باقات توفير للكميات، وزر طلب مباشر عبر واتساب.",
+    "thumbnail": "/shop/images/themes/fast_cod-preview.webp",
+    "support_rtl": true,
+    "direction": "rtl,ltr",
+    "layouts": {
+        "header": [
+            { "id": "Compact", "name": "مدمج وسريع", "name_en": "Compact Fast" },
+            { "id": "Classic", "name": "كلاسيكي", "name_en": "Classic" }
+        ],
+        "banner": [
+            { "id": "Slider", "name": "سلايدر عروض متحرك", "name_en": "Promo Slider" },
+            { "id": "Single Banner", "name": "بانر فردي", "name_en": "Single Banner" }
+        ]
+    },
+    "supported_fonts": [
+        { "id": "Cairo", "name": "Cairo (خط القاهرة)" },
+        { "id": "Almarai", "name": "Almarai (خط المراعي)" },
+        { "id": "Tajawal", "name": "Tajawal (خط تجول)" }
+    ],
+    "default_settings": {
+        "primary_color": "#16a34a",
+        "secondary_color": "#15803d",
+        "accent_color": "#f97316",
+        "background_color": "#ffffff",
+        "text_color": "#0f172a",
+        "card_background": "#f8fafc",
+        "border_color": "#e2e8f0",
+        "border_radius": "12px",
+        "font_family": "Cairo",
+        "header_layout": "Compact",
+        "banner_layout": "Slider"
+    },
+    "css_variables": {
+        "--primary-color": "primary_color",
+        "--secondary-color": "secondary_color",
+        "--accent-color": "accent_color",
+        "--bg-color": "background_color",
+        "--text-color": "text_color",
+        "--border-color": "border_color",
+        "--font-family": "font_family",
+        "--border-radius": "border_radius"
+    },
+    "templates": [
+        "index.html",
+        "products.html",
+        "product.html",
+        "categories.html",
+        "category-products.html",
+        "cart.html",
+        "checkout.html",
+        "checkout.blade.php",
+        "order-success.html",
+        "order-success.blade.php",
+        "wishlist.html",
+        "search.html",
+        "contact.html",
+        "account.blade.php",
+        "tracking.html",
+        "tracking.blade.php",
+        "promotions.blade.php",
+        "landing.blade.php"
+    ],
+    "features": [
+        "one_page_checkout",
+        "sticky_buy_bar",
+        "tiered_quantity_bundles",
+        "whatsapp_direct_order",
+        "urgency_countdown_and_stock",
+        "social_proof_badges",
+        "ultra_fast_loading",
+        "mobile_first_design"
+    ]
+}

@@ -1,0 +1,3045 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="facebook-domain-verification" content="thjq95dh1a88yu3cmr55fhq2xqvxr3" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>تفاصيل المنتج - Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shop/styles.css?v=20260812_V999">
+  <link rel="stylesheet" href="/shop/themes/fast_cod/style.css?v=1.0.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+  <header class="container header">
+    <a href="/shop/index.html" class="brand" style="text-decoration:none;color:inherit">
+      <img id="siteLogo" src="/images/logo.png?v=202604031" alt="Store"
+        onerror="this.src='https://dummyimage.com/48x48/111827/ffffff&text=K'" />
+      <span id="siteName">Store</span>
+    </a>
+    <button class="menu-toggle" aria-label="القائمة"><span></span><span></span><span></span></button>
+    <div class="icons">
+      <a href="#" class="icon-round search-trigger" title="بحث" aria-label="بحث"><i class="fa fa-search"></i></a>
+      <a id="cartIcon" class="icon-round" href="/shop/cart.html" title="السلة" aria-label="السلة"><i
+          class="fa fa-shopping-cart"></i><span id="cartCount"></span></a>
+    </div>
+    <nav class="nav">
+      <a href="/shop/index.html">الرئيسية</a>
+      <a href="/shop/categories.html">الأقسام</a>
+      <a href="/shop/products.html">المنتجات</a>
+      <a style="display:none !important;" href="/shop/contact.html">اتصل بنا</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div id="productRoot" class="section"></div>
+    <!-- Inline Checkout Section -->
+    <section class="section" id="inlineCheckoutSection" style="margin: 2rem 0; background: #fafafa; padding: 1.5rem; border-radius: 16px; border: 2px dashed #cbd5e1; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+      <style>
+    @keyframes livePing {
+      75%, 100% {
+        transform: scale(2.2);
+        opacity: 0;
+      }
+    }
+
+        #quickCheckoutForm.was-validated input:invalid,
+        #quickCheckoutForm.was-validated select:invalid,
+        #quickCheckoutForm.was-validated textarea:invalid {
+          border-color: #ef4444 !important;
+          box-shadow: 0 0 0 1px #ef4444;
+        }
+      </style>
+      <div class="section-head" style="margin-bottom: 1.25rem; text-align: center;">
+        <h2 style="font-size: 1.2rem; font-weight: 800; color: #1e293b;">يرجى إدخال معلوماتك لإكمال الطلب</h2>
+      </div>
+      <form id="quickCheckoutForm" style="display:grid;gap:16px;" novalidate>
+        <div>
+          <label style="display:none;">الاسم بالكامل</label>
+          <div style="position: relative;">
+            <i class="fa-regular fa-user" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+            <input name="name" type="text" placeholder="اسمك بالكامل" style="width:100%;padding:12px 40px 12px 16px;border:1px solid #e2e8f0;border-radius:10px;font-size:15px;font-family:Cairo,sans-serif;background:#fff; transition: all 0.3s;">
+          </div>
+          <div id="qcNameError" class="qc-error-msg" style="color: #ef4444; font-size: 0.85rem; margin-top: 4px; display: none; font-weight: 600;">يرجى كتابة الاسم بالكامل</div>
+        </div>
+        <div>
+          <label style="display:none;">رقم الهاتف</label>
+          <div style="position: relative;">
+            <i class="fa-solid fa-phone" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+            <input name="phone" type="tel" inputmode="text" maxlength="20" placeholder="رقم الهاتف (مثل: 01012345678)" style="width:100%;padding:12px 40px 12px 16px;border:1px solid #e2e8f0;border-radius:10px;font-size:15px;font-family:Cairo,sans-serif;background:#fff;text-align: right; transition: all 0.3s;" dir="rtl">
+          </div>
+          <div id="qcPhoneError" class="qc-error-msg" style="color: #ef4444; font-size: 0.85rem; margin-top: 4px; display: none; font-weight: 600;">يجب أن يكون رقم الهاتف 11 رقماً ويبدأ بـ 01 (مثل: 01012345678)</div>
+        </div>
+        <div>
+          <label style="display:none;">المحافظة</label>
+          <div style="position: relative;">
+            <i class="fa-solid fa-map-location-dot" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; z-index: 2;"></i>
+            <select name="governorate" id="quickGovernorateSelect" style="width:100%;padding:12px 40px 12px 36px;border:1px solid #e2e8f0;border-radius:10px;font-size:15px;font-family:Cairo,sans-serif;background:#fff url(&quot;data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e&quot;) no-repeat left 16px center;background-size:14px;-webkit-appearance:none;-moz-appearance:none;appearance:none;cursor:pointer;transition:all 0.3s;">
+              <option value="">جاري تحميل المحافظات...</option>
+            </select>
+          </div>
+          <div id="qcGovError" class="qc-error-msg" style="color: #ef4444; font-size: 0.85rem; margin-top: 4px; display: none; font-weight: 600;">يرجى اختيار المحافظة</div>
+        </div>
+        <div>
+          <label style="display:none;">العنوان بالتفصيل</label>
+          <div style="position: relative;">
+            <textarea name="address" rows="2" style="width:100%;padding:12px 16px;border:1px solid #e2e8f0;border-radius:10px;font-size:15px;font-family:Cairo,sans-serif;background:#fff;resize:none; transition: all 0.3s;" placeholder="العنوان بالتفصيل"></textarea>
+          </div>
+          <div id="qcAddressError" class="qc-error-msg" style="color: #ef4444; font-size: 0.85rem; margin-top: 4px; display: none; font-weight: 600;">يرجى كتابة العنوان التفصيلي</div>
+        </div>
+
+        <!-- ملخص الشحن والإجمالي -->
+        <div id="quickCheckoutSummary" style="margin-top: 6px; padding: 12px 16px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; font-family: Cairo, sans-serif;">
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; color: #475569;">
+            <span style="font-weight: 600;">تكلفة الشحن</span>
+            <span id="qcShippingCost" style="font-weight: 700; color: #64748b;">—</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; color: #0f172a; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
+            <span style="font-weight: 800;">الإجمالي</span>
+            <span id="qcTotalAmount" style="font-weight: 900; color: #1e293b; font-size: 1.25rem;">0 ج.م</span>
+          </div>
+        </div>
+        
+        <!-- Dynamic Payment Gateways in Product Form -->
+        <div id="quickPaymentGatewaysContainer" style="display: none; margin-top: 10px; margin-bottom: 8px;">
+          <div style="font-size: 0.9rem; font-weight: 700; color: #334155; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+            <svg style="width: 16px; height: 16px; color: #4f46e5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            طريقة الدفع
+          </div>
+          <div id="quickPaymentMethodsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+
+        <input type="hidden" id="quickPayInput" name="pay" value="cod">
+        <button type="submit" id="quickSubmitBtn" style="width: 100%; padding: 14px; font-size: 1.1rem; font-weight: bold; background: #000; color: white; border: none; border-radius: 25px; cursor: pointer; margin-top: 6px;">
+          إتمام الطلب
+        </button>
+      </form>
+    </section>
+
+    <!-- Cross-sell section -->
+    <section class="section" id="crossSellSection" style="display:none; margin: 2rem 0; background: #fff; padding: 1.5rem; border-radius: 20px; border: 1px solid #e5e7eb; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+      <div class="section-head" style="margin-bottom: 1.25rem;">
+        <h2 style="font-size: 1.4rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px;">🛒 اشترى العملاء أيضاً (اقتراحات مكملة)</h2>
+      </div>
+      <div id="crossSellGrid" class="grid text-right"></div>
+    </section>
+
+    <section class="section" id="relatedSection">
+      <div class="section-head">
+        <h2>منتجات مشابهة</h2>
+      </div>
+      <div id="relatedGrid" class="grid"></div>
+    </section>
+
+    <!-- Reviews Section -->
+    
+  </main>
+
+    <footer class="container footer" style="text-align: center; padding: 24px 16px; color: #64748b; font-size: 14px; border-top: 1px solid #f1f5f9; margin-top: 40px; margin-bottom: 20px;">
+    <div dir="ltr" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500; direction: ltr;">
+      <span>Powered by</span>
+      <a href="https://fast-order-eg.tech" target="_blank" rel="noopener noreferrer" style="font-weight: 800; color: #4f46e5; text-decoration: none; transition: color 0.2s;">Fastorder</a>
+    </div>
+  </footer>
+
+  <style>
+    .sticky-buy-bar {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .sticky-buy-bar {
+        display: block;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #ffffff;
+        padding: 12px 16px;
+        box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1);
+        z-index: 100000 !important;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      body {
+        padding-bottom: 80px;
+      }
+    }
+
+    /* Premium Gallery Styles */
+    .p-gallery {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .p-main {
+      position: relative;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #ffffff;
+      aspect-ratio: 1 / 1 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      width: 100% !important;
+      box-sizing: border-box;
+      touch-action: pan-y;
+    }
+    
+    .p-main::before {
+      display: none !important;
+      content: none !important;
+    }
+    
+    .card.p-details .p-main img,
+    .p-main img,
+    #pMain {
+      position: absolute !important;
+      inset: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 100% !important;
+      max-height: 100% !important;
+      object-fit: contain !important;
+      object-position: center center !important;
+      transition: transform 0.2s ease-out, opacity 0.2s ease;
+      transform-origin: center center;
+      opacity: 1;
+      display: block !important;
+      margin: auto !important;
+    }
+    
+    .p-main img.fade-out {
+      opacity: 0;
+    }
+    
+    .p-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px;
+      height: 36px;
+      border: 1px solid #e5e7eb;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      color: #111827;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      transition: all 0.2s ease;
+      z-index: 10;
+    }
+    
+    .p-arrow:hover {
+      background: #ffffff;
+      color: var(--indigo);
+      transform: translateY(-50%) scale(1.1);
+    }
+    
+    .p-prev {
+      right: 12px;
+    }
+    
+    .p-next {
+      left: 12px;
+    }
+    
+    .p-thumbs {
+      display: flex !important;
+      flex-direction: row !important;
+      gap: 8px !important;
+      overflow-x: auto !important;
+      overflow-y: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
+      padding: 6px 2px !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      scrollbar-width: thin !important;
+      touch-action: auto !important;
+      touch-action: pan-x pan-y !important;
+    }
+    
+    .p-thumbs:empty {
+      display: none !important;
+    }
+    
+    .p-thumbs::-webkit-scrollbar {
+      height: 4px;
+    }
+    .p-thumbs::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    
+    .p-thumb {
+      width: 68px !important;
+      height: 68px !important;
+      min-width: 68px !important;
+      min-height: 68px !important;
+      flex-shrink: 0 !important;
+      border-radius: 10px !important;
+      border: 2px solid #e5e7eb;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #ffffff;
+      padding: 2px;
+      box-sizing: border-box !important;
+      touch-action: auto !important;
+      touch-action: pan-x pan-y !important;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    
+    .p-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 6px;
+      pointer-events: none;
+      -webkit-user-drag: none;
+      user-select: none;
+    }
+    
+    .p-thumb.active {
+      border-color: var(--indigo);
+      box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+    }
+
+    .bundle-option {
+      box-sizing: border-box !important;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    
+    /* Variant Attribute Selector Tiles */
+    .variant-btn {
+      display: inline-block;
+      padding: 8px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      background: #ffffff;
+      color: #374151;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    
+    .variant-btn:hover {
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
+    
+    input[type="radio"]:checked + .variant-btn,
+    .variant-btn.selected,
+    .variant-btn.active {
+      border-color: #2563eb !important;
+      background-color: #eff6ff !important;
+      color: #2563eb !important;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25) !important;
+      font-weight: 700 !important;
+    }
+
+    /* Color Swatches Grid (Compact 4-col for mobile, ideal for 17+ colors) */
+    .color-swatches-grid {
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 8px !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    @media (min-width: 640px) {
+      .color-swatches-grid {
+        grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)) !important;
+        gap: 10px !important;
+      }
+    }
+    .color-swatch-item {
+      cursor: pointer;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid #e5e7eb;
+      background: #ffffff;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-sizing: border-box;
+      touch-action: manipulation;
+      user-select: none;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .color-swatch-item:hover {
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
+    }
+    .color-swatch-item.selected,
+    .color-swatch-item.active,
+    .color-swatch-item:has(input[type="radio"]:checked) {
+      border-color: var(--primary-color, #111827) !important;
+      box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.18) !important;
+    }
+    .color-swatch-item.selected .swatch-check,
+    .color-swatch-item.active .swatch-check,
+    .color-swatch-item:has(input[type="radio"]:checked) .swatch-check {
+      display: flex !important;
+      background: var(--primary-color, #111827) !important;
+    }
+    .color-swatch-item.selected .swatch-name-bar,
+    .color-swatch-item.active .swatch-name-bar,
+    .color-swatch-item:has(input[type="radio"]:checked) .swatch-name-bar {
+      color: var(--primary-color, #111827) !important;
+      font-weight: 800 !important;
+    }
+    .color-swatch-item.selected .swatch-img-wrap img,
+    .color-swatch-item.active .swatch-img-wrap img,
+    .color-swatch-item:has(input[type="radio"]:checked) .swatch-img-wrap img {
+      transform: scale(1.06);
+    }
+    
+    /* Stock status badges */
+    .badge-stock {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    
+    .badge-stock-available {
+      background: #dcfce7;
+      color: #15803d;
+    }
+    
+    .badge-stock-warning {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    
+    .badge-stock-out {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    
+    .badge-stock-muted {
+      background: #f3f4f6;
+      color: #4b5563;
+    }
+  </style>
+  <script>window.API_BASE = '/public-api';</script>
+  <script src="/shop/shared.js?v=20260907_3"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    const root = document.getElementById('productRoot');
+    const relatedGrid = document.getElementById('relatedGrid');
+
+    // تفعيل كلاس التحديد المباشر عند النقر على أي متغير
+    document.addEventListener('click', function(e) {
+      var btn = e.target.closest('.variant-btn');
+      if (btn) {
+        var container = btn.closest('.size-group-container, .color-group-container, .cv-group-container');
+        if (container) {
+          container.querySelectorAll('.variant-btn').forEach(function(b) {
+            b.classList.remove('selected', 'active');
+            b.style.removeProperty('border-color');
+            b.style.removeProperty('background-color');
+            b.style.removeProperty('color');
+            b.style.removeProperty('box-shadow');
+            b.style.removeProperty('font-weight');
+          });
+        }
+        btn.classList.add('selected', 'active');
+        btn.style.setProperty('border-color', '#2563eb', 'important');
+        btn.style.setProperty('background-color', '#eff6ff', 'important');
+        btn.style.setProperty('color', '#2563eb', 'important');
+        btn.style.setProperty('box-shadow', '0 0 0 2px rgba(37, 99, 235, 0.25)', 'important');
+        btn.style.setProperty('font-weight', '700', 'important');
+      }
+    });
+
+    if (!id) { root.innerHTML = '<p class="muted">لم يتم تحديد منتج.</p>'; }
+    else if (root) {
+      root.innerHTML = `
+        <div class="card product-card-skeleton" style="padding: 16px;">
+          <div class="skeleton skeleton-img" style="height: 280px; border-radius: 8px;"></div>
+          <div class="skeleton-body" style="margin-top: 16px; gap: 12px;">
+            <div class="skeleton skeleton-title" style="height: 24px; width: 65%;"></div>
+            <div class="skeleton skeleton-price" style="height: 20px; width: 35%;"></div>
+            <div class="skeleton skeleton-btn" style="height: 48px; margin-top: 16px; border-radius: 8px;"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    fetch(`${window.API_BASE}/products/${id}${location.search}`).then(r => r.json()).then(({ data }) => {
+      window.currentProductData = data;
+      window.currentProductUpsells = data.upsells || [];
+      renderProductDetails(data);
+      if (typeof window.restoreProductPageRecoveredSelections === 'function') {
+        window.restoreProductPageRecoveredSelections();
+      }
+      setTimeout(function() {
+        if (typeof window.restoreProductPageRecoveredSelections === 'function') {
+          window.restoreProductPageRecoveredSelections();
+        }
+      }, 250);
+      setTimeout(function() {
+        if (typeof window.restoreProductPageRecoveredSelections === 'function') {
+          window.restoreProductPageRecoveredSelections();
+        }
+      }, 600);
+      initFakeVisitors();
+      loadRelated(data.category_id, data.id);
+      
+      // Load Cross-sells
+      if (data.cross_sells && data.cross_sells.length > 0) {
+        const crossSec = document.getElementById('crossSellSection');
+        if (crossSec) {
+          crossSec.style.display = 'block';
+          renderProducts(document.getElementById('crossSellGrid'), data.cross_sells);
+        }
+      }
+    }).catch((e) => { 
+      console.error(e);
+      root.innerHTML = '<p class="muted">تعذر تحميل تفاصيل المنتج.</p>'; 
+    });
+
+    
+    function initFakeVisitors() {
+      const el = document.getElementById('fakeVisitorsCount');
+      if (!el) return;
+      let count = Math.floor(Math.random() * (26 - 11 + 1)) + 11;
+      el.textContent = count;
+      setInterval(() => {
+        const delta = Math.floor(Math.random() * 7) - 3;
+        count = Math.max(8, Math.min(38, count + delta));
+        el.textContent = count;
+      }, Math.floor(Math.random() * 2500) + 3500);
+    }
+
+    function renderProductDetails(p) {
+      function resolveShopImg(url) {
+        if (!url || typeof url !== 'string') return '';
+        const trimmed = url.trim();
+        if (!trimmed) return '';
+        if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('/')) {
+          return trimmed;
+        }
+        return '/storage/' + trimmed;
+      }
+
+      let rawColors = p.colors || [];
+      if (typeof rawColors === 'string') { try { rawColors = JSON.parse(rawColors); } catch(e) { rawColors = []; } }
+      const colorImgs = (Array.isArray(rawColors) ? rawColors : [])
+        .map(c => (typeof c === 'object' && c !== null ? resolveShopImg(c.image) : null))
+        .filter(Boolean);
+
+      const mainImgFormatted = resolveShopImg(p.image_url);
+      const galleryImgsFormatted = (p.images || []).map(resolveShopImg).filter(Boolean);
+      const imgs = Array.from(new Set([mainImgFormatted, ...galleryImgsFormatted, ...colorImgs].filter(Boolean)));
+
+      const price = window.BirdCart.formatPrice ? window.BirdCart.formatPrice(p.price_after, p.price_before) : '';
+      const descList = (p.description || '').split(/\r?\n|\u2022|-/).map(s => s.trim()).filter(Boolean).map(s => `<li>${s}</li>`).join('');
+      root.innerHTML = `
+        <div class="p-details-container">
+          <div class="card p-gallery-card" style="padding:16px">
+            <div class="p-gallery">
+              <div class="p-main">
+                <img id="pMain" src="${imgs[0] || ''}" alt="${p.name || ''}" onerror="if(this.dataset.fallbackApplied !== '1'){this.dataset.fallbackApplied='1'; if('${imgs[0] || ''}' && this.src !== '${imgs[0] || ''}'){this.src='${imgs[0] || ''}';}}">
+              </div>
+              ${imgs.length > 1 ? `<div class="p-thumbs">${imgs.map((src, i) => `<button type="button" class="p-thumb ${i === 0 ? 'active' : ''}" data-idx="${i}"><img src="${src}" alt="thumb ${i + 1}" onerror="this.parentElement.style.opacity='0.4';"></button>`).join('')}</div>` : ''}
+            </div>
+          </div>
+          <div class="card p-info-card" style="padding:16px">
+            <h1 style="margin:0 0 8px">${p.name || 'منتج'}</h1>
+            <div class="muted" style="margin-bottom:8px">${p.category || ''}</div>
+            <!-- Live Visitors Watching Banner -->
+            <div class="fake_visitors_container" style="display: inline-flex; align-items: center; gap: 8px; border: 1px solid #e5e7eb; border-radius: 26px; padding: 6px 14px; background: #f9fafb; font-size: 0.85rem; color: #374151; font-family: Cairo, sans-serif; font-weight: 600; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+              <span style="position: relative; display: inline-flex; width: 10px; height: 10px; align-items: center; justify-content: center;">
+                <span style="position: absolute; display: inline-flex; width: 100%; height: 100%; border-radius: 9999px; background-color: #10b981; opacity: 0.75; animation: livePing 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+                <span style="position: relative; display: inline-flex; border-radius: 9999px; width: 8px; height: 8px; background-color: #059669;"></span>
+              </span>
+              <i class="fa-solid fa-eye" style="color: #7c3aed; font-size: 0.9rem;"></i>
+              <span><strong id="fakeVisitorsCount" style="color: #111827; font-weight: 800; font-size: 0.95rem;">12</strong> شخص يشاهد هذا المنتج الآن</span>
+            </div>
+            <div class="price-block" style="text-align: right;">
+              <div class="price-now" id="mainPriceNow" style="text-align: right;">${BirdCart.formatEGP(p.price_after || 0)}</div>
+              <div class="price-row" id="mainPriceOld" style="justify-content: flex-start; gap: 8px;">
+                ${p.price_before && p.price_before > p.price_after ? `<span class='old'>${BirdCart.formatEGP(p.price_before)}</span> <span class='badge-discount'><span>خصم</span><span>-${Math.round( ( (p.price_before-(p.price_after||0)) / p.price_before) * 100)}%</span></span>` : ''}
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; align-items: center;">
+              ${p.shipping_type === 'free' ? `<div style="padding: 6px 12px; background: #dcfce7; color: #166534; border-radius: 6px; font-size: 0.875rem; font-weight: 600; display: inline-block;"><i class="fa fa-truck" style="margin-left: 6px;"></i>الشحن مجاناً</div>` : ''}
+              <div id="stockIndicator"></div>
+            </div>
+            <!-- COUNTDOWN TIMER -->
+            ${p.price_before && p.price_before > (p.price_after || 0) ? `
+            <div id="productCountdown">
+              <div class="cd-label">
+                <i class="fa fa-fire"></i>
+                <span>الوقت المتبقي للخصم:</span>
+              </div>
+              <div class="cd-blocks">
+                <div class="cd-unit">
+                  <div class="cd-num" id="cd-hours">00</div>
+                  <div class="cd-text">ساعات</div>
+                </div>
+                <span class="cd-sep">:</span>
+                <div class="cd-unit">
+                  <div class="cd-num" id="cd-minutes">00</div>
+                  <div class="cd-text">دقائق</div>
+                </div>
+                <span class="cd-sep">:</span>
+                <div class="cd-unit">
+                  <div class="cd-num seconds" id="cd-seconds">00</div>
+                  <div class="cd-text">ثواني</div>
+                </div>
+              </div>
+            </div>` : ''}
+            ${renderBundles(p)}
+            <div id="variantsContainer">
+              ${renderSizesAndColors(p, 1)}
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; align-items: center;">
+              <!-- QUANTITY SELECTOR -->
+              <div class="product-qty-control" style="display: inline-flex; align-items: center; border: 1.5px solid #d1d5db; border-radius: 8px; overflow: hidden; background: #ffffff; height: 46px; user-select: none;">
+                <button type="button" class="qty-btn qty-plus" onclick="changeProductQty(1)" style="width: 42px; height: 100%; border: none; background: #f3f4f6; color: #111827; font-size: 1.25rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">+</button>
+                <input type="number" id="productQtyInput" value="1" min="1" readonly style="width: 44px; height: 100%; border: none; text-align: center !important; text-align-last: center !important; font-size: 1.1rem; font-weight: 800; color: #111827; background: transparent; -webkit-appearance: none; -moz-appearance: textfield; appearance: none; margin: 0; padding: 0; outline: none; direction: ltr !important;">
+                <button type="button" class="qty-btn qty-minus" onclick="changeProductQty(-1)" style="width: 42px; height: 100%; border: none; background: #f3f4f6; color: #111827; font-size: 1.25rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">-</button>
+              </div>
+              <button class="btn btn-primary p-btn-add" data-id="${p.id}" data-name="${p.name || ''}" data-price="${p.price_after || 0}" data-image="${p.image_url || ''}" data-shipping="${p.shipping_type || 'free'}" data-price-before="${p.price_before || 0}" data-has-sizes="${p.sizes && p.sizes.length ? 'yes' : 'no'}" data-has-colors="${p.colors && p.colors.length ? 'yes' : 'no'}" style="flex: 1; min-width: 130px; padding: 12px; font-size: 1rem; background-color: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; text-align: center;">أضف إلى السلة</button>
+              <button type="button" class="btn btn-primary p-btn-buy-now" onclick="scrollToCodCheckout()" style="flex: 1; min-width: 130px; padding: 12px; font-size: 1rem; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; text-align: center;"><i class="fa fa-bolt"></i> اطلب الآن (الدفع عند الاستلام)</button>
+            </div>
+          </div>
+        </div>
+        ${descList ? `<div class="card" style="padding:16px;margin-top:12px"><h3 style="margin:0 0 10px">المواصفات</h3><ul class="desc-list">${descList}</ul></div>` : ''}
+        <!-- EasyOrder Fast COD Embedded Checkout Box -->
+        <div id="fastCodCheckout" class="cod-checkout-container">
+          <div class="cod-checkout-header">
+            <div style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: #dcfce7; border-radius: 50%; color: #16a34a; font-size: 22px; margin-bottom: 8px;">
+              <i class="fa fa-truck-fast"></i>
+            </div>
+            <h3 class="cod-checkout-title">اطلب الآن — الدفع عند الاستلام والمعاينة قبل الدفع</h3>
+            <p class="cod-checkout-subtitle">املأ بياناتك بالأسفل وسيقوم فريق العمل بتأكيد وشحن طلبك فوراً</p>
+          </div>
+
+          <div id="codOrderAlert" style="display:none; padding:12px; border-radius:8px; margin-bottom:16px; font-weight:bold; font-size:14px;"></div>
+
+          <form id="codQuickCheckoutForm" onsubmit="handleCodFastSubmit(event)">
+            <div class="cod-form-group">
+              <label class="cod-form-label">الاسم بالكامل <span class="req">*</span></label>
+              <input type="text" id="cod_customer_name" class="cod-form-input" placeholder="اكتب اسمك الثلاثي" required>
+            </div>
+
+            <div class="cod-form-group">
+              <label class="cod-form-label">رقم الهاتف (واتساب) <span class="req">*</span></label>
+              <input type="tel" id="cod_customer_phone" class="cod-form-input" placeholder="01xxxxxxxxx" dir="ltr" style="text-align:right" required>
+              <small style="color:#64748b; font-size:11px;">يرجى كتابة رقم هاتف يعمل به واتساب للتواصل معك وتأكيد الشحن</small>
+            </div>
+
+            <div class="cod-form-group">
+              <label class="cod-form-label">المحافظة <span class="req">*</span></label>
+              <select id="cod_governorate_id" class="cod-form-select" onchange="updateCodOrderSummary()" required>
+                <option value="">-- جاري تحميل المحافظات... --</option>
+              </select>
+            </div>
+
+            <div class="cod-form-group">
+              <label class="cod-form-label">العنوان بالتفصيل <span class="req">*</span></label>
+              <input type="text" id="cod_customer_address" class="cod-form-input" placeholder="اسم المنطقة، الشارع، رقم العمارة أو علامة مميزة" required>
+            </div>
+
+            <div class="cod-form-group">
+              <label class="cod-form-label">ملاحظات إضافية (اختياري)</label>
+              <input type="text" id="cod_customer_notes" class="cod-form-input" placeholder="أي تفاصيل خاصة بتوقيت الاستلام">
+            </div>
+
+            <!-- Dynamic Invoice Box -->
+            <div class="cod-invoice-box">
+              <div class="cod-invoice-row">
+                <span>قيمة الطلب (<span id="codSummaryQty">1</span> قطعة):</span>
+                <span id="codSummaryProductPrice">0 ج.م</span>
+              </div>
+              <div class="cod-invoice-row">
+                <span>مصاريف الشحن:</span>
+                <span id="codSummaryShippingCost" style="color:#16a34a">اختر المحافظة</span>
+              </div>
+              <div class="cod-invoice-row total">
+                <span>المبلغ الإجمالي عند الاستلام:</span>
+                <span id="codSummaryTotalPrice" class="cod-invoice-total-amount">0 ج.م</span>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="codSubmitBtn" class="btn-cod-submit">
+              <i class="fa fa-check-circle"></i>
+              <span>تأكيد الطلب الآن — الدفع عند الاستلام 🚚</span>
+            </button>
+          </form>
+
+          <!-- WhatsApp Direct Order Button -->
+          <a href="#" id="codWhatsappDirectBtn" target="_blank" class="btn-cod-whatsapp">
+            <i class="fa-brands fa-whatsapp" style="font-size:22px;"></i>
+            <span>أو اطلب عبر واتساب في ثواني معدودة</span>
+          </a>
+
+          <!-- Trust Badges -->
+          <div class="cod-trust-grid">
+            <div class="cod-trust-item">
+              <div class="cod-trust-icon"><i class="fa fa-box-open"></i></div>
+              <div class="cod-trust-title">معاينة قبل الدفع</div>
+              <div class="cod-trust-desc">افحص المنتج مع المندوب</div>
+            </div>
+            <div class="cod-trust-item">
+              <div class="cod-trust-icon"><i class="fa fa-bolt"></i></div>
+              <div class="cod-trust-title">شحن سريع</div>
+              <div class="cod-trust-desc">توصيل 24-48 ساعة</div>
+            </div>
+            <div class="cod-trust-item">
+              <div class="cod-trust-icon"><i class="fa fa-rotate-left"></i></div>
+              <div class="cod-trust-title">استرجاع 14 يوم</div>
+              <div class="cod-trust-desc">ضمان كامل على المنتج</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lightbox" id="pLightbox">
+          <button class="close" aria-label="إغلاق">✕</button>
+          <img id="lbImg" src="${imgs[0] || ''}" alt="">
+        </div>
+        <div class="cod-sticky-bar">
+          <div style="display: flex; flex-direction: column;">
+            <span class="cod-sticky-price" id="codStickyPriceText"></span>
+          </div>
+          <button type="button" class="cod-sticky-btn" onclick="scrollToCodCheckout()">
+            <i class="fa fa-truck-fast"></i>
+            <span>اطلب الآن — الدفع عند الاستلام</span>
+          </button>
+        </div>
+        <div class="sticky-buy-bar" style="display:none !important;">
+          <button class="btn btn-primary p-btn-buy-now" data-id="${p.id}" data-name="${p.name || ''}" data-price="${p.price_after || 0}" data-image="${p.image_url || ''}" data-shipping="${p.shipping_type || 'free'}" data-price-before="${p.price_before || 0}" data-has-sizes="${p.sizes && p.sizes.length ? 'yes' : 'no'}" data-has-colors="${p.colors && p.colors.length ? 'yes' : 'no'}" style="width: 100%; padding: 14px; font-size: 1.2rem; font-weight: bold; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; border: none; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"><i class="fa fa-bolt"></i> إتمام الشراء الآن</button>
+        </div>`;
+
+      // Image gallery logic with transition & zoom
+      let idx = 0;
+      const main = document.getElementById('pMain');
+      const thumbs = Array.from(document.querySelectorAll('.p-thumb'));
+      const mainContainer = document.querySelector('.p-main');
+      const lb = document.getElementById('pLightbox');
+      const lbImg = document.getElementById('lbImg');
+
+      function show(i) {
+        if (!imgs || !imgs.length) return;
+        idx = (i + imgs.length) % imgs.length;
+        const nextSrc = imgs[idx];
+        main.classList.add('fade-out');
+        setTimeout(() => {
+          main.src = nextSrc;
+          main.classList.remove('fade-out');
+        }, 150);
+        function scrollThumbIntoView(thumbEl) {
+          if (!thumbEl) return;
+          try {
+            const thumbsContainer = document.querySelector('.p-thumbs');
+            if (thumbsContainer) {
+              const thumbLeft = thumbEl.offsetLeft - thumbsContainer.offsetLeft;
+              const scrollTarget = thumbLeft - (thumbsContainer.clientWidth / 2) + (thumbEl.clientWidth / 2);
+              thumbsContainer.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+            }
+          } catch(e) {}
+        }
+
+        thumbs.forEach(t => t.classList.remove('active'));
+        const t = thumbs[idx];
+        if (t) {
+          t.classList.add('active');
+          scrollThumbIntoView(t);
+        }
+        if (lb && lb.classList.contains('open') && lbImg) {
+          lbImg.src = nextSrc;
+        }
+
+        // Auto-select matching color swatch if this image belongs to a color!
+        try {
+          const matchingSwatch = document.querySelector(`input[name="product_color_0"][data-image="${nextSrc}"]`) ||
+                                 document.querySelector(`input[name^="product_color_"][data-image="${nextSrc}"]`);
+          if (matchingSwatch && !matchingSwatch.checked) {
+            matchingSwatch.checked = true;
+            if (typeof window.onColorSwatchSelected === 'function') {
+              const pMatch = matchingSwatch.name.match(/product_color_(\d+)/);
+              window.onColorSwatchSelected(matchingSwatch, pMatch ? pMatch[1] : 0);
+            }
+          }
+        } catch(e) {}
+      }
+
+      thumbs.forEach(t => t.addEventListener('click', () => show(+t.dataset.idx)));
+
+      window.switchMainProductImage = function(src) {
+        if (!src || !main) return;
+        main.classList.add('fade-out');
+        setTimeout(() => {
+          main.src = src;
+          main.classList.remove('fade-out');
+        }, 120);
+
+        if (lb && lb.classList.contains('open') && lbImg) {
+          lbImg.src = src;
+        }
+
+        let foundIdx = -1;
+        if (imgs && imgs.length) {
+          foundIdx = imgs.findIndex(imgSrc => imgSrc === src || src.endsWith(imgSrc) || (typeof imgSrc === 'string' && imgSrc.endsWith(src)));
+        }
+        thumbs.forEach((t, tIdx) => {
+          if (tIdx === foundIdx) {
+            t.classList.add('active');
+            try {
+              const thumbsContainer = document.querySelector('.p-thumbs');
+              if (thumbsContainer) {
+                const thumbLeft = t.offsetLeft - thumbsContainer.offsetLeft;
+                const scrollTarget = thumbLeft - (thumbsContainer.clientWidth / 2) + (t.clientWidth / 2);
+                thumbsContainer.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+              }
+            } catch(e) {}
+          } else {
+            t.classList.remove('active');
+          }
+        });
+      };
+
+      // Hover Zoom Effect - Desktop Only (disable on touch screens)
+      const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || window.matchMedia('(pointer: coarse)').matches;
+
+      mainContainer.addEventListener('mousemove', (e) => {
+        if (!isTouchDevice && window.innerWidth > 768) {
+          const rect = e.currentTarget.getBoundingClientRect();
+          const x = ((e.clientX - rect.left) / rect.width) * 100;
+          const y = ((e.clientY - rect.top) / rect.height) * 100;
+          main.style.transformOrigin = `${x}% ${y}%`;
+        }
+      });
+      mainContainer.addEventListener('mouseenter', () => {
+        if (!isTouchDevice && window.innerWidth > 768) {
+          main.style.transform = 'scale(1.8)';
+        }
+      });
+      mainContainer.addEventListener('mouseleave', () => {
+        main.style.transform = 'scale(1)';
+        main.style.transformOrigin = 'center center';
+      });
+
+      // Mobile Swipe & Reset Logic on Main Image
+      let startX = 0;
+      let startY = 0;
+      mainContainer.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches.length > 0) {
+          startX = e.touches[0].clientX;
+          startY = e.touches[0].clientY;
+        }
+        main.style.transform = 'scale(1)';
+        main.style.transformOrigin = 'center center';
+      }, { passive: true });
+
+      mainContainer.addEventListener('touchend', (e) => {
+        main.style.transform = 'scale(1)';
+        main.style.transformOrigin = 'center center';
+        if (e.changedTouches && e.changedTouches.length > 0) {
+          const diffX = e.changedTouches[0].clientX - startX;
+          const diffY = e.changedTouches[0].clientY - startY;
+          if (Math.abs(diffX) > 35 && Math.abs(diffX) > Math.abs(diffY)) {
+            if (diffX < 0) {
+              // Swipe LEFT -> navigate to image on the left
+              show(idx - 1);
+            } else {
+              // Swipe RIGHT -> navigate to image on the right
+              show(idx + 1);
+            }
+          }
+        }
+      }, { passive: true });
+
+      // Lightbox (Fullscreen Modal) & History & Zoom
+      let isLbHistoryPushed = false;
+      let lbIsZoomed = false;
+
+      function resetLbZoom() {
+        if (!lbImg) return;
+        lbIsZoomed = false;
+        lbImg.style.transform = 'scale(1)';
+        lbImg.style.transformOrigin = 'center center';
+        lbImg.classList.remove('zoomed');
+      }
+
+      function toggleLbZoom(clientX, clientY) {
+        if (!lbImg) return;
+        if (!lbIsZoomed) {
+          const rect = lbImg.getBoundingClientRect();
+          const x = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+          const y = Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100));
+          lbImg.style.transformOrigin = `${x}% ${y}%`;
+          lbImg.style.transform = 'scale(2.5)';
+          lbImg.classList.add('zoomed');
+          lbIsZoomed = true;
+        } else {
+          resetLbZoom();
+        }
+      }
+
+      function openLb() {
+        if (!lb) return;
+        lb.classList.add('open');
+        resetLbZoom();
+        if (lbImg) lbImg.src = imgs[idx];
+
+        if (!isLbHistoryPushed) {
+          try {
+            history.pushState({ lbModalOpen: true }, '');
+            isLbHistoryPushed = true;
+          } catch(e) {}
+        }
+      }
+
+      function closeLb(popHistory = true) {
+        if (!lb) return;
+        lb.classList.remove('open');
+        resetLbZoom();
+
+        if (isLbHistoryPushed) {
+          isLbHistoryPushed = false;
+          if (popHistory) {
+            try {
+              if (history.state && history.state.lbModalOpen) {
+                history.back();
+              }
+            } catch(e) {}
+          }
+        }
+      }
+
+      window.__closeProductLightbox = closeLb;
+
+      window.addEventListener('popstate', (e) => {
+        if (lb && lb.classList.contains('open')) {
+          closeLb(false);
+        }
+      });
+
+      main.addEventListener('click', openLb);
+      const lbClose = lb.querySelector('.close');
+      if (lbClose) lbClose.addEventListener('click', (e) => { e.stopPropagation(); closeLb(true); });
+      lb.addEventListener('click', (e) => { if (e.target === lb) closeLb(true); });
+
+      // Double-tap to zoom on mobile & double-click on desktop
+      let lbLastTapTime = 0;
+      let lbStartX = 0;
+      let lbStartY = 0;
+
+      if (lbImg) {
+        lbImg.addEventListener('touchend', (e) => {
+          const now = Date.now();
+          const timeSinceLastTap = now - lbLastTapTime;
+
+          let moved = false;
+          if (e.changedTouches && e.changedTouches.length > 0) {
+            const touch = e.changedTouches[0];
+            const dist = Math.hypot(touch.clientX - lbStartX, touch.clientY - lbStartY);
+            if (dist > 15) {
+              moved = true;
+            }
+          }
+
+          if (!moved && timeSinceLastTap > 0 && timeSinceLastTap < 320) {
+            e.preventDefault();
+            e.stopPropagation();
+            const touch = e.changedTouches[0];
+            toggleLbZoom(touch.clientX, touch.clientY);
+            lbLastTapTime = 0;
+          } else if (!moved) {
+            lbLastTapTime = now;
+          }
+        });
+
+        lbImg.addEventListener('dblclick', (e) => {
+          e.preventDefault();
+          toggleLbZoom(e.clientX, e.clientY);
+        });
+      }
+
+      // Lightbox Touch Swipe
+      lb.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches.length > 0) {
+          lbStartX = e.touches[0].clientX;
+          lbStartY = e.touches[0].clientY;
+        }
+      }, { passive: true });
+
+      lb.addEventListener('touchend', (e) => {
+        if (e.changedTouches && e.changedTouches.length > 0) {
+          const diffX = e.changedTouches[0].clientX - lbStartX;
+          const diffY = e.changedTouches[0].clientY - lbStartY;
+
+          if (lbIsZoomed) {
+            if (Math.abs(diffX) > 120 && Math.abs(diffX) > Math.abs(diffY)) {
+              resetLbZoom();
+              if (diffX < 0) {
+                show(idx - 1);
+              } else {
+                show(idx + 1);
+              }
+              if (lbImg) lbImg.src = imgs[idx];
+            }
+            return;
+          }
+
+          if (Math.abs(diffX) > 35 && Math.abs(diffX) > Math.abs(diffY)) {
+            resetLbZoom();
+            if (diffX < 0) {
+              show(idx - 1);
+            } else {
+              show(idx + 1);
+            }
+            if (lbImg) lbImg.src = imgs[idx];
+          }
+        }
+      }, { passive: true });
+
+      document.addEventListener('keydown', (e) => {
+        if (!lb || !lb.classList.contains('open')) return;
+        if (e.key === 'Escape') closeLb(true);
+        if (e.key === 'ArrowLeft') { resetLbZoom(); show(idx - 1); if (lbImg) lbImg.src = imgs[idx]; }
+        if (e.key === 'ArrowRight') { resetLbZoom(); show(idx + 1); if (lbImg) lbImg.src = imgs[idx]; }
+      });
+
+      window.currentProductData = p;
+
+      // Handle size and color selection error clearing (delegated)
+      document.addEventListener('change', function(e) {
+        if (e.target.name && e.target.name.startsWith('product_size')) {
+          const err = e.target.closest('.variant-group')?.querySelector('.sizeError');
+          if (err) { err.classList.add('hidden'); err.style.display = 'none'; }
+        }
+        if (e.target.name && e.target.name.startsWith('product_color')) {
+          const err = e.target.closest('.variant-group')?.querySelector('.colorError');
+          if (err) { err.classList.add('hidden'); err.style.display = 'none'; }
+        }
+      });
+
+      // Cart logic
+      function handleCartAction(btn, isBuyNow, bypassUpsell = false) {
+        if (typeof closeLb === 'function') {
+          closeLb(true);
+        }
+
+        if (window.currentProductUpsells && window.currentProductUpsells.length > 0 && !bypassUpsell) {
+          showUpsellPopup(window.currentProductUpsells[0], btn, isBuyNow);
+          return;
+        }
+
+        const hasSizes = btn.dataset.hasSizes === 'yes';
+        const hasColors = btn.dataset.hasColors === 'yes';
+
+        const bundleInput = document.querySelector('input[name="bundle_tier"]:checked');
+        const qtyInput = document.getElementById('productQtyInput');
+        const qtyVal = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
+        const finalQty = bundleInput ? parseInt(bundleInput.value) : qtyVal;
+        const totalBundlePrice = window.calculateTotalPiecesPrice ? window.calculateTotalPiecesPrice(p, finalQty) : (bundleInput ? Number(bundleInput.dataset.price) : ((Number(btn.dataset.price) || 0) * finalQty));
+
+        let customVariantsData = [];
+        if (p.custom_variants) {
+          try { customVariantsData = typeof p.custom_variants === 'string' ? JSON.parse(p.custom_variants) : p.custom_variants; } catch(e){}
+        }
+        const hasCustomVariantsData = Array.isArray(customVariantsData) && customVariantsData.length > 0;
+
+        let isValid = true;
+        let firstErrorElement = null;
+        let piecesSelections = [];
+
+        for (let i = 0; i < finalQty; i++) {
+          let selectedSize = null;
+          let selectedColor = null;
+          let selectedOptions = {};
+
+          if (hasSizes) {
+            const sizeInput = document.querySelector(`input[name="product_size_${i}"]:checked`);
+            if (sizeInput) {
+              selectedSize = sizeInput.value;
+            } else {
+              const err = document.querySelector(`#sizeError_${i}`);
+              if (err) {
+                err.style.display = 'block';
+                if (!firstErrorElement) firstErrorElement = err.parentElement;
+              }
+              isValid = false;
+            }
+          }
+
+          let selectedColorImg = null;
+          if (hasColors) {
+            const colorInput = document.querySelector(`input[name="product_color_${i}"]:checked`);
+            if (colorInput) {
+              selectedColor = colorInput.value;
+              selectedColorImg = colorInput.getAttribute('data-image') || null;
+            } else {
+              const err = document.querySelector(`#colorError_${i}`);
+              if (err) {
+                err.style.display = 'block';
+                if (!firstErrorElement) firstErrorElement = err.parentElement;
+              }
+              isValid = false;
+            }
+          }
+
+          if (hasCustomVariantsData) {
+            customVariantsData.forEach((cv, cvIdx) => {
+              if (!cv || !cv.name || !cv.values || !cv.values.length) return;
+              const cvInput = document.querySelector(`input[name="product_cv_${cvIdx}_${i}"]:checked`);
+              if (cvInput) {
+                selectedOptions[cv.name] = cvInput.value;
+              } else {
+                const err = document.querySelector(`#cvError_${cvIdx}_${i}`);
+                if (err) {
+                  err.style.display = 'block';
+                  if (!firstErrorElement) firstErrorElement = err.parentElement;
+                }
+                isValid = false;
+              }
+            });
+          }
+
+          piecesSelections.push({ piece: i + 1, size: selectedSize, color: selectedColor, color_image: selectedColorImg, options: selectedOptions });
+        }
+
+        if (!isValid) {
+          if (firstErrorElement) {
+            firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          return;
+        }
+
+        // Validate stock availability
+        let isStockAvailable = true;
+        let variants = window.currentProductData.variants_stock || []; if (typeof variants === 'string') { try { variants = JSON.parse(variants); } catch(e) { variants = []; } }
+        
+        for (let i = 0; i < finalQty; i++) {
+          const sel = piecesSelections[i];
+          if (hasSizes || hasColors) {
+            const match = variants.find(v => 
+              (!hasSizes || v.size === sel.size) && 
+              (!hasColors || v.color === sel.color)
+            );
+            let stockQty = 100; if (match) { stockQty = (match.qty === null || match.qty === undefined || match.qty === '') ? 100 : Number(match.qty); } else if (window.currentProductData.stock !== undefined && window.currentProductData.stock !== null) { stockQty = Number(window.currentProductData.stock); }
+            if (stockQty <= 0) {
+              isStockAvailable = false;
+              break;
+            }
+          } else {
+            if ((window.currentProductData.stock || 0) <= 0) {
+              isStockAvailable = false;
+              break;
+            }
+          }
+        }
+        
+        if (!isStockAvailable) {
+          alert('عذراً، الخيارات المحددة غير متوفرة في المخزن حالياً.');
+          return;
+        }
+
+        if (window.BirdCart && window.BirdCart.addToCart) {
+          let combinedSize = null;
+          let combinedColor = null;
+          let combinedOptions = null;
+
+          if (hasSizes) {
+            if (finalQty > 1) {
+              combinedSize = piecesSelections.map((s, i) => `ق${i+1}: ${s.size}`).join(' | ');
+            } else {
+              combinedSize = piecesSelections[0]?.size || null;
+            }
+          }
+
+          if (hasColors) {
+            if (finalQty > 1) {
+              combinedColor = piecesSelections.map((s, i) => `ق${i+1}: ${s.color}`).join(' | ');
+            } else {
+              combinedColor = piecesSelections[0]?.color || null;
+            }
+          }
+
+          if (piecesSelections && piecesSelections.length > 0) {
+            const optKeys = new Set();
+            piecesSelections.forEach(s => {
+              if (s.options && typeof s.options === 'object') {
+                Object.keys(s.options).forEach(k => optKeys.add(k));
+              }
+            });
+
+            if (optKeys.size > 0) {
+              combinedOptions = {};
+              optKeys.forEach(k => {
+                if (finalQty > 1) {
+                  combinedOptions[k] = piecesSelections
+                    .map((s, i) => `ق${i + 1}: ${s.options?.[k] || '-'}`)
+                    .join(' | ');
+                } else {
+                  combinedOptions[k] = piecesSelections[0]?.options?.[k] || null;
+                }
+              });
+            }
+          }
+
+          const isBundleTier = !!(bundleInput && parseInt(bundleInput.value) > 1);
+
+          let hasDifferingPieceSelections = false;
+          if (finalQty > 1 && piecesSelections.length > 1) {
+            const first = piecesSelections[0];
+            for (let i = 1; i < piecesSelections.length; i++) {
+              const cur = piecesSelections[i];
+              if (cur.size !== first.size || cur.color !== first.color || JSON.stringify(cur.options || {}) !== JSON.stringify(first.options || {})) {
+                hasDifferingPieceSelections = true;
+                break;
+              }
+            }
+          }
+
+          const treatAsBundlePack = isBundleTier || hasDifferingPieceSelections;
+
+          let cartItemName = btn.dataset.name;
+          const unitPrice = (p.price_after !== undefined && p.price_after !== null && p.price_after !== '') 
+            ? Number(p.price_after) 
+            : (Number(btn.dataset.price) || Number(p.price) || 0);
+
+          let cartPrice = unitPrice;
+          let cartQty = qtyVal;
+
+          if (treatAsBundlePack) {
+            cartItemName = `${btn.dataset.name} (${finalQty} قطع)`;
+            cartPrice = (totalBundlePrice > 0) ? totalBundlePrice : (unitPrice * finalQty);
+            cartQty = 1;
+          } else {
+            if (piecesSelections.length > 0 && !hasDifferingPieceSelections) {
+              combinedSize = piecesSelections[0]?.size || null;
+              combinedColor = piecesSelections[0]?.color || null;
+              combinedOptions = piecesSelections[0]?.options || null;
+            }
+          }
+
+          const chosenColorImage = piecesSelections[0]?.color_image || null;
+
+          window.BirdCart.addToCart({
+            id: +btn.dataset.id,
+            name: cartItemName,
+            price: cartPrice,
+            image: chosenColorImage || btn.dataset.image || null,
+            shipping_type: btn.dataset.shipping || 'free',
+            price_before: Number(btn.dataset.priceBefore) || 0,
+            qty: cartQty,
+            selectedSize: combinedSize,
+            selectedColor: combinedColor,
+            selectedColorImage: chosenColorImage,
+            options: combinedOptions,
+            piecesSelections: piecesSelections,
+          });
+          window.BirdCart.updateCartCount();
+        }
+
+        if (typeof fbq !== 'undefined') {
+          fbq('track', 'AddToCart', {
+            content_name: btn.dataset.name,
+            content_ids: [btn.dataset.id],
+            content_type: 'product',
+            value: totalBundlePrice,
+            currency: 'EGP'
+          });
+        }
+        if (typeof ttq !== 'undefined') {
+          ttq.track('AddToCart', {
+            contents: [{
+              content_id: btn.dataset.id,
+              content_name: btn.dataset.name,
+              quantity: finalQty,
+              price: totalBundlePrice / finalQty
+            }],
+            content_type: 'product',
+            value: totalBundlePrice,
+            currency: 'EGP'
+          });
+        }
+
+                if (isBuyNow) {
+          document.getElementById('inlineCheckoutSection').style.display = 'block';
+          document.getElementById('inlineCheckoutSection').scrollIntoView({ behavior: 'smooth' });
+          setTimeout(function() {
+            var qForm = document.getElementById('quickCheckoutForm');
+            if (qForm && typeof window.validateQuickForm === 'function') {
+              window.validateQuickForm(qForm);
+            }
+          }, 300);
+          if (!window.governoratesLoaded) {
+            window.governoratesLoaded = true;
+            fetch('/public-api/shipping-governorates')
+              .then(function(r) { return r.json(); })
+              .then(function(res) {
+                var select = document.getElementById('quickGovernorateSelect');
+                select.innerHTML = '<option value="">اختر المحافظة...</option>';
+                (res.data || []).filter(function(gov){ return gov.is_active; }).forEach(function (gov) {
+                  var opt = document.createElement('option');
+                  opt.value = gov.id;
+                  opt.textContent = gov.name;
+                  select.appendChild(opt);
+                });
+              });
+          }
+        } else {
+          document.querySelectorAll('input[type="radio"]').forEach(i => {
+             if(i.name.startsWith('product_')) i.checked = false;
+          });
+
+          const originalText = btn.innerHTML;
+          btn.innerHTML = '<i class="fa fa-check"></i> تمت الإضافة للسلة';
+          btn.style.backgroundColor = '#16a34a';
+
+          setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.style.backgroundColor = '#2563eb';
+          }, 2000);
+        }
+      }
+
+      document.querySelectorAll('.p-btn-buy-now').forEach(btnBuyNow => {
+        btnBuyNow.addEventListener('click', function (e) {
+          e.stopPropagation();
+          handleCartAction(this, true);
+        });
+      });
+
+      document.querySelectorAll('.p-btn-add').forEach(btnAdd => {
+        btnAdd.addEventListener('click', function (e) {
+          e.stopPropagation();
+          handleCartAction(this, false);
+        });
+      });
+
+      // Show stock status initially
+      updateStockIndicator();
+      // Apply out-of-stock strikethrough on load before any selection
+      if (window.updateVariantAvailability) {
+        const bundleInput = document.querySelector('input[name="bundle_tier"]:checked');
+        const _qty = bundleInput ? parseInt(bundleInput.value) : 1;
+        for (let _pi = 0; _pi < _qty; _pi++) { updateVariantAvailability(_pi); }
+      }
+
+      // COUNTDOWN TIMER — random end time per session (4-23 hrs from now)
+      (() => {
+        const cdEl = document.getElementById('productCountdown');
+        if (!cdEl) return;
+        const KEY = 'fo_cd_end_' + (window.currentProductData?.id || '0');
+        let endTime = parseInt(localStorage.getItem(KEY) || '0');
+        const now = Date.now();
+        if (!endTime || endTime <= now) {
+          // Random 4–23 hours
+          const hrs = 4 + Math.floor(Math.random() * 20);
+          const mins = Math.floor(Math.random() * 60);
+          endTime = now + (hrs * 3600 + mins * 60) * 1000;
+          localStorage.setItem(KEY, endTime);
+        }
+        const hEl = document.getElementById('cd-hours');
+        const mEl = document.getElementById('cd-minutes');
+        const sEl = document.getElementById('cd-seconds');
+        function pad(n) { return String(n).padStart(2, '0'); }
+        function tick() {
+          const diff = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+          const h = Math.floor(diff / 3600);
+          const m = Math.floor((diff % 3600) / 60);
+          const s = diff % 60;
+          if (hEl) hEl.textContent = pad(h);
+          if (mEl) mEl.textContent = pad(m);
+          if (sEl) sEl.textContent = pad(s);
+          if (diff <= 0) { localStorage.removeItem(KEY); }
+        }
+        tick();
+        setInterval(tick, 1000);
+      })();
+    }
+
+    window.updateBundleSelection = function(input) {
+      document.querySelectorAll('.bundle-option').forEach(el => {
+        el.style.borderColor = '#e5e7eb';
+        el.style.backgroundColor = 'transparent';
+      });
+      const label = input.closest('.bundle-option');
+      label.style.borderColor = '#2563eb';
+      label.style.backgroundColor = '#eff6ff';
+
+      const qty = parseInt(input.value);
+      const totalBundlePrice = Number(input.dataset.price);
+      
+      const priceNowEl = document.getElementById('mainPriceNow');
+      const priceOldEl = document.getElementById('mainPriceOld');
+      
+      if (priceNowEl) {
+        priceNowEl.textContent = BirdCart.formatEGP(totalBundlePrice);
+      }
+      
+      if (priceOldEl) {
+        const basePrice = window.currentProductData.price_after || window.currentProductData.price;
+        const oldBasePrice = window.currentProductData.price_before || basePrice;
+        const totalOldPrice = oldBasePrice * qty;
+        
+        if (totalOldPrice > totalBundlePrice) {
+          const discountPercent = Math.round(((totalOldPrice - totalBundlePrice) / totalOldPrice) * 100);
+          priceOldEl.innerHTML = `<span class='old'>${BirdCart.formatEGP(totalOldPrice)}</span> <span class='badge-discount'><span>خصم</span><span>-${discountPercent}%</span></span>`;
+        } else {
+          priceOldEl.innerHTML = '';
+        }
+      }
+
+      const vContainer = document.getElementById('variantsContainer');
+      if (vContainer && window.currentProductData) {
+        vContainer.innerHTML = renderSizesAndColors(window.currentProductData, qty);
+        if (typeof window.restoreProductPageRecoveredSelections === 'function') {
+          window.restoreProductPageRecoveredSelections();
+        }
+      }
+      
+      // Update stock indicator when quantity switches
+      updateStockIndicator();
+    };
+
+    function renderBundles(p) {
+      if (!p.price_tiers || !p.price_tiers.length) return '';
+      let tiers = p.price_tiers;
+      if (typeof tiers === 'string') {
+        try { tiers = JSON.parse(tiers); } catch (e) { return ''; }
+      }
+      if (!Array.isArray(tiers) || tiers.length === 0) return '';
+      
+      const basePrice = p.price_after || p.price;
+      const basePriceBefore = p.price_before || basePrice;
+
+      let html = `
+        <div style="margin: 16px 0; width: 100%; box-sizing: border-box;">
+          <label style="display: block; font-weight: 700; margin-bottom: 8px; font-size: 1rem; color: #111827;">اختر العرض المناسب لك</label>
+          <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+            <label class="bundle-option" style="border: 2px solid #2563eb; background: #eff6ff; padding: 10px 14px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 12px; transition: all 0.2s; box-sizing: border-box; width: 100%;">
+              <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1 1 auto;">
+                <input type="radio" name="bundle_tier" value="1" data-price="${basePrice}" checked onchange="updateBundleSelection(this)" style="width: 18px; height: 18px; accent-color: #2563eb; flex-shrink: 0;">
+                <span style="font-weight: 700; font-size: 0.95rem; color: #111827; white-space: nowrap;">قطعة واحدة</span>
+              </div>
+              <div style="text-align: left; flex-shrink: 0;">
+                <div style="font-weight: bold; color: #2563eb; font-size: 1.05rem;">${BirdCart.formatEGP(basePrice)}</div>
+                ${basePriceBefore > basePrice ? `<div style="font-size: 0.8rem; color: #6b7280; text-decoration: line-through;">بدلاً من ${BirdCart.formatEGP(basePriceBefore)}</div>` : ''}
+              </div>
+            </label>
+      `;
+
+      tiers.forEach(t => {
+        const tierPrice = (t.price !== undefined && t.price !== null && t.price !== '' && Number(t.price) > 0) 
+          ? Number(t.price) 
+          : (basePrice * t.min_qty);
+        const oldTotalPrice = basePriceBefore * t.min_qty;
+        const totalSavings = oldTotalPrice - tierPrice;
+
+        html += `
+            <label class="bundle-option" style="border: 2px solid #e5e7eb; background: transparent; padding: 10px 14px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 12px; transition: all 0.2s; box-sizing: border-box; width: 100%;">
+              <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1 1 auto;">
+                <input type="radio" name="bundle_tier" value="${t.min_qty}" data-price="${tierPrice}" onchange="updateBundleSelection(this)" style="width: 18px; height: 18px; accent-color: #2563eb; flex-shrink: 0;">
+                <div style="display: flex; flex-direction: column; min-width: 0;">
+                  <span style="font-weight: 700; font-size: 0.95rem; color: #111827;">${t.min_qty} قطع (توفير!)</span>
+                  ${totalSavings > 0 ? `<span style="font-size: 0.8rem; color: #16a34a; font-weight: 700;">وفر ${BirdCart.formatEGP(totalSavings)}</span>` : ''}
+                </div>
+              </div>
+              <div style="text-align: left; flex-shrink: 0;">
+                <div style="font-weight: bold; color: #2563eb; font-size: 1.05rem;">${BirdCart.formatEGP(tierPrice)} <span style="font-size:0.75rem;font-weight:normal;">/ الإجمالي</span></div>
+                ${oldTotalPrice > tierPrice ? `<div style="font-size: 0.8rem; color: #6b7280; text-decoration: line-through;">بدلاً من ${BirdCart.formatEGP(oldTotalPrice)}</div>` : ''}
+              </div>
+            </label>
+        `;
+      });
+
+      html += `
+          </div>
+        </div>
+      `;
+      return html;
+    }
+
+    window.onColorSwatchSelected = function(radio, pieceIdx) {
+      if (!radio) return;
+      const val = radio.value;
+      const img = radio.getAttribute('data-image');
+      
+      const container = radio.closest('.color-group-container');
+      if (container) {
+        container.querySelectorAll('.color-swatch-item').forEach(el => {
+          el.classList.remove('selected', 'active');
+          el.style.removeProperty('border-color');
+          el.style.removeProperty('box-shadow');
+          const chk = el.querySelector('.swatch-check');
+          if (chk) chk.style.display = 'none';
+          const imgEl = el.querySelector('.swatch-img-wrap img');
+          if (imgEl) imgEl.style.transform = 'scale(1)';
+          const nameBar = el.querySelector('.swatch-name-bar');
+          if (nameBar) {
+            nameBar.style.removeProperty('color');
+            nameBar.style.removeProperty('font-weight');
+          }
+        });
+        
+        const parentLabel = radio.closest('.color-swatch-item');
+        if (parentLabel) {
+          parentLabel.classList.add('selected', 'active');
+          const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#111827';
+          parentLabel.style.setProperty('border-color', primaryColor, 'important');
+          parentLabel.style.setProperty('box-shadow', '0 0 0 2px ' + primaryColor + '33', 'important');
+          const chk = parentLabel.querySelector('.swatch-check');
+          if (chk) {
+            chk.style.background = primaryColor;
+            chk.style.display = 'flex';
+          }
+          const imgEl = parentLabel.querySelector('.swatch-img-wrap img');
+          if (imgEl) imgEl.style.transform = 'scale(1.08)';
+          const nameBar = parentLabel.querySelector('.swatch-name-bar');
+          if (nameBar) {
+            nameBar.style.color = primaryColor;
+            nameBar.style.fontWeight = '800';
+          }
+        }
+      }
+
+      const err = document.querySelector(`#colorError_${pieceIdx}`);
+      if (err) { err.style.display = 'none'; err.classList.add('hidden'); }
+
+      const lbl = document.getElementById(`colorSelectedLabel_${pieceIdx}`);
+      if (lbl) {
+        lbl.textContent = val;
+      }
+
+      if (img && typeof window.switchMainProductImage === 'function') {
+        window.switchMainProductImage(img);
+      }
+
+      if (typeof window.updateVariantAvailability === 'function') {
+        window.updateVariantAvailability(pieceIdx);
+      }
+    };
+
+    function renderSizesAndColors(p, qty = 1) {
+      let html = '';
+      function resolveShopImg(url) {
+        if (!url || typeof url !== 'string') return '';
+        const trimmed = url.trim();
+        if (!trimmed) return '';
+        if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('/')) {
+          return trimmed;
+        }
+        return '/storage/' + trimmed;
+      }
+
+      let sizes = p.sizes || []; if (typeof sizes === 'string') { try { sizes = JSON.parse(sizes); } catch(e) { sizes = []; } }
+      let colors = p.colors || []; if (typeof colors === 'string') { try { colors = JSON.parse(colors); } catch(e) { colors = []; } }
+
+      const normalizedColors = Array.isArray(colors) ? colors.map(c => {
+        if (typeof c === 'object' && c !== null) {
+          return { name: c.name || '', image: resolveShopImg(c.image) || null };
+        }
+        return { name: String(c || ''), image: null };
+      }).filter(c => c.name && c.name.trim() !== '') : [];
+
+      let customVariants = [];
+      if (p.custom_variants) {
+        try { customVariants = typeof p.custom_variants === 'string' ? JSON.parse(p.custom_variants) : p.custom_variants; } catch(e){}
+      }
+
+      const hasSizes = Array.isArray(sizes) && sizes.length > 0;
+      const hasColors = normalizedColors.length > 0;
+      const hasColorImages = normalizedColors.some(c => !!c.image);
+      const hasCustomVariants = Array.isArray(customVariants) && customVariants.length > 0;
+
+      if (!hasSizes && !hasColors && !hasCustomVariants) return '';
+
+      for (let i = 0; i < qty; i++) {
+        const title = qty > 1 ? `القطعة ${i + 1}` : 'المواصفات';
+        html += `<div class="variant-group" style="margin-bottom: 16px; padding: 12px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;">`;
+        if (qty > 1) {
+           html += `<h4 style="margin: 0 0 12px 0; color: #111827; font-size: 1.05rem; padding-bottom: 8px; border-bottom: 1px solid #e5e7eb;">${title}</h4>`;
+        }
+
+        if (hasSizes) {
+          html += `
+            <div style="margin-bottom: 12px;">
+              <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; margin-bottom: 8px; font-size: 0.95rem; color:#111827;">المقاس <span style="color: #dc2626;">*</span><span style="color:#6b7280; font-weight:400; font-size:0.85rem;">:</span><span id="sizeSelectedLabel_${i}" style="color:#111827; font-weight:700; font-size:0.88rem;"></span></label>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;" class="size-group-container" data-piece="${i}">
+                ${sizes.map(size => `
+                  <label class="size-option" style="cursor: pointer; position: relative;">
+                    <input type="radio" name="product_size_${i}" value="${size}" style="display: none;" onchange="updateVariantAvailability(${i})">
+                    <span class="variant-btn" data-type="size" data-val="${size}">${size}</span>
+                  </label>
+                `).join('')}
+              </div>
+              <div id="sizeError_${i}" class="error-msg sizeError" style="color: #dc2626; font-size: 0.875rem; margin-top: 4px; display: none;">يرجى اختيار المقاس</div>
+            </div>
+          `;
+        }
+
+        if (hasColors) {
+          if (hasColorImages) {
+            html += `
+              <div style="margin-bottom: 14px;">
+                <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; margin-bottom: 10px; font-size: 0.95rem; color:#111827;">
+                  <span>اللون</span><span style="color: #dc2626;">*</span><span style="color:#6b7280; font-weight:400; font-size:0.85rem;">:</span>
+                  <span id="colorSelectedLabel_${i}" style="color: var(--primary-color, #111827); font-weight:800; font-size:0.95rem;"></span>
+                </label>
+                <div class="color-swatches-grid color-group-container" data-piece="${i}">
+                  ${normalizedColors.map(col => {
+                    const colName = col.name;
+                    const colImg = col.image;
+                    if (colImg) {
+                      return `
+                        <label class="color-option color-swatch-item" data-color-name="${colName}" data-color-img="${colImg}" data-piece="${i}" title="${colName}">
+                          <input type="radio" name="product_color_${i}" value="${colName}" data-image="${colImg}" style="display: none;" onchange="onColorSwatchSelected(this, ${i})">
+                          <span class="variant-btn" data-type="color" data-val="${colName}" style="display: none;">${colName}</span>
+                          <div class="swatch-img-wrap" style="width: 100%; aspect-ratio: 1 / 1; position: relative; background: #f8fafc; overflow: hidden;">
+                            <img src="${colImg}" alt="${colName}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.25s ease;" onerror="this.style.opacity='0.25';">
+                            <div class="swatch-check" style="position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #111827; color: #fff; font-size: 10px; font-weight: 900; display: none; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.25);">✓</div>
+                          </div>
+                          <div class="swatch-name-bar" style="padding: 4px 2px; text-align: center; font-size: 0.72rem; font-weight: 700; color: #374151; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: #fff; border-top: 1px solid #f1f5f9; line-height: 1.2;">
+                            ${colName}
+                          </div>
+                        </label>
+                      `;
+                    } else {
+                      return `
+                        <label class="color-option color-swatch-item color-swatch-text" data-color-name="${colName}" data-color-img="" data-piece="${i}" style="min-height: 54px; padding: 6px; justify-content: center; align-items: center;">
+                          <input type="radio" name="product_color_${i}" value="${colName}" data-image="" style="display: none;" onchange="onColorSwatchSelected(this, ${i})">
+                          <span class="variant-btn" data-type="color" data-val="${colName}" style="display: none;">${colName}</span>
+                          <span style="font-size: 0.8rem; font-weight: 700; color: #374151;">${colName}</span>
+                        </label>
+                      `;
+                    }
+                  }).join('')}
+                </div>
+                <div id="colorError_${i}" class="error-msg colorError" style="color: #dc2626; font-size: 0.875rem; margin-top: 6px; display: none;">يرجى اختيار اللون</div>
+              </div>
+            `;
+          } else {
+            html += `
+              <div style="margin-bottom: 12px;">
+                <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; margin-bottom: 8px; font-size: 0.95rem; color:#111827;">اللون <span style="color: #dc2626;">*</span><span style="color:#6b7280; font-weight:400; font-size:0.85rem;">:</span><span id="colorSelectedLabel_${i}" style="color:#111827; font-weight:700; font-size:0.88rem;"></span></label>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;" class="color-group-container" data-piece="${i}">
+                  ${normalizedColors.map(col => `
+                    <label class="color-option" style="cursor: pointer; position: relative;">
+                      <input type="radio" name="product_color_${i}" value="${col.name}" style="display: none;" onchange="updateVariantAvailability(${i})">
+                      <span class="variant-btn" data-type="color" data-val="${col.name}">${col.name}</span>
+                    </label>
+                  `).join('')}
+                </div>
+                <div id="colorError_${i}" class="error-msg colorError" style="color: #dc2626; font-size: 0.875rem; margin-top: 4px; display: none;">يرجى اختيار اللون</div>
+              </div>
+            `;
+          }
+        }
+
+        if (hasCustomVariants) {
+          customVariants.forEach((cv, cvIdx) => {
+            if (!cv || !cv.name || !cv.values || !cv.values.length) return;
+            html += `
+              <div style="margin-bottom: 12px;">
+                <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; margin-bottom: 8px; font-size: 0.95rem; color:#111827;">${cv.name} <span style="color: #dc2626;">*</span><span style="color:#6b7280; font-weight:400; font-size:0.85rem;">:</span><span id="cvSelectedLabel_${cvIdx}_${i}" style="color:#111827; font-weight:700; font-size:0.88rem;"></span></label>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;" class="cv-group-container" data-piece="${i}" data-cv-idx="${cvIdx}">
+                  ${cv.values.map(val => `
+                    <label class="cv-option" style="cursor: pointer; position: relative;">
+                      <input type="radio" name="product_cv_${cvIdx}_${i}" value="${val}" data-name="${cv.name}" data-piece="${i}" style="display: none;" onchange="updateVariantAvailability(${i})">
+                      <span class="variant-btn" data-type="cv_${cvIdx}" data-val="${val}">${val}</span>
+                    </label>
+                  `).join('')}
+                </div>
+                <div id="cvError_${cvIdx}_${i}" class="error-msg cvError" style="color: #dc2626; font-size: 0.875rem; margin-top: 4px; display: none;">يرجى اختيار ${cv.name}</div>
+              </div>
+            `;
+          });
+        }
+
+        html += `<div id="variantLowStockNotice_${i}"></div></div>`;
+      }
+
+      return html;
+    }
+
+    window.updateVariantAvailability = function(pieceIndex) {
+      if (!window.currentProductData) return;
+      const p = window.currentProductData;
+      let stock = p.variants_stock || []; if (typeof stock === 'string') { try { stock = JSON.parse(stock); } catch(e) { stock = []; } }
+      const hasSizes = p.sizes && p.sizes.length > 0;
+      const hasColors = p.colors && p.colors.length > 0;
+      
+      const sizeInput = document.querySelector(`input[name="product_size_${pieceIndex}"]:checked`);
+      const colorInput = document.querySelector(`input[name="product_color_${pieceIndex}"]:checked`);
+      const selectedSize = sizeInput ? sizeInput.value : null;
+      const selectedColor = colorInput ? colorInput.value : null;
+      
+      const sizeLabels = document.querySelectorAll(`.size-group-container[data-piece="${pieceIndex}"] label.size-option`);
+      const colorLabels = document.querySelectorAll(`.color-group-container[data-piece="${pieceIndex}"] label.color-option`);
+      
+      let customVariantsData = p.custom_variants || [];
+      if (typeof customVariantsData === 'string') { try { customVariantsData = JSON.parse(customVariantsData); } catch(e) { customVariantsData = []; } }
+      
+      let selectedCvOptions = {};
+      if (Array.isArray(customVariantsData)) {
+        customVariantsData.forEach((cv, cvIdx) => {
+          const cvInp = document.querySelector(`input[name="product_cv_${cvIdx}_${pieceIndex}"]:checked`);
+          if (cvInp && cvInp.value) {
+            selectedCvOptions[cv.name] = cvInp.value;
+          }
+        });
+      }
+
+      const isOptsMatch = (vOpts, extraOpts = {}) => {
+        vOpts = vOpts || {};
+        const combined = { ...selectedCvOptions, ...extraOpts };
+        for (const k in combined) {
+          if (vOpts[k] !== combined[k]) return false;
+        }
+        return true;
+      };
+
+      // Helper: apply out-of-stock or low-stock styling to a label
+      const applyVariantStyle = (lbl, qty) => {
+        const btn = lbl.querySelector('.variant-btn');
+        const input = lbl.querySelector('input');
+        const isOut = (qty !== null && qty !== undefined && qty !== '' && Number(qty) <= 0);
+        const isLow = !isOut && qty !== null && qty !== undefined && qty !== '' && Number(qty) <= 3;
+
+        if (isOut) {
+          lbl.style.opacity = '0.45';
+          lbl.style.cursor = 'not-allowed';
+          input.disabled = true;
+          if (input.checked) { input.checked = false; }
+          if (btn) {
+            btn.style.textDecoration = 'line-through';
+            btn.style.position = 'relative';
+            btn.title = 'نفد من المخزن';
+          }
+          // Remove low-stock badge if exists
+          const old = lbl.querySelector('.variant-low-badge');
+          if (old) old.remove();
+        } else {
+          lbl.style.opacity = '1';
+          lbl.style.cursor = 'pointer';
+          input.disabled = false;
+          if (btn) {
+            btn.style.textDecoration = 'none';
+            btn.title = '';
+          }
+          // Show/hide low-stock badge
+          let badge = lbl.querySelector('.variant-low-badge');
+          if (isLow) {
+            if (!badge) {
+              badge = document.createElement('span');
+              badge.className = 'variant-low-badge';
+              badge.style.cssText = 'position:absolute;top:-7px;right:-7px;background:#f59e0b;color:#fff;font-size:9px;font-weight:700;border-radius:99px;padding:1px 5px;white-space:nowrap;z-index:2;line-height:1.4;';
+              lbl.style.position = 'relative';
+              lbl.appendChild(badge);
+            }
+            badge.textContent = 'آخر ' + Number(qty);
+          } else {
+            if (badge) badge.remove();
+          }
+        }
+      };
+
+      // Update Colors based on selected Size and Options
+      if (hasColors) {
+        colorLabels.forEach(lbl => {
+          const cVal = lbl.querySelector('input').value;
+          const matches = stock.filter(s => {
+             if (s.color !== cVal) return false;
+             if (selectedSize && s.size !== selectedSize) return false;
+             if (!isOptsMatch(s.options)) return false;
+             return true;
+          });
+          if (stock.length > 0) {
+            if (matches.length === 0) {
+                applyVariantStyle(lbl, 0);
+            } else {
+                let maxQty = Math.max(...matches.map(m => (m.qty !== null && m.qty !== undefined && m.qty !== '') ? Number(m.qty) : (p.stock !== undefined && p.stock !== null ? Number(p.stock) : 100)));
+                applyVariantStyle(lbl, maxQty);
+            }
+          } else {
+            applyVariantStyle(lbl, p.stock !== undefined && p.stock !== null ? p.stock : 100);
+          }
+        });
+      }
+      
+      // Update Sizes based on selected Color and Options
+      if (hasSizes) {
+        sizeLabels.forEach(lbl => {
+          const sVal = lbl.querySelector('input').value;
+          const matches = stock.filter(s => {
+             if (s.size !== sVal) return false;
+             if (selectedColor && s.color !== selectedColor) return false;
+             if (!isOptsMatch(s.options)) return false;
+             return true;
+          });
+          if (stock.length > 0) {
+            if (matches.length === 0) {
+                applyVariantStyle(lbl, 0);
+            } else {
+                let maxQty = Math.max(...matches.map(m => (m.qty !== null && m.qty !== undefined && m.qty !== '') ? Number(m.qty) : (p.stock !== undefined && p.stock !== null ? Number(p.stock) : 100)));
+                applyVariantStyle(lbl, maxQty);
+            }
+          } else {
+            applyVariantStyle(lbl, p.stock !== undefined && p.stock !== null ? p.stock : 100);
+          }
+        });
+      }
+
+      // Update Custom Variants availability based on selected Size, Color, and other Options
+      if (Array.isArray(customVariantsData)) {
+        customVariantsData.forEach((cv, cvIdx) => {
+          const cvLabels = document.querySelectorAll(`.cv-group-container[data-piece="${pieceIndex}"][data-cv-idx="${cvIdx}"] label.cv-option`);
+          cvLabels.forEach(lbl => {
+            const val = lbl.querySelector('input').value;
+            const matches = stock.filter(s => {
+               if (selectedSize && s.size !== selectedSize) return false;
+               if (selectedColor && s.color !== selectedColor) return false;
+               if (!isOptsMatch(s.options, { [cv.name]: val })) return false;
+               return true;
+            });
+            if (stock.length > 0) {
+              if (matches.length === 0) {
+                  applyVariantStyle(lbl, 0);
+              } else {
+                  let maxQty = Math.max(...matches.map(m => (m.qty !== null && m.qty !== undefined && m.qty !== '') ? Number(m.qty) : (p.stock !== undefined && p.stock !== null ? Number(p.stock) : 100)));
+                  applyVariantStyle(lbl, maxQty);
+              }
+            } else {
+              applyVariantStyle(lbl, p.stock !== undefined && p.stock !== null ? p.stock : 100);
+            }
+          });
+        });
+      }
+
+      // Update selected variant labels shown next to the field title
+      const sizeLabel = document.getElementById(`sizeSelectedLabel_${pieceIndex}`);
+      const colorLabel = document.getElementById(`colorSelectedLabel_${pieceIndex}`);
+      if (sizeLabel) { sizeLabel.textContent = selectedSize || ''; }
+      if (Array.isArray(customVariantsData)) {
+        customVariantsData.forEach((cv, cvIdx) => {
+          const cvLbl = document.getElementById(`cvSelectedLabel_${cvIdx}_${pieceIndex}`);
+          if (cvLbl) { cvLbl.textContent = selectedCvOptions[cv.name] || ''; }
+        });
+      }
+
+      // Update real-time price & stock indicator
+      if (typeof window.updateStockIndicator === 'function') {
+        window.updateStockIndicator();
+      }
+    };
+
+    window.findVariantMatch = function(p, pieceIdx) {
+      let variants = p.variants_stock || [];
+      if (typeof variants === 'string') { try { variants = JSON.parse(variants); } catch(e) { variants = []; } }
+      if (!Array.isArray(variants) || variants.length === 0) return null;
+
+      const hasSizes = p.sizes && p.sizes.length > 0;
+      const hasColors = p.colors && p.colors.length > 0;
+
+      const sizeInp = document.querySelector(`input[name="product_size_${pieceIdx}"]:checked`);
+      const colorInp = document.querySelector(`input[name="product_color_${pieceIdx}"]:checked`);
+      const sVal = sizeInp ? sizeInp.value : null;
+      const cVal = colorInp ? colorInp.value : null;
+
+      let customVariantsData = p.custom_variants || [];
+      if (typeof customVariantsData === 'string') { try { customVariantsData = JSON.parse(customVariantsData); } catch(e) { customVariantsData = []; } }
+      
+      let selectedCvOptions = {};
+      if (Array.isArray(customVariantsData)) {
+        customVariantsData.forEach((cv, cvIdx) => {
+          const cvInp = document.querySelector(`input[name="product_cv_${cvIdx}_${pieceIdx}"]:checked`);
+          if (cvInp && cvInp.value) {
+            selectedCvOptions[cv.name] = cvInp.value;
+          }
+        });
+      }
+
+      return variants.find(v => {
+        if (hasSizes && v.size !== sVal) return false;
+        if (hasColors && v.color !== cVal) return false;
+        if (Object.keys(selectedCvOptions).length > 0) {
+          const vOpts = v.options || {};
+          for (const k in selectedCvOptions) {
+            if (vOpts[k] !== selectedCvOptions[k]) return false;
+          }
+        }
+        return true;
+      });
+    };
+
+    window.calculateTotalPiecesPrice = function(p, finalQty) {
+      if (!p) return 0;
+      const bundleInput = document.querySelector('input[name="bundle_tier"]:checked');
+      const baseUnitPrice = (p.price_after !== undefined && p.price_after !== null && p.price_after !== '') 
+        ? Number(p.price_after) 
+        : Number(p.price || 0);
+
+      let variantSum = 0;
+      let variantDiffSum = 0;
+      let hasCustomVariantPrice = false;
+
+      for (let i = 0; i < finalQty; i++) {
+        const match = typeof window.findVariantMatch === 'function' ? window.findVariantMatch(p, i) : null;
+        if (match && match.price && Number(match.price) > 0) {
+          hasCustomVariantPrice = true;
+          variantSum += Number(match.price);
+          variantDiffSum += (Number(match.price) - baseUnitPrice);
+        } else {
+          variantSum += baseUnitPrice;
+        }
+      }
+
+      if (bundleInput && bundleInput.dataset.price) {
+        const tierQty = parseInt(bundleInput.value) || 1;
+        const rawTierPrice = Number(bundleInput.dataset.price);
+        const tierPrice = (!isNaN(rawTierPrice) && rawTierPrice > 0) ? rawTierPrice : (baseUnitPrice * tierQty);
+
+        if (tierQty === 1) {
+          if (hasCustomVariantPrice) {
+            return variantSum;
+          }
+          return tierPrice;
+        } else {
+          if (hasCustomVariantPrice) {
+            return Math.max(0, tierPrice + variantDiffSum);
+          }
+          return tierPrice;
+        }
+      }
+
+      return variantSum;
+    };
+
+    window.updateQuickCheckoutSummary = function() {
+      const p = window.currentProductData;
+      if (!p) return;
+
+      const bundleInput = document.querySelector('input[name="bundle_tier"]:checked');
+      const qtyInput = document.getElementById('productQtyInput');
+      const qtyVal = qtyInput ? (parseInt(qtyInput.value) || 1) : 1;
+      const finalQty = bundleInput ? parseInt(bundleInput.value) : qtyVal;
+      const productTotal = window.calculateTotalPiecesPrice(p, finalQty);
+
+      const priceNowEl = document.getElementById('mainPriceNow');
+      if (priceNowEl) {
+        priceNowEl.textContent = BirdCart.formatEGP(productTotal);
+      }
+
+      document.querySelectorAll('.p-btn-add, .p-btn-buy-now').forEach(btn => {
+        btn.dataset.price = (finalQty > 0) ? (productTotal / finalQty) : productTotal;
+      });
+
+      let shippingCost = 0;
+      const shippingEl = document.getElementById('qcShippingCost');
+      const govSelect = document.getElementById('quickGovernorateSelect');
+
+      if (p.shipping_type === 'free') {
+        shippingCost = 0;
+        if (shippingEl) {
+          shippingEl.textContent = 'شحن مجاني';
+          shippingEl.style.color = '#16a34a';
+        }
+      } else {
+        const govId = govSelect ? govSelect.value : null;
+        if (govId && window.governoratesData) {
+          const gov = window.governoratesData.find(g => String(g.id) === String(govId));
+          if (gov) shippingCost = Number(gov.price !== undefined ? gov.price : (gov.shipping_cost || 0)) || 0;
+        }
+        if (shippingEl) {
+          if (!govId) {
+            shippingEl.textContent = '—';
+            shippingEl.style.color = '#64748b';
+          } else if (shippingCost === 0) {
+            shippingEl.textContent = 'شحن مجاني';
+            shippingEl.style.color = '#16a34a';
+          } else {
+            shippingEl.textContent = new Intl.NumberFormat('en-EG').format(shippingCost) + ' ج.م';
+            shippingEl.style.color = '#334155';
+          }
+        }
+      }
+
+      const grandTotal = productTotal + shippingCost;
+      const totalEl = document.getElementById('qcTotalAmount');
+      if (totalEl) {
+        totalEl.textContent = new Intl.NumberFormat('en-EG').format(grandTotal) + ' ج.م';
+      }
+    };
+
+    window.updateStockIndicator = function() {
+      const p = window.currentProductData;
+      if (!p) return;
+
+      const bundleInput = document.querySelector('input[name="bundle_tier"]:checked');
+      const finalQty = bundleInput ? parseInt(bundleInput.value) : 1;
+      const hasSizes = p.sizes && p.sizes.length > 0;
+      const hasColors = p.colors && p.colors.length > 0;
+
+      let customVariantsData = p.custom_variants || [];
+      if (typeof customVariantsData === 'string') { try { customVariantsData = JSON.parse(customVariantsData); } catch(e) { customVariantsData = []; } }
+      const hasCustomVariants = Array.isArray(customVariantsData) && customVariantsData.length > 0;
+
+      const indicator = document.getElementById('stockIndicator');
+
+      if (!hasSizes && !hasColors && !hasCustomVariants) {
+        if (indicator) {
+          const stock = p.stock || 0;
+          if (stock > 10) {
+            indicator.innerHTML = '';
+          } else if (stock > 0) {
+            indicator.innerHTML = `<span class="badge-stock badge-stock-warning"><i class="fa fa-fire"></i> متبقي ${stock} قطعة فقط!</span>`;
+          } else {
+            indicator.innerHTML = `<span class="badge-stock badge-stock-out"><i class="fa fa-times-circle"></i> غير متوفر في المخزون</span>`;
+          }
+        }
+        if (window.updateQuickCheckoutSummary) window.updateQuickCheckoutSummary();
+        return;
+      }
+
+      let allSelectionsValid = true;
+      let outOfStockCount = 0;
+      let warningCount = 0;
+      let piecesStocks = [];
+
+      for (let i = 0; i < finalQty; i++) {
+        let sizeSelected = !hasSizes || document.querySelector(`input[name="product_size_${i}"]:checked`);
+        let colorSelected = !hasColors || document.querySelector(`input[name="product_color_${i}"]:checked`);
+
+        if (sizeSelected && colorSelected) {
+          const match = window.findVariantMatch(p, i);
+          let qty = 100;
+          if (match) {
+            qty = (match.qty === null || match.qty === undefined || match.qty === '') ? 100 : Number(match.qty);
+          } else if (p.stock !== undefined && p.stock !== null) {
+            qty = Number(p.stock);
+          }
+          piecesStocks.push(qty);
+          if (qty <= 0) {
+            outOfStockCount++;
+          } else if (qty <= 10) {
+            warningCount++;
+          }
+        } else {
+          allSelectionsValid = false;
+        }
+      }
+
+      if (indicator) {
+        if (!allSelectionsValid) {
+          indicator.innerHTML = '';
+        } else if (outOfStockCount > 0) {
+          indicator.innerHTML = `<span class="badge-stock badge-stock-out"><i class="fa fa-times-circle"></i> غير متوفر في المخزون</span>`;
+        } else if (warningCount > 0) {
+          const minStock = Math.min(...piecesStocks);
+          indicator.innerHTML = `<span class="badge-stock badge-stock-warning"><i class="fa fa-fire"></i> متبقي ${minStock} قطعة فقط!</span>`;
+        } else {
+          indicator.innerHTML = '';
+        }
+      }
+
+      // ── رسالة low-stock تحت أزرار المتغير المختار ──
+      for (let i = 0; i < finalQty; i++) {
+        const matchI = window.findVariantMatch(p, i);
+        const vQty = matchI 
+          ? (matchI.qty === null || matchI.qty === undefined || matchI.qty === '' ? 999 : Number(matchI.qty)) 
+          : (p.stock !== undefined ? Number(p.stock) : 999);
+
+        let lowStockEl = document.getElementById(`variantLowStockNotice_${i}`);
+        if (!lowStockEl && i === 0) {
+          lowStockEl = document.getElementById('variantLowStockMsg');
+          if (!lowStockEl) {
+            lowStockEl = document.createElement('div');
+            lowStockEl.id = 'variantLowStockMsg';
+            const variantsContainer = document.getElementById('variantsContainer');
+            if (variantsContainer) variantsContainer.insertAdjacentElement('afterend', lowStockEl);
+          }
+        }
+        if (lowStockEl) {
+          if (vQty > 0 && vQty <= 10) {
+            lowStockEl.innerHTML = `<div style="margin-top: 6px; font-size: 0.85rem; font-weight: 700; color: #dc2626; display: flex; align-items: center; gap: 5px;"><i class="fa fa-fire" style="color:#ef4444;"></i> متبقي ${vQty} قطعة فقط</div>`;
+          } else {
+            lowStockEl.innerHTML = '';
+          }
+        }
+      }
+
+      if (window.updateQuickCheckoutSummary) {
+        window.updateQuickCheckoutSummary();
+      }
+    };
+
+    window.getMaxAllowedProductQty = function() {
+      const p = window.currentProductData;
+      if (!p) return 999;
+
+      let maxQty = (p.stock !== undefined && p.stock !== null && p.stock !== '') ? Number(p.stock) : 999;
+      if (isNaN(maxQty) || maxQty < 0) maxQty = 999;
+
+      const bundleInput = document.querySelector('input[name="bundle_tier"]:checked');
+      const qtyInput = document.getElementById('productQtyInput');
+      const currentPieces = qtyInput ? (parseInt(qtyInput.value) || 1) : (bundleInput ? parseInt(bundleInput.value) : 1);
+
+      let variantCounts = {};
+
+      for (let i = 0; i < currentPieces; i++) {
+        const match = findVariantMatch(p, i);
+        if (match) {
+          const vQty = (match.qty === null || match.qty === undefined || match.qty === '') ? 999 : Number(match.qty);
+          maxQty = Math.min(maxQty, vQty);
+
+          const vKey = (match.size || '') + '|' + (match.color || '') + '|' + JSON.stringify(match.options || {});
+          variantCounts[vKey] = (variantCounts[vKey] || 0) + 1;
+          
+          if (variantCounts[vKey] >= vQty) {
+            maxQty = Math.min(maxQty, currentPieces);
+          }
+        }
+      }
+
+      return Math.max(1, maxQty);
+    };
+
+    window.changeProductQty = function(delta) {
+      const inp = document.getElementById('productQtyInput');
+      if (!inp) return;
+      let val = parseInt(inp.value) || 1;
+      const targetVal = val + delta;
+      if (targetVal < 1) return;
+
+      const maxAllowed = window.getMaxAllowedProductQty();
+
+      if (delta > 0 && targetVal > maxAllowed) {
+        alert(`عذراً، المتبقي في المخزن ${maxAllowed} قطعة فقط ولا يكفي لـ ${targetVal} قطع!`);
+        return;
+      }
+
+      inp.value = targetVal;
+
+      const tierRadio = document.querySelector(`input[name="bundle_tier"][value="${targetVal}"]`);
+      if (tierRadio) {
+        tierRadio.checked = true;
+        updateBundleSelection(tierRadio);
+      } else {
+        document.querySelectorAll('input[name="bundle_tier"]').forEach(r => r.checked = false);
+
+        const vContainer = document.getElementById('variantsContainer');
+        if (vContainer && window.currentProductData) {
+          vContainer.innerHTML = renderSizesAndColors(window.currentProductData, targetVal);
+          if (typeof window.restoreProductPageRecoveredSelections === 'function') {
+            window.restoreProductPageRecoveredSelections();
+          }
+        }
+        if (window.updateVariantAvailability) {
+          for (let _pi = 0; _pi < targetVal; _pi++) { updateVariantAvailability(_pi); }
+        }
+        updateStockIndicator();
+      }
+    };
+
+
+    async function loadRelated(categoryId, excludeId) {
+      const section = document.getElementById('relatedSection') || (relatedGrid ? (relatedGrid.closest('.section') || relatedGrid.parentElement) : null);
+      try {
+        let items = [];
+        // 1. Fetch products from same category (up to 10)
+        if (categoryId) {
+          try {
+            const r1 = await fetch(`${window.API_BASE}/products?category_id=${categoryId}&exclude_id=${excludeId}&limit=10`);
+            const json1 = await r1.json();
+            if (json1 && Array.isArray(json1.data)) {
+              items = json1.data.filter(p => Number(p.id) !== Number(excludeId));
+            }
+          } catch(e){}
+        }
+
+        // 2. If fewer than 10 products, complete up to 10 from other categories
+        if (items.length < 10) {
+          try {
+            const r2 = await fetch(`${window.API_BASE}/products?exclude_id=${excludeId}&limit=15`);
+            const json2 = await r2.json();
+            if (json2 && Array.isArray(json2.data)) {
+              const existingIds = new Set(items.map(p => Number(p.id)));
+              existingIds.add(Number(excludeId));
+              for (const other of json2.data) {
+                if (!existingIds.has(Number(other.id))) {
+                  items.push(other);
+                  existingIds.add(Number(other.id));
+                  if (items.length >= 10) break;
+                }
+              }
+            }
+          } catch(e){}
+        }
+
+        // 3. If no other products in store, hide section completely
+        if (!items || items.length === 0) {
+          if (section) section.style.display = 'none';
+          if (relatedGrid) relatedGrid.innerHTML = '';
+          return;
+        }
+
+        // 4. Show section and render products with slider
+        if (section) section.style.display = 'block';
+        renderProducts(relatedGrid, items.slice(0, 10));
+      } catch (err) {
+        console.error('Error loading related products:', err);
+        if (section && (!items || items.length === 0)) section.style.display = 'none';
+      }
+    }
+  </script>
+
+  <script>
+    // Load settings dynamically (logo, phone, whatsapp)
+    (function () {
+      var API = window.API_BASE || '/public-api';
+      fetch(API + '/settings').then(function (r) { return r.json(); }).then(function (res) {
+        var data = res.data;
+        if (!data) return;
+        if (data.logo_url) {
+          var logos = document.querySelectorAll('img.site-logo, .brand img:first-child, .brand img');
+          logos.forEach(function (el) { el.src = data.logo_url; });
+        }
+        if (data.store_name) {
+          var names = document.querySelectorAll('.site-name, .brand span:first-of-type');
+          names.forEach(function (el) { el.textContent = data.store_name; });
+        }
+      });
+    })();
+  </script>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Load governorates immediately since form is always visible
+    if (!window.governoratesLoaded) {
+      window.governoratesLoaded = true;
+      fetch('/public-api/shipping-governorates')
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+          window.governoratesData = res.data || [];
+          var select = document.getElementById('quickGovernorateSelect');
+          if(select) {
+              select.innerHTML = '<option value="">اختر المحافظة...</option>';
+              window.governoratesData.filter(function(gov){ return gov.is_active; }).forEach(function (gov) {
+                var opt = document.createElement('option');
+                opt.value = gov.id;
+                opt.textContent = gov.name;
+                select.appendChild(opt);
+              });
+              select.addEventListener('change', function() {
+                if (window.updateQuickCheckoutSummary) window.updateQuickCheckoutSummary();
+              });
+          }
+          if (window.updateQuickCheckoutSummary) window.updateQuickCheckoutSummary();
+        });
+    }
+
+    // Load active payment gateways for quick checkout
+    fetch('/public-api/payment-gateways')
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        var gateways = res.data || [];
+        var container = document.getElementById('quickPaymentGatewaysContainer');
+        var list = document.getElementById('quickPaymentMethodsList');
+        var hiddenInput = document.getElementById('quickPayInput');
+        if (!container || !list || !hiddenInput) return;
+
+        var hasOnline = gateways.some(function(g) { return g.provider !== 'cod'; });
+        if (hasOnline) {
+          container.style.display = 'block';
+          list.innerHTML = '';
+
+          gateways.forEach(function(gw, idx) {
+            var isSelected = idx === 0 || gw.provider === 'cod';
+            if (isSelected) hiddenInput.value = gw.provider;
+
+            var item = document.createElement('div');
+            item.className = 'quick-pay-option ' + (isSelected ? 'selected' : '');
+            item.style.cssText = 'border: 2px solid ' + (isSelected ? '#4f46e5' : '#e2e8f0') + '; background: ' + (isSelected ? '#f5f3ff' : '#ffffff') + '; border-radius: 12px; padding: 10px 14px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s ease;';
+
+            var isCod = gw.provider === 'cod';
+            var iconHtml = isCod
+              ? '<span style="font-size: 1.25rem;">💵</span>'
+              : '<div style="display: flex; align-items: center; gap: 4px;"><img src="/images/payments/cards_meeza_badge.svg" style="height: 18px;" alt="Cards" /><img src="/images/payments/wallets_badge.svg" style="height: 18px;" alt="Wallets" /></div>';
+
+            item.innerHTML = '<div style="display: flex; align-items: center; gap: 10px;">' +
+              '<input type="radio" name="_pay_choice" value="' + gw.provider + '" ' + (isSelected ? 'checked' : '') + ' style="accent-color: #4f46e5; width: 18px; height: 18px; cursor: pointer;" />' +
+              '<div><div style="font-weight: 700; font-size: 0.95rem; color: #1e293b;">' + gw.display_name + '</div>' +
+              (gw.display_description ? '<div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">' + gw.display_description + '</div>' : '') +
+              '</div></div>' + iconHtml;
+
+            item.onclick = function() {
+              document.querySelectorAll('.quick-pay-option').forEach(function(el) {
+                el.style.border = '2px solid #e2e8f0';
+                el.style.background = '#ffffff';
+                var r = el.querySelector('input[type="radio"]');
+                if (r) r.checked = false;
+              });
+              item.style.border = '2px solid #4f46e5';
+              item.style.background = '#f5f3ff';
+              var radio = item.querySelector('input[type="radio"]');
+              if (radio) radio.checked = true;
+              hiddenInput.value = gw.provider;
+            };
+
+            list.appendChild(item);
+          });
+        }
+      })
+      .catch(function(e) {});
+
+    var quickForm = document.getElementById('quickCheckoutForm');
+    window.validateQuickForm = function(form) {
+      var isValid = true;
+      var firstErr = null;
+
+        var nameInput = form.querySelector('[name="name"]');
+        var nameErr = document.getElementById('qcNameError');
+        if (nameInput) {
+          var nameVal = nameInput.value ? nameInput.value.trim() : '';
+          if (!nameVal || nameVal.length < 2) {
+            nameInput.style.border = '2px solid #ef4444';
+            nameInput.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.2)';
+            if (nameErr) nameErr.style.display = 'block';
+            isValid = false;
+            if (!firstErr) firstErr = nameInput;
+          } else {
+            nameInput.style.border = '1px solid #e2e8f0';
+            nameInput.style.boxShadow = 'none';
+            if (nameErr) nameErr.style.display = 'none';
+          }
+        }
+
+        var phoneInput = form.querySelector('[name="phone"]');
+        var phoneErr = document.getElementById('qcPhoneError');
+        var phoneRegex = /^01[0125][0-9]{8}$/;
+        if (phoneInput) {
+          var phoneVal = phoneInput.value ? phoneInput.value.replace(/[\s\+\-]/g, '') : '';
+          if (phoneVal.startsWith('201')) phoneVal = '0' + phoneVal.substring(2);
+          else if (phoneVal.startsWith('00201')) phoneVal = '0' + phoneVal.substring(4);
+
+          if (!phoneVal || !phoneRegex.test(phoneVal)) {
+            phoneInput.style.border = '2px solid #ef4444';
+            phoneInput.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.2)';
+            if (phoneErr) phoneErr.style.display = 'block';
+            isValid = false;
+            if (!firstErr) firstErr = phoneInput;
+          } else {
+            phoneInput.style.border = '1px solid #e2e8f0';
+            phoneInput.style.boxShadow = 'none';
+            if (phoneErr) phoneErr.style.display = 'none';
+          }
+        }
+
+        var govSelect = form.querySelector('#quickGovernorateSelect');
+        var govErr = document.getElementById('qcGovError');
+        if (govSelect) {
+          if (!govSelect.value) {
+            govSelect.style.border = '2px solid #ef4444';
+            govSelect.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.2)';
+            if (govErr) govErr.style.display = 'block';
+            isValid = false;
+            if (!firstErr) firstErr = govSelect;
+          } else {
+            govSelect.style.border = '1px solid #e2e8f0';
+            govSelect.style.boxShadow = 'none';
+            if (govErr) govErr.style.display = 'none';
+          }
+        }
+
+        var addressInput = form.querySelector('[name="address"]');
+        var addressErr = document.getElementById('qcAddressError');
+        if (addressInput) {
+          var addressVal = addressInput.value ? addressInput.value.trim() : '';
+          if (!addressVal || addressVal.length < 3) {
+            addressInput.style.border = '2px solid #ef4444';
+            addressInput.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.2)';
+            if (addressErr) addressErr.style.display = 'block';
+            isValid = false;
+            if (!firstErr) firstErr = addressInput;
+          } else {
+            addressInput.style.border = '1px solid #e2e8f0';
+            addressInput.style.boxShadow = 'none';
+            if (addressErr) addressErr.style.display = 'none';
+          }
+        }
+
+        if (!isValid && firstErr) {
+          firstErr.focus();
+          firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        return isValid;
+      };
+
+    if (quickForm) {
+      ['name', 'phone', 'address'].forEach(function(fName) {
+        var inp = quickForm.querySelector('[name="' + fName + '"]');
+        if (inp) {
+          inp.addEventListener('input', function() {
+            this.style.border = '1px solid #e2e8f0';
+            this.style.boxShadow = 'none';
+            var errId = 'qc' + fName.charAt(0).toUpperCase() + fName.slice(1) + 'Error';
+            var err = document.getElementById(errId);
+            if (err) err.style.display = 'none';
+          });
+        }
+      });
+
+      var govSel = quickForm.querySelector('#quickGovernorateSelect');
+      if (govSel) {
+        govSel.addEventListener('change', function() {
+          this.style.border = '1px solid #e2e8f0';
+          this.style.boxShadow = 'none';
+          var err = document.getElementById('qcGovError');
+          if (err) err.style.display = 'none';
+        });
+      }
+
+      // ─── Auto-Capture للسلة المتروكة لحظياً عند كتابة الهاتف ───
+      var quickDebounceTimer = null;
+      var lastSentQuickPhone = '';
+      var sendQuickTracking = function() {
+        if (window.__orderSubmitted) return;
+        if (typeof window.captureAbandonedCart === 'function') {
+          window.captureAbandonedCart(false);
+          return;
+        }
+        if (window.__isTrackingAbandonedCart) return;
+
+        var phoneInp = quickForm.querySelector('[name="phone"]');
+        var nameInp = quickForm.querySelector('[name="name"]');
+        var addrInp = quickForm.querySelector('[name="address"]');
+        var govInp = quickForm.querySelector('#quickGovernorateSelect');
+
+        var phoneVal = phoneInp ? phoneInp.value.trim().replace(/[\s\+\-]/g, '') : '';
+        if (phoneVal.startsWith('201')) phoneVal = '0' + phoneVal.substring(2);
+        else if (phoneVal.startsWith('00201')) phoneVal = '0' + phoneVal.substring(4);
+
+        if (!phoneVal || phoneVal.length < 8) return;
+
+        window.__isTrackingAbandonedCart = true;
+        var nameVal = nameInp ? nameInp.value.trim() : '';
+        var addrVal = addrInp ? addrInp.value.trim() : '';
+        var govId = govInp ? govInp.value : '';
+        var govName = (govInp && govInp.selectedIndex >= 0 && govInp.options[govInp.selectedIndex]) 
+            ? govInp.options[govInp.selectedIndex].text.split('-')[0].trim() 
+            : '';
+
+        var prodId = document.getElementById('productId') ? document.getElementById('productId').value : null;
+        if (!prodId) {
+            var match = window.location.search.match(/[?&]id=(\d+)/);
+            if (match) prodId = match[1];
+        }
+        var pData = window.currentProductData || null;
+        var prodTitle = (pData && pData.name) || '';
+        if (!prodTitle) {
+          var prodTitleEl = document.querySelector('.p-info-card h1, .product-info h1, .p-title, h1.product-title, .product-name, h1');
+          prodTitle = prodTitleEl ? prodTitleEl.innerText.trim() : 'منتج';
+        }
+
+        var prodPrice = 0;
+        if (pData && (pData.price_after !== undefined || pData.price !== undefined)) {
+          prodPrice = parseFloat(pData.price_after !== undefined ? pData.price_after : pData.price) || 0;
+        }
+        if (!prodPrice) {
+          var prodPriceEl = document.querySelector('#mainPriceNow, .price-now, .p-current-price, .product-price, .price');
+          prodPrice = prodPriceEl ? parseFloat(prodPriceEl.innerText.replace(/[^\d.]/g, '')) || 0 : 0;
+        }
+        if (!prodPrice) {
+          var buyBtn = document.querySelector('.p-btn-buy-now, .p-btn-add');
+          if (buyBtn && buyBtn.dataset && buyBtn.dataset.price) {
+            prodPrice = parseFloat(buyBtn.dataset.price) || 0;
+          }
+        }
+
+        var prodImg = (pData && (pData.image_url || (pData.images && pData.images[0]))) || '';
+        if (!prodImg) {
+          var prodImgEl = document.querySelector('#pMain, .p-main img, .p-main-img img, .product-image img');
+          prodImg = prodImgEl ? prodImgEl.src : '';
+        }
+        var qtyEl = document.getElementById('productQtyInput') || document.getElementById('productQty') || quickForm.querySelector('[name="quantity"]');
+        var qty = qtyEl ? (parseInt(qtyEl.value) || 1) : 1;
+
+        var variantInfo = { selectedSize: null, selectedColor: null, options: null, sizePieces: [], colorPieces: [] };
+        if (typeof window.extractProductPageSelections === 'function') {
+            variantInfo = window.extractProductPageSelections(qty);
+        } else {
+            var sizePieces = [];
+            var colorPieces = [];
+            var customOptions = {};
+            for (var sp = 0; sp < qty; sp++) {
+                var sInp = document.querySelector('input[name="product_size_' + sp + '"]:checked') ||
+                           document.querySelector('input[name="product_size"]:checked') ||
+                           document.querySelector('input[name="size"]:checked');
+                if (sInp && sInp.value) sizePieces.push(sInp.value);
+
+                var cInp = document.querySelector('input[name="product_color_' + sp + '"]:checked') ||
+                           document.querySelector('input[name="product_color"]:checked') ||
+                           document.querySelector('input[name="color"]:checked');
+                if (cInp && cInp.value) colorPieces.push(cInp.value);
+            }
+            if (sizePieces.length === 0) {
+                var sizeSel = document.querySelector('select[name="size"], select[name="product_size"]');
+                if (sizeSel && sizeSel.value) sizePieces.push(sizeSel.value);
+            }
+            if (colorPieces.length === 0) {
+                var colorSel = document.querySelector('select[name="color"], select[name="product_color"]');
+                if (colorSel && colorSel.value) colorPieces.push(colorSel.value);
+            }
+            var cvPiecesMap = {};
+            document.querySelectorAll('input[name^="product_cv_"]:checked').forEach(function(inp) {
+                if (inp.value) {
+                    var cvName = inp.getAttribute('data-name');
+                    if (!cvName || cvName.startsWith('product_cv_')) {
+                        var cGroup = inp.closest('.cv-group-container');
+                        if (cGroup && cGroup.previousElementSibling) {
+                            cvName = (cGroup.previousElementSibling.textContent || '').replace(/[*:\s]+$/, '').trim();
+                        }
+                    }
+                    if (!cvName || cvName.startsWith('product_cv_')) {
+                        cvName = 'خيار إضافي';
+                    }
+                    var pieceIdx = inp.getAttribute('data-piece');
+                    if (pieceIdx === null || pieceIdx === undefined) {
+                        var parts = inp.name.split('_');
+                        pieceIdx = parts.length >= 4 ? parts[3] : '0';
+                    }
+                    if (!cvPiecesMap[cvName]) cvPiecesMap[cvName] = [];
+                    cvPiecesMap[cvName].push({ piece: parseInt(pieceIdx) || 0, val: inp.value });
+                }
+            });
+            Object.keys(cvPiecesMap).forEach(function(cvName) {
+                var pieces = cvPiecesMap[cvName];
+                if (pieces.length > 1) {
+                    pieces.sort(function(a, b) { return a.piece - b.piece; });
+                    customOptions[cvName] = pieces.map(function(p) { return 'ق' + (p.piece + 1) + ': ' + p.val; }).join(' | ');
+                } else if (pieces.length === 1) {
+                    customOptions[cvName] = pieces[0].val;
+                }
+            });
+            variantInfo = {
+                selectedSize: sizePieces.length > 1 ? sizePieces.map(function(s, idx) { return 'ق' + (idx + 1) + ': ' + s; }).join(' | ') : (sizePieces[0] || null),
+                selectedColor: colorPieces.length > 1 ? colorPieces.map(function(c, idx) { return 'ق' + (idx + 1) + ': ' + c; }).join(' | ') : (colorPieces[0] || null),
+                options: Object.keys(customOptions).length > 0 ? customOptions : null,
+                sizePieces: sizePieces,
+                colorPieces: colorPieces
+            };
+        }
+
+        var items = [{
+            id: prodId,
+            product_id: prodId,
+            name: prodTitle,
+            price: prodPrice,
+            qty: qty,
+            quantity: qty,
+            image: prodImg,
+            selectedSize: variantInfo.selectedSize,
+            selectedColor: variantInfo.selectedColor,
+            options: variantInfo.options,
+            sizePieces: variantInfo.sizePieces,
+            colorPieces: variantInfo.colorPieces
+        }];
+
+        var subtotal = prodPrice * qty;
+
+        try {
+            var csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            fetch('/checkout/track-partial', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...(csrf ? { 'X-CSRF-TOKEN': csrf } : {})
+                },
+                body: JSON.stringify({
+                    phone: phoneVal,
+                    name: nameVal,
+                    address: addrVal,
+                    governorate_id: govId,
+                    governorate: govName,
+                    items: items,
+                    subtotal: subtotal,
+                    total: subtotal,
+                    source: 'product_page'
+                }),
+                keepalive: true
+            }).then(function() {
+                lastSentQuickPhone = phoneVal;
+            }).catch(function() {}).finally(function() {
+                setTimeout(function() { window.__isTrackingAbandonedCart = false; }, 400);
+            });
+        } catch(e) {
+            window.__isTrackingAbandonedCart = false;
+        }
+      };
+
+      var phoneInp = quickForm.querySelector('[name="phone"]');
+      if (phoneInp) {
+        phoneInp.addEventListener('input', function(e) {
+          var val = e.target.value.replace(/[\s\+\-]/g, '');
+          if (val.length >= 10 && val !== lastSentQuickPhone) {
+            clearTimeout(quickDebounceTimer);
+            quickDebounceTimer = setTimeout(sendQuickTracking, 600);
+          }
+        });
+        phoneInp.addEventListener('blur', sendQuickTracking);
+        phoneInp.addEventListener('change', sendQuickTracking);
+      }
+
+      var nameInp = quickForm.querySelector('[name="name"]');
+      if (nameInp) {
+        nameInp.addEventListener('blur', sendQuickTracking);
+        nameInp.addEventListener('input', function() {
+          clearTimeout(quickDebounceTimer);
+          quickDebounceTimer = setTimeout(sendQuickTracking, 800);
+        });
+      }
+
+      var addrInp = quickForm.querySelector('[name="address"]');
+      if (addrInp) {
+        addrInp.addEventListener('blur', sendQuickTracking);
+        addrInp.addEventListener('input', function() {
+          clearTimeout(quickDebounceTimer);
+          quickDebounceTimer = setTimeout(sendQuickTracking, 800);
+        });
+      }
+
+      if (govSel) govSel.addEventListener('change', sendQuickTracking);
+
+      var qtyInpEl = document.getElementById('productQtyInput');
+      if (qtyInpEl) {
+        qtyInpEl.addEventListener('input', sendQuickTracking);
+        qtyInpEl.addEventListener('change', sendQuickTracking);
+      }
+
+      var variantEls = document.querySelectorAll('input[name*="size"], input[name*="color"], input[name^="product_cv_"], select[name*="size"], select[name*="color"], .variant-btn, .variant-option');
+      variantEls.forEach(function(el) {
+        el.addEventListener('change', sendQuickTracking);
+        el.addEventListener('click', function() { setTimeout(sendQuickTracking, 150); });
+      });
+
+      window.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden' && !window.__orderSubmitted) sendQuickTracking();
+      });
+      window.addEventListener('pagehide', function() {
+        if (!window.__orderSubmitted) sendQuickTracking();
+      });
+      window.addEventListener('beforeunload', function() {
+        if (!window.__orderSubmitted) sendQuickTracking();
+      });
+
+      quickForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        if (this.dataset.submitting === 'true') {
+          return;
+        }
+
+        if (!validateQuickForm(this)) {
+          return;
+        }
+
+        window.__orderSubmitted = true;
+        this.dataset.submitting = 'true';
+        var btn = document.getElementById('quickSubmitBtn');
+        var originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> جاري تأكيد الطلب...';
+        btn.disabled = true;
+        btn.style.pointerEvents = 'none';
+        btn.style.opacity = '0.7';
+
+        var fd = new FormData(this);
+        
+        var getCartItems = function() {
+          if (window.BirdCart) {
+            if (typeof window.BirdCart.getCart === 'function') return window.BirdCart.getCart();
+            if (typeof window.BirdCart.getItems === 'function') return window.BirdCart.getItems();
+          }
+          return [];
+        };
+
+        var cart = getCartItems();
+        if(!cart || cart.length === 0) {
+           var buyNowBtn = document.querySelector('.p-btn-buy-now');
+           if(buyNowBtn) {
+               buyNowBtn.click();
+               await new Promise(resolve => setTimeout(resolve, 500));
+               cart = getCartItems();
+           }
+        }
+
+        if(!cart || cart.length === 0) {
+           alert("الرجاء اختيار المنتج أولاً.");
+           btn.innerHTML = originalText;
+           btn.disabled = false;
+           return;
+        }
+
+        var phoneVal = fd.get('phone') || '';
+        phoneVal = phoneVal.replace(/[\s\+\-]/g, '');
+        if (phoneVal.startsWith('201')) phoneVal = '0' + phoneVal.substring(2);
+        else if (phoneVal.startsWith('00201')) phoneVal = '0' + phoneVal.substring(4);
+
+        var payload = {
+          customer_name: fd.get('name'),
+          customer_phone: phoneVal,
+          governorate_id: fd.get('governorate'),
+          customer_address: fd.get('address'),
+          payment_method: fd.get('pay') || 'cod',
+          items: cart.map(function (i) {
+            return {
+              id: i.id,
+              name: i.name || 'منتج',
+              price: i.price,
+              qty: i.qty,
+              selectedSize: i.selectedSize || null,
+              selectedColor: i.selectedColor || null,
+              selectedColorImage: i.selectedColorImage || null,
+              colorPieces: i.colorPieces || null,
+              piecesSelections: i.piecesSelections || null,
+              options: i.options || null
+            };
+          })
+        };
+
+        try {
+          var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+          var csrf = csrfMeta ? csrfMeta.content : '';
+          var res = await fetch('/api/orders', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json', 
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRF-TOKEN': csrf 
+            },
+            body: JSON.stringify(payload)
+          });
+          var data = await res.json();
+          if (data.success) {
+            try {
+              sessionStorage.setItem('orderSuccess', JSON.stringify({
+                order_id: data.data.id,
+                reference_number: data.data.reference_number,
+                subtotal: payload.subtotal,
+                shipping_cost: payload.shipping_cost,
+                total: data.data.total || payload.total,
+                items: payload.items
+              }));
+            } catch(e) {}
+            if(window.BirdCart) {
+                if(typeof window.BirdCart.clearCart === 'function') {
+                    window.BirdCart.clearCart();
+                } else {
+                    window.BirdCart.saveCart([]);
+                    window.BirdCart.updateCartCount();
+                }
+            }
+            await new Promise(function(r) { setTimeout(r, 250); });
+            var targetUrl = data.redirect_url || (data.data && data.data.redirect_url) || ('/shop/order-success.html?ref=' + data.data.reference_number);
+            window.location.href = targetUrl;
+          } else {
+            var errorDetails = '';
+            if (data.errors) {
+               for (var key in data.errors) {
+                  errorDetails += '\n- ' + data.errors[key].join(', ');
+               }
+            }
+            alert((data.message || 'حدث خطأ أثناء إتمام الطلب') + errorDetails);
+            window.__orderSubmitted = false;
+            this.dataset.submitting = 'false';
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            btn.style.pointerEvents = 'auto';
+            btn.style.opacity = '1';
+          }
+        } catch(err) {
+          window.__orderSubmitted = false;
+          alert('تعذر الاتصال بالخادم: ' + err.message);
+          this.dataset.submitting = 'false';
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          btn.style.pointerEvents = 'auto';
+          btn.style.opacity = '1';
+        }
+      });
+    }
+  });
+  </script>
+
+<script>
+// Fast COD Express Dynamic Engine
+window.fastCodGovernorates = [];
+
+function loadCodGovernorates() {
+  fetch('/public-api/shipping-governorates')
+    .then(r => r.json())
+    .then(res => {
+      const govs = res.data || [];
+      window.fastCodGovernorates = govs;
+      const select = document.getElementById('cod_governorate_id');
+      if (!select) return;
+      select.innerHTML = '<option value="">-- اختر المحافظة لحساب الشحن والتوصيل --</option>' +
+        govs.map(g => `<option value="${g.id}" data-cost="${g.price || g.shipping_cost || 0}">${g.name} (${BirdCart.formatEGP(g.price || g.shipping_cost || 0)})</option>`).join('');
+      updateCodOrderSummary();
+    })
+    .catch(err => console.error('Error loading governorates:', err));
+}
+
+function updateCodOrderSummary() {
+  const p = window.currentProductData;
+  if (!p) return;
+  const bundleInput = document.querySelector('input[name="bundle_tier"]:checked');
+  const qtyInput = document.getElementById('productQtyInput');
+  let qty = 1;
+  let unitPrice = p.price_after || p.price;
+  let subtotal = unitPrice;
+
+  if (bundleInput) {
+    qty = parseInt(bundleInput.value) || 1;
+    const tierPrice = parseFloat(bundleInput.dataset.price);
+    if (!isNaN(tierPrice) && tierPrice > 0) {
+      subtotal = tierPrice;
+    } else {
+      subtotal = unitPrice * qty;
+    }
+  } else if (qtyInput) {
+    qty = parseInt(qtyInput.value) || 1;
+    subtotal = unitPrice * qty;
+  }
+
+  const govSelect = document.getElementById('cod_governorate_id');
+  let shippingCost = 0;
+  let hasGov = false;
+  if (govSelect && govSelect.value) {
+    hasGov = true;
+    const opt = govSelect.options[govSelect.selectedIndex];
+    shippingCost = parseFloat(opt.dataset.cost) || 0;
+  }
+  if (p.shipping_type === 'free') {
+    shippingCost = 0;
+  }
+
+  const grandTotal = subtotal + shippingCost;
+
+  const qtyEl = document.getElementById('codSummaryQty');
+  if (qtyEl) qtyEl.textContent = qty;
+  const prodPriceEl = document.getElementById('codSummaryProductPrice');
+  if (prodPriceEl) prodPriceEl.textContent = BirdCart.formatEGP(subtotal);
+  const shipCostEl = document.getElementById('codSummaryShippingCost');
+  if (shipCostEl) {
+    if (p.shipping_type === 'free') {
+      shipCostEl.innerHTML = '<span style="color:#16a34a;font-weight:700">شحن مجاني</span>';
+    } else if (hasGov) {
+      shipCostEl.textContent = BirdCart.formatEGP(shippingCost);
+    } else {
+      shipCostEl.innerHTML = '<span style="color:#64748b">اختر المحافظة</span>';
+    }
+  }
+  const totalEl = document.getElementById('codSummaryTotalPrice');
+  if (totalEl) totalEl.textContent = BirdCart.formatEGP(grandTotal);
+
+  const stickyPriceEl = document.getElementById('codStickyPriceText');
+  if (stickyPriceEl) stickyPriceEl.textContent = BirdCart.formatEGP(subtotal);
+
+  const waBtn = document.getElementById('codWhatsappDirectBtn');
+  if (waBtn) {
+    const waNumber = window.__SITE_SETTINGS__?.whatsapp || window.__SITE_SETTINGS__?.phone || '201146520922';
+    const waText = encodeURIComponent(`مرحباً، أريد طلب المنتج: ${p.name}\nالكمية: ${qty}\nالسعر: ${BirdCart.formatEGP(subtotal)}\nرابط المنتج: ${window.location.href}`);
+    waBtn.href = `https://wa.me/${waNumber}?text=${waText}`;
+  }
+}
+
+function scrollToCodCheckout() {
+  const el = document.getElementById('fastCodCheckout');
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const nameInp = document.getElementById('cod_customer_name');
+    if (nameInp) setTimeout(() => nameInp.focus(), 600);
+  }
+}
+
+function handleCodFastSubmit(e) {
+  e.preventDefault();
+  const alertEl = document.getElementById('codOrderAlert');
+  alertEl.style.display = 'none';
+
+  const name = document.getElementById('cod_customer_name')?.value?.trim();
+  const phone = document.getElementById('cod_customer_phone')?.value?.trim();
+  const govId = document.getElementById('cod_governorate_id')?.value;
+  const address = document.getElementById('cod_customer_address')?.value?.trim();
+  const notes = document.getElementById('cod_customer_notes')?.value?.trim();
+
+  if (!name || !phone || !govId || !address) {
+    alertEl.style.display = 'block';
+    alertEl.style.background = '#fef2f2';
+    alertEl.style.color = '#dc2626';
+    alertEl.style.border = '1px solid #fecaca';
+    alertEl.textContent = 'من فضلك املأ جميع الحقول المطلوبة (الاسم، رقم الهاتف، المحافظة، والعنوان)';
+    return;
+  }
+
+  const cleanPhone = phone.replace(/\s+/g, '');
+  if (!/^01[0125]\d{8}$/.test(cleanPhone)) {
+    alertEl.style.display = 'block';
+    alertEl.style.background = '#fef2f2';
+    alertEl.style.color = '#dc2626';
+    alertEl.style.border = '1px solid #fecaca';
+    alertEl.textContent = 'رقم الهاتف غير صحيح، يرجى كتابة رقم مصري يبدأ بـ 01 (11 رقماً)';
+    return;
+  }
+
+  const submitBtn = document.getElementById('codSubmitBtn');
+  const originalBtnHtml = submitBtn.innerHTML;
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> جاري تأكيد الطلب فوراً...';
+
+  const p = window.currentProductData;
+  const bundleInput = document.querySelector('input[name="bundle_tier"]:checked');
+  const qtyInput = document.getElementById('productQtyInput');
+  let qty = bundleInput ? (parseInt(bundleInput.value) || 1) : (qtyInput ? (parseInt(qtyInput.value) || 1) : 1);
+  let unitPrice = p.price_after || p.price;
+  if (bundleInput) {
+    const tierPrice = parseFloat(bundleInput.dataset.price);
+    if (!isNaN(tierPrice) && tierPrice > 0) {
+      unitPrice = Math.round(tierPrice / qty);
+    }
+  }
+
+  const selectedSize = document.querySelector('input[name="product_size_0"]:checked')?.value ||
+                       document.querySelector('input[name^="product_size_"]:checked')?.value || '';
+  const selectedColor = document.querySelector('input[name="product_color_0"]:checked')?.value ||
+                        document.querySelector('input[name^="product_color_"]:checked')?.value || '';
+
+  const payload = {
+    customer_name: name,
+    customer_phone: cleanPhone,
+    customer_address: address + (notes ? ' - ملاحظات: ' + notes : ''),
+    governorate_id: parseInt(govId),
+    payment_method: 'cod',
+    items: [
+      {
+        id: p.id,
+        name: p.name,
+        price: unitPrice,
+        quantity: qty,
+        size: selectedSize,
+        color: selectedColor,
+        image_url: p.image_url || ''
+      }
+    ]
+  };
+
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || window.__CSRF_TOKEN__ || '';
+
+  fetch('/checkout', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'X-CSRF-TOKEN': csrfToken
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      if (typeof fbq === 'function') {
+        fbq('track', 'Purchase', {
+          content_name: p.name,
+          content_ids: [p.id],
+          content_type: 'product',
+          value: unitPrice * qty,
+          currency: 'EGP'
+        });
+      }
+      if (typeof ttq === 'object' && typeof ttq.track === 'function') {
+        ttq.track('CompletePayment', {
+          content_name: p.name,
+          content_id: String(p.id),
+          content_type: 'product',
+          value: unitPrice * qty,
+          currency: 'EGP'
+        });
+      }
+
+      if (window.BirdCart && window.BirdCart.clearCart) {
+        window.BirdCart.clearCart();
+      }
+
+      if (data.redirect) {
+        window.location.href = data.redirect;
+      } else if (data.order && data.order.reference_number) {
+        window.location.href = '/order-success/' + data.order.reference_number;
+      } else {
+        window.location.href = '/shop/order-success.html';
+      }
+    } else {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnHtml;
+      alertEl.style.display = 'block';
+      alertEl.style.background = '#fef2f2';
+      alertEl.style.color = '#dc2626';
+      alertEl.style.border = '1px solid #fecaca';
+      alertEl.textContent = data.message || 'حدث خطأ أثناء تأكيد الطلب، يرجى مراجعة البيانات والمحاولة مجدداً.';
+    }
+  })
+  .catch(err => {
+    console.error('Order error:', err);
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalBtnHtml;
+    alertEl.style.display = 'block';
+    alertEl.style.background = '#fef2f2';
+    alertEl.style.color = '#dc2626';
+    alertEl.style.border = '1px solid #fecaca';
+    alertEl.textContent = 'تعذر الاتصال بالسيرفر، يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.';
+  });
+}
+
+// Hook into initial page ready
+document.addEventListener('DOMContentLoaded', function() {
+  loadCodGovernorates();
+  const observer = new MutationObserver(() => {
+    if (document.getElementById('cod_governorate_id') && window.fastCodGovernorates.length > 0 && document.getElementById('cod_governorate_id').options.length <= 1) {
+      loadCodGovernorates();
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+});
+</script>
+</body>
+
+</html>

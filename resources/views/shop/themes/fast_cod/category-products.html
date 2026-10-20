@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="facebook-domain-verification" content="thjq95dh1a88yu3cmr55fhq2xqvxr3" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>منتجات القسم - Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shop/styles.css?v=202604021">
+  <link rel="stylesheet" href="/shop/themes/fast_cod/style.css?v=1.0.0">
+  <link rel="stylesheet" href="/shop/themes/default/style.css?v=1.0.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body class="theme-default classic-theme">
+  <div class="cod-top-announcement">
+    <i class="fa fa-truck-fast"></i>
+    <span>🚚 شحن سريع لجميع المحافظات والدفع عند الاستلام بعد المعاينة والفحص مجاناً!</span>
+  </div>
+  <header class="container header">
+    <a href="/shop/index.html" class="brand" style="text-decoration:none;color:inherit">
+      <img src="/images/logo.png?v=202604031" alt="Store"
+        onerror="this.src='https://dummyimage.com/48x48/111827/ffffff&text=K'" />
+      <span>Store</span>
+    </a>
+    <button class="menu-toggle" aria-label="القائمة"><span></span><span></span><span></span></button>
+    <div class="icons">
+      <a href="#" class="icon-round search-trigger" title="بحث" aria-label="بحث"><i class="fa fa-search"></i></a>
+      <a id="cartIcon" class="icon-round" href="/shop/cart.html" title="السلة" aria-label="السلة"><i
+          class="fa fa-shopping-cart"></i><span id="cartCount"></span></a>
+    </div>
+    <nav class="nav">
+      <a href="/shop/index.html">الرئيسية</a>
+      <a href="/shop/categories.html">الأقسام</a>
+      <a href="/shop/products.html">المنتجات</a>
+      <a style="display:none !important;" href="/shop/contact.html">اتصل بنا</a>
+      <a href="tel:01146520922" class="call-now" style="display:none !important;">اتصل الآن</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- Category Products Section -->
+    <div
+      style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+      <h1 id="categoryName" class="page-title" style="margin: 0;">اسم القسم</h1>
+
+      <!-- Filter Dropdown -->
+      <div class="filter-dropdown" style="position: relative;">
+        <button id="filterBtn" class="filter-btn"
+          style="background: #6366f1; color: white; padding: 0.75rem 1rem; border-radius: 0.5rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+          <i class="fa fa-filter"></i>
+          ترتيب حسب
+          <i class="fa fa-chevron-down"></i>
+        </button>
+
+        <div id="filterMenu" class="filter-menu"
+          style="display: none; position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e5e7eb; border-radius: 0.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 100; min-width: 200px; margin-top: 0.25rem;">
+          <button class="filter-option" data-filter="default"
+            style="width: 100%; text-align: right; padding: 0.75rem 1rem; border: none; background: none; cursor: pointer; border-bottom: 1px solid #f3f4f6;">
+            <i class="fa fa-list" style="margin-left: 0.5rem; color: #6b7280;"></i>
+            الترتيب الافتراضي
+          </button>
+          <button class="filter-option" data-filter="price-low"
+            style="width: 100%; text-align: right; padding: 0.75rem 1rem; border: none; background: none; cursor: pointer; border-bottom: 1px solid #f3f4f6;">
+            <i class="fa fa-arrow-up" style="margin-left: 0.5rem; color: #10b981;"></i>
+            الأقل سعراً
+          </button>
+          <button class="filter-option" data-filter="price-high"
+            style="width: 100%; text-align: right; padding: 0.75rem 1rem; border: none; background: none; cursor: pointer; border-bottom: 1px solid #f3f4f6;">
+            <i class="fa fa-arrow-down" style="margin-left: 0.5rem; color: #ef4444;"></i>
+            الأعلى سعراً
+          </button>
+          <button class="filter-option" data-filter="discount"
+            style="width: 100%; text-align: right; padding: 0.75rem 1rem; border: none; background: none; cursor: pointer;">
+            <i class="fa fa-percent" style="margin-left: 0.5rem; color: #f59e0b;"></i>
+            الأكثر خصماً
+          </button>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div id="productsGrid" class="grid">
+      <div style="text-align: center; padding: 3rem; color: #9ca3af;">
+        <i class="fa fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+        <p>جاري تحميل المنتجات...</p>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" style="display: none; text-align: center; padding: 4rem 2rem; color: #9ca3af;">
+      <i class="fa fa-box-open" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+      <h3 style="margin-bottom: 0.5rem;">لا توجد منتجات في هذا القسم</h3>
+      <p style="margin-bottom: 2rem;">سيتم إضافة منتجات جديدة قريباً</p>
+      <a href="/shop/categories.html"
+        style="background: #6366f1; color: white; padding: 0.75rem 2rem; border-radius: 0.5rem; text-decoration: none;">
+        تصفح أقسام أخرى
+      </a>
+    </div>
+  </main>
+
+    <footer class="container footer" style="text-align: center; padding: 24px 16px; color: #64748b; font-size: 14px; border-top: 1px solid #f1f5f9; margin-top: 40px; margin-bottom: 20px;">
+    <div dir="ltr" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500; direction: ltr;">
+      <span>Powered by</span>
+      <a href="https://fast-order-eg.tech" target="_blank" rel="noopener noreferrer" style="font-weight: 800; color: #4f46e5; text-decoration: none; transition: color 0.2s;">Fastorder</a>
+    </div>
+  </footer>
+
+
+  <!-- <a class="wapp-float" href="https://wa.me/201146520922" target="_blank" aria-label="WhatsApp">
+    <i class="fa-brands fa-whatsapp"></i>
+  </a> -->
+
+  <script>window.API_BASE = '/public-api';</script>
+  <script src="/shop/shared.js?v=20260714"></script>
+  <script>
+    let allProducts = []; // Store all products for filtering
+    let currentFilter = 'default';
+
+    // Get category ID from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryId = urlParams.get('id');
+    const categoryName = urlParams.get('name');
+
+    if (!categoryId) {
+      document.getElementById('productsGrid').innerHTML = '<p class="muted">معرف القسم غير محدد.</p>';
+    } else {
+      loadCategoryProducts(categoryId, categoryName);
+    }
+
+    // Filter dropdown functionality
+    const filterBtn = document.getElementById('filterBtn');
+    const filterMenu = document.getElementById('filterMenu');
+    const filterOptions = document.querySelectorAll('.filter-option');
+
+    filterBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      filterMenu.style.display = filterMenu.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Close filter menu when clicking outside
+    document.addEventListener('click', () => {
+      filterMenu.style.display = 'none';
+    });
+
+    filterMenu.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+
+    // Handle filter option selection
+    filterOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        const filterType = option.dataset.filter;
+        currentFilter = filterType;
+
+        // Update button text
+        const filterText = option.textContent.trim();
+        filterBtn.innerHTML = `<i class="fa fa-filter"></i> ${filterText} <i class="fa fa-chevron-down"></i>`;
+
+        // Apply filter
+        applyFilter(filterType);
+        filterMenu.style.display = 'none';
+      });
+    });
+
+    function applyFilter(filterType) {
+      let sortedProducts = [...allProducts];
+
+      switch (filterType) {
+        case 'price-low':
+          sortedProducts.sort((a, b) => {
+            const priceA = a.price_after || a.price_before || 0;
+            const priceB = b.price_after || b.price_before || 0;
+            return priceA - priceB;
+          });
+          break;
+
+        case 'price-high':
+          sortedProducts.sort((a, b) => {
+            const priceA = a.price_after || a.price_before || 0;
+            const priceB = b.price_after || b.price_before || 0;
+            return priceB - priceA;
+          });
+          break;
+
+        case 'discount':
+          sortedProducts.sort((a, b) => {
+            const discountA = calculateDiscount(a.price_before, a.price_after);
+            const discountB = calculateDiscount(b.price_before, b.price_after);
+            return discountB - discountA;
+          });
+          break;
+
+        default:
+          // Default order (by ID descending)
+          sortedProducts.sort((a, b) => b.id - a.id);
+          break;
+      }
+
+      renderProducts(document.getElementById('productsGrid'), sortedProducts);
+    }
+
+    function calculateDiscount(priceBefore, priceAfter) {
+      if (!priceBefore || !priceAfter || priceBefore <= priceAfter) {
+        return 0;
+      }
+      return ((priceBefore - priceAfter) / priceBefore) * 100;
+    }
+
+    async function loadCategoryProducts(categoryId, categoryName) {
+      try {
+        // Load category details
+        const categoryResponse = await fetch(`${window.API_BASE}/categories`);
+        const categoryData = await categoryResponse.json();
+
+        if (categoryData.data) {
+          const category = categoryData.data.find(c => c.id == categoryId);
+          if (category) {
+            document.getElementById('categoryName').textContent = category.name || 'قسم';
+            document.title = `${category.name} - Store`;
+          }
+        }
+
+        // Load products for this category
+        const productsResponse = await fetch(`${window.API_BASE}/products?category_id=${categoryId}`);
+        const productsData = await productsResponse.json();
+
+        const productsGrid = document.getElementById('productsGrid');
+        const emptyState = document.getElementById('emptyState');
+
+        if (productsData.data && productsData.data.length > 0) {
+          allProducts = productsData.data; // Store all products
+          renderProducts(productsGrid, allProducts);
+          emptyState.style.display = 'none';
+        } else {
+          productsGrid.style.display = 'none';
+          emptyState.style.display = 'block';
+        }
+
+      } catch (error) {
+        console.error('خطأ في تحميل منتجات القسم:', error);
+        document.getElementById('productsGrid').innerHTML = '<p class="muted">حدث خطأ في تحميل المنتجات.</p>';
+      }
+    }
+  </script>
+
+  <script>
+    // Load settings dynamically (logo, phone, whatsapp)
+    (function () {
+      var API = window.API_BASE || '/public-api';
+      fetch(API + '/settings').then(function (r) { return r.json(); }).then(function (res) {
+        var data = res.data;
+        if (!data) return;
+        if (data.logo_url) {
+          var logos = document.querySelectorAll('img.site-logo, .brand img:first-child, .brand img');
+          logos.forEach(function (el) { el.src = data.logo_url; });
+        }
+        if (data.store_name) {
+          var names = document.querySelectorAll('.site-name, .brand span:first-of-type');
+          names.forEach(function (el) { el.textContent = data.store_name; });
+        }
+        if (data.phone) {
+          var callBtns = document.querySelectorAll('a.call-now, a[href^="tel:"]');
+          callBtns.forEach(function (el) { el.href = 'tel:' + data.phone; });
+        }
+        if (data.whatsapp) {
+          var waBtns = document.querySelectorAll('a.wapp-float, a[href*="wa.me"]');
+          waBtns.forEach(function (el) { el.href = 'https://wa.me/' + data.whatsapp; });
+        }
+        if (data.facebook_page) {
+          var fbBtns = document.querySelectorAll('a[href*="facebook.com"]');
+          fbBtns.forEach(function (el) { el.href = data.facebook_page; });
+        }
+      }).catch(function () { });
+    })();
+  </script>
+</body>
+
+</html>

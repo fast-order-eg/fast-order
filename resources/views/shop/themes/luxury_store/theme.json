@@ -1,0 +1,80 @@
+{
+    "name": "Luxury Brand Store",
+    "name_ar": "ثيم الماركات الفاخرة (Luxury Brand Store)",
+    "slug": "luxury_store",
+    "version": "1.0.0",
+    "author": "Fast Order Team",
+    "description": "تصميم راقٍ وفخم مستوحى من كبرى متاجر شوبيفاي وبراندات الموضة العالمية كزارة وH&M. يتميز بتخطيط إيديتوريال أنيق، فلاتر منتجات متقدمة، سلة مشتريات أنيقة، وشبكة صور عصرية.",
+    "thumbnail": "/shop/images/themes/luxury_store-preview.webp",
+    "support_rtl": true,
+    "direction": "rtl,ltr",
+    "layouts": {
+        "header": [
+            { "id": "Minimal", "name": "شوبيفاي مينيمال راقي", "name_en": "Shopify Minimal" },
+            { "id": "Classic", "name": "كلاسيكي فاخر", "name_en": "Luxury Classic" }
+        ],
+        "banner": [
+            { "id": "Editorial", "name": "بانر إيديتوريال عريض", "name_en": "Editorial Wide Banner" },
+            { "id": "Slider", "name": "سلايدر متحرك أنيق", "name_en": "Elegant Slider" }
+        ]
+    },
+    "supported_fonts": [
+        { "id": "Tajawal", "name": "Tajawal (خط تجول)" },
+        { "id": "Cairo", "name": "Cairo (خط القاهرة)" },
+        { "id": "Almarai", "name": "Almarai (خط المراعي)" },
+        { "id": "Inter", "name": "Inter (عصري عالمي)" }
+    ],
+    "default_settings": {
+        "primary_color": "#18181b",
+        "secondary_color": "#71717a",
+        "accent_color": "#d97706",
+        "background_color": "#fafafa",
+        "text_color": "#18181b",
+        "card_background": "#ffffff",
+        "border_color": "#e4e4e7",
+        "border_radius": "4px",
+        "font_family": "Tajawal",
+        "header_layout": "Minimal",
+        "banner_layout": "Editorial"
+    },
+    "css_variables": {
+        "--primary-color": "primary_color",
+        "--secondary-color": "secondary_color",
+        "--accent-color": "accent_color",
+        "--bg-color": "background_color",
+        "--text-color": "text_color",
+        "--border-color": "border_color",
+        "--font-family": "font_family",
+        "--border-radius": "border_radius"
+    },
+    "templates": [
+        "index.html",
+        "products.html",
+        "product.html",
+        "categories.html",
+        "category-products.html",
+        "cart.html",
+        "checkout.html",
+        "checkout.blade.php",
+        "order-success.html",
+        "order-success.blade.php",
+        "wishlist.html",
+        "search.html",
+        "contact.html",
+        "account.blade.php",
+        "tracking.html",
+        "tracking.blade.php",
+        "promotions.blade.php",
+        "landing.blade.php"
+    ],
+    "features": [
+        "editorial_product_grid",
+        "advanced_side_filters",
+        "minimalist_clean_typography",
+        "image_aspect_ratio_preservation",
+        "elegant_cart_page",
+        "high_end_fashion_aesthetic",
+        "mobile_touch_swipe",
+        "full_rtl_ltr_support"
+    ]
+}

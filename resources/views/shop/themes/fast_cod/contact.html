@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>تواصل معنا - Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shop/styles.css?v=202604021">
+  <link rel="stylesheet" href="/shop/themes/fast_cod/style.css?v=1.0.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      direction: rtl;
+      text-align: right;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .contact-hero-premium {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+      color: #ffffff;
+      padding: 48px 24px;
+      border-radius: 24px;
+      margin-top: 20px;
+      margin-bottom: 32px;
+      box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.3);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .contact-hero-premium h1 {
+      font-size: 2rem;
+      font-weight: 900;
+      margin-bottom: 12px;
+      color: #ffffff;
+    }
+    .contact-hero-premium p {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    .contact-grid-modern {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .contact-card-modern {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 24px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      position: relative;
+      overflow: hidden;
+    }
+    .contact-card-modern:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      border-color: #cbd5e1;
+    }
+    .contact-card-header {
+      display: flex;
+      items-center: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .contact-icon-box {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .contact-card-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+    .contact-card-subtitle {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+    .contact-action-btn {
+      width: 100%;
+      padding: 12px 18px;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .contact-action-btn:hover {
+      opacity: 0.92;
+      transform: scale(0.99);
+    }
+
+    /* Color variations */
+    .btn-phone { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; }
+    .btn-whatsapp { background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; }
+    .btn-facebook { background: linear-gradient(135deg, #1877f2, #0d65d9); color: #fff; }
+    .btn-instagram { background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #fff; }
+    .btn-tiktok { background: linear-gradient(135deg, #000000, #111827); color: #fff; }
+    .btn-maps { background: linear-gradient(135deg, #ea4335, #c5221f); color: #fff; }
+
+    .address-card-wrapper {
+      grid-column: 1 / -1;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .address-icon-box {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: #f1f5f9;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+
+<body class="theme-default classic-theme" dir="rtl">
+  <header class="container header">
+    <a href="/shop/index.html" class="brand" style="text-decoration:none;color:inherit">
+      <img src="/images/logo.png?v=202604031" alt="Store"
+        onerror="this.src='https://dummyimage.com/48x48/111827/ffffff&text=K'" />
+      <span>Store</span>
+    </a>
+    <button class="menu-toggle" aria-label="القائمة"><span></span><span></span><span></span></button>
+    <div class="icons">
+      <a href="#" class="icon-round search-trigger" title="بحث" aria-label="بحث"><i class="fa fa-search"></i></a>
+      <a id="cartIcon" class="icon-round" href="/shop/cart.html" title="السلة" aria-label="السلة"><i
+          class="fa fa-shopping-cart"></i><span id="cartCount"></span></a>
+    </div>
+    <nav class="nav">
+      <a href="/shop/index.html">الرئيسية</a>
+      <a href="/shop/categories.html">الأقسام</a>
+      <a href="/shop/products.html">المنتجات</a>
+      <a style="display:none !important;" href="/shop/contact.html" class="active">اتصل بنا</a>
+      <a href="tel:01012027705" class="call-now" style="display:none !important;">اتصل الآن</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- Hero Section -->
+    <section class="contact-hero-premium">
+      <h1>تواصل معنا</h1>
+      <p>يسعدنا دائماً التواصل معك والإجابة على تساؤلاتك في أي وقت عبر قنوات الخدمة المباشرة.</p>
+    </section>
+
+    <!-- Cards Grid -->
+    <section class="contact-grid-section">
+      <div class="contact-grid-modern">
+        
+        <!-- Phone -->
+        <div class="contact-card-modern">
+          <div class="contact-card-header">
+            <div class="contact-icon-box" style="background:#dbeafe;color:#2563eb">
+              <i class="fa-solid fa-phone"></i>
+            </div>
+            <div>
+              <div class="contact-card-title">اتصال مباشر</div>
+              <div class="contact-card-subtitle">تحدث معنا هاتفياً فوراً</div>
+            </div>
+          </div>
+          <a class="contact-action-btn btn-phone contact-phone-link" href="tel:01012027705">
+            <i class="fa-solid fa-phone"></i>
+            <span>01012027705</span>
+          </a>
+        </div>
+
+        <!-- WhatsApp -->
+        <div class="contact-card-modern">
+          <div class="contact-card-header">
+            <div class="contact-icon-box" style="background:#dcfce7;color:#16a34a">
+              <i class="fa-brands fa-whatsapp"></i>
+            </div>
+            <div>
+              <div class="contact-card-title">واتساب</div>
+              <div class="contact-card-subtitle">الرد الفوري عبر المحادثة</div>
+            </div>
+          </div>
+          <a class="contact-action-btn btn-whatsapp contact-whatsapp-link" target="_blank" href="https://wa.me/201012027705">
+            <i class="fa-brands fa-whatsapp"></i>
+            <span>تواصل عبر الواتساب</span>
+          </a>
+        </div>
+
+        <!-- Facebook -->
+        <div class="contact-card-modern">
+          <div class="contact-card-header">
+            <div class="contact-icon-box" style="background:#e0e7ff;color:#1877f2">
+              <i class="fa-brands fa-facebook-f"></i>
+            </div>
+            <div>
+              <div class="contact-card-title">فيسبوك</div>
+              <div class="contact-card-subtitle">تابع أحدث منشوراتنا وأخبارنا</div>
+            </div>
+          </div>
+          <a class="contact-action-btn btn-facebook contact-facebook-link" target="_blank" href="https://facebook.com">
+            <i class="fa-brands fa-facebook-f"></i>
+            <span>صفحتنا على فيسبوك</span>
+          </a>
+        </div>
+
+        <!-- Instagram -->
+        <div class="contact-card-modern">
+          <div class="contact-card-header">
+            <div class="contact-icon-box" style="background:#fce7f3;color:#e1306c">
+              <i class="fa-brands fa-instagram"></i>
+            </div>
+            <div>
+              <div class="contact-card-title">انستجرام</div>
+              <div class="contact-card-subtitle">استكشف الصور والستوريز</div>
+            </div>
+          </div>
+          <a class="contact-action-btn btn-instagram contact-instagram-link" target="_blank" href="https://instagram.com">
+            <i class="fa-brands fa-instagram"></i>
+            <span>حسابنا على انستجرام</span>
+          </a>
+        </div>
+
+        <!-- TikTok -->
+        <div class="contact-card-modern">
+          <div class="contact-card-header">
+            <div class="contact-icon-box" style="background:#f1f5f9;color:#000">
+              <i class="fa-brands fa-tiktok"></i>
+            </div>
+            <div>
+              <div class="contact-card-title">تيك توك</div>
+              <div class="contact-card-subtitle">شاهد الفيديوهات والعروض</div>
+            </div>
+          </div>
+          <a class="contact-action-btn btn-tiktok contact-tiktok-link" target="_blank" href="https://tiktok.com">
+            <i class="fa-brands fa-tiktok"></i>
+            <span>صفحتنا على تيك توك</span>
+          </a>
+        </div>
+
+        <!-- Location -->
+        <div class="contact-card-modern">
+          <div class="contact-card-header">
+            <div class="contact-icon-box" style="background:#fee2e2;color:#ea4335">
+              <i class="fa-solid fa-location-dot"></i>
+            </div>
+            <div>
+              <div class="contact-card-title">اللوكيشن</div>
+              <div class="contact-card-subtitle">موقع المتجر على الخريطة</div>
+            </div>
+          </div>
+          <a class="contact-action-btn btn-maps contact-maps-link" target="_blank" href="https://maps.google.com">
+            <i class="fa-solid fa-map-location-dot"></i>
+            <span>عرض اللوكيشن</span>
+          </a>
+        </div>
+
+        <!-- Address -->
+        <div class="address-card-wrapper">
+          <div class="address-icon-box">
+            <i class="fa-solid fa-house"></i>
+          </div>
+          <div>
+            <div class="contact-card-title">العنوان</div>
+            <div class="contact-address-text" style="font-weight:700;color:#475569;font-size:0.95rem">مصر</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+    <footer class="container footer" style="text-align: center; padding: 24px 16px; color: #64748b; font-size: 14px; border-top: 1px solid #f1f5f9; margin-top: 40px; margin-bottom: 20px;">
+    <div dir="ltr" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500; direction: ltr;">
+      <span>Powered by</span>
+      <a href="https://fast-order-eg.tech" target="_blank" rel="noopener noreferrer" style="font-weight: 800; color: #4f46e5; text-decoration: none; transition: color 0.2s;">Fastorder</a>
+    </div>
+  </footer>
+
+
+  <!-- <a class="wapp-float contact-whatsapp-link" href="https://wa.me/201012027705" target="_blank" aria-label="WhatsApp"><i
+      class="fa-brands fa-whatsapp"></i></a> -->
+  <script src="/shop/shared.js?v=20260714"></script>
+
+  <script>
+    (function () {
+      var API = window.API_BASE || '/public-api';
+      fetch(API + '/settings').then(function (r) { return r.json(); }).then(function (res) {
+        var data = res.data;
+        if (!data) return;
+
+        if (data.logo_url) {
+          var logos = document.querySelectorAll('img.site-logo, .brand img:first-child, .brand img');
+          logos.forEach(function (el) { el.src = data.logo_url; });
+        }
+        if (data.store_name) {
+          var names = document.querySelectorAll('.site-name, .brand span:first-of-type');
+          names.forEach(function (el) { el.textContent = data.store_name; });
+        }
+        if (data.phone) {
+          var callBtns = document.querySelectorAll('a.call-now, a.contact-phone-link, a[href^="tel:"]');
+          callBtns.forEach(function (el) {
+            el.href = 'tel:' + data.phone;
+            if (el.classList.contains('contact-phone-link')) {
+              var icon = el.querySelector('i');
+              el.innerHTML = (icon ? icon.outerHTML : '') + ' <span>' + data.phone + '</span>';
+            }
+          });
+        }
+        if (data.whatsapp) {
+          var cleanWa = data.whatsapp.replace(/[^0-9]/g, '');
+          if (cleanWa.startsWith('01') && cleanWa.length === 11) cleanWa = '2' + cleanWa;
+          var waBtns = document.querySelectorAll('a.wapp-float, a.contact-whatsapp-link, a[href*="wa.me"]');
+          waBtns.forEach(function (el) { el.href = 'https://wa.me/' + cleanWa; });
+        }
+        
+        var fbLink = data.facebook_page || 'https://facebook.com';
+        document.querySelectorAll('a.contact-facebook-link').forEach(function(el){ el.href = fbLink; });
+
+        var instaLink = data.instagram_page || 'https://instagram.com';
+        document.querySelectorAll('a.contact-instagram-link').forEach(function(el){ el.href = instaLink; });
+
+        var tiktokLink = data.tiktok_page || 'https://tiktok.com';
+        document.querySelectorAll('a.contact-tiktok-link').forEach(function(el){ el.href = tiktokLink; });
+
+        var mapsLink = data.google_maps_url || 'https://maps.google.com';
+        document.querySelectorAll('a.contact-maps-link').forEach(function(el){ el.href = mapsLink; });
+
+        var addressText = data.address || 'مصر';
+        document.querySelectorAll('.contact-address-text').forEach(function(el){ el.textContent = addressText; });
+
+      }).catch(function () { });
+    })();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="facebook-domain-verification" content="2d59ex7cii10rhhw2o9ny77tfcwft0" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shop/styles.css?v=20260831_2">
+  <link rel="stylesheet" href="/shop/themes/fast_cod/style.css?v=1.0.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta name="robots" content="noindex">
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <link rel="icon" href="data:,">
+  <style>
+    body {
+      opacity: 0;
+      transition: opacity .15s ease
+    }
+
+    .ready body {
+      opacity: 1
+    }
+  </style>
+  <script>document.documentElement.classList.add('ready');</script>
+</head>
+
+<body>
+  <div class="cod-top-announcement">
+    <i class="fa fa-truck-fast"></i>
+    <span>🚚 شحن سريع لجميع المحافظات والدفع عند الاستلام بعد المعاينة والفحص مجاناً!</span>
+  </div>
+  <header class="container header">
+    <a href="/shop/index.html" class="brand" style="text-decoration:none;color:inherit">
+      <img id="siteLogo" src="/images/logo.png?v=202604031" alt="Store"
+        onerror="this.src='https://dummyimage.com/48x48/111827/ffffff&text=SM'" />
+      <span id="siteName">Store</span>
+    </a>
+    <button class="menu-toggle" aria-label="القائمة"><span></span><span></span><span></span></button>
+    <div class="icons">
+      <a href="#" class="icon-round search-trigger" title="بحث" aria-label="بحث"><i class="fa fa-search"></i></a>
+      <a id="cartIcon" class="icon-round" href="/shop/cart.html" title="السلة" aria-label="السلة"><i
+          class="fa fa-shopping-cart"></i><span id="cartCount"></span></a>
+    </div>
+    <nav class="nav">
+      <a href="/shop/index.html" class="active">الرئيسية</a>
+      <a href="/shop/categories.html">الأقسام</a>
+      <a href="/shop/products.html">المنتجات</a>
+      <a style="display:none !important;" href="/shop/contact.html">اتصل بنا</a>
+      <a id="callBtn" href="tel:01146520922" class="call-now" style="display:none !important;">اتصل الآن</a>
+    </nav>
+  </header>
+
+  <!-- Homepage Dynamic Sections Wrapper -->
+  <main id="homepageSections">
+    <!-- Hero Slider -->
+    <section id="sec-hero_slider" class="hero-slider" style="display: none;">
+      <div class="slider-container">
+        <div class="slides">
+          <div class="slide active">
+            <img src="/shop/assets/slider/1.jpg?v=202604031" alt="عرض خاص">
+          </div>
+          <div class="slide">
+            <img src="/shop/assets/slider/2.jpg?v=202604031" alt="منتجات جديدة">
+          </div>
+        </div>
+        <div class="slider-dots" id="sliderDots"></div>
+      </div>
+    </section>
+
+    <!-- Featured Categories Section -->
+    <section id="sec-featured_categories" class="section container" style="display: none;">
+      <div class="section-head">
+        <h2 id="title-featured_categories">الأقسام المميزة</h2>
+        <a class="more" href="/shop/categories.html">عرض الكل</a>
+      </div>
+      <div id="categoriesGrid" class="grid"></div>
+    </section>
+
+    <!-- Best offers section -->
+    <section id="sec-best_offers" class="section container" style="display: none;">
+      <div class="section-head">
+        <h2 id="title-best_offers">أفضل العروض والخصومات</h2>
+        <a class="more" href="/shop/products.html?sort=discount">عرض الكل</a>
+      </div>
+      <div id="offersGrid" class="grid"></div>
+    </section>
+
+    <!-- Best Sellers section -->
+    <section id="sec-best_sellers" class="section container" style="display: none;">
+      <div class="section-head">
+        <h2 id="title-best_sellers">الأكثر طلباً ومبيعاً 🔥</h2>
+        <a class="more" href="/shop/products.html?sort=best_sellers">عرض الكل</a>
+      </div>
+      <div id="bestSellersGrid" class="grid"></div>
+    </section>
+
+    <!-- Products grid -->
+    <section id="sec-latest_products" class="section container" style="display: none;">
+      <div class="section-head">
+        <h2 id="title-latest_products">أحدث المنتجات</h2>
+        <a class="more" href="/shop/products.html">عرض الكل</a>
+      </div>
+      <div id="productsGrid" class="grid"></div>
+    </section>
+  </main>
+
+      <footer class="container footer" style="text-align: center; padding: 24px 16px; color: #64748b; font-size: 14px; border-top: 1px solid #f1f5f9; margin-top: 40px; margin-bottom: 20px;">
+    <div dir="ltr" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500; direction: ltr;">
+      <span>Powered by</span>
+      <a href="https://fast-order-eg.tech" target="_blank" rel="noopener noreferrer" style="font-weight: 800; color: #4f46e5; text-decoration: none; transition: color 0.2s;">Fastorder</a>
+    </div>
+  </footer>
+  <!-- <a class="wapp-float" id="whatsappBtn" href="https://wa.me/201146520922" target="_blank" aria-label="WhatsApp"><i
+      class="fa-brands fa-whatsapp"></i></a> -->
+
+  <script>
+    // Same-origin public API under Laravel
+    window.API_BASE = '/public-api';
+
+    // Load settings dynamically (reuse from shared.js if already loaded)
+    function applySettings(data) {
+      if (!data) return;
+      if (data.logo_url) {
+        const logoEl = document.getElementById('siteLogo');
+        if (logoEl) logoEl.src = data.logo_url;
+      }
+      if (data.store_name) {
+        const nameEl = document.getElementById('siteName');
+        if (nameEl) nameEl.textContent = data.store_name;
+        document.title = data.store_name;
+        if (typeof adjustBrandFontSize === 'function') adjustBrandFontSize();
+      }
+      if (data.phone) {
+        const callBtn = document.getElementById('callBtn');
+        if (callBtn) callBtn.href = 'tel:' + data.phone;
+      }
+      if (data.whatsapp) {
+        const waBtn = document.getElementById('whatsappBtn');
+        if (waBtn) waBtn.href = 'https://wa.me/' + data.whatsapp;
+      }
+    }
+
+    if (window.__SITE_SETTINGS__) {
+      applySettings(window.__SITE_SETTINGS__);
+    } else {
+      fetch(`${window.API_BASE}/settings`).then(r => r.json()).then(({ data }) => {
+        window.__SITE_SETTINGS__ = data;
+        applySettings(data);
+      }).catch(() => { });
+    }
+
+    // Slider functionality
+    let currentSlideIndex = 0;
+    let slides, totalSlides;
+
+    function renderSliderDots() {
+      const dotsContainer = document.getElementById('sliderDots');
+      if (!dotsContainer) return;
+      dotsContainer.innerHTML = '';
+      if (!totalSlides || totalSlides <= 1) {
+        dotsContainer.style.display = 'none';
+        return;
+      }
+      dotsContainer.style.display = '';
+      for (let i = 0; i < totalSlides; i++) {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'slider-dot' + (i === currentSlideIndex ? ' active' : '');
+        dot.setAttribute('aria-label', 'عرض الشريحة ' + (i + 1));
+        dot.addEventListener('click', (e) => {
+          e.stopPropagation();
+          stopAutoSlide();
+          showSlide(i);
+          startAutoSlide();
+        });
+        dotsContainer.appendChild(dot);
+      }
+    }
+
+    function initHeroSliderDragAndSwipe() {
+      const sliderContainer = document.querySelector('.slider-container');
+      if (!sliderContainer || sliderContainer.dataset.dragInit) return;
+      sliderContainer.dataset.dragInit = 'true';
+
+      let isDown = false;
+      let startX = 0;
+      let moved = false;
+
+      sliderContainer.style.cursor = 'grab';
+
+      sliderContainer.addEventListener('mousedown', (e) => {
+        if (e.target.closest('button')) return;
+        isDown = true;
+        moved = false;
+        startX = e.pageX;
+        sliderContainer.style.cursor = 'grabbing';
+        stopAutoSlide();
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        const diffX = e.pageX - startX;
+        if (Math.abs(diffX) > 8) {
+          moved = true;
+        }
+      });
+
+      window.addEventListener('mouseup', (e) => {
+        if (!isDown) return;
+        isDown = false;
+        sliderContainer.style.cursor = 'grab';
+
+        const diffX = e.pageX - startX;
+        if (Math.abs(diffX) > 40) {
+          if (diffX > 0) {
+            changeSlide(-1);
+          } else {
+            changeSlide(1);
+          }
+        } else {
+          startAutoSlide();
+        }
+      });
+
+      let touchStartX = 0;
+      sliderContainer.addEventListener('touchstart', (e) => {
+        if (!e.touches || !e.touches[0]) return;
+        touchStartX = e.touches[0].pageX;
+        moved = false;
+        stopAutoSlide();
+      }, { passive: true });
+
+      sliderContainer.addEventListener('touchmove', () => {
+        moved = true;
+      }, { passive: true });
+
+      sliderContainer.addEventListener('touchend', (e) => {
+        if (!e.changedTouches || !e.changedTouches[0]) return;
+        const diffX = e.changedTouches[0].pageX - touchStartX;
+        if (Math.abs(diffX) > 40) {
+          if (diffX > 0) {
+            changeSlide(-1);
+          } else {
+            changeSlide(1);
+          }
+        } else {
+          startAutoSlide();
+        }
+      }, { passive: true });
+
+      sliderContainer.addEventListener('click', (e) => {
+        if (moved) {
+          e.preventDefault();
+          e.stopPropagation();
+          moved = false;
+        }
+      }, true);
+    }
+
+    function initSlider() {
+      slides = document.querySelectorAll('.slide');
+      totalSlides = slides.length;
+      renderSliderDots();
+      initHeroSliderDragAndSwipe();
+
+      if (totalSlides > 0) {
+        // Ensure all images are loaded before starting
+        let loadedImages = 0;
+        slides.forEach((slide, index) => {
+          const img = slide.querySelector('img');
+          if (img) {
+            if (img.complete) {
+              loadedImages++;
+            } else {
+              img.onload = () => {
+                loadedImages++;
+                if (loadedImages === totalSlides) {
+                  startSlider();
+                }
+              };
+              img.onerror = () => {
+                loadedImages++;
+                if (loadedImages === totalSlides) {
+                  startSlider();
+                }
+              };
+            }
+          }
+        });
+
+        // Fallback: start slider after 2 seconds even if images aren't fully loaded
+        setTimeout(() => {
+          if (!slideInterval) {
+            startSlider();
+          }
+        }, 2000);
+
+        if (loadedImages === totalSlides) {
+          startSlider();
+        }
+      }
+    }
+
+    function startSlider() {
+      const heroSlider = document.querySelector('.hero-slider');
+      if (heroSlider && (heroSlider.classList.contains('banner-layout-grid') || heroSlider.classList.contains('banner-layout-single-banner'))) {
+        stopAutoSlide();
+        return;
+      }
+      showSlide(0);
+      stopAutoSlide();
+      slideInterval = setInterval(() => {
+        showSlide(currentSlideIndex + 1);
+      }, 4000);
+
+      // Pause auto-slide on hover
+      const sliderContainer = document.querySelector('.slider-container');
+      if (sliderContainer) {
+        sliderContainer.addEventListener('mouseenter', stopAutoSlide);
+        sliderContainer.addEventListener('mouseleave', startSlider);
+      }
+    }
+
+    function showSlide(index) {
+      if (!slides || slides.length === 0) return;
+
+      const heroSlider = document.querySelector('.hero-slider');
+      if (heroSlider && (heroSlider.classList.contains('banner-layout-grid') || heroSlider.classList.contains('banner-layout-single-banner'))) {
+        const slidesContainer = document.querySelector('.slides');
+        if (slidesContainer) slidesContainer.style.transform = 'none';
+        return;
+      }
+
+      // Ensure index is within bounds
+      if (index >= totalSlides) index = 0;
+      if (index < 0) index = totalSlides - 1;
+
+      // Update currentSlideIndex
+      currentSlideIndex = index;
+
+      // Remove active class from all slides
+      slides.forEach((slide, i) => {
+        slide.classList.remove('active');
+      });
+
+      // Add active class to current slide
+      if (slides[currentSlideIndex]) {
+        slides[currentSlideIndex].classList.add('active');
+      }
+
+      // Update dots active state
+      const dots = document.querySelectorAll('.slider-dot');
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentSlideIndex);
+      });
+
+      // Move slides container
+      const slidesContainer = document.querySelector('.slides');
+      if (slidesContainer) {
+        const translateValue = `translateX(${currentSlideIndex * -100}%)`;
+        slidesContainer.style.transform = translateValue;
+      }
+    }
+
+    function changeSlide(direction) {
+      stopAutoSlide(); // Stop auto slide when user interacts
+      let newIndex = currentSlideIndex + direction;
+      showSlide(newIndex);
+      startAutoSlide(); // Restart auto slide
+    }
+
+    // Auto-slide functionality
+    function autoSlide() {
+      let nextIndex = currentSlideIndex + 1;
+
+      // Handle wraparound manually here too
+      if (nextIndex >= totalSlides) {
+        nextIndex = 0;
+      }
+
+      showSlide(nextIndex);
+    }
+
+    // Start auto-slide when page loads
+    let slideInterval;
+    function startAutoSlide() {
+      // Clear any existing interval first
+      if (slideInterval) {
+        clearInterval(slideInterval);
+      }
+      slideInterval = setInterval(autoSlide, 4000); // Change slide every 4 seconds
+    }
+
+    function stopAutoSlide() {
+      if (slideInterval) {
+        clearInterval(slideInterval);
+        slideInterval = null;
+      }
+    }
+
+
+    // Also initialize when window is fully loaded (fallback)
+    window.addEventListener('load', function () {
+      if (!slideInterval) {
+        const slides = document.querySelectorAll('.slide');
+        if (slides && slides.length > 0) {
+          initSlider();
+        }
+      }
+    });
+  </script>
+  <script src="/shop/shared.js?v=20260830_20"></script>
+  <script>
+    const yearEl = document.getElementById('year'); if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    // 1. apply layout ordering and loading
+    if (window.__SITE_SETTINGS__) {
+      renderHomepageLayout(window.__SITE_SETTINGS__);
+      loadHomepageContent(window.__SITE_SETTINGS__);
+    } else {
+      fetch(`${window.API_BASE}/settings`).then(r => r.json()).then(({ data }) => {
+        window.__SITE_SETTINGS__ = data;
+        renderHomepageLayout(data);
+        loadHomepageContent(data);
+      }).catch(() => {
+        // Fallback: render default layout
+        const fallbackSettings = {
+          homepage_sections: [
+            {id: 'hero_slider', enabled: true},
+            {id: 'featured_categories', enabled: true},
+            {id: 'best_offers', enabled: true},
+            {id: 'best_sellers', enabled: true},
+            {id: 'latest_products', enabled: true}
+          ]
+        };
+        renderHomepageLayout(fallbackSettings);
+        loadHomepageContent(fallbackSettings);
+      });
+    }
+
+    function loadHomepageContent(settings) {
+      const sections = settings.homepage_sections || [];
+      const isHeroEnabled = !sections.length || sections.some(s => s.id === 'hero_slider' && s.enabled);
+      const isCategoriesEnabled = !sections.length || sections.some(s => s.id === 'featured_categories' && s.enabled);
+      const isOffersEnabled = !sections.length || sections.some(s => s.id === 'best_offers' && s.enabled);
+      const isBestSellersEnabled = !sections.length || sections.some(s => s.id === 'best_sellers' && s.enabled);
+      const isLatestEnabled = !sections.length || sections.some(s => s.id === 'latest_products' && s.enabled);
+
+      const lang = getStorefrontLang();
+
+      // Load Hero Slider banners if enabled
+      if (isHeroEnabled) {
+        fetch(`${window.API_BASE}/banners`).then(r => r.json()).then(({ data }) => {
+          const slider = document.querySelector('.slides');
+          if (slider && data && data.length) {
+            slider.innerHTML = data.map((b, i) => `
+              <div class="slide ${i === 0 ? 'active' : ''}">
+                <a href="${b.link ? b.link : '#'}">
+                  <img src="${b.image_url}" alt="${b.title || 'Store'}">
+                </a>
+              </div>
+            `).join('');
+          }
+          setTimeout(function () {
+            initSlider();
+          }, 100);
+        }).catch(e => {
+          console.error(e);
+          setTimeout(function () {
+            initSlider();
+          }, 100);
+        });
+      }
+
+      // Load Featured Categories if enabled
+      if (isCategoriesEnabled) {
+        renderSkeletonCategories(document.getElementById('categoriesGrid'), 4);
+        fetch(`${window.API_BASE}/categories`).then(r => r.json()).then(({ data }) => {
+          let featuredCats = data;
+          if (settings.homepage_featured_categories && settings.homepage_featured_categories.length) {
+            const featuredIds = settings.homepage_featured_categories.map(Number);
+            featuredCats = data.filter(c => featuredIds.includes(Number(c.id)));
+          } else {
+            featuredCats = data.slice(0, 12);
+          }
+          renderCategories(document.getElementById('categoriesGrid'), featuredCats);
+        }).catch(() => {
+          document.getElementById('categoriesGrid').innerHTML = '<p class="muted">' + (lang === 'en' ? 'Failed to load categories.' : 'تعذر تحميل الأقسام الآن.') + '</p>';
+        });
+      }
+
+      // Load Products if Best Offers, Best Sellers or Latest Products is enabled
+      if (isOffersEnabled || isBestSellersEnabled || isLatestEnabled) {
+        if (isOffersEnabled) renderSkeletonProducts(document.getElementById('offersGrid'), 4);
+        if (isBestSellersEnabled) renderSkeletonProducts(document.getElementById('bestSellersGrid'), 4);
+        if (isLatestEnabled) renderSkeletonProducts(document.getElementById('productsGrid'), 4);
+
+        fetch(`${window.API_BASE}/products`).then(r => r.json()).then(({ data }) => {
+          // 1. Best Offers (10-12 products)
+          if (isOffersEnabled) {
+            let discountedProducts = data.filter(product => {
+              const priceBefore = parseFloat(product.price_before || 0);
+              const priceAfter = parseFloat(product.price_after || 0);
+              return priceBefore > 0 && priceAfter > 0 && priceBefore > priceAfter;
+            });
+
+            discountedProducts.sort((a, b) => {
+              const discountA = ((a.price_before - a.price_after) / a.price_before) * 100;
+              const discountB = ((b.price_before - b.price_after) / b.price_before) * 100;
+              return discountB - discountA;
+            });
+
+            if (discountedProducts.length < 12) {
+              const remaining = data.filter(p => !discountedProducts.some(dp => dp.id === p.id));
+              discountedProducts = discountedProducts.concat(remaining);
+            }
+
+            const bestOffersLimit = settings.homepage_best_offers_limit ? parseInt(settings.homepage_best_offers_limit) : 12;
+
+            if (discountedProducts.length > 0) {
+              renderProducts(document.getElementById('offersGrid'), discountedProducts.slice(0, bestOffersLimit));
+            } else {
+              document.getElementById('offersGrid').innerHTML = '<p class="muted">' + (lang === 'en' ? 'No offers available currently.' : 'لا توجد عروض متاحة حالياً.') + '</p>';
+            }
+          }
+
+          // 2. Best Sellers (10-12 products)
+          if (isBestSellersEnabled) {
+            let bestSellerProducts = [...data];
+            const hasRealSales = bestSellerProducts.some(p => Number(p.sales_count || 0) > 0);
+            if (hasRealSales) {
+              bestSellerProducts.sort((a, b) => (Number(b.sales_count || 0)) - (Number(a.sales_count || 0)));
+            } else {
+              // Diversify selection if no sales yet
+              bestSellerProducts.sort((a, b) => {
+                const discB = (Number(b.price_before || 0) - Number(b.price_after || 0));
+                const discA = (Number(a.price_before || 0) - Number(a.price_after || 0));
+                return discB - discA || (b.id % 5) - (a.id % 5);
+              });
+            }
+
+            const bestSellersLimit = settings.homepage_best_sellers_limit ? parseInt(settings.homepage_best_sellers_limit) : 12;
+
+            if (bestSellerProducts.length > 0) {
+              renderProducts(document.getElementById('bestSellersGrid'), bestSellerProducts.slice(0, bestSellersLimit));
+            } else {
+              document.getElementById('bestSellersGrid').innerHTML = '<p class="muted">' + (lang === 'en' ? 'No products available.' : 'لا توجد منتجات متاحة.') + '</p>';
+            }
+          }
+
+          // 3. Latest Products (10-12 products)
+          if (isLatestEnabled) {
+            const latestProductsLimit = settings.homepage_latest_products_limit ? parseInt(settings.homepage_latest_products_limit) : 12;
+            renderProducts(document.getElementById('productsGrid'), data.slice(0, latestProductsLimit));
+          }
+        }).catch(() => {
+          if (isOffersEnabled) {
+            document.getElementById('offersGrid').innerHTML = '<p class="muted">' + (lang === 'en' ? 'Failed to load offers.' : 'تعذر تحميل العروض الآن.') + '</p>';
+          }
+          if (isBestSellersEnabled) {
+            document.getElementById('bestSellersGrid').innerHTML = '<p class="muted">' + (lang === 'en' ? 'Failed to load best sellers.' : 'تعذر تحميل الأكثر مبيعاً الآن.') + '</p>';
+          }
+          if (isLatestEnabled) {
+            document.getElementById('productsGrid').innerHTML = '<p class="muted">' + (lang === 'en' ? 'Failed to load products.' : 'تعذر تحميل المنتجات الآن.') + '</p>';
+          }
+        });
+      }
+    }
+  </script>
+</body>
+
+</html>
