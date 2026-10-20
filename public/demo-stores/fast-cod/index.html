@@ -476,6 +476,252 @@
       color: #94a3b8;
     }
     .footer-bottom a { color: #38bdf8; text-decoration: none; font-weight: 700; }
+  
+    /* Mobile Responsive Overhaul */
+    html, body {
+      overflow-x: hidden !important;
+      width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box !important;
+    }
+    @media (max-width: 768px) {
+      .top-strip {
+        font-size: 11px !important;
+        padding: 6px 12px !important;
+        line-height: 1.4 !important;
+        text-align: center !important;
+      }
+      .main-header {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 1000 !important;
+        background: #ffffff !important;
+      }
+      .header-inner {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 10px 14px !important;
+        gap: 6px !important;
+      }
+      .logo {
+        order: 1 !important;
+        gap: 8px !important;
+      }
+      .logo-badge {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 17px !important;
+      }
+      .logo-name {
+        font-size: 17px !important;
+        white-space: nowrap !important;
+      }
+      .logo-sub {
+        font-size: 9px !important;
+        white-space: nowrap !important;
+      }
+      .cart-link {
+        order: 2 !important;
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+      }
+      .nav-links {
+        order: 3 !important;
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        padding: 8px 2px 2px !important;
+        margin-top: 4px !important;
+        border-top: 1px solid var(--border) !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+      }
+      .nav-links::-webkit-scrollbar {
+        display: none !important;
+      }
+      .nav-links a {
+        font-size: 12px !important;
+        padding: 6px 14px !important;
+        background: #f8fafc !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 20px !important;
+        flex-shrink: 0 !important;
+      }
+      .nav-links a.active {
+        background: var(--primary) !important;
+        color: #ffffff !important;
+        border-color: var(--primary) !important;
+      }
+      .hero-section {
+        padding: 24px 14px !important;
+      }
+      .hero-inner {
+        grid-template-columns: 1fr !important;
+        text-align: center !important;
+        gap: 18px !important;
+      }
+      .hero-badge {
+        font-size: 11px !important;
+        padding: 4px 12px !important;
+      }
+      .hero-title {
+        font-size: 22px !important;
+        line-height: 1.35 !important;
+        margin-bottom: 12px !important;
+      }
+      .hero-desc {
+        font-size: 13px !important;
+        line-height: 1.6 !important;
+        margin-bottom: 18px !important;
+      }
+      .hero-actions {
+        justify-content: center !important;
+        gap: 8px !important;
+      }
+      .btn-primary, .btn-secondary {
+        padding: 11px 18px !important;
+        font-size: 12px !important;
+      }
+      .container {
+        padding: 0 12px !important;
+        margin: 20px auto !important;
+      }
+      .section-title {
+        font-size: 20px !important;
+      }
+      .section-sub {
+        font-size: 12px !important;
+      }
+      .features-row {
+        margin-top: -16px !important;
+        padding: 0 12px !important;
+      }
+      .features-inner {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+        padding: 12px !important;
+      }
+      .feature-item {
+        gap: 8px !important;
+      }
+      .feat-icon {
+        font-size: 20px !important;
+      }
+      .feat-title {
+        font-size: 12px !important;
+      }
+      .feat-desc {
+        font-size: 10px !important;
+      }
+      .cats-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+        margin-bottom: 24px !important;
+      }
+      .cat-box {
+        padding: 14px !important;
+      }
+      .flash-deal {
+        grid-template-columns: 1fr !important;
+        text-align: center !important;
+        padding: 18px 14px !important;
+        gap: 14px !important;
+        margin-bottom: 24px !important;
+      }
+      .timer-wrap {
+        justify-content: center !important;
+      }
+      .filter-bar {
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-start !important;
+        padding-bottom: 8px !important;
+        gap: 8px !important;
+        margin-bottom: 18px !important;
+        scrollbar-width: none !important;
+      }
+      .filter-bar::-webkit-scrollbar {
+        display: none !important;
+      }
+      .filter-pill {
+        padding: 6px 14px !important;
+        font-size: 12px !important;
+        flex-shrink: 0 !important;
+      }
+      .products-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+        margin-bottom: 24px !important;
+      }
+      .card-body {
+        padding: 10px !important;
+        gap: 8px !important;
+      }
+      .card-cat {
+        font-size: 10px !important;
+      }
+      .card-title {
+        font-size: 12px !important;
+        line-height: 1.4 !important;
+        height: 34px !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+      }
+      .price-current {
+        font-size: 14px !important;
+      }
+      .price-old {
+        font-size: 11px !important;
+      }
+      .card-actions {
+        flex-direction: column !important;
+        gap: 5px !important;
+      }
+      .btn-card-details, .btn-card-buy {
+        font-size: 11px !important;
+        padding: 7px 4px !important;
+        text-align: center !important;
+      }
+      .product-grid {
+        grid-template-columns: 1fr !important;
+        padding: 14px !important;
+        gap: 18px !important;
+      }
+      .action-buttons {
+        flex-direction: column !important;
+        gap: 8px !important;
+      }
+      .btn-buy-now, .btn-add-cart {
+        width: 100% !important;
+        padding: 13px !important;
+        font-size: 13px !important;
+      }
+      .reviews-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+      }
+      .store-footer {
+        padding: 30px 14px 20px !important;
+        margin-top: 36px !important;
+      }
+      .footer-inner {
+        grid-template-columns: 1fr !important;
+        gap: 18px !important;
+        text-align: center !important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -652,7 +898,7 @@
       <div class="product-card" data-cat="watches">
         <div class="card-img-wrap">
           <span class="card-badge">خصم 31%</span>
-          <img src="images/p1.jpg&fit=crop&w=600&q=80" alt="ساعة الترا">
+          <img src="images/p1.jpg" alt="ساعة الترا">
         </div>
         <div class="card-body">
           <div>
@@ -665,7 +911,7 @@
           </div>
           <div class="card-actions">
             <a href="product-1.html" class="btn-card-details">عرض التفاصيل</a>
-            <a href="checkout.html?title=ساعة الترا ماكس 9 الذكية&price=650&img=images/p1.jpg&fit=crop&w=600&q=80" class="btn-card-buy">اشتري الآن</a>
+            <a href="checkout.html?title=ساعة الترا ماكس 9 الذكية&price=650&img=images/p1.jpg" class="btn-card-buy">اشتري الآن</a>
           </div>
         </div>
       </div>
@@ -674,7 +920,7 @@
       <div class="product-card" data-cat="watches">
         <div class="card-img-wrap">
           <span class="card-badge">خصم 29%</span>
-          <img src="images/p2.jpg&fit=crop&w=600&q=80" alt="سوار رياضي">
+          <img src="images/p2.jpg" alt="سوار رياضي">
         </div>
         <div class="card-body">
           <div>
@@ -687,7 +933,7 @@
           </div>
           <div class="card-actions">
             <a href="product-2.html" class="btn-card-details">عرض التفاصيل</a>
-            <a href="checkout.html?title=سوار اللياقة الرياضي Smart Band 8&price=390&img=images/p2.jpg&fit=crop&w=600&q=80" class="btn-card-buy">اشتري الآن</a>
+            <a href="checkout.html?title=سوار اللياقة الرياضي Smart Band 8&price=390&img=images/p2.jpg" class="btn-card-buy">اشتري الآن</a>
           </div>
         </div>
       </div>
@@ -696,7 +942,7 @@
       <div class="product-card" data-cat="watches">
         <div class="card-img-wrap">
           <span class="card-badge">خصم 26%</span>
-          <img src="images/p3.jpg&fit=crop&w=600&q=80" alt="ساعة كلاسيك">
+          <img src="images/p3.jpg" alt="ساعة كلاسيك">
         </div>
         <div class="card-body">
           <div>
@@ -709,7 +955,7 @@
           </div>
           <div class="card-actions">
             <a href="product-3.html" class="btn-card-details">عرض التفاصيل</a>
-            <a href="checkout.html?title=ساعة كلاسيك برو بشاشة أموليد&price=850&img=images/p3.jpg&fit=crop&w=600&q=80" class="btn-card-buy">اشتري الآن</a>
+            <a href="checkout.html?title=ساعة كلاسيك برو بشاشة أموليد&price=850&img=images/p3.jpg" class="btn-card-buy">اشتري الآن</a>
           </div>
         </div>
       </div>
@@ -718,7 +964,7 @@
       <div class="product-card" data-cat="audio">
         <div class="card-img-wrap">
           <span class="card-badge">خصم 28%</span>
-          <img src="images/p4.jpg&fit=crop&w=600&q=80" alt="سماعة رأس">
+          <img src="images/p4.jpg" alt="سماعة رأس">
         </div>
         <div class="card-body">
           <div>
@@ -731,7 +977,7 @@
           </div>
           <div class="card-actions">
             <a href="product-4.html" class="btn-card-details">عرض التفاصيل</a>
-            <a href="checkout.html?title=سماعة رأس لاسلكية ANC&price=790&img=images/p4.jpg&fit=crop&w=600&q=80" class="btn-card-buy">اشتري الآن</a>
+            <a href="checkout.html?title=سماعة رأس لاسلكية ANC&price=790&img=images/p4.jpg" class="btn-card-buy">اشتري الآن</a>
           </div>
         </div>
       </div>
@@ -740,7 +986,7 @@
       <div class="product-card" data-cat="audio">
         <div class="card-img-wrap">
           <span class="card-badge">خصم 30%</span>
-          <img src="images/p5.jpg&fit=crop&w=600&q=80" alt="سماعات ايربودز">
+          <img src="images/p5.jpg" alt="سماعات ايربودز">
         </div>
         <div class="card-body">
           <div>
@@ -753,7 +999,7 @@
           </div>
           <div class="card-actions">
             <a href="product-5.html" class="btn-card-details">عرض التفاصيل</a>
-            <a href="checkout.html?title=سماعات ايربودز برو TWS&price=520&img=images/p5.jpg&fit=crop&w=600&q=80" class="btn-card-buy">اشتري الآن</a>
+            <a href="checkout.html?title=سماعات ايربودز برو TWS&price=520&img=images/p5.jpg" class="btn-card-buy">اشتري الآن</a>
           </div>
         </div>
       </div>
@@ -762,7 +1008,7 @@
       <div class="product-card" data-cat="audio">
         <div class="card-img-wrap">
           <span class="card-badge">خصم 32%</span>
-          <img src="images/p6.jpg&fit=crop&w=600&q=80" alt="مكبر صوت">
+          <img src="images/p6.jpg" alt="مكبر صوت">
         </div>
         <div class="card-body">
           <div>
@@ -775,7 +1021,7 @@
           </div>
           <div class="card-actions">
             <a href="product-6.html" class="btn-card-details">عرض التفاصيل</a>
-            <a href="checkout.html?title=مكبر صوت بلوتوث محمول&price=440&img=images/p6.jpg&fit=crop&w=600&q=80" class="btn-card-buy">اشتري الآن</a>
+            <a href="checkout.html?title=مكبر صوت بلوتوث محمول&price=440&img=images/p6.jpg" class="btn-card-buy">اشتري الآن</a>
           </div>
         </div>
       </div>
@@ -784,7 +1030,7 @@
       <div class="product-card" data-cat="chargers">
         <div class="card-img-wrap">
           <span class="card-badge">خصم 34%</span>
-          <img src="images/p7.jpg&fit=crop&w=600&q=80" alt="شاحن لاسلكي 3 في 1">
+          <img src="images/p7.jpg" alt="شاحن لاسلكي 3 في 1">
         </div>
         <div class="card-body">
           <div>
@@ -797,7 +1043,7 @@
           </div>
           <div class="card-actions">
             <a href="product-7.html" class="btn-card-details">عرض التفاصيل</a>
-            <a href="checkout.html?title=محطة شحن لاسلكي 3 في 1&price=490&img=images/p7.jpg&fit=crop&w=600&q=80" class="btn-card-buy">اشتري الآن</a>
+            <a href="checkout.html?title=محطة شحن لاسلكي 3 في 1&price=490&img=images/p7.jpg" class="btn-card-buy">اشتري الآن</a>
           </div>
         </div>
       </div>
@@ -806,7 +1052,7 @@
       <div class="product-card" data-cat="chargers">
         <div class="card-img-wrap">
           <span class="card-badge">خصم 29%</span>
-          <img src="images/p8.jpg&fit=crop&w=600&q=80" alt="باور بنك">
+          <img src="images/p8.jpg" alt="باور بنك">
         </div>
         <div class="card-body">
           <div>
@@ -819,7 +1065,7 @@
           </div>
           <div class="card-actions">
             <a href="product-8.html" class="btn-card-details">عرض التفاصيل</a>
-            <a href="checkout.html?title=باور بنك ماج سيف 10000mAh&price=580&img=images/p8.jpg&fit=crop&w=600&q=80" class="btn-card-buy">اشتري الآن</a>
+            <a href="checkout.html?title=باور بنك ماج سيف 10000mAh&price=580&img=images/p8.jpg" class="btn-card-buy">اشتري الآن</a>
           </div>
         </div>
       </div>
@@ -828,7 +1074,7 @@
       <div class="product-card" data-cat="chargers">
         <div class="card-img-wrap">
           <span class="card-badge">خصم 28%</span>
-          <img src="images/p9.jpg&fit=crop&w=600&q=80" alt="شاحن GaN">
+          <img src="images/p9.jpg" alt="شاحن GaN">
         </div>
         <div class="card-body">
           <div>
@@ -841,7 +1087,7 @@
           </div>
           <div class="card-actions">
             <a href="product-9.html" class="btn-card-details">عرض التفاصيل</a>
-            <a href="checkout.html?title=شاحن جداري GaN 65W&price=350&img=images/p9.jpg&fit=crop&w=600&q=80" class="btn-card-buy">اشتري الآن</a>
+            <a href="checkout.html?title=شاحن جداري GaN 65W&price=350&img=images/p9.jpg" class="btn-card-buy">اشتري الآن</a>
           </div>
         </div>
       </div>
@@ -850,7 +1096,7 @@
       <div class="product-card" data-cat="chargers">
         <div class="card-img-wrap">
           <span class="card-badge">خصم 30%</span>
-          <img src="images/p10.jpg&fit=crop&w=600&q=80" alt="حامل سيارة ذكي">
+          <img src="images/p10.jpg" alt="حامل سيارة ذكي">
         </div>
         <div class="card-body">
           <div>
@@ -863,7 +1109,7 @@
           </div>
           <div class="card-actions">
             <a href="product-10.html" class="btn-card-details">عرض التفاصيل</a>
-            <a href="checkout.html?title=حامل سيارة ذكي وشاحن لاسلكي&price=290&img=images/p10.jpg&fit=crop&w=600&q=80" class="btn-card-buy">اشتري الآن</a>
+            <a href="checkout.html?title=حامل سيارة ذكي وشاحن لاسلكي&price=290&img=images/p10.jpg" class="btn-card-buy">اشتري الآن</a>
           </div>
         </div>
       </div>
