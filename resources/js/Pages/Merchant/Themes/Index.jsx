@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, router, usePage, Link } from '@inertiajs/react';
 import MerchantLayout from '@/Layouts/MerchantLayout';
 
@@ -9,12 +9,40 @@ export default function ThemesIndex({ themes = {}, active_theme = 'default', act
     const currentActiveTheme = activeTheme || active_theme || 'default';
 
     // Normalize themes to list
-    const themesList = Object.entries(themes).map(([key, value]) => {
+    const allThemesList = Object.entries(themes).map(([key, value]) => {
         return {
             ...value,
             slug: value.slug || key,
         };
     });
+
+    // Ensure the 2 new themes + default are present
+    const defaultAvailable = [
+        {
+            slug: 'fast_cod',
+            name: 'سريع كود (COD Express)',
+            name_ar: 'سريع كود (COD Express)',
+        },
+        {
+            slug: 'luxury_store',
+            name: 'المتجر الفاخر (Luxury Store)',
+            name_ar: 'المتجر الفاخر (Luxury Store)',
+        },
+        {
+            slug: 'default',
+            name: 'المتجر الكلاسيكي (Classic Store)',
+            name_ar: 'المتجر الكلاسيكي (Classic Store)',
+        }
+    ];
+
+    const prioritizedSlugs = ['fast_cod', 'luxury_store', 'default'];
+
+    const themesMap = {};
+    defaultAvailable.forEach(item => { themesMap[item.slug] = item; });
+    allThemesList.forEach(item => { themesMap[item.slug] = { ...themesMap[item.slug], ...item }; });
+
+    // Filter to focus on the 2 new themes + classic store
+    const themesList = prioritizedSlugs.map(slug => themesMap[slug] || { slug });
 
     // Clean Arabic Theme Name Helper (No competitor names)
     const getCleanThemeName = (theme) => {
@@ -25,20 +53,6 @@ export default function ThemesIndex({ themes = {}, active_theme = 'default', act
                 return 'المتجر الفاخر (Luxury Store)';
             case 'default':
                 return 'المتجر الكلاسيكي (Classic Store)';
-            case 'modern':
-            case 'modern_minimalist':
-                return 'المتجر العصري (Modern Minimal)';
-            case 'bold':
-                return 'المتجر الحيوي (Vibrant Store)';
-            case 'dark_elegance':
-                return 'المتجر الداكن (Dark Elegance)';
-            case 'fresh_market':
-                return 'سوق المنتجات الطازجة (Fresh Market)';
-            case 'tech_store':
-            case 'tech_pro':
-                return 'متجر التقنية والإلكترونيات (Tech Pro)';
-            case 'starter':
-                return 'المتجر السريع (Starter)';
             default:
                 return theme.name_ar || theme.name || theme.slug;
         }
@@ -52,12 +66,6 @@ export default function ThemesIndex({ themes = {}, active_theme = 'default', act
             case 'luxury_store':
                 return '/shop/images/themes/luxury_store-preview.svg';
             case 'default':
-                return '/shop/images/themes/default-preview.svg';
-            case 'modern':
-            case 'modern_minimalist':
-                return '/shop/images/themes/modern-preview.svg';
-            case 'bold':
-                return '/shop/images/themes/bold-preview.svg';
             default:
                 return '/shop/images/themes/default-preview.svg';
         }
@@ -76,11 +84,28 @@ export default function ThemesIndex({ themes = {}, active_theme = 'default', act
         });
     };
 
-    // Open Live Full Preview in new tab (identical to landing pages)
+    // Standalone Demo Store Preview URLs
+    const PREVIEW_DEMO_URLS = {
+        fast_cod: '/theme-previews/fast_cod.html',
+        luxury_store: '/theme-previews/luxury_store.html',
+        default: '/theme-previews/fast_cod.html',
+    };
+
+    // Open Live Full Preview in new tab (standalone demo store)
     const handleOpenPreview = (slug) => {
-        const previewUrl = `/admin/themes/preview/frame/${slug}/index.html`;
+        const previewUrl = PREVIEW_DEMO_URLS[slug] || `/theme-previews/${slug}.html`;
         window.open(previewUrl, '_blank');
     };
+
+    // Automatically activate if redirected back from the preview window with ?activate=
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const activateSlug = params.get('activate');
+        if (activateSlug && activateSlug !== currentActiveTheme) {
+            handleActivate(activateSlug);
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    }, []);
 
     return (
         <MerchantLayout title="الثيمات والقوالب">
@@ -101,7 +126,7 @@ export default function ThemesIndex({ themes = {}, active_theme = 'default', act
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-900">الثيمات والقوالب</h1>
                                 <p className="text-sm text-gray-500 mt-0.5">
-                                    اختر الثيم الأنسب لمتجرك لتقديم أفضل تجربة تسوق لعملائك وزيادة معدل التحويل
+                                    اختر الثيم الأنسب لمتجرك — يمكنك معاينة متجر كامل وتفعيله بنقرة واحدة
                                 </p>
                             </div>
                         </div>
@@ -146,8 +171,11 @@ export default function ThemesIndex({ themes = {}, active_theme = 'default', act
                                         : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
                                 }`}
                             >
-                                {/* 1. Mockup Image with Active Badge */}
-                                <div className="relative aspect-[16/10] bg-gray-100 overflow-hidden group cursor-pointer" onClick={() => handleOpenPreview(theme.slug)}>
+                                {/* 1. Mockup Image with Active Badge & Click to Preview */}
+                                <div
+                                    className="relative aspect-[16/10] bg-gray-100 overflow-hidden group cursor-pointer"
+                                    onClick={() => handleOpenPreview(theme.slug)}
+                                >
                                     <img
                                         src={mockupSrc}
                                         alt={themeName}
@@ -170,19 +198,19 @@ export default function ThemesIndex({ themes = {}, active_theme = 'default', act
                                         </div>
                                     )}
 
-                                    {/* Hover Overlay with Quick Preview Hint */}
+                                    {/* Hover Overlay with Preview Tag */}
                                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                         <span className="px-4 py-2 bg-white/95 text-gray-900 text-xs font-bold rounded-xl shadow-lg flex items-center gap-2">
                                             <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
-                                            انقر للمعاينة الكاملة
+                                            انقر لفتح المعاينة الكاملة
                                         </span>
                                     </div>
                                 </div>
 
-                                {/* 2. Theme Name and Action Buttons */}
+                                {/* 2. Theme Name and 2 Action Buttons */}
                                 <div className="p-4 flex flex-col justify-between flex-1 gap-4">
                                     {/* Name */}
                                     <div className="text-center pt-1">

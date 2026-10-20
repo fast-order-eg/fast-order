@@ -125,7 +125,7 @@ export default function ThemeIndex({ themeCustomization, activeTheme = 'default'
     };
 
     const handleOpenPreview = (slug) => {
-        const previewUrl = `/admin/themes/preview/frame/${slug}/index.html`;
+        const previewUrl = slug === 'luxury_store' ? '/theme-previews/luxury_store.html' : '/theme-previews/fast_cod.html';
         window.open(previewUrl, '_blank');
     };
 

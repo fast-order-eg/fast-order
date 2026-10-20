@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>معاينة ثيم المتجر الفاخر (Luxury Store) — فاست أوردر</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #18181b;
+      --primary-hover: #09090b;
+      --secondary: #71717a;
+      --accent: #d97706;
+      --bg: #fafafa;
+      --card-bg: #ffffff;
+      --border: #e4e4e7;
+      --text: #18181b;
+      --muted: #71717a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-top: 50px;
+    }
+
+    /* Top Demo Bar */
+    .demo-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 9999;
+      background: #18181b;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 24px;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .demo-bar .info { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+    .demo-bar .dot { width: 8px; height: 8px; background: #eab308; border-radius: 50%; box-shadow: 0 0 10px #eab308; }
+    .demo-bar .actions { display: flex; align-items: center; gap: 10px; }
+    .demo-bar .btn-activate {
+      background: #ffffff;
+      color: #18181b;
+      padding: 6px 18px;
+      border-radius: 6px;
+      font-weight: 800;
+      text-decoration: none;
+      font-size: 12px;
+      cursor: pointer;
+      border: none;
+      transition: .2s;
+    }
+    .demo-bar .btn-activate:hover { background: #e4e4e7; }
+    .demo-bar .btn-close {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      border: none;
+    }
+
+    /* Luxury Header */
+    .store-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 48px;
+      z-index: 100;
+    }
+    .top-promo {
+      background: #18181b;
+      color: #fafafa;
+      text-align: center;
+      padding: 7px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .header-main {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-nav { display: flex; align-items: center; gap: 24px; }
+    .header-nav a {
+      text-decoration: none;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      transition: color .2s;
+    }
+    .header-nav a:hover { color: var(--accent); }
+    .brand-logo {
+      text-decoration: none;
+      text-align: center;
+    }
+    .brand-logo-text {
+      font-family: 'Times New Roman', serif;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 4px;
+      color: #18181b;
+      display: block;
+    }
+    .brand-logo-sub {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .header-tools { display: flex; align-items: center; gap: 20px; }
+    .btn-cart-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .cart-badge {
+      background: #18181b;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+      background: #18181b;
+      color: #ffffff;
+      padding: 70px 24px;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+    .hero-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+      opacity: 0.25;
+    }
+    .hero-content {
+      position: relative;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    .hero-tag {
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: #d4d4d8;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+    .hero-title {
+      font-size: clamp(26px, 4.5vw, 44px);
+      font-weight: 900;
+      letter-spacing: 1px;
+      line-height: 1.3;
+      margin-bottom: 16px;
+    }
+    .hero-subtitle {
+      font-size: 15px;
+      color: #d4d4d8;
+      margin-bottom: 28px;
+      line-height: 1.7;
+    }
+    .btn-hero {
+      display: inline-block;
+      background: #ffffff;
+      color: #18181b;
+      padding: 14px 38px;
+      border-radius: 4px;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-decoration: none;
+      transition: .2s;
+    }
+    .btn-hero:hover { background: #f4f4f5; transform: translateY(-2px); }
+
+    /* Container */
+    .container {
+      max-width: 1240px;
+      margin: 50px auto;
+      padding: 0 24px;
+    }
+
+    /* Section Title */
+    .section-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .section-subtitle {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--accent);
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .section-title {
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--text);
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    /* Featured Product Showcase (Multi-Angle) */
+    .featured-product-wrap {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 50px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 40px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+      align-items: center;
+      margin-bottom: 60px;
+    }
+    @media (max-width: 860px) {
+      .featured-product-wrap { grid-template-columns: 1fr; padding: 24px; gap: 30px; }
+      .header-nav { display: none; }
+    }
+
+    .lux-gallery {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .lux-main-photo {
+      height: 480px;
+      background: #f4f4f5;
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+    .lux-main-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .lux-badge-exclusive {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: #18181b;
+      color: #fff;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      border-radius: 2px;
+    }
+
+    .lux-thumbs-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .lux-thumb {
+      height: 90px;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      background: #f4f4f5;
+      transition: .2s;
+    }
+    .lux-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .lux-thumb.active { border-color: #18181b; box-shadow: 0 0 0 1px #18181b; }
+
+    /* Product Details */
+    .lux-details { display: flex; flex-direction: column; gap: 20px; }
+    .lux-brand-name { font-size: 12px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; font-weight: 800; }
+    .lux-title { font-size: 28px; font-weight: 900; line-height: 1.3; color: #18181b; }
+    .lux-rating { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    .lux-stars { color: #d97706; }
+    
+    .lux-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      padding: 14px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .lux-current-price { font-size: 32px; font-weight: 900; color: #18181b; }
+    .lux-old-price { font-size: 18px; color: #a1a1aa; text-decoration: line-through; }
+    .lux-price-note { font-size: 12px; color: var(--accent); font-weight: 700; margin-right: auto; }
+
+    .lux-notes-box {
+      background: #fbfbfb;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px;
+      font-size: 13px;
+    }
+    .lux-notes-title { font-weight: 800; margin-bottom: 8px; color: #18181b; }
+    .lux-note-pill {
+      display: inline-block;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin: 3px;
+      color: #3f3f46;
+    }
+
+    /* Size Selector */
+    .lux-sizes { display: flex; gap: 10px; }
+    .lux-size-btn {
+      flex: 1;
+      padding: 12px;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: .2s;
+    }
+    .lux-size-btn.active {
+      border-color: #18181b;
+      background: #18181b;
+      color: #fff;
+    }
+
+    /* Add to Cart Button */
+    .btn-lux-add {
+      background: #18181b;
+      color: #ffffff;
+      padding: 18px;
+      border-radius: 4px;
+      border: none;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: background .2s, transform .2s;
+    }
+    .btn-lux-add:hover { background: #09090b; transform: translateY(-1px); }
+
+    /* Curated Luxury 3:4 Grid */
+    .curated-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-bottom: 60px;
+    }
+    @media (max-width: 990px) { .curated-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { .curated-grid { grid-template-columns: 1fr; } }
+
+    .curated-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: box-shadow .2s;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+    .curated-card:hover { box-shadow: 0 10px 25px rgba(0,0,0,0.06); }
+    .curated-img {
+      height: 280px;
+      background: #f4f4f5;
+      overflow: hidden;
+      position: relative;
+    }
+    .curated-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .4s ease;
+    }
+    .curated-card:hover .curated-img img { transform: scale(1.04); }
+    .curated-body { padding: 18px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; }
+    .curated-cat { font-size: 10px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+    .curated-name { font-size: 15px; font-weight: 800; color: #18181b; }
+    .curated-price { font-size: 16px; font-weight: 900; color: #18181b; }
+    .btn-curated-add {
+      background: #f4f4f5;
+      border: 1px solid var(--border);
+      color: #18181b;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .2s;
+    }
+    .btn-curated-add:hover { background: #18181b; color: #fff; }
+
+    /* Luxury Trust Pillars */
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      padding: 40px 0;
+      border-top: 1px solid var(--border);
+    }
+    @media (max-width: 768px) { .pillars-grid { grid-template-columns: repeat(2, 1fr); } }
+    .pillar-item { text-align: center; }
+    .pillar-icon { font-size: 26px; margin-bottom: 8px; display: block; }
+    .pillar-title { font-size: 13px; font-weight: 800; color: #18181b; margin-bottom: 4px; }
+    .pillar-desc { font-size: 11px; color: var(--muted); }
+
+    /* Slide-out Cart Drawer */
+    .cart-drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 10000;
+      display: none;
+      opacity: 0;
+      transition: opacity .3s ease;
+    }
+    .cart-drawer {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 420px;
+      max-width: 90vw;
+      background: #ffffff;
+      z-index: 10001;
+      transform: translateX(-100%);
+      transition: transform .35s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 20px 0 50px rgba(0,0,0,0.25);
+    }
+    .cart-drawer.open { transform: translateX(0); }
+    .cart-drawer-overlay.open { display: block; opacity: 1; }
+
+    .drawer-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .drawer-title { font-size: 16px; font-weight: 800; letter-spacing: 0.5px; }
+    .btn-drawer-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--muted); }
+
+    .drawer-body {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .free-shipping-progress {
+      background: #f4f4f5;
+      border-radius: 4px;
+      padding: 12px;
+      font-size: 12px;
+      text-align: center;
+      font-weight: 700;
+      color: #18181b;
+    }
+    .cart-item {
+      display: flex;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .cart-item-img {
+      width: 70px;
+      height: 90px;
+      background: #f4f4f5;
+      border-radius: 4px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .cart-item-img img { width: 100%; height: 100%; object-fit: cover; }
+    .cart-item-info { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .cart-item-title { font-size: 13px; font-weight: 800; color: #18181b; }
+    .cart-item-opt { font-size: 11px; color: var(--muted); }
+    .cart-item-price { font-size: 14px; font-weight: 900; color: #18181b; }
+
+    .drawer-footer {
+      padding: 24px;
+      border-top: 1px solid var(--border);
+      background: #fafafa;
+    }
+    .subtotal-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .btn-checkout-luxury {
+      width: 100%;
+      background: #18181b;
+      color: #ffffff;
+      padding: 16px;
+      border-radius: 4px;
+      border: none;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: .2s;
+    }
+    .btn-checkout-luxury:hover { background: #09090b; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Demo Bar -->
+  <div class="demo-bar">
+    <div class="info">
+      <span class="dot"></span>
+      <span>معاينة حية لمتجر متكامل: ثيم المتجر الفاخر (Luxury Store)</span>
+    </div>
+    <div class="actions">
+      <button onclick="activateThisTheme()" class="btn-activate">تفعيل هذا الثيم لمتجري الآن ✓</button>
+      <button onclick="window.close()" class="btn-close">إغلاق المعاينة ✕</button>
+    </div>
+  </div>
+
+  <!-- Store Header -->
+  <header class="store-header">
+    <div class="top-promo">
+      شحن حصري مجاني مع تغليف الهدايا المخملي الفاخر لجميع المحافظات
+    </div>
+    <div class="header-main">
+      <nav class="header-nav">
+        <a href="#featured">العطور الملكية</a>
+        <a href="#collection">الساعات النادرة</a>
+        <a href="#collection">الحقائب الجلدية</a>
+        <a href="#collection">إصدارات محدودة</a>
+      </nav>
+
+      <a href="#" class="brand-logo">
+        <span class="brand-logo-text">L U M I È R E</span>
+        <span class="brand-logo-sub">Haute Parfumerie & Luxe</span>
+      </a>
+
+      <div class="header-tools">
+        <button class="btn-cart-toggle" onclick="toggleCartDrawer(true)">
+          <span>الحقيبة</span>
+          <span class="cart-badge" id="cartCount">1</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Editorial Hero Banner -->
+  <section class="hero-banner">
+    <div class="hero-content">
+      <span class="hero-tag">AUTUMN PRIVATE COLLECTION 2026</span>
+      <h1 class="hero-title">الفخامة التي تليق بذوقك الرفيع</h1>
+      <p class="hero-subtitle">
+        عطور نادرة وتصاميم إيديتوريال ساحرة تعكس أرقى معايير الأناقة والجاذبية في عالم الموضة
+      </p>
+      <a href="#featured" class="btn-hero">اكتشف المجموعة الحصرية</a>
+    </div>
+  </section>
+
+  <!-- Main Container -->
+  <main class="container">
+
+    <!-- Section Header -->
+    <div class="section-header" id="featured">
+      <span class="section-subtitle">إصدار محدود ونادر</span>
+      <h2 class="section-title">العطر الأيقوني الملكي</h2>
+    </div>
+
+    <!-- Featured Product (Multi-Angle) -->
+    <div class="featured-product-wrap">
+      <!-- Gallery -->
+      <div class="lux-gallery">
+        <div class="lux-main-photo">
+          <span class="lux-badge-exclusive">ÉDITION ROYALE</span>
+          <img id="luxMainImage" src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=900&q=80" alt="عطر رويال عود">
+        </div>
+
+        <div class="lux-thumbs-row">
+          <div class="lux-thumb active" onclick="switchLuxImage('https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=900&q=80', this)">
+            <img src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=300&q=80" alt="الواجهة الأمامية">
+          </div>
+          <div class="lux-thumb" onclick="switchLuxImage('https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80', this)">
+            <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80" alt="جلسة رخامية فاخرة">
+          </div>
+          <div class="lux-thumb" onclick="switchLuxImage('https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=900&q=80', this)">
+            <img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=300&q=80" alt="زاوية إيديتوريال">
+          </div>
+          <div class="lux-thumb" onclick="switchLuxImage('https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=900&q=80', this)">
+            <img src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=300&q=80" alt="تنسيق الأناقة">
+          </div>
+        </div>
+      </div>
+
+      <!-- Details -->
+      <div class="lux-details">
+        <span class="lux-brand-name">LUMIÈRE PRIVATE COLLECTION</span>
+        <h1 class="lux-title">عطر رويال عود إمبريال — Royal Oud Impérial (100ml)</h1>
+        
+        <div class="lux-rating">
+          <div class="lux-stars">★★★★★</div>
+          <span style="font-weight: 700; color: #18181b;">5.0</span>
+          <span style="color: var(--muted);">(380 تقييم من عشاق الفخامة)</span>
+        </div>
+
+        <div class="lux-price-row">
+          <span class="lux-current-price" id="luxPrice">1,850 ج.م</span>
+          <span class="lux-old-price" id="luxOldPrice">2,450 ج.م</span>
+          <span class="lux-price-note">✓ متاح الدفع عند الاستلام</span>
+        </div>
+
+        <p style="font-size: 14px; color: var(--muted); line-height: 1.8;">
+          توليفة استثنائية ونادرة تمزج عبق العود الكمبودي الملكي المعتق مع نفحات البرغموت الإيطالي والزعفران الإيراني وقاعدة من خشب الصندل والعنبر الأبيض. تركيز Extrait de Parfum يدوم لأكثر من 48 ساعة.
+        </p>
+
+        <!-- Scent Notes -->
+        <div class="lux-notes-box">
+          <div class="lux-notes-title">الهرم العطري النادر:</div>
+          <div>
+            <span class="lux-note-pill">القمة: برغموت إيطالي، هيل ملكي</span>
+            <span class="lux-note-pill">القلب: ورد دمشقي، زعفران</span>
+            <span class="lux-note-pill">القاعدة: عود كمبودي، عنبر أبيض</span>
+          </div>
+        </div>
+
+        <!-- Volume Option -->
+        <div>
+          <label style="font-size: 12px; font-weight: 800; display: block; margin-bottom: 8px;">اختر الحجم:</label>
+          <div class="lux-sizes">
+            <button type="button" class="lux-size-btn" onclick="selectVolume(50, 1250, 1650, this)">50 مل (1,250 ج.م)</button>
+            <button type="button" class="lux-size-btn active" onclick="selectVolume(100, 1850, 2450, this)">100 مل (1,850 ج.م)</button>
+          </div>
+        </div>
+
+        <button type="button" class="btn-lux-add" onclick="handleAddToCart()">
+          <span>إضافة إلى حقيبة المشتريات</span>
+          <span>—</span>
+          <span id="btnPriceLabel">1,850 ج.م</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Curated Collection Section -->
+    <div class="section-header" id="collection">
+      <span class="section-subtitle">تشكيلة مختارة</span>
+      <h2 class="section-title">قطع استثنائية تكمل إطلالتك</h2>
+    </div>
+
+    <div class="curated-grid">
+      <!-- Item 1 -->
+      <div class="curated-card" onclick="handleAddToCart('ساعة رويال كرونوغراف الملكية', '3,400 ج.م')">
+        <div class="curated-img">
+          <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80" alt="ساعة">
+        </div>
+        <div class="curated-body">
+          <div>
+            <div class="curated-cat">ساعات نادرة</div>
+            <h3 class="curated-name">ساعة رويال كرونوغراف الملكية</h3>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span class="curated-price">3,400 ج.م</span>
+            <button class="btn-curated-add">إضافة للحقيبة +</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 2 -->
+      <div class="curated-card" onclick="handleAddToCart('حقيبة يد جلد طبيعي سافيانو', '2,250 ج.م')">
+        <div class="curated-img">
+          <img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80" alt="حقيبة">
+        </div>
+        <div class="curated-body">
+          <div>
+            <div class="curated-cat">جلديات فاخرة</div>
+            <h3 class="curated-name">حقيبة يد جلد طبيعي سافيانو</h3>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span class="curated-price">2,250 ج.م</span>
+            <button class="btn-curated-add">إضافة للحقيبة +</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 3 -->
+      <div class="curated-card" onclick="handleAddToCart('عطر مسك نوبل بيور', '1,450 ج.م')">
+        <div class="curated-img">
+          <img src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=600&q=80" alt="عطر">
+        </div>
+        <div class="curated-body">
+          <div>
+            <div class="curated-cat">عطور نادرة</div>
+            <h3 class="curated-name">عطر مسك نوبل بيور (100ml)</h3>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span class="curated-price">1,450 ج.م</span>
+            <button class="btn-curated-add">إضافة للحقيبة +</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 4 -->
+      <div class="curated-card" onclick="handleAddToCart('نظارة بإطار تيتانيوم ذهبي', '1,150 ج.م')">
+        <div class="curated-img">
+          <img src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=600&q=80" alt="نظارة">
+        </div>
+        <div class="curated-body">
+          <div>
+            <div class="curated-cat">إكسسوارات فاخرة</div>
+            <h3 class="curated-name">نظارة بإطار تيتانيوم ذهبي</h3>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span class="curated-price">1,150 ج.م</span>
+            <button class="btn-curated-add">إضافة للحقيبة +</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trust Pillars -->
+    <div class="pillars-grid">
+      <div class="pillar-item">
+        <span class="pillar-icon">⚜️</span>
+        <div class="pillar-title">أصالة وجودة مضمونة 100%</div>
+        <div class="pillar-desc">منتجات أصلية مع شهادة الجودة والمنشأ</div>
+      </div>
+      <div class="pillar-item">
+        <span class="pillar-icon">📦</span>
+        <div class="pillar-title">تغليف مخملي فاخر مجاناً</div>
+        <div class="pillar-desc">تغليف يليق بالإهداء الراقي لكل عميل</div>
+      </div>
+      <div class="pillar-item">
+        <span class="pillar-icon">🚚</span>
+        <div class="pillar-title">شحن فوري ومعاينة قبل الدفع</div>
+        <div class="pillar-desc">إمكانية فتح الشحنة والتجربة قبل السداد</div>
+      </div>
+      <div class="pillar-item">
+        <span class="pillar-icon">💎</span>
+        <div class="pillar-title">خدمة عملاء VIP خاصة</div>
+        <div class="pillar-desc">فريق استشاري مخصص لخدمتك على مدار الساعة</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Interactive Slide-out Cart Drawer -->
+  <div class="cart-drawer-overlay" id="cartOverlay" onclick="toggleCartDrawer(false)"></div>
+  <aside class="cart-drawer" id="cartDrawer">
+    <div class="drawer-header">
+      <span class="drawer-title">حقيبة المشتريات الفاخرة</span>
+      <button class="btn-drawer-close" onclick="toggleCartDrawer(false)">✕</button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="free-shipping-progress">
+        ✨ أنت مؤهل للحصول على الشحن الملكي المجاني!
+      </div>
+
+      <div class="cart-item">
+        <div class="cart-item-img">
+          <img src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=300&q=80" alt="عطر">
+        </div>
+        <div class="cart-item-info">
+          <div>
+            <div class="cart-item-title">عطر رويال عود إمبريال</div>
+            <div class="cart-item-opt" id="drawerItemOpt">الحجم: 100 مل</div>
+          </div>
+          <div class="cart-item-price" id="drawerItemPrice">1,850 ج.م</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="drawer-footer">
+      <div class="subtotal-row">
+        <span>المجموع الإجمالي:</span>
+        <span id="drawerTotal">1,850 ج.م</span>
+      </div>
+      <button class="btn-checkout-luxury" onclick="alert('هذه معاينة حية للمتجر الفاخر! يمكنك تفعيل الثيم لمتجرك بالضغط على زر التفعيل أعلى الصفحة.')">
+        المتابعة لإتمام الطلب الفاخر (الدفع عند الاستلام)
+      </button>
+    </div>
+  </aside>
+
+  <script>
+    function switchLuxImage(src, el) {
+      document.getElementById('luxMainImage').src = src;
+      document.querySelectorAll('.lux-thumb').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    function selectVolume(ml, price, oldPrice, el) {
+      document.querySelectorAll('.lux-size-btn').forEach(btn => btn.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('luxPrice').innerText = price.toLocaleString('en-US') + ' ج.م';
+      document.getElementById('luxOldPrice').innerText = oldPrice.toLocaleString('en-US') + ' ج.م';
+      document.getElementById('btnPriceLabel').innerText = price.toLocaleString('en-US') + ' ج.م';
+      document.getElementById('drawerItemOpt').innerText = 'الحجم: ' + ml + ' مل';
+      document.getElementById('drawerItemPrice').innerText = price.toLocaleString('en-US') + ' ج.م';
+      document.getElementById('drawerTotal').innerText = price.toLocaleString('en-US') + ' ج.م';
+    }
+
+    function toggleCartDrawer(open) {
+      const drawer = document.getElementById('cartDrawer');
+      const overlay = document.getElementById('cartOverlay');
+      if (open) {
+        overlay.classList.add('open');
+        setTimeout(() => drawer.classList.add('open'), 10);
+      } else {
+        drawer.classList.remove('open');
+        setTimeout(() => overlay.classList.remove('open'), 300);
+      }
+    }
+
+    function handleAddToCart() {
+      toggleCartDrawer(true);
+    }
+
+    function activateThisTheme() {
+      if (window.opener && !window.opener.closed) {
+        window.opener.location.href = '/admin/themes?activate=luxury_store';
+        window.close();
+      } else {
+        window.location.href = '/admin/themes?activate=luxury_store';
+      }
+    }
+  </script>
+</body>
+</html>
