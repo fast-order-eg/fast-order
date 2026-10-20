@@ -2,10 +2,418 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=product.html#codForm">
-  <title>جاري التحويل لصفحة الدفع...</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إتمام الطلب | أورا سمارت — AURA TECH</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #16a34a;
+      --primary-dark: #15803d;
+      --secondary: #0f172a;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --card-bg: #ffffff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* Top Strip */
+    .top-strip {
+      background: linear-gradient(90deg, #15803d, #16a34a);
+      color: #fff;
+      text-align: center;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    /* Main Header */
+    .main-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--secondary);
+    }
+    .logo-badge {
+      width: 40px; height: 40px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 900;
+    }
+    .logo-name { font-size: 19px; font-weight: 900; }
+    .logo-sub { font-size: 10px; color: var(--muted); font-weight: 700; display: block; }
+    .nav-links { display: flex; align-items: center; gap: 20px; }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--secondary);
+      font-size: 13px;
+      font-weight: 700;
+      transition: color .2s;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--primary); }
+
+    .container { max-width: 1100px; margin: 36px auto; padding: 0 20px; }
+
+    /* Layout */
+    .checkout-grid {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 30px;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      .checkout-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .form-input:focus, .form-select:focus { border-color: var(--primary); }
+
+    /* Order Summary Item */
+    .summary-item {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 14px;
+    }
+    .summary-img {
+      width: 65px; height: 65px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #f1f5f9;
+      flex-shrink: 0;
+    }
+    .summary-img img { width: 100%; height: 100%; object-fit: cover; }
+    .summary-info { flex: 1; }
+    .summary-name { font-size: 14px; font-weight: 800; line-height: 1.4; }
+    .summary-qty { font-size: 12px; color: var(--muted); }
+    .summary-price { font-size: 15px; font-weight: 900; color: var(--primary); }
+
+    .summary-totals {
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 14px;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    .totals-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .totals-row.final {
+      font-size: 17px;
+      font-weight: 900;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      margin-top: 10px;
+      color: var(--secondary);
+    }
+
+    .payment-badge {
+      background: #f0fdf4;
+      border: 1.5px solid #86efac;
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .payment-icon { font-size: 24px; }
+    .payment-text strong { display: block; font-size: 14px; color: #15803d; }
+    .payment-text small { color: var(--muted); font-size: 12px; }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 16px;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: background .2s, transform .2s;
+    }
+    .btn-submit:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+    /* Footer */
+    .store-footer {
+      background: var(--secondary);
+      color: #cbd5e1;
+      padding: 40px 20px 20px;
+      margin-top: 80px;
+      font-size: 13px;
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 30px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    @media (max-width: 768px) { .footer-inner { grid-template-columns: 1fr; } }
+    .store-footer h4 { color: #fff; font-size: 16px; font-weight: 800; margin-bottom: 12px; }
+    .store-footer ul { list-style: none; }
+    .store-footer ul li { margin-bottom: 8px; }
+    .store-footer ul li a { color: #94a3b8; text-decoration: none; }
+    .store-footer ul li a:hover { color: #fff; }
+    .footer-bottom {
+      text-align: center;
+      padding-top: 20px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .footer-bottom a { color: #38bdf8; text-decoration: none; font-weight: 700; }
+  </style>
 </head>
-<body style="font-family: system-ui; text-align: center; padding: 50px;">
-  <p>جاري تحويلك لصفحة إتمام الطلب...</p>
+<body>
+
+  <!-- Promo Strip -->
+  <div class="top-strip">
+    شحن سريع وتوصيل لجميع محافظات مصر • معاينة مجانية لطلبك قبل الدفع
+  </div>
+
+  <!-- Header -->
+  <header class="main-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-badge">A</span>
+        <div>
+          <span class="logo-name">AURA TECH</span>
+          <span class="logo-sub">متجر الأجهزة والإكسسوارات الذكية</span>
+        </div>
+      </a>
+
+      <nav class="nav-links">
+        <a href="index.html">الرئيسية</a>
+        <a href="products.html">جميع المنتجات</a>
+        <a href="cart.html">السلة</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div style="margin-bottom: 24px;">
+      <h1 style="font-size: 24px; font-weight: 900;">إتمام الطلب والشحن</h1>
+      <p style="font-size: 13px; color: var(--muted); margin-top: 4px;">املأ بيانات الاستلام أدناه لتأكيد شحن طلبك مع المعاينة قبل الدفع</p>
+    </div>
+
+    <form onsubmit="handlePlaceOrder(event)" class="checkout-grid">
+      <!-- Left: Customer Shipping Data -->
+      <div class="card">
+        <h2 class="card-title">بيانات الشحن والاستلام</h2>
+
+        <div class="form-group">
+          <label class="form-label">الاسم بالكامل *</label>
+          <input type="text" class="form-input" required placeholder="مثال: أحمد محمد مصطفى" value="أحمد محمد مصطفى">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">رقم الهاتف المحمول *</label>
+          <input type="tel" class="form-input" required placeholder="010XXXXXXXX" value="01012345678">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">المحافظة *</label>
+          <select class="form-select" required id="govSelect" onchange="updateShipping(this.value)">
+            <option value="cairo" selected>القاهرة (شحن مجاني)</option>
+            <option value="giza">الجيزة (شحن مجاني)</option>
+            <option value="alex">الإسكندرية (شحن مجاني)</option>
+            <option value="qalyubia">القليوبية</option>
+            <option value="sharqia">الشرقية</option>
+            <option value="dakahlia">الدقهلية (المنصورة)</option>
+            <option value="gharbia">الغربية (طنطا)</option>
+            <option value="beheira">البحيرة</option>
+            <option value="damietta">دمياط</option>
+            <option value="ismailia">الإسماعيلية</option>
+            <option value="suez">السويس</option>
+            <option value="port_said">بورسعيد</option>
+            <option value="sohag">سوهاج</option>
+            <option value="asyut">أسيوط</option>
+            <option value="qena">قنا</option>
+            <option value="luxor">الأقصر</option>
+            <option value="aswan">أسوان</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">العنوان بالتفصيل *</label>
+          <input type="text" class="form-input" required placeholder="المدينة، الحي، اسم الشارع، رقم العمارة والشقة" value="حي المعادي، شارع النصر، عمارة 15">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">ملاحظات إضافية للتوصيل (اختياري)</label>
+          <input type="text" class="form-input" placeholder="مثال: التسليم بعد الساعة 3 عصراً">
+        </div>
+
+        <div class="payment-badge">
+          <div class="payment-icon">💵</div>
+          <div class="payment-text">
+            <strong>الدفع نقدياً عند الاستلام (COD)</strong>
+            <small>لن تدفع أي مبالغ الآن، الدفع بعد استلام الشحنة ومعاينتها بالكامل</small>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit">تأكيد الطلب الآن ✓</button>
+      </div>
+
+      <!-- Right: Order Summary -->
+      <div class="card">
+        <h2 class="card-title">ملخص الطلب</h2>
+
+        <div class="summary-item">
+          <div class="summary-img">
+            <img id="summaryImg" src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80" alt="ساعة الترا ماكس">
+          </div>
+          <div class="summary-info">
+            <div class="summary-name" id="summaryTitle">ساعة الترا ماكس 9 الذكية + سماعة برو هدية</div>
+            <div class="summary-qty">الكمية: 1 قطعة</div>
+            <div class="summary-price" id="summaryItemPrice">650 ج.م</div>
+          </div>
+        </div>
+
+        <div class="summary-totals">
+          <div class="totals-row">
+            <span>المجموع الفرعي:</span>
+            <strong id="subtotalVal">650 ج.م</strong>
+          </div>
+          <div class="totals-row" style="color: #16a34a;">
+            <span>مصاريف الشحن:</span>
+            <strong id="shippingVal">مجاناً (0 ج.م)</strong>
+          </div>
+          <div class="totals-row final">
+            <span>الإجمالي المطلوب:</span>
+            <span id="totalVal" style="color: #16a34a;">650 ج.م</span>
+          </div>
+        </div>
+
+        <div style="font-size: 12px; color: var(--muted); line-height: 1.7; background: #f1f5f9; padding: 12px; border-radius: 8px;">
+          ✓ يحق لك فتح الشحنة وفحص المنتج والتأكد من مطابقته للمواصفات قبل السداد للمندوب.
+        </div>
+      </div>
+    </form>
+  </main>
+
+  <!-- Footer -->
+  <footer class="store-footer">
+    <div class="footer-inner">
+      <div>
+        <h4>أورا سمارت — AURA TECH</h4>
+        <p style="color: #94a3b8; line-height: 1.8;">
+          متجرك الموثوق للأجهزة والإكسسوارات الذكية الأصلية. نضمن لك أعلى جودة، توصيل سريع لجميع المحافظات، ومعاينة كاملة قبل الدفع.
+        </p>
+      </div>
+      <div>
+        <h4>روابط المتجر</h4>
+        <ul>
+          <li><a href="index.html">الرئيسية</a></li>
+          <li><a href="products.html">جميع المنتجات</a></li>
+          <li><a href="cart.html">سلة التسوق</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>سياسات التسوق</h4>
+        <ul>
+          <li>المعاينة قبل الاستلام متاحة مجاناً</li>
+          <li>ضمان استبدال واسترجاع خلال 14 يوماً</li>
+          <li>منتجات أصلية معتمدة 100%</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      Powered by <a href="https://fast-order-eg.tech" target="_blank" rel="noopener">Fast Order</a>
+    </div>
+  </footer>
+
+  <script>
+    // Read product query params if provided
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const title = urlParams.get('title');
+      const price = urlParams.get('price');
+      const img = urlParams.get('img');
+
+      if (title) document.getElementById('summaryTitle').innerText = title;
+      if (price) {
+        document.getElementById('summaryItemPrice').innerText = price + ' ج.م';
+        document.getElementById('subtotalVal').innerText = price + ' ج.م';
+        document.getElementById('totalVal').innerText = price + ' ج.م';
+      }
+      if (img) document.getElementById('summaryImg').src = img;
+    });
+
+    function updateShipping(gov) {
+      // Free shipping across all governorates promo
+      document.getElementById('shippingVal').innerText = 'مجاناً (0 ج.م)';
+    }
+
+    function handlePlaceOrder(e) {
+      e.preventDefault();
+      const price = document.getElementById('totalVal').innerText;
+      const title = document.getElementById('summaryTitle').innerText;
+      window.location.href = `order-success.html?title=${encodeURIComponent(title)}&price=${encodeURIComponent(price)}`;
+    }
+  </script>
 </body>
 </html>

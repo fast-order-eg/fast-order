@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تم تأكيد حجز طلبك بنجاح | L'ÉLÉGANCE PARIS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #18181b;
+      --secondary: #71717a;
+      --accent: #d97706;
+      --bg: #fafafa;
+      --border: #e4e4e7;
+      --text: #18181b;
+      --muted: #71717a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .header-simple {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 18px 24px;
+      text-align: center;
+    }
+    .brand-logo-text {
+      font-family: 'Times New Roman', serif;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: #18181b;
+      text-decoration: none;
+    }
+
+    .container { max-width: 600px; margin: 50px auto; padding: 0 20px; }
+    .success-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 40px 30px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+    .success-icon {
+      width: 64px; height: 64px;
+      background: #18181b;
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 20px;
+    }
+    .title { font-size: 24px; font-weight: 900; margin-bottom: 10px; }
+    .desc { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 24px; }
+    .details-box {
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 18px;
+      text-align: right;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+    .detail-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .detail-row:last-child { margin-bottom: 0; border-top: 1px solid var(--border); padding-top: 10px; font-weight: 900; font-size: 15px; }
+
+    .btn-return {
+      display: inline-block;
+      background: #18181b;
+      color: #fff;
+      padding: 14px 32px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      transition: .2s;
+    }
+    .btn-return:hover { background: #09090b; }
+    .footer-bottom { text-align: center; margin-top: 36px; font-size: 12px; color: var(--muted); }
+    .footer-bottom a { color: #f59e0b; text-decoration: none; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="header-simple">
+    <a href="index.html" class="brand-logo-text">L'ÉLÉGANCE PARIS</a>
+  </div>
+
+  <main class="container">
+    <div class="success-card">
+      <div class="success-icon">✓</div>
+      <h1 class="title">تم تأكيد حجز طلبك بنجاح!</h1>
+      <p class="desc">
+        شكراً لاختيارك L'ÉLÉGANCE PARIS. سيصلك الطرد مغلفاً بأناقة، ويحق لك تجربة وقياس القطع مع المندوب قبل دفع أي مبالغ.
+      </p>
+
+      <div class="details-box">
+        <div class="detail-row">
+          <span>رقم الطلب:</span>
+          <strong>#LE-741982</strong>
+        </div>
+        <div class="detail-row">
+          <span>القطعة المحجوزة:</span>
+          <span id="orderTitle">فستان سهرة ماكسي حرير إيديتوريال</span>
+        </div>
+        <div class="detail-row">
+          <span>طريقة السداد:</span>
+          <strong>الدفع عند الاستلام بعد المعاينة والقياس</strong>
+        </div>
+        <div class="detail-row">
+          <span>المبلغ المطلوب عند الاستلام:</span>
+          <span id="orderAmount" style="color: #18181b;">1,250 ج.م</span>
+        </div>
+      </div>
+
+      <a href="products.html" class="btn-return">العودة واستعراض التشكيلة الكاملة</a>
+    </div>
+
+    <div class="footer-bottom">
+      Powered by <a href="https://fast-order-eg.tech" target="_blank" rel="noopener">Fast Order</a>
+    </div>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const title = params.get('title');
+    const price = params.get('price');
+    if (title) document.getElementById('orderTitle').innerText = title;
+    if (price) document.getElementById('orderAmount').innerText = price;
+  </script>
+</body>
+</html>

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إتمام الطلب | L'ÉLÉGANCE PARIS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #18181b;
+      --secondary: #71717a;
+      --accent: #d97706;
+      --bg: #fafafa;
+      --border: #e4e4e7;
+      --text: #18181b;
+      --muted: #71717a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .top-promo {
+      background: #18181b;
+      color: #fafafa;
+      text-align: center;
+      padding: 7px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .store-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .header-main {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand-logo { text-decoration: none; text-align: center; }
+    .brand-logo-text {
+      font-family: 'Times New Roman', serif;
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: #18181b;
+      display: block;
+    }
+    .brand-logo-sub { font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+
+    .header-nav { display: flex; align-items: center; gap: 24px; }
+    .header-nav a {
+      text-decoration: none;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+      transition: color .2s;
+    }
+    .header-nav a:hover { color: var(--accent); }
+
+    .container { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+    .checkout-grid {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 30px;
+      align-items: start;
+    }
+    @media (max-width: 860px) { .checkout-grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      letter-spacing: 0.5px;
+    }
+
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 12px; font-weight: 800; margin-bottom: 6px; color: #3f3f46; }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .form-input:focus, .form-select:focus { border-color: #18181b; }
+
+    /* Summary */
+    .summary-item {
+      display: flex;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .summary-img { width: 75px; height: 95px; border-radius: 4px; overflow: hidden; background: #f4f4f5; flex-shrink: 0; }
+    .summary-img img { width: 100%; height: 100%; object-fit: cover; }
+    .summary-info { flex: 1; }
+    .summary-name { font-size: 14px; font-weight: 800; line-height: 1.4; color: #18181b; }
+    .summary-meta { font-size: 12px; color: var(--muted); margin: 4px 0; }
+    .summary-price { font-size: 16px; font-weight: 900; color: #18181b; }
+
+    .summary-totals {
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px;
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+    .totals-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .totals-row.final {
+      font-size: 16px;
+      font-weight: 900;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+
+    .payment-notice {
+      background: #fbfbfb;
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      padding: 14px;
+      font-size: 12px;
+      color: #52525b;
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: #18181b;
+      color: #fff;
+      padding: 18px;
+      border-radius: 4px;
+      border: none;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: .2s;
+    }
+    .btn-submit:hover { background: #09090b; }
+
+    /* Footer */
+    .lux-footer {
+      background: #18181b;
+      color: #a1a1aa;
+      padding: 50px 20px 20px;
+      margin-top: 80px;
+      font-size: 13px;
+    }
+    .footer-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    @media (max-width: 768px) { .footer-inner { grid-template-columns: 1fr; } }
+    .lux-footer h4 { color: #fff; font-size: 15px; font-weight: 800; margin-bottom: 14px; letter-spacing: 1px; }
+    .lux-footer ul { list-style: none; }
+    .lux-footer ul li { margin-bottom: 10px; }
+    .lux-footer ul li a { color: #a1a1aa; text-decoration: none; }
+    .lux-footer ul li a:hover { color: #fff; }
+    .footer-bottom { text-align: center; margin-top: 24px; font-size: 12px; color: #71717a; }
+    .footer-bottom a { color: #f59e0b; text-decoration: none; font-weight: 700; }
+  </style>
+</head>
+<body>
+
+  <div class="top-promo">
+    شحن حصري وسريع لجميع المحافظات • معاينة وقياس الملابس قبل الدفع للمندوب
+  </div>
+
+  <header class="store-header">
+    <div class="header-main">
+      <nav class="header-nav">
+        <a href="index.html">الرئيسية</a>
+        <a href="products.html">التشكيلة الكاملة</a>
+        <a href="cart.html">الحقيبة</a>
+      </nav>
+
+      <a href="index.html" class="brand-logo">
+        <span class="brand-logo-text">L'É L É G A N C E</span>
+        <span class="brand-logo-sub">Haute Couture & Ready-to-Wear</span>
+      </a>
+
+      <div style="font-size: 13px; font-weight: 700; color: #18181b;">
+        القاهرة — الإسكندرية
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div style="margin-bottom: 24px;">
+      <h1 style="font-size: 24px; font-weight: 900;">إتمام الطلب وحجز القطع</h1>
+      <p style="font-size: 13px; color: var(--muted); margin-top: 4px;">تصلك الشحنة مغلفة مع حق فتح الطرد والتجربة والقياس قبل السداد للمندوب</p>
+    </div>
+
+    <form onsubmit="handlePlaceFashionOrder(event)" class="checkout-grid">
+      <!-- Shipping Form -->
+      <div class="card">
+        <h2 class="card-title">بيانات الشحن والتوصيل VIP</h2>
+
+        <div class="form-group">
+          <label class="form-label">الاسم الكريم *</label>
+          <input type="text" class="form-input" required placeholder="مثال: ياسمين عبد العزيز" value="سارة محمود الخولي">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">رقم الهاتف المحمول *</label>
+          <input type="tel" class="form-input" required placeholder="010XXXXXXXX" value="01098765432">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">المحافظة *</label>
+          <select class="form-select" required>
+            <option value="cairo" selected>القاهرة (شحن VIP مجاني)</option>
+            <option value="giza">الجيزة (شحن VIP مجاني)</option>
+            <option value="alex">الإسكندرية (شحن VIP مجاني)</option>
+            <option value="mansoura">الدقهلية (المنصورة)</option>
+            <option value="tanta">الغربية (طنطا)</option>
+            <option value="other">باقي محافظات مصر</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">العنوان بالتفصيل *</label>
+          <input type="text" class="form-input" required placeholder="المدينة، اسم الشارع، رقم العمارة والشقة" value="حي التجمع الخامس، شارع التسعين الشمالي، كمبوند النرجس">
+        </div>
+
+        <div class="payment-notice">
+          💳 <strong>الدفع نقدياً عند الاستلام:</strong> يمكنك فحص القطع وقياسها والتأكد من جودة الأقمشة الفاخرة قبل دفع مليم واحد.
+        </div>
+
+        <button type="submit" class="btn-submit">تأكيد حجز الطلب الآن (الدفع عند الاستلام) ✓</button>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="card">
+        <h2 class="card-title">محتويات حقيبة التسوق</h2>
+
+        <div class="summary-item">
+          <div class="summary-img">
+            <img id="summaryImg" src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=300&q=80" alt="فستان">
+          </div>
+          <div class="summary-info">
+            <div class="summary-name" id="summaryTitle">فستان سهرة ماكسي حرير إيديتوريال أنيق</div>
+            <div class="summary-meta">المقاس: M • الكمية: 1 قطعة</div>
+            <div class="summary-price" id="summaryPrice">1,250 ج.م</div>
+          </div>
+        </div>
+
+        <div class="summary-totals">
+          <div class="totals-row">
+            <span>قيمة القطع:</span>
+            <strong id="subtotalVal">1,250 ج.م</strong>
+          </div>
+          <div class="totals-row" style="color: #16a34a;">
+            <span>الشحن الملكي والتغليف:</span>
+            <strong>مجاناً (0 ج.م)</strong>
+          </div>
+          <div class="totals-row final">
+            <span>الإجمالي المطلوب عند الاستلام:</span>
+            <span id="totalVal" style="color: #18181b;">1,250 ج.م</span>
+          </div>
+        </div>
+      </div>
+    </form>
+  </main>
+
+  <footer class="lux-footer">
+    <div class="footer-inner">
+      <div>
+        <h4>L'ÉLÉGANCE PARIS</h4>
+        <p style="line-height: 1.8; max-width: 440px;">
+          دار الأزياء والموضة الراقية المتخصصة في أرقى تشكيلات الملابس الحريمي، الرجالي، والأطفالي. أقمشة منتقاة بعناية وتصاميم تواكب أحدث خطوط الموضة العالمية.
+        </p>
+      </div>
+      <div>
+        <h4>الأقسام</h4>
+        <ul>
+          <li><a href="products.html#women">ملابس حريمي</a></li>
+          <li><a href="products.html#men">ملابس رجالي</a></li>
+          <li><a href="products.html#kids">ملابس أطفالي</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>خدمة العملاء</h4>
+        <ul>
+          <li>معاينة وقياس قبل الدفع</li>
+          <li>استبدال واسترجاع خلال 14 يوماً</li>
+          <li>شحن سريع لجميع المحافظات</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      Powered by <a href="https://fast-order-eg.tech" target="_blank" rel="noopener">Fast Order</a>
+    </div>
+  </footer>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const title = urlParams.get('title');
+      const price = urlParams.get('price');
+      const img = urlParams.get('img');
+
+      if (title) document.getElementById('summaryTitle').innerText = title;
+      if (price) {
+        document.getElementById('summaryPrice').innerText = price + ' ج.م';
+        document.getElementById('subtotalVal').innerText = price + ' ج.م';
+        document.getElementById('totalVal').innerText = price + ' ج.م';
+      }
+      if (img) document.getElementById('summaryImg').src = img;
+    });
+
+    function handlePlaceFashionOrder(e) {
+      e.preventDefault();
+      const title = document.getElementById('summaryTitle').innerText;
+      const price = document.getElementById('totalVal').innerText;
+      window.location.href = `order-success.html?title=${encodeURIComponent(title)}&price=${encodeURIComponent(price)}`;
+    }
+  </script>
+</body>
+</html>

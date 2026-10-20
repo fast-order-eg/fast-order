@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تم تأكيد طلبك بنجاح | AURA TECH</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #16a34a;
+      --secondary: #0f172a;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .header-simple {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      text-align: center;
+    }
+    .logo-name { font-size: 20px; font-weight: 900; color: var(--secondary); text-decoration: none; }
+
+    .container { max-width: 650px; margin: 50px auto; padding: 0 20px; }
+    .success-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 30px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    }
+    .success-icon {
+      width: 72px; height: 72px;
+      background: #f0fdf4;
+      color: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 20px;
+      border: 2px solid #86efac;
+    }
+    .order-title { font-size: 24px; font-weight: 900; margin-bottom: 10px; }
+    .order-sub { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 24px; }
+    .order-details-box {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: right;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+    .detail-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .detail-row:last-child { margin-bottom: 0; border-top: 1px solid var(--border); padding-top: 10px; font-weight: 900; }
+    .btn-home {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      padding: 14px 32px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 14px;
+      transition: .2s;
+    }
+    .btn-home:hover { background: #15803d; }
+    .footer-bottom { text-align: center; margin-top: 40px; font-size: 12px; color: var(--muted); }
+    .footer-bottom a { color: #38bdf8; text-decoration: none; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="header-simple">
+    <a href="index.html" class="logo-name">AURA TECH</a>
+  </div>
+
+  <main class="container">
+    <div class="success-card">
+      <div class="success-icon">✓</div>
+      <h1 class="order-title">تم استلام وتأكيد طلبك بنجاح!</h1>
+      <p class="order-sub">
+        شكراً لتسوقك معنا في AURA TECH. تم تسجيل طلبك وجارٍ تجهيز الشحنة للتوصيل السريع مع المعاينة قبل الاستلام.
+      </p>
+
+      <div class="order-details-box">
+        <div class="detail-row">
+          <span>رقم الطلب:</span>
+          <strong>#AT-918204</strong>
+        </div>
+        <div class="detail-row">
+          <span>المنتج:</span>
+          <span id="orderProduct">ساعة الترا ماكس 9 الذكية</span>
+        </div>
+        <div class="detail-row">
+          <span>طريقة الدفع:</span>
+          <strong>الدفع عند الاستلام بعد المعاينة</strong>
+        </div>
+        <div class="detail-row">
+          <span>المبلغ المطلوب عند الاستلام:</span>
+          <span id="orderAmount" style="color: var(--primary);">650 ج.م</span>
+        </div>
+      </div>
+
+      <a href="products.html" class="btn-home">متابعة التسوق واستعراض المزيد</a>
+    </div>
+
+    <div class="footer-bottom">
+      Powered by <a href="https://fast-order-eg.tech" target="_blank" rel="noopener">Fast Order</a>
+    </div>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const title = params.get('title');
+    const price = params.get('price');
+    if (title) document.getElementById('orderProduct').innerText = title;
+    if (price) document.getElementById('orderAmount').innerText = price;
+  </script>
+</body>
+</html>
