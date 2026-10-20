@@ -269,26 +269,21 @@
       <div class="gallery-wrap">
         <div class="main-photo">
           <span class="badge-tag">إصدار محدود ✨</span>
-          <img id="mainImg" src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=900&q=80" alt="فستان سهرة ماكسي حرير إيديتوريال أنيق">
+          <img id="mainImg" src="images/p1.jpg" alt="فستان سهرة ماكسي حرير إيديتوريال أنيق">
         </div>
         <div class="thumbs-row">
-          
-            <div class="thumb active" onclick="switchImg('https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=900&q=80', this)">
-              <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=900&q=80" alt="صورة 1">
+            <div class="thumb active" onclick="switchImg('images/p1.jpg', this)">
+              <img src="images/p1.jpg" alt="صورة 1">
             </div>
-          
-            <div class="thumb " onclick="switchImg('https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80', this)">
-              <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80" alt="صورة 2">
+            <div class="thumb" onclick="switchImg('images/p1-2.jpg', this)">
+              <img src="images/p1-2.jpg" alt="صورة 2">
             </div>
-          
-            <div class="thumb " onclick="switchImg('https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=900&q=80', this)">
-              <img src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=900&q=80" alt="صورة 3">
+            <div class="thumb" onclick="switchImg('images/p1-3.jpg', this)">
+              <img src="images/p1-3.jpg" alt="صورة 3">
             </div>
-          
+          </div>
         </div>
-      </div>
-
-      <!-- Details -->
+        <!-- Details -->
       <div class="details-wrap">
         <div>
           <span class="prod-cat">ملابس حريمي</span>
@@ -378,7 +373,7 @@
     }
 
     function goToCheckout() {
-      const url = 'checkout.html?title=' + encodeURIComponent('فستان سهرة ماكسي حرير إيديتوريال أنيق') + '&price=1250&img=' + encodeURIComponent('https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=900&q=80');
+      const url = 'checkout.html?title=' + encodeURIComponent('فستان سهرة ماكسي حرير إيديتوريال أنيق') + '&price=1250&img=' + encodeURIComponent('images/p1.jpg');
       window.location.href = url;
     }
 
