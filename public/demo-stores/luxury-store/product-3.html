@@ -3,40 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>بلوزة شيفون ناعمة بأكمام بف وتطريز راقٍ | L'ELEGANCE FASHION</title>
+  <title>بلوزة شيفون ناعمة بأكمام بف وتطريز راقي | L'ELEGANCE PARIS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
   <style>
     :root {
       --primary: #18181b;
-      --primary-hover: #09090b;
-      --secondary: #71717a;
-      --accent: #d97706;
-      --bg: #fafafa;
-      --card-bg: #ffffff;
+      --accent: #b45309;
+      --bg: #ffffff;
       --border: #e4e4e7;
       --text: #18181b;
       --muted: #71717a;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: var(--bg);
+    html, body {
+      overflow-x: hidden;
+      width: 100%;
+      font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+      background: #fafafa;
       color: var(--text);
       line-height: 1.6;
     }
 
     .top-promo {
       background: #18181b;
-      color: #fafafa;
+      color: #f4f4f5;
       text-align: center;
       padding: 7px 16px;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
     }
 
+    /* Header */
     .store-header {
       background: #ffffff;
       border-bottom: 1px solid var(--border);
@@ -47,23 +47,31 @@
     .header-main {
       max-width: 1240px;
       margin: 0 auto;
-      padding: 16px 24px;
+      padding: 14px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 16px;
     }
-    .brand-logo { text-decoration: none; text-align: center; }
+    .brand-logo { text-decoration: none; text-align: right; }
     .brand-logo-text {
-      font-family: 'Times New Roman', serif;
-      font-size: 24px;
+      font-family: 'Playfair Display', 'Times New Roman', serif;
+      font-size: 22px;
       font-weight: 900;
-      letter-spacing: 3px;
+      letter-spacing: 2px;
       color: #18181b;
       display: block;
+      white-space: nowrap;
     }
-    .brand-logo-sub { font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
-
-    .header-nav { display: flex; align-items: center; gap: 24px; }
+    .brand-logo-sub {
+      font-size: 8px;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      display: block;
+      white-space: nowrap;
+    }
+    .header-nav { display: flex; align-items: center; gap: 20px; }
     .header-nav a {
       text-decoration: none;
       color: var(--text);
@@ -73,132 +81,499 @@
     }
     .header-nav a:hover, .header-nav a.active { color: var(--accent); }
 
-    .container { max-width: 1200px; margin: 36px auto; padding: 0 20px; }
-    .breadcrumbs { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 24px; }
-    .breadcrumbs a { color: var(--muted); text-decoration: none; }
-    .breadcrumbs a:hover { color: var(--text); }
-
-    /* Product Grid */
-    .product-layout {
-      display: grid;
-      grid-template-columns: 1.1fr 1fr;
-      gap: 40px;
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 30px;
-    }
-    @media (max-width: 860px) {
-      .product-layout { grid-template-columns: 1fr; padding: 18px; }
-    }
-
-    .gallery-wrap { display: flex; flex-direction: column; gap: 14px; }
-    .main-photo {
-      aspect-ratio: 3/4;
-      border-radius: 8px;
-      overflow: hidden;
+    .bag-link {
       background: #f4f4f5;
-      position: relative;
-    }
-    .main-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
-    .main-photo:hover img { transform: scale(1.03); }
-    .badge-tag {
-      position: absolute;
-      top: 14px; right: 14px;
-      background: #18181b; color: #fff;
-      font-size: 11px; font-weight: 800;
-      padding: 5px 12px; border-radius: 4px;
-    }
-    .thumbs-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .thumb {
-      aspect-ratio: 3/4;
-      border-radius: 6px;
-      overflow: hidden;
-      cursor: pointer;
-      border: 2px solid transparent;
-      background: #f4f4f5;
+      padding: 8px 16px;
+      border-radius: 20px;
+      text-decoration: none;
+      color: #18181b;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
       transition: .2s;
     }
-    .thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .bag-link:hover { background: #18181b; color: #fff; }
+    .bag-count {
+      background: var(--accent);
+      color: #fff;
+      font-size: 10px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+    }
+
+    .container { max-width: 1180px; margin: 24px auto; padding: 0 16px; }
+
+    /* Breadcrumbs */
+    .breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .breadcrumbs a { color: var(--muted); text-decoration: none; font-weight: 600; }
+    .breadcrumbs a:hover { color: var(--text); }
+
+    /* Product Layout */
+    .product-layout {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 30px;
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 36px;
+      margin-bottom: 40px;
+    }
+
+    /* Gallery with Slider Controls */
+    .gallery-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      user-select: none;
+    }
+    .main-photo {
+      position: relative;
+      background: #f4f4f5;
+      border-radius: 8px;
+      overflow: hidden;
+      aspect-ratio: 3/4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .main-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity .25s ease;
+    }
+    .badge-tag {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: #18181b;
+      color: #fff;
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: 800;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+      z-index: 5;
+    }
+
+    /* Gallery Slider Arrows */
+    .gallery-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 42px;
+      height: 42px;
+      background: rgba(255, 255, 255, 0.92);
+      color: #18181b;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      transition: all .2s;
+    }
+    .gallery-arrow:hover {
+      background: #18181b;
+      color: #ffffff;
+      transform: translateY(-50%) scale(1.05);
+    }
+    .arrow-prev { right: 12px; }
+    .arrow-next { left: 12px; }
+
+    /* Gallery Dots */
+    .gallery-dots {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+    .gallery-dots .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      transition: .2s;
+    }
+    .gallery-dots .dot.active {
+      background: #18181b;
+      width: 22px;
+      border-radius: 10px;
+    }
+
+    .thumbs-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .thumb {
+      background: #f4f4f5;
+      border-radius: 6px;
+      overflow: hidden;
+      aspect-ratio: 3/4;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: .2s;
+    }
     .thumb.active { border-color: #18181b; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; }
 
     /* Details */
     .details-wrap { display: flex; flex-direction: column; gap: 18px; }
-    .prod-cat { font-size: 11px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; font-weight: 800; }
-    .prod-title { font-size: 26px; font-weight: 900; line-height: 1.3; color: #18181b; }
+    .prod-cat { font-size: 12px; color: var(--accent); font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; }
+    .prod-title { font-size: 24px; font-weight: 900; color: #18181b; line-height: 1.35; }
+
     .rating-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-    .stars { color: #d97706; }
+    .stars { color: #d97706; font-size: 14px; letter-spacing: 1px; }
 
     .price-row {
       display: flex;
       align-items: baseline;
       gap: 12px;
-      padding: 14px 0;
+      padding: 12px 0;
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
     }
-    .current-price { font-size: 28px; font-weight: 900; color: #18181b; }
-    .old-price { font-size: 17px; color: #a1a1aa; text-decoration: line-through; }
-    .discount-pill { background: #fef3c7; color: #92400e; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 4px; margin-right: auto; }
-
-    /* Sizes */
-    .size-title { font-size: 12px; font-weight: 800; margin-bottom: 8px; }
-    .sizes-row { display: flex; gap: 8px; }
-    .size-btn {
-      width: 44px; height: 44px;
-      border: 1.5px solid var(--border);
-      background: #fff;
-      border-radius: 6px;
-      font-family: inherit;
+    .current-price { font-size: 26px; font-weight: 900; color: #18181b; }
+    .old-price { font-size: 16px; color: var(--muted); text-decoration: line-through; }
+    .discount-pill {
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 12px;
       font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 4px;
+    }
+
+    /* Options Titles */
+    .opt-title {
       font-size: 13px;
+      font-weight: 800;
+      color: #18181b;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .opt-val { color: var(--accent); font-weight: 700; }
+
+    /* Colors Row */
+    .colors-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .color-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      color: #3f3f46;
       cursor: pointer;
       transition: .2s;
     }
-    .size-btn.active { background: #18181b; color: #fff; border-color: #18181b; }
-
-    .action-row { display: flex; gap: 12px; margin-top: 10px; }
-    @media (max-width: 500px) { .action-row { flex-direction: column; } }
-    .btn-buy-now {
-      flex: 1;
+    .color-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.15);
+      display: inline-block;
+    }
+    .color-btn.active {
+      border-color: #18181b;
       background: #18181b;
-      color: #fff;
-      padding: 16px;
+      color: #ffffff;
+    }
+
+    /* Sizes Row */
+    .sizes-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .size-btn {
+      background: #ffffff;
+      border: 1.5px solid var(--border);
+      padding: 8px 18px;
       border-radius: 6px;
       font-family: inherit;
+      font-size: 13px;
       font-weight: 800;
-      font-size: 14px;
-      text-align: center;
-      text-decoration: none;
-      transition: .2s;
-      border: none;
+      color: #3f3f46;
       cursor: pointer;
+      min-width: 44px;
+      text-align: center;
+      transition: .2s;
     }
-    .btn-buy-now:hover { background: #09090b; }
+    .size-btn.active {
+      background: #18181b;
+      color: #ffffff;
+      border-color: #18181b;
+    }
+
+    /* Action Buttons */
+    .action-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .btn-buy-now {
+      flex: 1.3;
+      background: #18181b;
+      color: #ffffff;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: .2s;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-buy-now:hover { background: #09090b; transform: translateY(-1px); }
     .btn-add-bag {
       flex: 1;
       background: #f4f4f5;
       color: #18181b;
       border: 1px solid var(--border);
-      padding: 16px;
+      padding: 14px 16px;
       border-radius: 6px;
       font-family: inherit;
-      font-weight: 800;
       font-size: 14px;
-      text-align: center;
+      font-weight: 800;
       cursor: pointer;
       transition: .2s;
+      text-align: center;
     }
     .btn-add-bag:hover { background: #e4e4e7; }
 
+    /* Trust Strip */
     .trust-strip {
-      background: #fbfbfb;
+      background: #faf5ff;
+      border: 1px dashed #c084fc;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #6b21a8;
+      line-height: 1.6;
+    }
+
+    /* Embedded COD Fast Checkout Card */
+    .fast-checkout-card {
+      background: #ffffff;
+      border: 2px solid #18181b;
+      border-radius: 10px;
+      padding: 22px;
+      margin-top: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+    }
+    .checkout-card-header {
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .checkout-header-title {
+      font-size: 15px;
+      font-weight: 900;
+      color: #18181b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      background: #16a34a;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.2);
+    }
+    .checkout-header-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .chosen-specs-bar {
+      display: flex;
+      gap: 10px;
+      background: #f8fafc;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 14px;
+      font-size: 12px;
+    }
+    .spec-tag strong { color: var(--accent); }
+
+    .form-row-qty {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding: 10px 12px;
+      background: #f4f4f5;
+      border-radius: 6px;
+    }
+    .qty-control {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-qty {
+      width: 32px;
+      height: 32px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-weight: 800;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .btn-qty:hover { background: #18181b; color: #fff; }
+    #orderQty {
+      width: 44px;
+      height: 32px;
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-weight: 800;
+      background: #fff;
+    }
+
+    .form-group { margin-bottom: 12px; }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 5px;
+      color: #27272a;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      transition: .2s;
+      background: #fff;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: #18181b;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(24, 24, 27, 0.08);
+    }
+
+    .price-breakdown-table {
+      background: #fafafa;
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 14px;
-      font-size: 12px;
+      padding: 12px 14px;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
       color: #52525b;
-      line-height: 1.7;
+    }
+    .text-green { color: #16a34a; font-weight: 800; }
+    .breakdown-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      font-weight: 800;
+      font-size: 15px;
+      color: #18181b;
+    }
+    .total-number { font-size: 20px; color: #18181b; }
+
+    .btn-submit-order {
+      width: 100%;
+      background: #18181b;
+      color: #ffffff;
+      border: none;
+      padding: 16px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: .2s;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    }
+    .btn-submit-order:hover {
+      background: #09090b;
+      transform: translateY(-1px);
+    }
+    .checkout-guarantee {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 10px;
+      font-weight: 700;
+    }
+
+    /* Toast */
+    #cartToast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #18181b;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 700;
+      z-index: 9999;
+      opacity: 0;
+      transition: all .3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #cartToast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
     }
 
     /* Footer */
@@ -206,19 +581,17 @@
       background: #18181b;
       color: #a1a1aa;
       padding: 50px 20px 20px;
-      margin-top: 80px;
       font-size: 13px;
     }
     .footer-inner {
-      max-width: 1240px;
+      max-width: 1180px;
       margin: 0 auto;
       display: grid;
       grid-template-columns: 2fr 1fr 1fr;
       gap: 40px;
-      padding-bottom: 40px;
+      padding-bottom: 30px;
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
-    @media (max-width: 768px) { .footer-inner { grid-template-columns: 1fr; } }
     .lux-footer h4 { color: #fff; font-size: 15px; font-weight: 800; margin-bottom: 14px; letter-spacing: 1px; }
     .lux-footer ul { list-style: none; }
     .lux-footer ul li { margin-bottom: 10px; }
@@ -226,258 +599,89 @@
     .lux-footer ul li a:hover { color: #fff; }
     .footer-bottom { text-align: center; margin-top: 24px; font-size: 12px; color: #71717a; }
     .footer-bottom a { color: #f59e0b; text-decoration: none; font-weight: 700; }
-  
-    /* Mobile Responsive Overhaul */
-    html, body {
-      overflow-x: hidden !important;
-      width: 100% !important;
-      margin: 0 !important;
-      padding: 0 !important;
-    }
-    *, *::before, *::after {
-      box-sizing: border-box !important;
-    }
+
+    /* Mobile Responsive */
     @media (max-width: 768px) {
-      .top-promo {
-        font-size: 11px !important;
-        padding: 6px 12px !important;
-        line-height: 1.4 !important;
-        text-align: center !important;
-      }
-      .store-header {
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 1000 !important;
-        background: #ffffff !important;
-      }
       .header-main {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        padding: 10px 14px !important;
-        gap: 6px !important;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        gap: 6px;
       }
-      .brand-logo {
-        order: 1 !important;
-        text-align: right !important;
-      }
-      .brand-logo-text {
-        font-size: 18px !important;
-        letter-spacing: 1.5px !important;
-        white-space: nowrap !important;
-      }
-      .brand-logo-sub {
-        font-size: 8px !important;
-        letter-spacing: 1px !important;
-        white-space: nowrap !important;
-        display: block !important;
-      }
-      .bag-link {
-        order: 2 !important;
-        padding: 6px 12px !important;
-        font-size: 12px !important;
-      }
+      .brand-logo { order: 1; }
+      .brand-logo-text { font-size: 18px !important; letter-spacing: 1.5px !important; }
+      .brand-logo-sub { font-size: 8px !important; }
+      .bag-link { order: 2; padding: 6px 12px; font-size: 12px; }
       .header-nav {
-        order: 3 !important;
-        width: 100% !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 8px !important;
-        overflow-x: auto !important;
-        white-space: nowrap !important;
-        padding: 8px 2px 2px !important;
-        margin-top: 4px !important;
-        border-top: 1px solid #f4f4f5 !important;
-        -webkit-overflow-scrolling: touch !important;
-        scrollbar-width: none !important;
+        order: 3;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 8px 2px 2px;
+        margin-top: 4px;
+        border-top: 1px solid #f4f4f5;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
       }
-      .header-nav::-webkit-scrollbar {
-        display: none !important;
-      }
+      .header-nav::-webkit-scrollbar { display: none; }
       .header-nav a {
-        font-size: 12px !important;
-        padding: 6px 14px !important;
-        background: #fafafa !important;
-        border: 1px solid #e4e4e7 !important;
-        border-radius: 20px !important;
-        flex-shrink: 0 !important;
-      }
-      .header-nav a.active {
-        background: #18181b !important;
-        color: #ffffff !important;
-        border-color: #18181b !important;
-      }
-      .hero-banner {
-        padding: 36px 16px !important;
-      }
-      .hero-tag {
-        font-size: 10px !important;
-        letter-spacing: 1.5px !important;
-        padding: 3px 10px !important;
-      }
-      .hero-title {
-        font-size: 22px !important;
-        line-height: 1.35 !important;
-        margin-bottom: 12px !important;
-      }
-      .hero-subtitle {
-        font-size: 13px !important;
-        line-height: 1.6 !important;
-        margin-bottom: 20px !important;
-      }
-      .btn-hero {
-        padding: 12px 28px !important;
-        font-size: 13px !important;
-      }
-      .container {
-        padding: 0 12px !important;
-        margin: 24px auto !important;
-      }
-      .section-header {
-        margin-bottom: 20px !important;
-      }
-      .section-title {
-        font-size: 20px !important;
-      }
-      .section-subtitle {
-        font-size: 10px !important;
-      }
-      .cats-showcase {
-        grid-template-columns: 1fr !important;
-        gap: 14px !important;
-        margin-bottom: 30px !important;
-      }
-      .cat-card {
-        height: 240px !important;
-        padding: 18px !important;
-      }
-      .lookbook-strip {
-        grid-template-columns: 1fr !important;
-        padding: 16px !important;
-        gap: 16px !important;
-        margin-bottom: 30px !important;
-      }
-      .lookbook-title {
-        font-size: 20px !important;
-      }
-      .filter-bar {
-        overflow-x: auto !important;
-        white-space: nowrap !important;
-        flex-wrap: nowrap !important;
-        justify-content: flex-start !important;
-        padding-bottom: 8px !important;
-        gap: 8px !important;
-        margin-bottom: 20px !important;
-        scrollbar-width: none !important;
-      }
-      .filter-bar::-webkit-scrollbar {
-        display: none !important;
-      }
-      .filter-btn {
-        padding: 6px 14px !important;
-        font-size: 12px !important;
-        flex-shrink: 0 !important;
-      }
-      .products-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 10px !important;
-        margin-bottom: 30px !important;
-      }
-      .card-body {
-        padding: 10px !important;
-        gap: 8px !important;
-      }
-      .card-cat {
-        font-size: 10px !important;
-      }
-      .card-title {
-        font-size: 12px !important;
-        line-height: 1.4 !important;
-        height: 34px !important;
-        display: -webkit-box !important;
-        -webkit-line-clamp: 2 !important;
-        -webkit-box-orient: vertical !important;
-        overflow: hidden !important;
-      }
-      .price-current {
-        font-size: 14px !important;
-      }
-      .price-old {
-        font-size: 11px !important;
-      }
-      .card-actions {
-        flex-direction: column !important;
-        gap: 5px !important;
-      }
-      .btn-card-details, .btn-card-buy {
-        font-size: 11px !important;
-        padding: 7px 4px !important;
-        text-align: center !important;
+        font-size: 12px;
+        padding: 6px 14px;
+        background: #fafafa;
+        border: 1px solid #e4e4e7;
+        border-radius: 20px;
+        flex-shrink: 0;
       }
       .product-layout {
-        grid-template-columns: 1fr !important;
-        padding: 14px !important;
-        gap: 18px !important;
+        grid-template-columns: 1fr;
+        padding: 14px;
+        gap: 20px;
       }
-      .action-buttons {
-        flex-direction: column !important;
-        gap: 8px !important;
-      }
-      .btn-buy-now, .btn-add-cart {
-        width: 100% !important;
-        padding: 13px !important;
-        font-size: 13px !important;
-      }
-      .pillars-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 12px !important;
-        padding: 20px 0 !important;
-        margin-bottom: 30px !important;
-      }
-      .pillar-icon {
-        font-size: 22px !important;
-      }
-      .reviews-grid {
-        grid-template-columns: 1fr !important;
-        gap: 12px !important;
-      }
-      .lux-footer {
-        padding: 30px 14px 20px !important;
-        margin-top: 36px !important;
-      }
-      .footer-inner {
-        grid-template-columns: 1fr !important;
-        gap: 20px !important;
-        text-align: center !important;
-      }
+      .prod-title { font-size: 20px; }
+      .current-price { font-size: 22px; }
+      .action-row { flex-direction: column; gap: 8px; }
+      .btn-buy-now, .btn-add-bag { width: 100%; padding: 13px; font-size: 13px; }
+      .fast-checkout-card { padding: 16px; margin-top: 10px; }
+      .footer-inner { grid-template-columns: 1fr; gap: 24px; text-align: center; }
     }
-
   </style>
 </head>
 <body>
 
+  <!-- Top Announcement -->
   <div class="top-promo">
     شحن حصري وسريع لجميع المحافظات • معاينة وقياس الملابس قبل الدفع للمندوب
   </div>
 
+  <!-- Header -->
   <header class="store-header">
     <div class="header-main">
-      <nav class="header-nav">
-        <a href="index.html">الرئيسية</a>
-        <a href="products.html">التشكيلة الكاملة</a>
-        <a href="products.html#women">حريمي</a>
-        <a href="products.html#men">رجالي</a>
-        <a href="products.html#kids">أطفالي</a>
-      </nav>
-
       <a href="index.html" class="brand-logo">
         <span class="brand-logo-text">L'ELEGANCE</span>
         <span class="brand-logo-sub">Haute Couture & Ready-to-Wear</span>
       </a>
 
-      <a href="cart.html" style="font-size: 13px; font-weight: 800; color: #18181b; text-decoration: none;">
-        الحقيبة (1)
+      <nav class="header-nav">
+        <a href="index.html">الرئيسية</a>
+        <a href="products.html">التشكيلة الكاملة</a>
+        <a href="products.html?cat=women">حريمي</a>
+        <a href="products.html?cat=men">رجالي</a>
+        <a href="products.html?cat=kids">أطفالي</a>
+      </nav>
+
+      <a href="cart.html" class="bag-link" aria-label="السلة">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <path d="M16 10a4 4 0 0 1-8 0"></path>
+        </svg>
+        <span>السلة</span>
+        <span class="bag-count" id="headerCartCount">1</span>
       </a>
     </div>
   </header>
@@ -486,76 +690,237 @@
     <div class="breadcrumbs">
       <a href="index.html">الرئيسية</a>
       <span>/</span>
-      <a href="products.html">ملابس حريمي</a>
+      <a href="products.html">المتجر</a>
       <span>/</span>
-      <span>بلوزة شيفون ناعمة بأكمام بف وتطريز راقٍ</span>
+      <a href="products.html?cat=all">ملابس حريمي</a>
+      <span>/</span>
+      <span>بلوزة شيفون ناعمة بأكمام بف وتطريز راقي</span>
     </div>
 
     <div class="product-layout">
-      <!-- Gallery -->
+      <!-- Gallery with Slider Controls & Touch Swipe -->
       <div class="gallery-wrap">
-        <div class="main-photo">
-          <span class="badge-tag">كولكشن الخريف 🍂</span>
-          <img id="mainImg" src="images/p3.jpg" alt="بلوزة شيفون ناعمة بأكمام بف وتطريز راقٍ">
-        </div>
-        <div class="thumbs-row">
-            <div class="thumb active" onclick="switchImg('images/p3.jpg', this)">
-              <img src="images/p3.jpg" alt="صورة 1">
-            </div>
-            <div class="thumb" onclick="switchImg('images/p3-2.jpg', this)">
-              <img src="images/p3-2.jpg" alt="صورة 2">
-            </div>
-            <div class="thumb" onclick="switchImg('images/p3-3.jpg', this)">
-              <img src="images/p3-3.jpg" alt="صورة 3">
-            </div>
+        <div class="main-photo" id="mainPhotoWrap">
+          <span class="badge-tag">تصميم فرنسي 🌸</span>
+
+          <!-- Prev/Next Slider Arrows -->
+          <button type="button" class="gallery-arrow arrow-prev" onclick="prevImg()" aria-label="الصورة السابقة">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          
+          <img id="mainImg" src="images/p3.jpg" alt="بلوزة شيفون ناعمة بأكمام بف وتطريز راقي">
+
+          <button type="button" class="gallery-arrow arrow-next" onclick="nextImg()" aria-label="الصورة التالية">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+
+          <!-- Gallery Indicator Dots -->
+          <div class="gallery-dots" id="galleryDots">
+            <span class="dot active" onclick="setImgIndex(0)"></span>
+            <span class="dot" onclick="setImgIndex(1)"></span>
+            <span class="dot" onclick="setImgIndex(2)"></span>
           </div>
         </div>
-        <!-- Details -->
+
+        <!-- Thumbnails -->
+        <div class="thumbs-row">
+          <div class="thumb active" onclick="setImgIndex(0)">
+            <img src="images/p3.jpg" alt="صورة 1">
+          </div>
+          <div class="thumb" onclick="setImgIndex(1)">
+            <img src="images/p3-2.jpg" alt="صورة 2">
+          </div>
+          <div class="thumb" onclick="setImgIndex(2)">
+            <img src="images/p3-3.jpg" alt="صورة 3">
+          </div>
+        </div>
+      </div>
+
+      <!-- Details -->
       <div class="details-wrap">
         <div>
           <span class="prod-cat">ملابس حريمي</span>
-          <h1 class="prod-title">بلوزة شيفون ناعمة بأكمام بف وتطريز راقٍ</h1>
+          <h1 class="prod-title">بلوزة شيفون ناعمة بأكمام بف وتطريز راقي</h1>
         </div>
 
         <div class="rating-row">
           <div class="stars">★★★★★</div>
           <span style="font-weight: 800;">4.9</span>
-          <span style="color: var(--muted);">(210 تقييم من عشاق الأناقة)</span>
+          <span style="color: var(--muted);">(تقييمات عملاء موثقين)</span>
         </div>
 
         <div class="price-row">
-          <span class="current-price">690 ج.م</span>
+          <span class="current-price" id="topUnitPrice">690 ج.م</span>
           <span class="old-price">950 ج.م</span>
           <span class="discount-pill">وفر 260 ج.م</span>
         </div>
 
         <p style="font-size: 14px; color: #52525b; line-height: 1.8;">
-          بلوزة رقيقة تجمع بين النعومة والأنوثة العصرية، أكمام بف خفيفة مع أساور مطاطية وأزرار لؤلؤية أنيقة. مثالية لتنسيقها مع البنطلون القماش أو التنانير الميدي.
+          بلوزة من الشيفون الإيطالي عالي النعومة بأكمام بوف أنيقة وتطريزات رقيقة تعكس الفخامة الهادئة.
         </p>
 
-        <!-- Size Selection -->
+        <!-- Color Selection -->
         <div>
-          <div class="size-title">اختر المقاس:</div>
-          <div class="sizes-row">
-            <button class="size-btn" onclick="selectSize(this)">S</button>
-            <button class="size-btn active" onclick="selectSize(this)">M</button>
-            <button class="size-btn" onclick="selectSize(this)">L</button>
-            <button class="size-btn" onclick="selectSize(this)">XL</button>
-            <button class="size-btn" onclick="selectSize(this)">XXL</button>
+          <div class="opt-title">
+            <span>اختر اللون:</span>
+            <span class="opt-val" id="selectedColorLabel">أبيض لؤلؤي</span>
+          </div>
+          <div class="colors-row">
+            
+          <button type="button" class="color-btn active" onclick="selectColor(this, 'أبيض لؤلؤي')" style="--btn-color: #f8fafc;">
+            <span class="color-dot" style="background-color: #f8fafc;"></span>
+            <span>أبيض لؤلؤي</span>
+          </button>
+          <button type="button" class="color-btn " onclick="selectColor(this, 'بيبي بلو')" style="--btn-color: #93c5fd;">
+            <span class="color-dot" style="background-color: #93c5fd;"></span>
+            <span>بيبي بلو</span>
+          </button>
+          <button type="button" class="color-btn " onclick="selectColor(this, 'كشمير ناعم')" style="--btn-color: #f472b6;">
+            <span class="color-dot" style="background-color: #f472b6;"></span>
+            <span>كشمير ناعم</span>
+          </button>
           </div>
         </div>
 
+        <!-- Size Selection -->
+        <div>
+          <div class="opt-title">
+            <span>اختر المقاس:</span>
+            <span class="opt-val" id="selectedSizeLabel">S</span>
+          </div>
+          <div class="sizes-row">
+            
+          <button type="button" class="size-btn active" onclick="selectSize(this, 'S')">S</button>
+          <button type="button" class="size-btn " onclick="selectSize(this, 'M')">M</button>
+          <button type="button" class="size-btn " onclick="selectSize(this, 'L')">L</button>
+          <button type="button" class="size-btn " onclick="selectSize(this, 'XL')">XL</button>
+          </div>
+        </div>
+
+        <!-- Quick Action Buttons -->
         <div class="action-row">
-          <button class="btn-buy-now" onclick="goToCheckout()">شراء فوري (الدفع عند الاستلام) 🛍️</button>
-          <button class="btn-add-bag" onclick="addToBag()">إضافة إلى حقيبة التسوق</button>
+          <button type="button" class="btn-buy-now" onclick="scrollToCheckout()">
+            الشراء الآن ⚡
+          </button>
+          <button type="button" class="btn-add-bag" onclick="handleAddToCart()">
+            أضف إلى السلة 🛍️
+          </button>
         </div>
 
         <div class="trust-strip">
-          ✨ <strong>معاينة وقياس قبل السداد:</strong> يمكنك فتح الشحنة وقياس المنتج والتأكد من المقاس والخامة قبل دفع أي مبالغ للمندوب. استبدال مجاني للمقاس خلال 14 يوماً.
+          ✨ <strong>معاينة وقياس قبل السداد:</strong> يمكنك فتح الشحنة وقياس وفحص المنتج والتأكد من المقاس والخامة قبل دفع أي مبالغ للمندوب. استبدال مجاني للمقاس خلال 14 يوماً.
         </div>
+
+        <!-- Embedded Fast COD Checkout Form -->
+        <div class="fast-checkout-card" id="fastCheckoutBox">
+          <div class="checkout-card-header">
+            <div class="checkout-header-title">
+              <span class="pulse-dot"></span>
+              <strong>طلب فوري — الدفع عند الاستلام ⚡</strong>
+            </div>
+            <div class="checkout-header-sub">املأ بياناتك أدناه وسيتواصل معك المندوب فوراً لتوصيل طلبك</div>
+          </div>
+
+          <form id="directOrderForm" onsubmit="handleDirectOrder(event)">
+            <!-- Chosen Specs Summary -->
+            <div class="chosen-specs-bar">
+              <div class="spec-tag">اللون: <strong id="summaryColor">أبيض لؤلؤي</strong></div>
+              <div class="spec-tag">المقاس: <strong id="summarySize">S</strong></div>
+            </div>
+
+            <!-- Quantity Selector -->
+            <div class="form-row-qty">
+              <label class="form-label" style="margin-bottom:0;">الكمية المطلوبة:</label>
+              <div class="qty-control">
+                <button type="button" class="btn-qty" onclick="changeQty(-1)">−</button>
+                <input type="number" id="orderQty" value="1" min="1" max="10" readonly>
+                <button type="button" class="btn-qty" onclick="changeQty(1)">+</button>
+              </div>
+            </div>
+
+            <!-- Inputs -->
+            <div class="form-group">
+              <label class="form-label" for="custName">الاسم ثلاثي *</label>
+              <input type="text" id="custName" class="form-input" placeholder="اكتب اسمك بالكامل" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="custPhone">رقم الموبايل *</label>
+              <input type="tel" id="custPhone" class="form-input" placeholder="01xxxxxxxxx" pattern="[0-9]{11}" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="custGov">المحافظة *</label>
+              <select id="custGov" class="form-select" required>
+                <option value="" disabled selected>اختر محافظتك</option>
+                <option value="القاهرة">القاهرة</option>
+                <option value="الجيزة">الجيزة</option>
+                <option value="الإسكندرية">الإسكندرية</option>
+                <option value="القليوبية">القليوبية</option>
+                <option value="الدقهلية">الدقهلية</option>
+                <option value="الشرقية">الشرقية</option>
+                <option value="الغربية">الغربية</option>
+                <option value="المنوفية">المنوفية</option>
+                <option value="البحيرة">البحيرة</option>
+                <option value="دمياط">دمياط</option>
+                <option value="كفر الشيخ">كفر الشيخ</option>
+                <option value="بورسعيد">بورسعيد</option>
+                <option value="الإسماعيلية">الإسماعيلية</option>
+                <option value="السويس">السويس</option>
+                <option value="الفيوم">الفيوم</option>
+                <option value="بني سويف">بني سويف</option>
+                <option value="المنيا">المنيا</option>
+                <option value="أسيوط">أسيوط</option>
+                <option value="سوهاج">سوهاج</option>
+                <option value="قنا">قنا</option>
+                <option value="الأقصر">الأقصر</option>
+                <option value="أسوان">أسوان</option>
+                <option value="البحر الأحمر">البحر الأحمر</option>
+                <option value="مرسى مطروح">مرسى مطروح</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="custAddress">العنوان بالتفصيل *</label>
+              <input type="text" id="custAddress" class="form-input" placeholder="المنطقة، اسم الشارع، رقم العمارة والشقة" required>
+            </div>
+
+            <!-- Price Breakdown Table -->
+            <div class="price-breakdown-table">
+              <div class="breakdown-row">
+                <span>سعر القطعة:</span>
+                <span id="unitPriceDisplay">690 ج.م</span>
+              </div>
+              <div class="breakdown-row">
+                <span>مصاريف الشحن:</span>
+                <span class="text-green">شحن مجاني 🎁 (لفترة محدودة)</span>
+              </div>
+              <div class="breakdown-total">
+                <span>الإجمالي الكلي عند الاستلام:</span>
+                <span id="totalPriceDisplay" class="total-number">690 ج.م</span>
+              </div>
+            </div>
+
+            <!-- Big Submit Button -->
+            <button type="submit" class="btn-submit-order" id="submitOrderBtn">
+              الشراء الآن (تأكيد الطلب والدفع عند الاستلام) ⚡
+            </button>
+          </form>
+
+          <div class="checkout-guarantee">
+            🔒 الدفع نقداً عند استلام ومعاينة المنتج • معاينة وقياس قبل السداد 100%
+          </div>
+        </div>
+
       </div>
     </div>
   </main>
+
+  <!-- Cart Notification Toast -->
+  <div id="cartToast">
+    <span>🛍️</span>
+    <span id="toastMessage">تمت إضافة المنتج إلى السلة بنجاح!</span>
+  </div>
 
   <footer class="lux-footer">
     <div class="footer-inner">
@@ -568,45 +933,190 @@
       <div>
         <h4>الأقسام</h4>
         <ul>
-          <li><a href="products.html#women">ملابس حريمي</a></li>
-          <li><a href="products.html#men">ملابس رجالي</a></li>
-          <li><a href="products.html#kids">ملابس أطفالي</a></li>
+          <li><a href="products.html?cat=women">ملابس حريمي</a></li>
+          <li><a href="products.html?cat=men">ملابس رجالي</a></li>
+          <li><a href="products.html?cat=kids">ملابس أطفالي</a></li>
         </ul>
       </div>
       <div>
-        <h4>سياسة التسوق</h4>
+        <h4>خدمة العملاء</h4>
         <ul>
-          <li>معاينة وقياس قبل الدفع</li>
-          <li>استبدال واسترجاع خلال 14 يوماً</li>
-          <li>شحن سريع لجميع المحافظات</li>
+          <li><a href="#">سياسة المعاينة والاستبدال</a></li>
+          <li><a href="#">الشحن والتوصيل السريع</a></li>
+          <li><a href="#">الأسئلة الشائعة</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      Powered by <a href="https://fast-order-eg.tech" target="_blank" rel="noopener">Fast Order</a>
+      Powered by <a href="https://fast-order-eg.tech" target="_blank">Fast Order</a> — منصة التجارة الإلكترونية المتطورة
     </div>
   </footer>
 
   <script>
-    function switchImg(src, el) {
-      document.getElementById('mainImg').src = src;
-      document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
-      el.classList.add('active');
+    const productData = {
+      id: 3,
+      title: "بلوزة شيفون ناعمة بأكمام بف وتطريز راقي",
+      price: 690,
+      image: "images/p3.jpg",
+      images: ["images/p3.jpg", "images/p3-2.jpg", "images/p3-3.jpg"]
+    };
+
+    let currentImgIndex = 0;
+    let selectedColor = "أبيض لؤلؤي";
+    let selectedSize = "S";
+    let quantity = 1;
+
+    // Gallery Slider
+    function updateGallery() {
+      const mainImg = document.getElementById('mainImg');
+      if (mainImg) mainImg.src = productData.images[currentImgIndex];
+
+      const thumbs = document.querySelectorAll('.thumbs-row .thumb');
+      thumbs.forEach((t, i) => {
+        if (i === currentImgIndex) t.classList.add('active');
+        else t.classList.remove('active');
+      });
+
+      const dots = document.querySelectorAll('.gallery-dots .dot');
+      dots.forEach((d, i) => {
+        if (i === currentImgIndex) d.classList.add('active');
+        else d.classList.remove('active');
+      });
     }
 
-    function selectSize(btn) {
+    function nextImg() {
+      currentImgIndex = (currentImgIndex + 1) % productData.images.length;
+      updateGallery();
+    }
+
+    function prevImg() {
+      currentImgIndex = (currentImgIndex - 1 + productData.images.length) % productData.images.length;
+      updateGallery();
+    }
+
+    function setImgIndex(idx) {
+      currentImgIndex = idx;
+      updateGallery();
+    }
+
+    // Touch Swipe for Mobile Gallery
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const photoWrap = document.getElementById('mainPhotoWrap');
+    if (photoWrap) {
+      photoWrap.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+      photoWrap.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        if (touchStartX - touchEndX > 40) nextImg();
+        else if (touchEndX - touchStartX > 40) prevImg();
+      }, { passive: true });
+    }
+
+    // Color Selection
+    function selectColor(btn, colorName) {
+      document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedColor = colorName;
+      document.getElementById('selectedColorLabel').textContent = colorName;
+      document.getElementById('summaryColor').textContent = colorName;
+    }
+
+    // Size Selection
+    function selectSize(btn, sizeVal) {
       document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+      selectedSize = sizeVal;
+      document.getElementById('selectedSizeLabel').textContent = sizeVal;
+      document.getElementById('summarySize').textContent = sizeVal;
     }
 
-    function goToCheckout() {
-      const url = 'checkout.html?title=' + encodeURIComponent('بلوزة شيفون ناعمة بأكمام بف وتطريز راقٍ') + '&price=690&img=' + encodeURIComponent('images/p3.jpg');
-      window.location.href = url;
+    // Quantity & Price Calculation
+    function changeQty(delta) {
+      let newQty = quantity + delta;
+      if (newQty >= 1 && newQty <= 10) {
+        quantity = newQty;
+        document.getElementById('orderQty').value = quantity;
+        updateTotals();
+      }
     }
 
-    function addToBag() {
-      alert('تمت إضافة القطعة بنجاح إلى حقيبة التسوق! ✓');
-      window.location.href = 'cart.html';
+    function updateTotals() {
+      const total = productData.price * quantity;
+      document.getElementById('totalPriceDisplay').textContent = total.toLocaleString('en-US') + ' ج.م';
+    }
+
+    function scrollToCheckout() {
+      const box = document.getElementById('fastCheckoutBox');
+      if (box) {
+        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const nameInput = document.getElementById('custName');
+        if (nameInput) setTimeout(() => nameInput.focus(), 400);
+      }
+    }
+
+    // Add to Cart
+    function handleAddToCart() {
+      let cart = JSON.parse(localStorage.getItem('luxury_cart') || '[]');
+      cart.push({
+        id: productData.id,
+        title: productData.title,
+        price: productData.price,
+        image: productData.image,
+        color: selectedColor,
+        size: selectedSize,
+        qty: quantity
+      });
+      localStorage.setItem('luxury_cart', JSON.stringify(cart));
+      
+      const badge = document.getElementById('headerCartCount');
+      if (badge) badge.textContent = cart.length;
+
+      showToast('تمت إضافة المنتج إلى السلة بنجاح! 🛍️');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('cartToast');
+      const msgEl = document.getElementById('toastMessage');
+      if (toast && msgEl) {
+        msgEl.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+      }
+    }
+
+    // Direct COD Order Submission
+    function handleDirectOrder(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitOrderBtn');
+      btn.disabled = true;
+      btn.textContent = 'جاري تسجيل طلبك... ⏳';
+
+      const orderData = {
+        orderId: 'FO-' + Math.floor(10000 + Math.random() * 90000),
+        title: productData.title,
+        price: productData.price,
+        image: productData.image,
+        color: selectedColor,
+        size: selectedSize,
+        qty: quantity,
+        total: productData.price * quantity,
+        name: document.getElementById('custName').value,
+        phone: document.getElementById('custPhone').value,
+        governorate: document.getElementById('custGov').value,
+        address: document.getElementById('custAddress').value,
+        createdAt: new Date().toISOString()
+      };
+
+      localStorage.setItem('latest_order', JSON.stringify(orderData));
+
+      setTimeout(() => {
+        window.location.href = 'order-success.html?orderId=' + encodeURIComponent(orderData.orderId) +
+          '&title=' + encodeURIComponent(orderData.title) +
+          '&total=' + encodeURIComponent(orderData.total) +
+          '&name=' + encodeURIComponent(orderData.name);
+      }, 600);
     }
   </script>
 </body>

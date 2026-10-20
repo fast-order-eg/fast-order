@@ -367,12 +367,15 @@
     </div>
   </main>
 
-  <script>
+    <script>
     const params = new URLSearchParams(window.location.search);
     const title = params.get('title');
-    const price = params.get('price');
-    if (title) document.getElementById('orderProduct').innerText = title;
-    if (price) document.getElementById('orderAmount').innerText = price;
+    const price = params.get('total') || params.get('price');
+    if (title && document.getElementById('orderProduct')) document.getElementById('orderProduct').innerText = title;
+    if (price && document.getElementById('orderAmount')) {
+      const num = Number(price.toString().replace(/[^0-9]/g, ''));
+      document.getElementById('orderAmount').innerText = (num > 0 ? num.toLocaleString('en-US') : price) + ' ج.م';
+    }
   </script>
 </body>
 </html>
