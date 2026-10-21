@@ -669,17 +669,17 @@ export default function Edit({ product, categories, allProducts = [] }) {
 
                         {/* Volume Tier Pricing (أسعار الكميات) */}
                         <div className="pt-4 border-t border-gray-100">
-                            <div className="flex items-center justify-between mb-3">
-                                <div>
+                            <div className="flex items-center justify-between gap-3 mb-3">
+                                <div className="min-w-0">
                                     <label className="block text-sm font-semibold text-gray-800">أسعار الكميات (العروض)</label>
                                     <p className="text-xs text-gray-400 mt-0.5">حدد سعر شراء مخفض في حالة شراء قطعة أو أكثر</p>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={addPriceTier}
-                                    className="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors"
+                                    className="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap shrink-0"
                                 >
-                                    + إضافة شريحة سعرية
+                                    إضافة شريحة سعرية
                                 </button>
                             </div>
 
@@ -933,7 +933,7 @@ export default function Edit({ product, categories, allProducts = [] }) {
                                         onClick={() => addColor(colorInput)}
                                         className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors whitespace-nowrap shrink-0"
                                     >
-                                        إضافة لون
+                                        إضافة
                                     </button>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 mt-3">
@@ -980,7 +980,7 @@ export default function Edit({ product, categories, allProducts = [] }) {
                                                                 onClick={() => setSelectingColorIndex(idx)}
                                                                 className="text-[11px] text-orange-600 hover:text-orange-700 font-bold hover:underline inline-flex items-center gap-0.5 mt-0.5 whitespace-nowrap"
                                                             >
-                                                                <span>+</span> ربط صورة
+                                                                ربط صورة
                                                             </button>
                                                         )}
                                                     </div>
@@ -1002,17 +1002,17 @@ export default function Edit({ product, categories, allProducts = [] }) {
 
                         {/* Custom Dynamic Variants (إضافة متغيرات مخصصة) */}
                         <div className="pt-4 border-t border-gray-100 space-y-4">
-                            <div className="flex items-center justify-between">
-                                <div>
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="min-w-0">
                                     <label className="block text-sm font-semibold text-gray-800">متغيرات مخصصة أخرى (مثل: عروض، الموديل، الوزن، النوع...)</label>
                                     <p className="text-xs text-gray-400 mt-0.5">يمكنك إضافة خيارات مخصصة إضافية ليختار منها العميل عند الشراء</p>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={addCustomVariant}
-                                    className="px-3.5 py-1.5 bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors"
+                                    className="px-3.5 py-1.5 bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200 rounded-lg text-xs font-bold transition-colors whitespace-nowrap shrink-0"
                                 >
-                                    + إضافة متغير
+                                    إضافة متغير
                                 </button>
                             </div>
 
