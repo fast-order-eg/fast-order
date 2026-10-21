@@ -50,7 +50,11 @@ class StoreProductRequest extends FormRequest
             'shipping_type.required' => 'نوع الشحن مطلوب',
             'shipping_type.in'       => 'نوع الشحن غير صحيح',
             'main_image.image'       => 'يجب أن تكون الصورة الرئيسية ملف صورة صالح',
+            'main_image.mimes'       => 'يجب أن تكون الصورة الرئيسية بتنسيق jpg, jpeg, png, أو webp',
             'main_image.max'         => 'الحد الأقصى لحجم الصورة 20 ميجابايت',
+            'gallery.*.image'        => 'يجب أن تكون الصور الفرعية ملفات صور صالحة',
+            'gallery.*.mimes'        => 'يجب أن تكون الصور الفرعية بتنسيق jpg, jpeg, png, أو webp',
+            'gallery.*.max'          => 'الحد الأقصى لحجم أي صورة فرعية هو 20 ميجابايت',
         ];
     }
 }

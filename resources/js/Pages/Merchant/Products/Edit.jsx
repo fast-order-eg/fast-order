@@ -27,6 +27,58 @@ const InputField = ({ label, name, data, setData, errors, type = 'text', require
     </div>
 );
 
+const compressImage = (file, maxWidth = 1600, quality = 0.82) => {
+    return new Promise((resolve) => {
+        if (!file || !file.type || !file.type.startsWith('image/')) {
+            return resolve(file);
+        }
+        if (file.type === 'image/svg+xml' || file.type === 'image/gif') {
+            return resolve(file);
+        }
+        if (file.size < 350 * 1024) {
+            return resolve(file);
+        }
+
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            let { width, height } = img;
+            if (width > maxWidth || height > maxWidth) {
+                if (width > height) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                } else {
+                    width = Math.round((width * maxWidth) / height);
+                    height = maxWidth;
+                }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob((blob) => {
+                if (blob && blob.size < file.size) {
+                    const cleanName = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
+                    const compressed = new File([blob], cleanName, {
+                        type: 'image/jpeg',
+                        lastModified: Date.now()
+                    });
+                    resolve(compressed);
+                } else {
+                    resolve(file);
+                }
+            }, 'image/jpeg', quality);
+        };
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            resolve(file);
+        };
+        img.src = url;
+    });
+};
+
 export default function Edit({ product, categories, allProducts = [] }) {
     const getProductImage = (p) => {
         if (p.image_display_url) return p.image_display_url;
@@ -90,7 +142,7 @@ export default function Edit({ product, categories, allProducts = [] }) {
     const [selectingColorIndex, setSelectingColorIndex] = useState(null);
     const [uploadingColorImage, setUploadingColorImage] = useState(false);
 
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors, transform, progress } = useForm({
         _method: 'PUT',
         name: product.name || '',
         description: product.description || '',
@@ -150,30 +202,33 @@ export default function Edit({ product, categories, allProducts = [] }) {
         setData('custom_variants', newCv);
     };
 
-    const handleMainImage = (e) => {
-        const file = e.target.files[0];
+    const handleMainImage = async (e) => {
+        const file = e.target.files && e.target.files[0];
         if (file) {
-            setData('main_image', file);
-            const reader = new FileReader();
-            reader.onload = (ev) => setMainImagePreview(ev.target.result);
-            reader.readAsDataURL(file);
+            try {
+                const compressed = await compressImage(file);
+                setData('main_image', compressed);
+                setMainImagePreview(URL.createObjectURL(compressed));
+            } catch (err) {
+                setData('main_image', file);
+                setMainImagePreview(URL.createObjectURL(file));
+            }
         }
     };
 
-    const handleGalleryChange = (e) => {
-        const files = Array.from(e.target.files);
+    const handleGalleryChange = async (e) => {
+        const files = Array.from(e.target.files || []);
         if (files.length > 0) {
-            const newGallery = [...(data.gallery || []), ...files];
-            setData('gallery', newGallery);
-
-            // Generate Previews
-            files.forEach((file) => {
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    setGalleryPreviews(prev => [...prev, ev.target.result]);
-                };
-                reader.readAsDataURL(file);
-            });
+            try {
+                const compressedFiles = await Promise.all(files.map(f => compressImage(f)));
+                setData('gallery', [...(data.gallery || []), ...compressedFiles]);
+                const newPreviews = compressedFiles.map(f => URL.createObjectURL(f));
+                setGalleryPreviews(prev => [...prev, ...newPreviews]);
+            } catch (err) {
+                setData('gallery', [...(data.gallery || []), ...files]);
+                const newPreviews = files.map(f => URL.createObjectURL(f));
+                setGalleryPreviews(prev => [...prev, ...newPreviews]);
+            }
         }
     };
 
@@ -244,9 +299,10 @@ export default function Edit({ product, categories, allProducts = [] }) {
     const handleColorImageUpload = async (colorIdx, file) => {
         if (!file) return;
         setUploadingColorImage(true);
-        const formData = new FormData();
-        formData.append('image', file);
         try {
+            const compressed = await compressImage(file);
+            const formData = new FormData();
+            formData.append('image', compressed);
             const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
             const res = await fetch('/admin/products/upload-color-image', {
                 method: 'POST',
@@ -266,6 +322,32 @@ export default function Edit({ product, categories, allProducts = [] }) {
             alert('تعذر رفع صورة اللون: ' + err.message);
         } finally {
             setUploadingColorImage(false);
+        }
+    };
+
+    const handlePickExistingImageForColor = async (colorIdx, imgUrl) => {
+        if (!imgUrl) return;
+        // If it's already a server URL (starts with /storage, http://, https://)
+        if (!imgUrl.startsWith('blob:') && !imgUrl.startsWith('data:')) {
+            updateColorImage(colorIdx, imgUrl);
+            return;
+        }
+
+        // Check if it matches main_image or a newly added gallery file
+        let matchingFile = null;
+        if (mainImagePreview === imgUrl && data.main_image instanceof File) {
+            matchingFile = data.main_image;
+        } else {
+            const galleryIdx = galleryPreviews.indexOf(imgUrl);
+            if (galleryIdx > -1 && data.gallery && data.gallery[galleryIdx] instanceof File) {
+                matchingFile = data.gallery[galleryIdx];
+            }
+        }
+
+        if (matchingFile) {
+            await handleColorImageUpload(colorIdx, matchingFile);
+        } else {
+            updateColorImage(colorIdx, imgUrl);
         }
     };
 
@@ -438,6 +520,32 @@ export default function Edit({ product, categories, allProducts = [] }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // 1. فحص الحقول الأساسية قبل الإرسال لمنع أي تعليق
+        if (!data.name || !data.name.trim()) {
+            alert('يرجى إدخال اسم المنتج');
+            const el = document.querySelector('[name="name"]');
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el?.focus();
+            return;
+        }
+
+        if (!data.category_id) {
+            alert('يرجى اختيار تصنيف المنتج');
+            const el = document.querySelector('select');
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el?.focus();
+            return;
+        }
+
+        if (data.price_after === '' || data.price_after === null || Number(data.price_after) < 0) {
+            alert('يرجى تحديد السعر بعد الخصم (سعر البيع الفعلي للمنتج)');
+            const el = document.querySelector('[name="price_after"]');
+            el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el?.focus();
+            return;
+        }
+
         const cleaned = variantsStock.map(v => {
             const { _userEdited, _userEditedQty, ...rest } = v;
             return {
@@ -446,10 +554,24 @@ export default function Edit({ product, categories, allProducts = [] }) {
                 qty: (v.qty !== undefined && v.qty !== null && v.qty !== '') ? parseInt(v.qty) : 100,
             };
         });
-        setData('variants_stock', JSON.stringify(cleaned));
-        // Since we upload files and Inertia needs multipart/form-data, we post with _method=PUT inside the request data
+
+        // مزامنة المتغيرات والألوان كـ JSON مضمون الإرسال بدون تجزئة FormData
+        transform((currentData) => ({
+            ...currentData,
+            _method: 'PUT',
+            variants_stock: JSON.stringify(cleaned),
+            colors_json: JSON.stringify(currentData.colors || []),
+        }));
+
         post(`/admin/products/${product.id}`, {
             forceFormData: true,
+            onError: (errs) => {
+                const firstKey = Object.keys(errs || {})[0];
+                if (firstKey) {
+                    const el = document.querySelector(`[name="${firstKey}"]`) || document.getElementById('form-error-banner');
+                    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
         });
     };
 
@@ -1165,6 +1287,10 @@ export default function Edit({ product, categories, allProducts = [] }) {
                                 </div>
                             </div>
                         )}
+                        {errors.gallery && <p className="text-xs text-red-600 mt-1">{errors.gallery}</p>}
+                        {Object.keys(errors || {}).filter(k => k.startsWith('gallery.')).map(k => (
+                            <p key={k} className="text-xs text-red-600 mt-1">{errors[k]}</p>
+                        ))}
                     </div>
 
                     {/* Recommendations (Upsells & Cross-sells) */}
@@ -1295,6 +1421,45 @@ export default function Edit({ product, categories, allProducts = [] }) {
                         </div>
                     </div>
 
+                    {/* Error Summary Banner */}
+                    {Object.keys(errors || {}).length > 0 && (
+                        <div id="form-error-banner" className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-xs sm:text-sm font-semibold flex items-start gap-3 shadow-sm animate-shake">
+                            <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <div className="flex-1">
+                                <p className="font-bold mb-1 text-red-800">تعذر الحفظ! يرجى مراجعة وتصحيح الأخطاء التالية:</p>
+                                <ul className="list-disc list-inside space-y-1 text-red-700">
+                                    {Object.entries(errors).map(([k, err]) => (
+                                        <li key={k}>{err}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Upload Progress Bar */}
+                    {progress && (
+                        <div className="bg-orange-50 border border-orange-200 rounded-xl p-3.5 shadow-xs">
+                            <div className="flex items-center justify-between text-xs font-bold text-orange-900 mb-1.5">
+                                <span className="flex items-center gap-1.5">
+                                    <svg className="w-4 h-4 animate-spin text-orange-600" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                    </svg>
+                                    جاري رفع الصور وحفظ التعديلات...
+                                </span>
+                                <span className="text-orange-700 font-extrabold">{progress.percentage}%</span>
+                            </div>
+                            <div className="w-full bg-orange-200/70 rounded-full h-2.5 overflow-hidden">
+                                <div
+                                    className="bg-orange-600 h-2.5 rounded-full transition-all duration-300"
+                                    style={{ width: `${progress.percentage}%` }}
+                                ></div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Actions */}
                     <div className="flex items-center justify-end gap-3 pt-4">
                         <Link
@@ -1392,10 +1557,11 @@ export default function Edit({ product, categories, allProducts = [] }) {
                                                     key={i}
                                                     type="button"
                                                     title={imgObj.title}
-                                                    onClick={() => updateColorImage(selectingColorIndex, imgObj.url)}
+                                                    disabled={uploadingColorImage}
+                                                    onClick={() => handlePickExistingImageForColor(selectingColorIndex, imgObj.url)}
                                                     className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all group ${
                                                         isSelected ? 'border-orange-500 ring-2 ring-orange-400/40 shadow-sm' : 'border-gray-200 hover:border-orange-300'
-                                                    }`}
+                                                    } ${uploadingColorImage ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 >
                                                     <img src={imgObj.url} alt={imgObj.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                                                     {isSelected && (

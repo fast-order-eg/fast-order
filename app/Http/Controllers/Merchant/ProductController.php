@@ -98,7 +98,9 @@ class ProductController extends Controller
         if ($request->has('sizes') && is_array($request->sizes)) {
             $data['sizes'] = array_values(array_filter($request->sizes));
         }
-        if ($request->has('colors')) {
+        if ($request->filled('colors_json')) {
+            $data['colors'] = $this->processColorsInput($request->colors_json);
+        } elseif ($request->has('colors')) {
             $data['colors'] = $this->processColorsInput($request->colors);
         }
         if ($request->has('custom_variants')) {
@@ -243,7 +245,9 @@ class ProductController extends Controller
         } else {
             $data['sizes'] = null;
         }
-        if ($request->has('colors')) {
+        if ($request->filled('colors_json')) {
+            $data['colors'] = $this->processColorsInput($request->colors_json);
+        } elseif ($request->has('colors')) {
             $data['colors'] = $this->processColorsInput($request->colors);
         } else {
             $data['colors'] = null;
@@ -428,41 +432,67 @@ class ProductController extends Controller
                 if ($name !== '') {
                     $filtered[] = ['name' => $name, 'image' => null];
                 }
-            } elseif (is_array($c) && !empty($c['name']) && trim($c['name']) !== '') {
-                $name = trim($c['name']);
-                $image = !empty($c['image']) ? $c['image'] : null;
+            } elseif (is_array($c)) {
+                $name = trim($c['name'] ?? '');
+                $rawImage = !empty($c['image']) ? $c['image'] : null;
 
-                // إذا كانت الصورة بتنسيق base64 data URI نقوم بفكها وتخزينها كملف حقيقي
-                if ($image && is_string($image) && str_starts_with($image, 'data:image/')) {
-                    try {
-                        preg_match('/^data:image\/(\w+);base64,/', $image, $type);
-                        $b64Data = substr($image, strpos($image, ',') + 1);
-                        $decoded = base64_decode($b64Data);
-                        if ($decoded !== false) {
-                            $ext = strtolower($type[1] ?? 'jpg');
-                            if ($ext === 'jpeg') $ext = 'jpg';
-                            if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'])) $ext = 'jpg';
-                            $filename = 'products/colors/color_' . uniqid('', true) . '.' . $ext;
-                            \Illuminate\Support\Facades\Storage::disk('public')->put($filename, $decoded);
-                            $image = '/storage/' . $filename;
-                        }
-                    } catch (\Throwable $e) {
-                        \Log::error("Failed to decode and save color base64 image: " . $e->getMessage());
-                    }
-                } elseif ($image && is_string($image)) {
-                    if (!str_starts_with($image, 'http://') && !str_starts_with($image, 'https://') && !str_starts_with($image, '/')) {
-                        $image = '/storage/' . $image;
+                // Support PHP multipart split where colors[][name] and colors[][image] were separated
+                if ($name === '' && !empty($rawImage) && count($filtered) > 0) {
+                    $lastIdx = count($filtered) - 1;
+                    if (empty($filtered[$lastIdx]['image'])) {
+                        $filtered[$lastIdx]['image'] = $this->sanitizeColorImagePath($rawImage);
+                        continue;
                     }
                 }
 
-                $filtered[] = [
-                    'name' => $name,
-                    'image' => $image,
-                ];
+                if ($name !== '') {
+                    $filtered[] = [
+                        'name'  => $name,
+                        'image' => $this->sanitizeColorImagePath($rawImage),
+                    ];
+                }
             }
         }
 
         return count($filtered) > 0 ? $filtered : null;
+    }
+
+    /**
+     * تنظيف وحفظ مسار صورة اللون
+     */
+    protected function sanitizeColorImagePath($image)
+    {
+        if (!$image || !is_string($image)) {
+            return null;
+        }
+
+        $image = trim($image);
+        if ($image === '') {
+            return null;
+        }
+
+        // إذا كانت الصورة بتنسيق base64 data URI نقوم بفكها وتخزينها كملف حقيقي
+        if (str_starts_with($image, 'data:image/')) {
+            try {
+                preg_match('/^data:image\/(\w+);base64,/', $image, $type);
+                $b64Data = substr($image, strpos($image, ',') + 1);
+                $decoded = base64_decode($b64Data);
+                if ($decoded !== false) {
+                    $ext = strtolower($type[1] ?? 'jpg');
+                    if ($ext === 'jpeg') $ext = 'jpg';
+                    if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'])) $ext = 'jpg';
+                    $filename = 'products/colors/color_' . uniqid('', true) . '.' . $ext;
+                    \Illuminate\Support\Facades\Storage::disk('public')->put($filename, $decoded);
+                    return '/storage/' . $filename;
+                }
+            } catch (\Throwable $e) {
+                \Log::error("Failed to decode and save color base64 image: " . $e->getMessage());
+            }
+        } elseif (!str_starts_with($image, 'http://') && !str_starts_with($image, 'https://') && !str_starts_with($image, '/') && !str_starts_with($image, 'blob:')) {
+            return '/storage/' . $image;
+        }
+
+        return $image;
     }
 
     /**
