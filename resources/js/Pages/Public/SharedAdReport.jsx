@@ -172,6 +172,40 @@ export default function SharedAdReport({
         };
     };
 
+    // Helper: determine campaign real status taking schedule end date into account
+    const getCampaignStatus = (campaign) => {
+        const isEnded = !!(
+            campaign.is_ended ||
+            campaign.end_info?.is_ended ||
+            campaign.status === 'COMPLETED' ||
+            campaign.effective_status === 'COMPLETED' ||
+            campaign.status === 'ARCHIVED'
+        );
+
+        if (isEnded) {
+            return {
+                key: 'COMPLETED',
+                label: 'منتهية ⏹️',
+                badgeClasses: 'bg-amber-50 text-amber-800 border-amber-200',
+            };
+        }
+
+        const isActive = campaign.status === 'ACTIVE' || campaign.effective_status === 'ACTIVE';
+        if (isActive) {
+            return {
+                key: 'ACTIVE',
+                label: 'نشطة 🟢',
+                badgeClasses: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            };
+        }
+
+        return {
+            key: 'PAUSED',
+            label: 'متوقفة ⏸️',
+            badgeClasses: 'bg-gray-100 text-gray-600 border-gray-200',
+        };
+    };
+
     // Helper: extract best Facebook post URL for an ad
     const getAdFacebookUrl = (ad) => {
         if (ad.facebook_post_url) return ad.facebook_post_url;
@@ -293,10 +327,10 @@ export default function SharedAdReport({
 
         campaigns.forEach((c) => {
             const goalInfo = getCampaignGoalInfo(c);
-            const statusText = c.status === 'ACTIVE' || c.effective_status === 'ACTIVE' ? 'نشط 🟢' : 'متوقف ⏸️';
+            const statusInfo = getCampaignStatus(c);
 
             reportText += `───────────────────────\n`;
-            reportText += `📢 ${c.name} (${statusText})\n`;
+            reportText += `📢 ${c.name} (${statusInfo.label})\n`;
             reportText += `🎯 الهدف: ${goalInfo.badgeText} ${goalInfo.badgeIcon}\n`;
             reportText += `💰 المصروف: ${formatCurrency(c.spend, 0)}\n`;
             reportText += `🎯 النتائج (${goalInfo.resultLabel}): ${formatNumber(c.results)}\n`;
@@ -658,7 +692,7 @@ export default function SharedAdReport({
                             <div className="space-y-5">
                                 {campaigns.map((campaign) => {
                                     const isExpanded = !!expandedCampaigns[campaign.id];
-                                    const isActive = campaign.status === 'ACTIVE' || campaign.effective_status === 'ACTIVE';
+                                    const statusInfo = getCampaignStatus(campaign);
                                     const goalInfo = getCampaignGoalInfo(campaign);
                                     const endParts = getEndInfoParts(campaign.end_info);
 
@@ -672,15 +706,11 @@ export default function SharedAdReport({
                                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                                                     <div className="space-y-1.5">
                                                         <div className="flex items-center gap-2 flex-wrap">
-                                                            {/* Active Status Badge */}
+                                                            {/* Status Badge (نشطة / منتهية / متوقفة) */}
                                                             <span
-                                                                className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
-                                                                    isActive
-                                                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                                                        : 'bg-gray-100 text-gray-600 border-gray-200'
-                                                                }`}
+                                                                className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${statusInfo.badgeClasses}`}
                                                             >
-                                                                {isActive ? 'نشطة 🟢' : 'متوقفة ⏸️'}
+                                                                {statusInfo.label}
                                                             </span>
 
                                                             {/* Goal Badge: Strictly "إعلان مبيعات" or "إعلان رسائل" */}

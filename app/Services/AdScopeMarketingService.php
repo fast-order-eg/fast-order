@@ -341,6 +341,28 @@ class AdScopeMarketingService
                 }
             }
             $campaign['end_info'] = $endInfo;
+
+            // Resolve true campaign status taking end date into account
+            $isEndedCampaign = !empty($endInfo['is_ended'])
+                || ($campaign['effective_status'] ?? '') === 'COMPLETED'
+                || ($campaign['status'] ?? '') === 'COMPLETED'
+                || ($campaign['status'] ?? '') === 'ARCHIVED';
+
+            if ($isEndedCampaign) {
+                $campaign['status'] = 'COMPLETED';
+                $campaign['effective_status'] = 'COMPLETED';
+                $campaign['is_ended'] = true;
+                $campaign['display_status'] = 'COMPLETED';
+                $campaign['display_status_label'] = 'منتهية ⏹️';
+            } elseif (($campaign['status'] ?? '') === 'ACTIVE' || ($campaign['effective_status'] ?? '') === 'ACTIVE') {
+                $campaign['is_ended'] = false;
+                $campaign['display_status'] = 'ACTIVE';
+                $campaign['display_status_label'] = 'نشطة 🟢';
+            } else {
+                $campaign['is_ended'] = false;
+                $campaign['display_status'] = 'PAUSED';
+                $campaign['display_status_label'] = 'متوقفة ⏸️';
+            }
         }
         unset($campaign);
 
