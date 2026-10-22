@@ -30,17 +30,63 @@ class TenantController extends Controller
 
         // Search filter: Phone, Email, Store Link/Slug, Domain, Store Name, Owner Name
         if ($search = trim((string) $request->input('search', ''))) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('slug', 'like', "%{$search}%")
-                  ->orWhere('custom_domain', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhereHas('owner', function ($oq) use ($search) {
-                      $oq->where('name', 'like', "%{$search}%")
-                         ->orWhere('email', 'like', "%{$search}%")
-                         ->orWhere('phone', 'like', "%{$search}%");
-                  });
+            $searchTerms = [$search];
+
+            // If not an email, extract possible host, subdomain, or slug from any URL/domain format
+            if (!str_contains($search, '@')) {
+                $urlCandidate = $search;
+                if (!str_starts_with($urlCandidate, 'http://') && !str_starts_with($urlCandidate, 'https://')) {
+                    $urlCandidate = 'https://' . $urlCandidate;
+                }
+
+                $parsedHost = parse_url($urlCandidate, PHP_URL_HOST);
+                if ($parsedHost) {
+                    $parsedHost = strtolower(trim($parsedHost));
+                    $parsedHost = preg_replace('/:\d+$/', '', $parsedHost);
+
+                    if (!empty($parsedHost)) {
+                        $searchTerms[] = $parsedHost;
+
+                        $baseDomains = array_unique(array_filter([
+                            config('app.domain', 'fast-order-eg.tech'),
+                            'fast-order-eg.tech',
+                            'fast-order.tech',
+                            parse_url(config('app.url', ''), PHP_URL_HOST),
+                        ]));
+
+                        foreach ($baseDomains as $baseDomain) {
+                            $baseDomain = strtolower(trim($baseDomain));
+                            if (!empty($baseDomain) && str_ends_with($parsedHost, '.' . $baseDomain)) {
+                                $subdomain = substr($parsedHost, 0, -(strlen($baseDomain) + 1));
+                                if (!empty($subdomain)) {
+                                    $searchTerms[] = $subdomain;
+                                }
+                            }
+                        }
+
+                        $parts = explode('.', $parsedHost);
+                        if (count($parts) >= 3 && !in_array($parts[0], ['www', 'app', 'admin', 'api'])) {
+                            $searchTerms[] = $parts[0];
+                        }
+                    }
+                }
+            }
+
+            $searchTerms = array_values(array_unique(array_filter($searchTerms)));
+
+            $query->where(function ($q) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $q->orWhere('name', 'like', "%{$term}%")
+                      ->orWhere('slug', 'like', "%{$term}%")
+                      ->orWhere('custom_domain', 'like', "%{$term}%")
+                      ->orWhere('email', 'like', "%{$term}%")
+                      ->orWhere('phone', 'like', "%{$term}%")
+                      ->orWhereHas('owner', function ($oq) use ($term) {
+                          $oq->where('name', 'like', "%{$term}%")
+                             ->orWhere('email', 'like', "%{$term}%")
+                             ->orWhere('phone', 'like', "%{$term}%");
+                      });
+                }
             });
         }
 

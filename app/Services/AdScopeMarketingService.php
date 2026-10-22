@@ -353,7 +353,7 @@ class AdScopeMarketingService
                 $campaign['effective_status'] = 'COMPLETED';
                 $campaign['is_ended'] = true;
                 $campaign['display_status'] = 'COMPLETED';
-                $campaign['display_status_label'] = 'منتهية ⏹️';
+                $campaign['display_status_label'] = 'منتهية';
             } elseif (($campaign['status'] ?? '') === 'ACTIVE' || ($campaign['effective_status'] ?? '') === 'ACTIVE') {
                 $campaign['is_ended'] = false;
                 $campaign['display_status'] = 'ACTIVE';
@@ -361,10 +361,17 @@ class AdScopeMarketingService
             } else {
                 $campaign['is_ended'] = false;
                 $campaign['display_status'] = 'PAUSED';
-                $campaign['display_status_label'] = 'متوقفة ⏸️';
+                $campaign['display_status_label'] = 'متوقفة ⚪';
             }
         }
         unset($campaign);
+
+        // Always sort ACTIVE campaigns to the top
+        usort($campaigns, function ($a, $b) {
+            $aActive = (($a['display_status'] ?? '') === 'ACTIVE') ? 0 : 1;
+            $bActive = (($b['display_status'] ?? '') === 'ACTIVE') ? 0 : 1;
+            return $aActive <=> $bActive;
+        });
 
         return $campaigns;
     }

@@ -1,6 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import MerchantLayout from '@/Layouts/MerchantLayout';
 import { Head, router } from '@inertiajs/react';
+
+// Helper: determine campaign real status taking schedule end date into account
+const getCampaignStatus = (campaign) => {
+    const isEnded = !!(
+        campaign.is_ended ||
+        campaign.end_info?.is_ended ||
+        campaign.status === 'COMPLETED' ||
+        campaign.effective_status === 'COMPLETED' ||
+        campaign.status === 'ARCHIVED'
+    );
+
+    if (isEnded) {
+        return {
+            key: 'COMPLETED',
+            label: 'منتهية',
+            badgeClasses: 'bg-amber-50 text-amber-800 border-amber-200',
+        };
+    }
+
+    const isActive = campaign.status === 'ACTIVE' || campaign.effective_status === 'ACTIVE';
+    if (isActive) {
+        return {
+            key: 'ACTIVE',
+            label: 'نشطة 🟢',
+            badgeClasses: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        };
+    }
+
+    return {
+        key: 'PAUSED',
+        label: 'متوقفة ⚪',
+        badgeClasses: 'bg-gray-100 text-gray-600 border-gray-200',
+    };
+};
 
 export default function MarketingAdsIndex({
     adsData = {},
@@ -16,7 +50,15 @@ export default function MarketingAdsIndex({
     const [copied, setCopied] = useState(false);
     const [expandedCampaigns, setExpandedCampaigns] = useState({});
 
-    const campaigns = adsData?.campaigns || [];
+    const rawCampaigns = adsData?.campaigns || [];
+    // Always sort ACTIVE campaigns to the top
+    const campaigns = useMemo(() => {
+        return [...rawCampaigns].sort((a, b) => {
+            const aActive = getCampaignStatus(a).key === 'ACTIVE' ? 0 : 1;
+            const bActive = getCampaignStatus(b).key === 'ACTIVE' ? 0 : 1;
+            return aActive - bActive;
+        });
+    }, [rawCampaigns]);
     const currency = adsData?.currency || 'EGP';
     const lastUpdatedFormatted = adsData?.last_updated_formatted || null;
 
@@ -171,40 +213,6 @@ export default function MarketingAdsIndex({
             resultLabel: 'طلبات شراء',
             cpaLabel: 'تكلفة الطلب (CPA)',
             showRoas: true,
-        };
-    };
-
-    // Helper: determine campaign real status taking schedule end date into account
-    const getCampaignStatus = (campaign) => {
-        const isEnded = !!(
-            campaign.is_ended ||
-            campaign.end_info?.is_ended ||
-            campaign.status === 'COMPLETED' ||
-            campaign.effective_status === 'COMPLETED' ||
-            campaign.status === 'ARCHIVED'
-        );
-
-        if (isEnded) {
-            return {
-                key: 'COMPLETED',
-                label: 'منتهية ⏹️',
-                badgeClasses: 'bg-amber-50 text-amber-800 border-amber-200',
-            };
-        }
-
-        const isActive = campaign.status === 'ACTIVE' || campaign.effective_status === 'ACTIVE';
-        if (isActive) {
-            return {
-                key: 'ACTIVE',
-                label: 'نشطة 🟢',
-                badgeClasses: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-            };
-        }
-
-        return {
-            key: 'PAUSED',
-            label: 'متوقفة ⏸️',
-            badgeClasses: 'bg-gray-100 text-gray-600 border-gray-200',
         };
     };
 
