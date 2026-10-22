@@ -52,6 +52,20 @@
           border-color: #ef4444 !important;
           box-shadow: 0 0 0 1px #ef4444;
         }
+
+        @keyframes variantShakeAnim {
+          0%, 100% { transform: translateX(0); }
+          20%, 60% { transform: translateX(-5px); }
+          40%, 80% { transform: translateX(5px); }
+        }
+        .variant-highlight-error {
+          animation: variantShakeAnim 0.4s ease-in-out;
+          border: 1.5px solid #ef4444 !important;
+          border-radius: 8px;
+          padding: 8px;
+          background: #fef2f2 !important;
+          transition: all 0.3s ease;
+        }
       </style>
       <div class="section-head" style="margin-bottom: 1.25rem; text-align: center;">
         <h2 style="font-size: 1.2rem; font-weight: 800; color: #1e293b;">يرجى إدخال معلوماتك لإكمال الطلب</h2>
@@ -934,15 +948,47 @@
 
       window.currentProductData = p;
 
-      // Handle size and color selection error clearing (delegated)
+      // Handle size, color, and custom variant error clearing (delegated)
       document.addEventListener('change', function(e) {
-        if (e.target.name && e.target.name.startsWith('product_size')) {
-          const err = e.target.closest('.variant-group')?.querySelector('.sizeError');
+        if (!e.target || !e.target.name) return;
+        var name = e.target.name;
+        if (name.startsWith('product_size')) {
+          var m = name.match(/product_size_(\d+)/);
+          var err = m ? document.getElementById('sizeError_' + m[1]) : null;
+          if (!err) err = e.target.closest('.variant-group')?.querySelector('.sizeError');
+          if (err) { err.classList.add('hidden'); err.style.display = 'none'; }
+        } else if (name.startsWith('product_color')) {
+          var m = name.match(/product_color_(\d+)/);
+          var err = m ? document.getElementById('colorError_' + m[1]) : null;
+          if (!err) err = e.target.closest('.variant-group')?.querySelector('.colorError');
+          if (err) { err.classList.add('hidden'); err.style.display = 'none'; }
+        } else if (name.startsWith('product_cv_')) {
+          var m = name.match(/product_cv_(\d+)_(\d+)/);
+          var err = m ? document.getElementById('cvError_' + m[1] + '_' + m[2]) : null;
+          if (!err) err = e.target.closest('div')?.querySelector('.cvError') || e.target.closest('.variant-group')?.querySelector('.cvError');
           if (err) { err.classList.add('hidden'); err.style.display = 'none'; }
         }
-        if (e.target.name && e.target.name.startsWith('product_color')) {
-          const err = e.target.closest('.variant-group')?.querySelector('.colorError');
-          if (err) { err.classList.add('hidden'); err.style.display = 'none'; }
+
+        var vParent = e.target.closest('.variant-highlight-error');
+        if (vParent) {
+          vParent.classList.remove('variant-highlight-error');
+        }
+      });
+
+      // Self-healing: if submit button was left disabled or in submitting state, unfreeze on user interaction
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.variant-btn, .size-option, .color-option, .cv-option, #quickCheckoutForm input, #quickCheckoutForm select')) {
+          var qBtn = document.getElementById('quickSubmitBtn');
+          var qForm = document.getElementById('quickCheckoutForm');
+          if (qBtn && qBtn.disabled && qForm && qForm.dataset.submitting === 'true') {
+            qForm.dataset.submitting = 'false';
+            window.__orderSubmitted = false;
+            var orig = qBtn.getAttribute('data-original-text') || 'تأكيد الطلب';
+            qBtn.innerHTML = orig;
+            qBtn.disabled = false;
+            qBtn.style.pointerEvents = 'auto';
+            qBtn.style.opacity = '1';
+          }
         }
       });
 
@@ -1034,8 +1080,11 @@
         if (!isValid) {
           if (firstErrorElement) {
             firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstErrorElement.classList.remove('variant-highlight-error');
+            void firstErrorElement.offsetWidth;
+            firstErrorElement.classList.add('variant-highlight-error');
           }
-          return;
+          return false;
         }
 
         // Validate stock availability
@@ -1064,7 +1113,7 @@
         
         if (!isStockAvailable) {
           alert('عذراً، الخيارات المحددة غير متوفرة في المخزن حالياً.');
-          return;
+          return false;
         }
 
         if (window.BirdCart && window.BirdCart.addToCart) {
@@ -1226,6 +1275,7 @@
             btn.style.backgroundColor = '#2563eb';
           }, 2000);
         }
+        return true;
       }
 
       document.querySelectorAll('.p-btn-buy-now').forEach(btnBuyNow => {
@@ -2572,17 +2622,23 @@
           return;
         }
 
-        window.__orderSubmitted = true;
-        this.dataset.submitting = 'true';
         var btn = document.getElementById('quickSubmitBtn');
-        var originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> جاري تأكيد الطلب...';
-        btn.disabled = true;
-        btn.style.pointerEvents = 'none';
-        btn.style.opacity = '0.7';
+        var originalText = btn ? (btn.getAttribute('data-original-text') || btn.innerHTML) : '';
+        if (btn && !btn.getAttribute('data-original-text')) {
+          btn.setAttribute('data-original-text', originalText);
+        }
 
-        var fd = new FormData(this);
-        
+        var resetSubmitBtn = function() {
+          window.__orderSubmitted = false;
+          quickForm.dataset.submitting = 'false';
+          if (btn) {
+            btn.innerHTML = originalText || 'تأكيد الطلب';
+            btn.disabled = false;
+            btn.style.pointerEvents = 'auto';
+            btn.style.opacity = '1';
+          }
+        };
+
         var getCartItems = function() {
           if (window.BirdCart) {
             if (typeof window.BirdCart.getCart === 'function') return window.BirdCart.getCart();
@@ -2592,22 +2648,37 @@
         };
 
         var cart = getCartItems();
-        if(!cart || cart.length === 0) {
-           var buyNowBtn = document.querySelector('.p-btn-buy-now');
-           if(buyNowBtn) {
-               buyNowBtn.click();
-               await new Promise(resolve => setTimeout(resolve, 500));
-               cart = getCartItems();
-           }
+        if (!cart || cart.length === 0) {
+          var buyNowBtn = document.querySelector('.p-btn-buy-now');
+          if (buyNowBtn && typeof handleCartAction === 'function') {
+            var added = handleCartAction(buyNowBtn, false, true);
+            if (added === false) {
+              resetSubmitBtn();
+              return;
+            }
+            cart = getCartItems();
+          }
         }
 
-        if(!cart || cart.length === 0) {
-           alert("الرجاء اختيار المنتج أولاً.");
-           btn.innerHTML = originalText;
-           btn.disabled = false;
-           return;
+        if (!cart || cart.length === 0) {
+          var buyNowBtn = document.querySelector('.p-btn-buy-now');
+          if (buyNowBtn && typeof handleCartAction === 'function') {
+            handleCartAction(buyNowBtn, false, true);
+          }
+          resetSubmitBtn();
+          return;
         }
 
+        window.__orderSubmitted = true;
+        this.dataset.submitting = 'true';
+        if (btn) {
+          btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> جاري تأكيد الطلب...';
+          btn.disabled = true;
+          btn.style.pointerEvents = 'none';
+          btn.style.opacity = '0.7';
+        }
+
+        var fd = new FormData(this);
         var phoneVal = fd.get('phone') || '';
         phoneVal = phoneVal.replace(/[\s\+\-]/g, '');
         if (phoneVal.startsWith('201')) phoneVal = '0' + phoneVal.substring(2);
@@ -2679,21 +2750,11 @@
                }
             }
             alert((data.message || 'حدث خطأ أثناء إتمام الطلب') + errorDetails);
-            window.__orderSubmitted = false;
-            this.dataset.submitting = 'false';
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            btn.style.pointerEvents = 'auto';
-            btn.style.opacity = '1';
+            resetSubmitBtn();
           }
         } catch(err) {
-          window.__orderSubmitted = false;
           alert('تعذر الاتصال بالخادم: ' + err.message);
-          this.dataset.submitting = 'false';
-          btn.innerHTML = originalText;
-          btn.disabled = false;
-          btn.style.pointerEvents = 'auto';
-          btn.style.opacity = '1';
+          resetSubmitBtn();
         }
       });
     }
