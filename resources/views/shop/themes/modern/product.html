@@ -642,7 +642,7 @@
                 <button type="button" class="qty-btn qty-minus" onclick="changeProductQty(-1)" style="width: 42px; height: 100%; border: none; background: #f3f4f6; color: #111827; font-size: 1.25rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">-</button>
               </div>
               <button class="btn btn-primary p-btn-add" data-id="${p.id}" data-name="${p.name || ''}" data-price="${p.price_after || 0}" data-image="${p.image_url || ''}" data-shipping="${p.shipping_type || 'free'}" data-price-before="${p.price_before || 0}" data-has-sizes="${p.sizes && p.sizes.length ? 'yes' : 'no'}" data-has-colors="${p.colors && p.colors.length ? 'yes' : 'no'}" style="flex: 1; min-width: 130px; padding: 12px; font-size: 1rem; background-color: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; text-align: center;">أضف إلى السلة</button>
-              <button class="btn btn-primary p-btn-buy-now" data-id="${p.id}" data-name="${p.name || ''}" data-price="${p.price_after || 0}" data-image="${p.image_url || ''}" data-shipping="${p.shipping_type || 'free'}" data-price-before="${p.price_before || 0}" data-has-sizes="${p.sizes && p.sizes.length ? 'yes' : 'no'}" data-has-colors="${p.colors && p.colors.length ? 'yes' : 'no'}" style="flex: 1; min-width: 130px; padding: 12px; font-size: 1rem; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; text-align: center;"><i class="fa fa-bolt"></i> إتمام الشراء</button>
+              <button class="btn btn-primary p-btn-buy-now" data-id="${p.id}" data-name="${p.name || ''}" data-price="${p.price_after || 0}" data-image="${p.image_url || ''}" data-shipping="${p.shipping_type || 'free'}" data-price-before="${p.price_before || 0}" data-has-sizes="${p.sizes && p.sizes.length ? 'yes' : 'no'}" data-has-colors="${p.colors && p.colors.length ? 'yes' : 'no'}" style="flex: 1; min-width: 130px; padding: 12px; font-size: 1rem; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; text-align: center;"><i class="fa fa-bolt"></i> إتمام الطلب</button>
             </div>
           </div>
         </div>
@@ -652,7 +652,7 @@
           <img id="lbImg" src="${imgs[0] || ''}" alt="">
         </div>
         <div class="sticky-buy-bar">
-          <button class="btn btn-primary p-btn-buy-now" data-id="${p.id}" data-name="${p.name || ''}" data-price="${p.price_after || 0}" data-image="${p.image_url || ''}" data-shipping="${p.shipping_type || 'free'}" data-price-before="${p.price_before || 0}" data-has-sizes="${p.sizes && p.sizes.length ? 'yes' : 'no'}" data-has-colors="${p.colors && p.colors.length ? 'yes' : 'no'}" style="width: 100%; padding: 14px; font-size: 1.2rem; font-weight: bold; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; border: none; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"><i class="fa fa-bolt"></i> إتمام الشراء الآن</button>
+          <button class="btn btn-primary p-btn-buy-now" data-id="${p.id}" data-name="${p.name || ''}" data-price="${p.price_after || 0}" data-image="${p.image_url || ''}" data-shipping="${p.shipping_type || 'free'}" data-price-before="${p.price_before || 0}" data-has-sizes="${p.sizes && p.sizes.length ? 'yes' : 'no'}" data-has-colors="${p.colors && p.colors.length ? 'yes' : 'no'}" style="width: 100%; padding: 14px; font-size: 1.2rem; font-weight: bold; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; border: none; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"><i class="fa fa-bolt"></i> إتمام الطلب</button>
         </div>`;
 
       // Image gallery logic with transition & zoom
@@ -983,11 +983,19 @@
           if (qBtn && qBtn.disabled && qForm && qForm.dataset.submitting === 'true') {
             qForm.dataset.submitting = 'false';
             window.__orderSubmitted = false;
-            var orig = qBtn.getAttribute('data-original-text') || 'تأكيد الطلب';
+            var orig = qBtn.getAttribute('data-original-text') || 'إتمام الطلب';
             qBtn.innerHTML = orig;
             qBtn.disabled = false;
             qBtn.style.pointerEvents = 'auto';
             qBtn.style.opacity = '1';
+
+            document.querySelectorAll('.p-btn-buy-now').forEach(function(b) {
+              var origHtml = b.getAttribute('data-original-html');
+              if (origHtml) b.innerHTML = origHtml;
+              b.disabled = false;
+              b.style.pointerEvents = 'auto';
+              b.style.opacity = '1';
+            });
           }
         }
       });
@@ -1197,7 +1205,7 @@
 
           const chosenColorImage = piecesSelections[0]?.color_image || null;
 
-          window.BirdCart.addToCart({
+          const cartItemPayload = {
             id: +btn.dataset.id,
             name: cartItemName,
             price: cartPrice,
@@ -1210,8 +1218,24 @@
             selectedColorImage: chosenColorImage,
             options: combinedOptions,
             piecesSelections: piecesSelections,
-          });
-          window.BirdCart.updateCartCount();
+          };
+
+          if (isBuyNow && window.BirdCart.getCart) {
+            const currentCart = window.BirdCart.getCart();
+            const existingIdx = currentCart.findIndex(x => x.id === +btn.dataset.id && (x.name || '') === (cartItemName || '') && (x.selectedSize || null) === (combinedSize || null) && (x.selectedColor || null) === (combinedColor || null) && JSON.stringify(x.options || {}) === JSON.stringify(combinedOptions || {}));
+            if (existingIdx > -1) {
+              currentCart[existingIdx].qty = cartQty;
+              currentCart[existingIdx].price = cartPrice;
+              window.BirdCart.saveCart(currentCart);
+              window.BirdCart.updateCartCount();
+            } else {
+              window.BirdCart.addToCart(cartItemPayload);
+              window.BirdCart.updateCartCount();
+            }
+          } else {
+            window.BirdCart.addToCart(cartItemPayload);
+            window.BirdCart.updateCartCount();
+          }
         }
 
         if (typeof fbq !== 'undefined') {
@@ -1238,14 +1262,24 @@
         }
 
                 if (isBuyNow) {
-          document.getElementById('inlineCheckoutSection').style.display = 'block';
-          document.getElementById('inlineCheckoutSection').scrollIntoView({ behavior: 'smooth' });
+          var inlineSec = document.getElementById('inlineCheckoutSection');
+          if (inlineSec) {
+            inlineSec.style.display = 'block';
+            inlineSec.scrollIntoView({ behavior: 'smooth' });
+          }
           setTimeout(function() {
             var qForm = document.getElementById('quickCheckoutForm');
             if (qForm && typeof window.validateQuickForm === 'function') {
-              window.validateQuickForm(qForm);
+              var isFormValid = window.validateQuickForm(qForm);
+              if (isFormValid && qForm.dataset.submitting !== 'true') {
+                if (typeof qForm.requestSubmit === 'function') {
+                  qForm.requestSubmit();
+                } else {
+                  qForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                }
+              }
             }
-          }, 300);
+          }, 350);
           if (!window.governoratesLoaded) {
             window.governoratesLoaded = true;
             fetch('/public-api/shipping-governorates')
@@ -2628,15 +2662,24 @@
           btn.setAttribute('data-original-text', originalText);
         }
 
+        var buyNowBtns = document.querySelectorAll('.p-btn-buy-now');
+
         var resetSubmitBtn = function() {
           window.__orderSubmitted = false;
           quickForm.dataset.submitting = 'false';
           if (btn) {
-            btn.innerHTML = originalText || 'تأكيد الطلب';
+            btn.innerHTML = originalText || 'إتمام الطلب';
             btn.disabled = false;
             btn.style.pointerEvents = 'auto';
             btn.style.opacity = '1';
           }
+          buyNowBtns.forEach(function(b) {
+            var origHtml = b.getAttribute('data-original-html');
+            if (origHtml) b.innerHTML = origHtml;
+            b.disabled = false;
+            b.style.pointerEvents = 'auto';
+            b.style.opacity = '1';
+          });
         };
 
         var getCartItems = function() {
@@ -2677,6 +2720,15 @@
           btn.style.pointerEvents = 'none';
           btn.style.opacity = '0.7';
         }
+        buyNowBtns.forEach(function(b) {
+          if (!b.getAttribute('data-original-html')) {
+            b.setAttribute('data-original-html', b.innerHTML);
+          }
+          b.innerHTML = '<i class="fa fa-spinner fa-spin"></i> جاري تأكيد الطلب...';
+          b.disabled = true;
+          b.style.pointerEvents = 'none';
+          b.style.opacity = '0.7';
+        });
 
         var fd = new FormData(this);
         var phoneVal = fd.get('phone') || '';
