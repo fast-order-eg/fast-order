@@ -129,8 +129,10 @@ class ProductController extends Controller
         if ($request->hasFile('main_image')) {
             $path = \App\Services\ImageCompressionService::compressAndStore($request->file('main_image'), 'products', 'public');
             $data['main_image_path'] = $path;
+            $data['image_url'] = $path;
         } elseif ($request->filled('existing_main_image')) {
             $data['main_image_path'] = $request->input('existing_main_image');
+            $data['image_url'] = $request->input('existing_main_image');
         }
 
         // tenant_id يُعبأ تلقائياً عبر BelongsToTenant trait
@@ -292,6 +294,7 @@ class ProductController extends Controller
             }
             $path = \App\Services\ImageCompressionService::compressAndStore($request->file('main_image'), 'products', 'public');
             $data['main_image_path'] = $path;
+            $data['image_url'] = $path;
         }
 
         $oldStock = $product->stock;

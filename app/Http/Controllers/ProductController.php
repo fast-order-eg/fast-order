@@ -113,6 +113,7 @@ class ProductController extends Controller
         if ($request->hasFile('main_image')) {
             $path = $request->file('main_image')->store('products', 'public');
             $data['main_image_path'] = $path;
+            $data['image_url'] = $path;
         }
 
         $product = Product::create($data);
@@ -225,6 +226,7 @@ class ProductController extends Controller
             }
             $path = $request->file('main_image')->store('products', 'public');
             $data['main_image_path'] = $path;
+            $data['image_url'] = $path;
         }
 
         $product->update($data);

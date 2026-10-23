@@ -587,7 +587,7 @@ Route::prefix('admin')->group(function () {
                 $items = collect($paginated->items())->map(function ($p) use ($formatImg, $productSales) {
                     $cat = $p->category;
                     $catName = $cat ? ($cat->name_ar ?: ($cat->name ?: $cat->name_en)) : null;
-                    $img = $p->image_url ?: $p->main_image_path;
+                    $img = $p->main_image_path ?: $p->image_url;
                     return [
                         'id' => $p->id,
                         'name' => $p->name,
@@ -624,7 +624,7 @@ Route::prefix('admin')->group(function () {
             $items = $q->get()->map(function ($p) use ($formatImg, $productSales) {
                 $cat = $p->category;
                 $catName = $cat ? ($cat->name_ar ?: ($cat->name ?: $cat->name_en)) : null;
-                $img = $p->image_url ?: $p->main_image_path;
+                $img = $p->main_image_path ?: $p->image_url;
                 return [
                     'id' => $p->id,
                     'name' => $p->name,
@@ -681,7 +681,7 @@ Route::prefix('admin')->group(function () {
             $images = $p->images ? $p->images->map(fn($img) => $formatImg($img->image_path))->values()->all() : [];
             
             $mapProduct = function($prod) use ($formatImg) {
-                $img = $prod->image_url ?: $prod->main_image_path;
+                $img = $prod->main_image_path ?: $prod->image_url;
                 return [
                     'id' => $prod->id,
                     'name' => $prod->name,
@@ -692,7 +692,7 @@ Route::prefix('admin')->group(function () {
                 ];
             };
 
-            $mainImg = $p->image_url ?: $p->main_image_path;
+            $mainImg = $p->main_image_path ?: $p->image_url;
 
             $rawColors = is_string($p->colors) ? json_decode($p->colors, true) : ($p->colors ?: []);
             $formattedColors = is_array($rawColors) ? array_values(array_map(function($c) use ($formatImg) {
