@@ -715,17 +715,19 @@ button, input, select, textarea {
   gap: 8px;
 }
 
-.category-chip:hover {
+.category-chip:not(.active):hover {
   border-color: var(--primary-color);
   color: var(--primary-color);
   transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
 }
 
-.category-chip.active {
+.category-chip.active,
+.category-chip.active:hover,
+.category-chip.active:focus {
   background: var(--gradient-primary);
   border-color: transparent;
-  color: #ffffff;
+  color: #ffffff !important;
   box-shadow: var(--shadow-vibrant);
 }
 

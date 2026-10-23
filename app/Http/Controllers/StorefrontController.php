@@ -37,6 +37,22 @@ class StorefrontController extends Controller
         return '#' . $r_hex . $g_hex . $b_hex;
     }
 
+    private function getContrastColor($hex): string
+    {
+        $hex = ltrim($hex ?? '', '#');
+        if (strlen($hex) == 3) {
+            $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+        }
+        if (strlen($hex) !== 6) {
+            return '#ffffff';
+        }
+        $r = hexdec(substr($hex, 0, 2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
+        $yiq = (($r * 299) + ($g * 587) + ($b * 114)) / 1000;
+        return ($yiq >= 150) ? '#111827' : '#ffffff';
+    }
+
     /**
      * Serve a storefront page with injected pixels, SEO tags and dynamic theme settings.
      */
@@ -272,6 +288,7 @@ s0.parentNode.insertBefore(s1,s0);
         $primaryHover = $this->adjustBrightness($primaryColor, -0.08);
         $primaryLight = $this->adjustBrightness($primaryColor, 0.85);
         $secondaryHover = $this->adjustBrightness($secondaryColor, -0.08);
+        $primaryContrast = $this->getContrastColor($primaryColor);
 
         // Inject dynamic styles (CSS variables) and font import
         $headInjections[] = '<!-- Dynamic Theme Customization (CSS Variables & Overrides) -->
@@ -281,6 +298,7 @@ s0.parentNode.insertBefore(s1,s0);
 <style>
   :root {
     --primary-color: ' . $primaryColor . ' !important;
+    --primary-contrast: ' . $primaryContrast . ' !important;
     --primary-hover: ' . $primaryHover . ' !important;
     --primary-light: ' . $primaryLight . ' !important;
     --secondary-color: ' . $secondaryColor . ' !important;
@@ -612,13 +630,33 @@ s0.parentNode.insertBefore(s1,s0);
   }
 
   /* Active Category Chips & Filter Options */
-  .category-chip.active, .filter-option.active, .pill.active, .cat-chip.active {
+  .category-chip.active,
+  .category-chip.active:hover,
+  .category-chip.active:focus,
+  .category-chip.active:focus-visible,
+  .category-chip.active:active,
+  .filter-option.active,
+  .filter-option.active:hover,
+  .filter-option.active:focus,
+  .filter-option.active:focus-visible,
+  .filter-option.active:active,
+  .pill.active,
+  .pill.active:hover,
+  .pill.active:focus,
+  .cat-chip.active,
+  .cat-chip.active:hover,
+  .cat-chip.active:focus {
     background-color: var(--primary-color) !important;
     border-color: var(--primary-color) !important;
-    color: #ffffff !important;
+    color: var(--primary-contrast, #ffffff) !important;
     box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-color) 25%, transparent) !important;
   }
-  .category-chip:hover, .filter-option:hover {
+  .category-chip:not(.active):hover,
+  .category-chip:not(.active):focus,
+  .filter-option:not(.active):hover,
+  .filter-option:not(.active):focus,
+  .pill:not(.active):hover,
+  .cat-chip:not(.active):hover {
     border-color: var(--primary-color) !important;
     color: var(--primary-color) !important;
   }

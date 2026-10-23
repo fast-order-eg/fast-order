@@ -447,16 +447,18 @@ img {
   transition: all var(--transition-fast);
 }
 
-.theme-starter .category-chip:hover {
+.theme-starter .category-chip:not(.active):hover {
   border-color: var(--primary-color);
   color: var(--primary-color);
   background-color: var(--primary-light);
 }
 
-.theme-starter .category-chip.active {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-  color: #ffffff;
+.theme-starter .category-chip.active,
+.theme-starter .category-chip.active:hover,
+.theme-starter .category-chip.active:focus {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: #ffffff !important;
 }
 
 .theme-starter .filter-section {

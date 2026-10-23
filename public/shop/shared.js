@@ -426,7 +426,15 @@ function productCard(p){
   card.style.position = 'relative';
   
   const link = createEl('a'); link.href = `/shop/product.html?id=${p.id}`; link.style.textDecoration='none'; link.style.color='inherit';
-  const img = createEl('img'); img.src = p.image_url || 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image'; img.alt=p.name||''; link.appendChild(img);
+  const img = createEl('img'); 
+  img.src = p.image_url || 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image'; 
+  img.alt = p.name || '';
+  img.loading = 'lazy';
+  img.onerror = function() {
+    this.onerror = null;
+    this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 450' fill='%231e293b'%3E%3Crect width='600' height='450' fill='%231e293b'/%3E%3Cpath d='M260 200a30 30 0 100-60 30 30 0 000 60zm-70 120h220l-70-90-50 60-35-45-65 75z' fill='%23475569'/%3E%3Ctext x='50%25' y='80%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-size='20' font-family='sans-serif'%3E" + encodeURIComponent(getStorefrontLang() === 'en' ? 'No Image' : 'لا تتوفر صورة') + "%3C/text%3E%3C/svg%3E";
+  };
+  link.appendChild(img);
   
   // بادج الخصم والشحن المجاني مع فحص وجود الاثنين معاً
   const nowVal = Math.round(Number(p.price_after ?? 0));
