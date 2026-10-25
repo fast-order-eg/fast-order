@@ -110,13 +110,14 @@ export default function SharedAdReport({
         }));
     };
 
-    // Helper: determine campaign goal type and badges ("إعلان مبيعات" أو "رسائل واتساب" أو "رسائل ماسنجر")
+    // Helper: determine campaign goal type and badges ("إعلان مبيعات" أو "رسائل واتساب" أو "رسائل إنستغرام دايركت" أو "رسائل ماسنجر")
     const getCampaignGoalInfo = (campaign) => {
         const objective = (campaign.objective || '').toUpperCase();
         const name = (campaign.name || '').toLowerCase();
         const goalType = campaign.goal_type || '';
 
         let hasWhatsappIndicator = goalType === 'whatsapp';
+        let hasInstagramIndicator = goalType === 'instagram';
         let hasMessengerIndicator = goalType === 'messenger';
         let hasMessageCta = false;
 
@@ -124,19 +125,41 @@ export default function SharedAdReport({
         if (name.includes('واتس') || name.includes('whatsapp')) {
             hasWhatsappIndicator = true;
         }
+        if (name.includes('انستا') || name.includes('انستجرام') || name.includes('انستقرام') || name.includes('instagram') || name.includes('insta')) {
+            hasInstagramIndicator = true;
+        }
         if (name.includes('ماسنجر') || name.includes('messenger') || name.includes('ماسن')) {
             hasMessengerIndicator = true;
+        }
+
+        // Check campaign-level destination / platform
+        const campDest = (campaign.destination_type || '').toUpperCase();
+        if (campDest.includes('INSTAGRAM')) {
+            hasInstagramIndicator = true;
+        } else if (campDest.includes('WHATSAPP')) {
+            hasWhatsappIndicator = true;
+        } else if (campDest.includes('MESSENGER')) {
+            hasMessengerIndicator = true;
+        }
+
+        if ((campaign.platform || '').toUpperCase() === 'INSTAGRAM') {
+            hasInstagramIndicator = true;
         }
 
         // Check ads creative CTA & links
         if (campaign.ads && Array.isArray(campaign.ads)) {
             campaign.ads.forEach((ad) => {
-                const cta = (ad.creative?.cta_type || '').toUpperCase();
-                const link = (ad.creative?.link_url || ad.creative?.preview_url || ad.facebook_post_url || '').toLowerCase();
+                const creative = ad.creative || {};
+                const cta = (creative.cta_type || creative.call_to_action_type || '').toUpperCase();
+                const link = (creative.link_url || creative.instagram_permalink_url || creative.preview_url || creative.post_url || ad.post_url || ad.facebook_post_url || '').toLowerCase();
                 const adName = (ad.name || '').toLowerCase();
+                const platform = (creative.platform || ad.platform || '').toUpperCase();
 
                 if (cta === 'WHATSAPP_MESSAGE' || link.includes('wa.me') || link.includes('whatsapp') || adName.includes('واتس') || adName.includes('whatsapp')) {
                     hasWhatsappIndicator = true;
+                    hasMessageCta = true;
+                } else if (cta === 'INSTAGRAM_MESSAGE' || cta.includes('INSTAGRAM') || platform === 'INSTAGRAM' || Boolean(creative.instagram_permalink_url) || link.includes('instagram.com') || link.includes('instagr.am') || adName.includes('انستا') || adName.includes('انستجرام') || adName.includes('انستقرام') || adName.includes('instagram') || adName.includes('insta')) {
+                    hasInstagramIndicator = true;
                     hasMessageCta = true;
                 } else if (['MESSAGE_PAGE', 'SEND_MESSAGE'].includes(cta) || link.includes('m.me') || link.includes('messenger') || adName.includes('ماسنجر') || adName.includes('messenger')) {
                     hasMessengerIndicator = true;
@@ -155,6 +178,9 @@ export default function SharedAdReport({
                 if (dest.includes('WHATSAPP') || adsetName.includes('واتس') || adsetName.includes('whatsapp')) {
                     hasWhatsappIndicator = true;
                     hasMessageCta = true;
+                } else if (dest.includes('INSTAGRAM') || adsetName.includes('انستا') || adsetName.includes('انستجرام') || adsetName.includes('انستقرام') || adsetName.includes('instagram') || adsetName.includes('insta')) {
+                    hasInstagramIndicator = true;
+                    hasMessageCta = true;
                 } else if (dest.includes('MESSENGER') || adsetName.includes('ماسنجر') || adsetName.includes('messenger')) {
                     hasMessengerIndicator = true;
                     hasMessageCta = true;
@@ -164,8 +190,12 @@ export default function SharedAdReport({
 
         const isMessages =
             hasWhatsappIndicator ||
+            hasInstagramIndicator ||
             hasMessengerIndicator ||
             goalType === 'messages' ||
+            goalType === 'instagram' ||
+            goalType === 'whatsapp' ||
+            goalType === 'messenger' ||
             objective === 'OUTCOME_ENGAGEMENT' ||
             objective === 'MESSAGES' ||
             objective.includes('ENGAGEMENT') ||
@@ -185,6 +215,20 @@ export default function SharedAdReport({
                     badgeClasses: 'bg-emerald-50 text-emerald-700 border-emerald-200',
                     resultLabel: 'رسائل واتساب',
                     cpaLabel: 'تكلفة رسالة الواتساب',
+                    showRoas: false,
+                };
+            }
+
+            // Instagram Direct
+            if (hasInstagramIndicator) {
+                return {
+                    isMessages: true,
+                    goalType: 'instagram',
+                    badgeText: 'رسائل إنستغرام دايركت',
+                    badgeIcon: '📸',
+                    badgeClasses: 'bg-gradient-to-r from-pink-50 to-purple-50 text-pink-700 border-pink-200',
+                    resultLabel: 'رسائل إنستغرام دايركت',
+                    cpaLabel: 'تكلفة رسالة إنستغرام',
                     showRoas: false,
                 };
             }
@@ -214,22 +258,90 @@ export default function SharedAdReport({
         };
     };
 
-    // Helper: extract best Facebook post URL for an ad
-    const getAdFacebookUrl = (ad) => {
-        if (ad.facebook_post_url) return ad.facebook_post_url;
-        if (ad.creative?.preview_url) return ad.creative.preview_url;
+    // Helper: determine ad platform, direct URL, button label, icon, and classes
+    const getAdPlatformInfo = (ad, campaign = {}) => {
+        const creative = ad.creative || {};
+        const adName = (ad.name || '').toLowerCase();
+        const campName = (campaign.name || '').toLowerCase();
+        const cta = (creative.cta_type || creative.call_to_action_type || '').toUpperCase();
+        const platform = (creative.platform || ad.platform || '').toUpperCase();
 
-        const imgUrl = ad.creative?.image_url || ad.creative?.thumbnail_url || '';
-        const match = imgUrl.match(/_(\d{15,22})_/);
-        if (match && match[1]) {
-            return `https://www.facebook.com/photo/?fbid=${match[1]}`;
+        const postUrl = ad.post_url
+            || creative.post_url
+            || creative.instagram_permalink_url
+            || ad.facebook_post_url
+            || creative.preview_url
+            || creative.link_url
+            || '';
+
+        const postUrlLower = postUrl.toLowerCase();
+        const isInstaUrl = postUrlLower.includes('instagram.com') || postUrlLower.includes('instagr.am');
+        const isWhatsappUrl = postUrlLower.includes('wa.me') || postUrlLower.includes('whatsapp.com');
+
+        const isInstagram =
+            platform === 'INSTAGRAM' ||
+            isInstaUrl ||
+            Boolean(creative.instagram_permalink_url) ||
+            cta === 'INSTAGRAM_MESSAGE' ||
+            cta.includes('INSTAGRAM') ||
+            adName.includes('انستا') || adName.includes('انستجرام') || adName.includes('انستقرام') || adName.includes('instagram') || adName.includes('insta') ||
+            campName.includes('انستا') || campName.includes('انستجرام') || campName.includes('انستقرام') || campName.includes('instagram') || campName.includes('insta');
+
+        const isWhatsapp =
+            platform === 'WHATSAPP' ||
+            isWhatsappUrl ||
+            cta === 'WHATSAPP_MESSAGE' ||
+            adName.includes('واتس') || adName.includes('whatsapp') ||
+            campName.includes('واتس') || campName.includes('whatsapp');
+
+        let resolvedUrl = postUrl;
+        if (!resolvedUrl) {
+            const imgUrl = creative.image_url || creative.thumbnail_url || '';
+            const match = imgUrl.match(/_(\d{15,22})_/);
+            if (match && match[1]) {
+                resolvedUrl = `https://www.facebook.com/photo/?fbid=${match[1]}`;
+            } else if (ad.id) {
+                resolvedUrl = `https://www.facebook.com/ads/experience/confirmation/?ad_id=${ad.id}`;
+            } else {
+                resolvedUrl = isInstagram ? 'https://instagram.com' : 'https://facebook.com';
+            }
         }
 
-        if (ad.id) {
-            return `https://www.facebook.com/ads/experience/confirmation/?ad_id=${ad.id}`;
+        if (isInstagram) {
+            return {
+                platform: 'INSTAGRAM',
+                url: resolvedUrl,
+                label: 'فتح في إنستجرام ↗',
+                title: 'فتح منشور الإعلان في إنستجرام',
+                buttonClasses: 'bg-gradient-to-r from-purple-600 via-pink-600 to-rose-500 hover:from-purple-700 hover:via-pink-700 hover:to-rose-600 text-white shadow-sm',
+                iconType: 'instagram',
+            };
         }
 
-        return 'https://facebook.com';
+        if (isWhatsapp) {
+            return {
+                platform: 'WHATSAPP',
+                url: resolvedUrl,
+                label: 'محادثة واتساب ↗',
+                title: 'فتح محادثة واتساب',
+                buttonClasses: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm',
+                iconType: 'whatsapp',
+            };
+        }
+
+        return {
+            platform: 'FACEBOOK',
+            url: resolvedUrl,
+            label: 'فتح في فيسبوك ↗',
+            title: 'فتح منشور الإعلان في فيسبوك',
+            buttonClasses: 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm',
+            iconType: 'facebook',
+        };
+    };
+
+    // Helper: extract best Facebook/Instagram post URL for an ad (legacy alias)
+    const getAdFacebookUrl = (ad, campaign = {}) => {
+        return getAdPlatformInfo(ad, campaign).url;
     };
 
     // Helper: parse end_info into separate date/time and days/hours parts for mobile display
@@ -942,7 +1054,7 @@ export default function SharedAdReport({
                                                                 {campaign.ads.map((ad) => {
                                                                     const creative = ad.creative || {};
                                                                     const imageUrl = creative.image_url || creative.thumbnail_url;
-                                                                    const fbPostUrl = getAdFacebookUrl(ad);
+                                                                    const platformInfo = getAdPlatformInfo(ad, campaign);
 
                                                                     return (
                                                                         <div
@@ -950,7 +1062,7 @@ export default function SharedAdReport({
                                                                             className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm flex flex-col justify-between gap-4 hover:border-blue-300 transition-colors"
                                                                         >
                                                                             <div className="space-y-3">
-                                                                                {/* Ad Header: Title, Status, and Direct Facebook Link Button */}
+                                                                                {/* Ad Header: Title, Status, and Direct Link Button */}
                                                                                 <div className="flex items-start justify-between gap-2">
                                                                                     <div className="space-y-0.5 min-w-0">
                                                                                         <h6 className="text-xs font-bold text-gray-900 line-clamp-1" title={ad.name}>
@@ -964,18 +1076,28 @@ export default function SharedAdReport({
                                                                                             {ad.status === 'ACTIVE' ? 'نشط 🟢' : 'متوقف ⏸️'}
                                                                                         </span>
 
-                                                                                        {/* Button to open Post directly on Facebook */}
+                                                                                        {/* Button to open Post directly on platform (Instagram / Facebook / WhatsApp) */}
                                                                                         <a
-                                                                                            href={fbPostUrl}
+                                                                                            href={platformInfo.url}
                                                                                             target="_blank"
                                                                                             rel="noopener noreferrer"
-                                                                                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all active:scale-95"
-                                                                                            title="فتح منشور الإعلان في فيسبوك"
+                                                                                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold shadow-sm transition-all active:scale-95 ${platformInfo.buttonClasses}`}
+                                                                                            title={platformInfo.title}
                                                                                         >
-                                                                                            <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
-                                                                                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                                                                                            </svg>
-                                                                                            <span>فتح في فيسبوك ↗</span>
+                                                                                            {platformInfo.iconType === 'instagram' ? (
+                                                                                                <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                                                                                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                                                                                                </svg>
+                                                                                            ) : platformInfo.iconType === 'whatsapp' ? (
+                                                                                                <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                                                                                                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z" />
+                                                                                                </svg>
+                                                                                            ) : (
+                                                                                                <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                                                                                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                                                                                                </svg>
+                                                                                            )}
+                                                                                            <span>{platformInfo.label}</span>
                                                                                         </a>
                                                                                     </div>
                                                                                 </div>
@@ -984,7 +1106,7 @@ export default function SharedAdReport({
                                                                                 <div className="flex gap-3 items-start bg-slate-50 p-2.5 rounded-lg border border-slate-100">
                                                                                     {imageUrl ? (
                                                                                         <a
-                                                                                            href={fbPostUrl}
+                                                                                            href={platformInfo.url}
                                                                                             target="_blank"
                                                                                             rel="noopener noreferrer"
                                                                                             className="w-20 h-20 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0 border border-gray-200 relative group block cursor-pointer"

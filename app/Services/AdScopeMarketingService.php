@@ -162,7 +162,7 @@ class AdScopeMarketingService
     }
 
     /**
-     * Normalize campaigns: classify goal (sales vs messages), format labels, and extract Facebook post URLs.
+     * Normalize campaigns: classify goal (sales vs messages), format labels, and extract Facebook/Instagram post URLs.
      */
     protected function normalizeCampaigns(array $campaigns): array
     {
@@ -172,14 +172,43 @@ class AdScopeMarketingService
 
             $hasMessageCta = false;
             $hasWhatsappIndicator = false;
+            $hasInstagramIndicator = false;
             $hasMessengerIndicator = false;
+
+            $nameLower = mb_strtolower($name);
+            if (str_contains($nameLower, 'انستا') || str_contains($nameLower, 'انستجرام') || str_contains($nameLower, 'انستقرام') || str_contains($nameLower, 'instagram') || str_contains($nameLower, 'insta')) {
+                $hasInstagramIndicator = true;
+            }
+            if (str_contains($nameLower, 'واتس') || str_contains($nameLower, 'whatsapp')) {
+                $hasWhatsappIndicator = true;
+            }
+            if (str_contains($nameLower, 'ماسنجر') || str_contains($nameLower, 'messenger')) {
+                $hasMessengerIndicator = true;
+            }
+
+            // Check campaign destination / platform
+            $campDest = strtoupper($campaign['destination_type'] ?? '');
+            if (str_contains($campDest, 'INSTAGRAM')) {
+                $hasInstagramIndicator = true;
+            } elseif (str_contains($campDest, 'WHATSAPP')) {
+                $hasWhatsappIndicator = true;
+            } elseif (str_contains($campDest, 'MESSENGER')) {
+                $hasMessengerIndicator = true;
+            }
+
+            if (($campaign['platform'] ?? '') === 'INSTAGRAM') {
+                $hasInstagramIndicator = true;
+            }
 
             if (!empty($campaign['ads']) && is_array($campaign['ads'])) {
                 foreach ($campaign['ads'] as &$ad) {
                     $creative = $ad['creative'] ?? [];
-                    $cta = strtoupper($creative['cta_type'] ?? '');
+                    $cta = strtoupper($creative['cta_type'] ?? $creative['call_to_action_type'] ?? '');
                     if ($cta === 'WHATSAPP_MESSAGE') {
                         $hasWhatsappIndicator = true;
+                        $hasMessageCta = true;
+                    } elseif ($cta === 'INSTAGRAM_MESSAGE' || str_contains($cta, 'INSTAGRAM')) {
+                        $hasInstagramIndicator = true;
                         $hasMessageCta = true;
                     } elseif (in_array($cta, ['MESSAGE_PAGE', 'SEND_MESSAGE'])) {
                         $hasMessengerIndicator = true;
@@ -188,8 +217,10 @@ class AdScopeMarketingService
                         $hasMessageCta = true;
                     }
 
-                    $linkUrl = strtolower($creative['link_url'] ?? $creative['instagram_permalink_url'] ?? '');
-                    if (str_contains($linkUrl, 'wa.me') || str_contains($linkUrl, 'whatsapp')) {
+                    $linkUrl = strtolower($creative['link_url'] ?? $creative['instagram_permalink_url'] ?? $creative['post_url'] ?? $ad['post_url'] ?? '');
+                    if (str_contains($linkUrl, 'instagram.com') || str_contains($linkUrl, 'instagr.am')) {
+                        $hasInstagramIndicator = true;
+                    } elseif (str_contains($linkUrl, 'wa.me') || str_contains($linkUrl, 'whatsapp')) {
                         $hasWhatsappIndicator = true;
                         $hasMessageCta = true;
                     } elseif (str_contains($linkUrl, 'm.me') || str_contains($linkUrl, 'messenger')) {
@@ -197,15 +228,21 @@ class AdScopeMarketingService
                         $hasMessageCta = true;
                     }
 
+                    if (($creative['platform'] ?? $ad['platform'] ?? '') === 'INSTAGRAM') {
+                        $hasInstagramIndicator = true;
+                    }
+
                     $adName = mb_strtolower($ad['name'] ?? '');
-                    if (str_contains($adName, 'واتس') || str_contains($adName, 'whatsapp')) {
+                    if (str_contains($adName, 'انستا') || str_contains($adName, 'انستجرام') || str_contains($adName, 'انستقرام') || str_contains($adName, 'instagram') || str_contains($adName, 'insta')) {
+                        $hasInstagramIndicator = true;
+                    } elseif (str_contains($adName, 'واتس') || str_contains($adName, 'whatsapp')) {
                         $hasWhatsappIndicator = true;
                     } elseif (str_contains($adName, 'ماسنجر') || str_contains($adName, 'messenger')) {
                         $hasMessengerIndicator = true;
                     }
 
-                    // Extract Facebook post link
-                    $postUrl = $creative['preview_url'] ?? null;
+                    // Extract Post link
+                    $postUrl = $ad['post_url'] ?? $creative['post_url'] ?? $creative['instagram_permalink_url'] ?? $creative['preview_url'] ?? null;
                     if (empty($postUrl)) {
                         $imgUrl = $creative['image_url'] ?? $creative['thumbnail_url'] ?? '';
                         if (preg_match('/_(\d{15,22})_/', $imgUrl, $m)) {
@@ -214,7 +251,23 @@ class AdScopeMarketingService
                             $postUrl = "https://www.facebook.com/ads/experience/confirmation/?ad_id={$ad['id']}";
                         }
                     }
-                    $ad['facebook_post_url'] = $postUrl;
+
+                    $isAdInsta = ($creative['platform'] ?? $ad['platform'] ?? '') === 'INSTAGRAM'
+                        || str_contains(strtolower($postUrl ?? ''), 'instagram.com')
+                        || !empty($creative['instagram_permalink_url'])
+                        || $cta === 'INSTAGRAM_MESSAGE'
+                        || str_contains($cta, 'INSTAGRAM')
+                        || str_contains($adName, 'انستا')
+                        || str_contains($adName, 'انستجرام')
+                        || str_contains($adName, 'انستقرام')
+                        || str_contains($adName, 'instagram')
+                        || $hasInstagramIndicator;
+
+                    $ad['post_url'] = $postUrl;
+                    $ad['facebook_post_url'] = $postUrl; // Backward compatibility
+                    $ad['platform'] = $isAdInsta ? 'INSTAGRAM' : 'FACEBOOK';
+                    $ad['platform_label'] = $isAdInsta ? 'إنستغرام' : 'فيسبوك';
+                    $ad['open_button_label'] = $isAdInsta ? 'فتح في إنستجرام ↗' : 'فتح في فيسبوك ↗';
                 }
                 unset($ad);
             }
@@ -222,7 +275,10 @@ class AdScopeMarketingService
             if (!empty($campaign['adsets']) && is_array($campaign['adsets'])) {
                 foreach ($campaign['adsets'] as $adset) {
                     $dest = strtoupper($adset['destination_type'] ?? '');
-                    if (str_contains($dest, 'WHATSAPP')) {
+                    if (str_contains($dest, 'INSTAGRAM')) {
+                        $hasInstagramIndicator = true;
+                        $hasMessageCta = true;
+                    } elseif (str_contains($dest, 'WHATSAPP')) {
                         $hasWhatsappIndicator = true;
                         $hasMessageCta = true;
                     } elseif (str_contains($dest, 'MESSENGER')) {
@@ -231,28 +287,14 @@ class AdScopeMarketingService
                     }
 
                     $adsetName = mb_strtolower($adset['name'] ?? '');
-                    if (str_contains($adsetName, 'واتس') || str_contains($adsetName, 'whatsapp')) {
+                    if (str_contains($adsetName, 'انستا') || str_contains($adsetName, 'انستجرام') || str_contains($adsetName, 'انستقرام') || str_contains($adsetName, 'instagram') || str_contains($adsetName, 'insta')) {
+                        $hasInstagramIndicator = true;
+                    } elseif (str_contains($adsetName, 'واتس') || str_contains($adsetName, 'whatsapp')) {
                         $hasWhatsappIndicator = true;
                     } elseif (str_contains($adsetName, 'ماسنجر') || str_contains($adsetName, 'messenger')) {
                         $hasMessengerIndicator = true;
                     }
                 }
-            }
-
-            $campDest = strtoupper($campaign['destination_type'] ?? '');
-            if (str_contains($campDest, 'WHATSAPP')) {
-                $hasWhatsappIndicator = true;
-                $hasMessageCta = true;
-            } elseif (str_contains($campDest, 'MESSENGER')) {
-                $hasMessengerIndicator = true;
-                $hasMessageCta = true;
-            }
-
-            $nameLower = mb_strtolower($name);
-            if (str_contains($nameLower, 'واتس') || str_contains($nameLower, 'whatsapp')) {
-                $hasWhatsappIndicator = true;
-            } elseif (str_contains($nameLower, 'ماسنجر') || str_contains($nameLower, 'messenger')) {
-                $hasMessengerIndicator = true;
             }
 
             $isMessages = $objective === 'OUTCOME_ENGAGEMENT'
@@ -261,6 +303,7 @@ class AdScopeMarketingService
                 || str_contains($objective, 'MESSAGE')
                 || $hasMessageCta
                 || $hasWhatsappIndicator
+                || $hasInstagramIndicator
                 || $hasMessengerIndicator
                 || str_contains($nameLower, 'رسايل')
                 || str_contains($nameLower, 'رسائل');
@@ -271,6 +314,11 @@ class AdScopeMarketingService
                     $campaign['goal_badge'] = 'رسائل واتساب';
                     $campaign['result_label'] = 'رسائل واتساب';
                     $campaign['cpa_label'] = 'تكلفة رسالة الواتساب';
+                } elseif ($hasInstagramIndicator) {
+                    $campaign['goal_type'] = 'instagram';
+                    $campaign['goal_badge'] = 'رسائل إنستغرام دايركت';
+                    $campaign['result_label'] = 'رسائل إنستغرام دايركت';
+                    $campaign['cpa_label'] = 'تكلفة رسالة إنستغرام';
                 } else {
                     $campaign['goal_type'] = 'messenger';
                     $campaign['goal_badge'] = 'رسائل ماسنجر';
@@ -283,6 +331,8 @@ class AdScopeMarketingService
                 $campaign['goal_badge'] = 'إعلان مبيعات';
                 $campaign['result_label'] = 'طلبات شراء';
                 $campaign['cpa_label'] = 'تكلفة الطلب (CPA)';
+                $campaign['show_roas'] = true;
+            }
                 $campaign['show_roas'] = true;
             }
 
