@@ -333,8 +333,6 @@ class AdScopeMarketingService
                 $campaign['cpa_label'] = 'تكلفة الطلب (CPA)';
                 $campaign['show_roas'] = true;
             }
-                $campaign['show_roas'] = true;
-            }
 
             // Calculate end date & remaining time
             $stopTime = $campaign['stop_time'] ?? $campaign['end_time'] ?? null;
