@@ -20,10 +20,18 @@ class MarketingAdsController extends Controller
     ) {}
 
     /**
-     * Build Carbon date range from a date preset string.
+     * Build Carbon date range from a date preset string or custom range.
      */
-    private function getDateRange(string $preset): array
+    private function getDateRange(string $preset, ?string $since = null, ?string $until = null): array
     {
+        if ($preset === 'custom' && $since && $until) {
+            try {
+                return [Carbon::parse($since)->startOfDay(), Carbon::parse($until)->endOfDay()];
+            } catch (\Throwable) {
+                return [null, null];
+            }
+        }
+
         $now = Carbon::now();
         return match ($preset) {
             'today'      => [$now->copy()->startOfDay(), $now->copy()->endOfDay()],
@@ -63,19 +71,34 @@ class MarketingAdsController extends Controller
         $tenant = $this->resolveTenant($request);
 
         $datePreset = $request->query('date_preset', 'maximum');
-        if (!array_key_exists($datePreset, AdScopeMarketingService::ALLOWED_PRESETS)) {
+        $since = $request->query('since');
+        $until = $request->query('until');
+
+        // Sanitize since and until (must be YYYY-MM-DD)
+        if ($since && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $since)) {
+            $since = null;
+        }
+        if ($until && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $until)) {
+            $until = null;
+        }
+
+        if ($since && $until) {
+            $datePreset = 'custom';
+        } elseif (!array_key_exists($datePreset, AdScopeMarketingService::ALLOWED_PRESETS)) {
             $datePreset = 'maximum';
         }
 
         $forceRefresh = (bool) $request->boolean('refresh');
 
         $adsData = $tenant
-            ? $this->adService->getCampaignsSummary($tenant, $datePreset, $forceRefresh)
+            ? $this->adService->getCampaignsSummary($tenant, $datePreset, $forceRefresh, $since, $until)
             : [
                 'success'         => true,
                 'has_campaigns'   => false,
                 'campaign_ids'    => [],
                 'date_preset'     => $datePreset,
+                'since'           => $since,
+                'until'           => $until,
                 'currency'        => 'EGP',
                 'summary'         => null,
                 'campaigns'       => [],
@@ -84,7 +107,7 @@ class MarketingAdsController extends Controller
             ];
 
         // ── Store stats: real orders count & abandoned carts count ──
-        [$dateFrom, $dateTo] = $this->getDateRange($datePreset);
+        [$dateFrom, $dateTo] = $this->getDateRange($datePreset, $since, $until);
 
         $ordersQuery = Order::where('tenant_id', $tenant?->id ?? 0);
         $abandonedQuery = AbandonedCart::where('tenant_id', $tenant?->id ?? 0)
@@ -112,6 +135,8 @@ class MarketingAdsController extends Controller
         return Inertia::render('Merchant/Marketing/Ads', [
             'adsData'        => $adsData,
             'datePreset'     => $datePreset,
+            'since'          => $since,
+            'until'          => $until,
             'allowedPresets' => AdScopeMarketingService::ALLOWED_PRESETS,
             'hasCampaigns'   => $adsData['has_campaigns'] ?? false,
             'campaignIds'    => $adsData['campaign_ids'] ?? [],

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Head, router } from '@inertiajs/react';
+import CustomDateRangeModal from '@/Components/CustomDateRangeModal';
 
 // Helper: determine campaign real status taking schedule end date into account
 const getCampaignStatus = (campaign) => {
@@ -39,6 +40,8 @@ export default function SharedAdReport({
     report = {},
     adsData = {},
     datePreset = 'maximum',
+    since = null,
+    until = null,
     allowedPresets = {},
     hasCampaigns = false,
     campaignIds = [],
@@ -47,6 +50,7 @@ export default function SharedAdReport({
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
     const [expandedCampaigns, setExpandedCampaigns] = useState({});
+    const [customModalOpen, setCustomModalOpen] = useState(false);
 
     const rawCampaigns = adsData?.campaigns || [];
     // Always sort ACTIVE campaigns to the top
@@ -112,37 +116,88 @@ export default function SharedAdReport({
 
     // Helper: determine campaign goal type and badges ("إعلان مبيعات" أو "رسائل واتساب" أو "رسائل إنستغرام دايركت" أو "رسائل ماسنجر")
     const getCampaignGoalInfo = (campaign) => {
+        const goalType = (campaign.goal_type || campaign.result_type || '').toLowerCase();
+        const goalBadge = campaign.goal_badge || campaign.result_label || '';
         const objective = (campaign.objective || '').toUpperCase();
         const name = (campaign.name || '').toLowerCase();
-        const goalType = campaign.goal_type || '';
+        const campDest = (campaign.destination_type || '').toUpperCase();
 
-        let hasWhatsappIndicator = goalType === 'whatsapp';
-        let hasInstagramIndicator = goalType === 'instagram';
-        let hasMessengerIndicator = goalType === 'messenger';
+        // 1. Direct match if already categorized as messenger
+        if (goalType === 'messenger' || goalBadge.includes('ماسنجر') || campDest.includes('MESSENGER')) {
+            return {
+                isMessages: true,
+                goalType: 'messenger',
+                badgeText: 'رسائل ماسنجر',
+                badgeIcon: '💬',
+                badgeClasses: 'bg-purple-50 text-purple-700 border-purple-200',
+                resultLabel: 'رسائل ماسنجر',
+                cpaLabel: 'تكلفة رسالة الماسنجر',
+                showRoas: false,
+            };
+        }
+
+        // 2. Direct match if whatsapp
+        if (goalType === 'whatsapp' || goalBadge.includes('واتساب') || campDest.includes('WHATSAPP')) {
+            return {
+                isMessages: true,
+                goalType: 'whatsapp',
+                badgeText: 'رسائل واتساب',
+                badgeIcon: '💬',
+                badgeClasses: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                resultLabel: 'رسائل واتساب',
+                cpaLabel: 'تكلفة رسالة الواتساب',
+                showRoas: false,
+            };
+        }
+
+        // 3. Direct match if instagram
+        if (goalType === 'instagram' || goalBadge.includes('إنستغرام') || goalBadge.includes('انستجرام') || campDest.includes('INSTAGRAM')) {
+            return {
+                isMessages: true,
+                goalType: 'instagram',
+                badgeText: 'رسائل إنستغرام دايركت',
+                badgeIcon: '📸',
+                badgeClasses: 'bg-gradient-to-r from-pink-50 to-purple-50 text-pink-700 border-pink-200',
+                resultLabel: 'رسائل إنستغرام دايركت',
+                cpaLabel: 'تكلفة رسالة إنستغرام',
+                showRoas: false,
+            };
+        }
+
+        // 4. Sales match
+        if (goalType === 'sales' || goalBadge.includes('مبيعات') || goalBadge.includes('شراء')) {
+            return {
+                isMessages: false,
+                goalType: 'sales',
+                badgeText: 'إعلان مبيعات',
+                badgeIcon: '🛍️',
+                badgeClasses: 'bg-blue-50 text-blue-700 border-blue-200',
+                resultLabel: 'طلبات شراء',
+                cpaLabel: 'تكلفة الطلب (CPA)',
+                showRoas: true,
+            };
+        }
+
+        let hasWhatsappIndicator = false;
+        let hasInstagramIndicator = false;
+        let hasMessengerIndicator = false;
         let hasMessageCta = false;
 
         // Check campaign name
         if (name.includes('واتس') || name.includes('whatsapp')) {
             hasWhatsappIndicator = true;
-        }
-        if (name.includes('انستا') || name.includes('انستجرام') || name.includes('انستقرام') || name.includes('instagram') || name.includes('insta')) {
-            hasInstagramIndicator = true;
-        }
-        if (name.includes('ماسنجر') || name.includes('messenger') || name.includes('ماسن')) {
+        } else if (name.includes('ماسنجر') || name.includes('messenger') || name.includes('ماسن')) {
             hasMessengerIndicator = true;
+        } else if (name.includes('انستا') || name.includes('انستجرام') || name.includes('انستقرام') || name.includes('instagram') || name.includes('insta')) {
+            hasInstagramIndicator = true;
         }
 
         // Check campaign-level destination / platform
-        const campDest = (campaign.destination_type || '').toUpperCase();
-        if (campDest.includes('INSTAGRAM')) {
-            hasInstagramIndicator = true;
+        if (campDest.includes('MESSENGER')) {
+            hasMessengerIndicator = true;
         } else if (campDest.includes('WHATSAPP')) {
             hasWhatsappIndicator = true;
-        } else if (campDest.includes('MESSENGER')) {
-            hasMessengerIndicator = true;
-        }
-
-        if ((campaign.platform || '').toUpperCase() === 'INSTAGRAM') {
+        } else if (campDest.includes('INSTAGRAM')) {
             hasInstagramIndicator = true;
         }
 
@@ -151,18 +206,20 @@ export default function SharedAdReport({
             campaign.ads.forEach((ad) => {
                 const creative = ad.creative || {};
                 const cta = (creative.cta_type || creative.call_to_action_type || '').toUpperCase();
-                const link = (creative.link_url || creative.instagram_permalink_url || creative.preview_url || creative.post_url || ad.post_url || ad.facebook_post_url || '').toLowerCase();
+                const link = (creative.link_url || creative.preview_url || creative.post_url || ad.post_url || ad.facebook_post_url || '').toLowerCase();
                 const adName = (ad.name || '').toLowerCase();
                 const platform = (creative.platform || ad.platform || '').toUpperCase();
 
                 if (cta === 'WHATSAPP_MESSAGE' || link.includes('wa.me') || link.includes('whatsapp') || adName.includes('واتس') || adName.includes('whatsapp')) {
                     hasWhatsappIndicator = true;
                     hasMessageCta = true;
-                } else if (cta === 'INSTAGRAM_MESSAGE' || cta.includes('INSTAGRAM') || platform === 'INSTAGRAM' || Boolean(creative.instagram_permalink_url) || link.includes('instagram.com') || link.includes('instagr.am') || adName.includes('انستا') || adName.includes('انستجرام') || adName.includes('انستقرام') || adName.includes('instagram') || adName.includes('insta')) {
-                    hasInstagramIndicator = true;
-                    hasMessageCta = true;
                 } else if (['MESSAGE_PAGE', 'SEND_MESSAGE'].includes(cta) || link.includes('m.me') || link.includes('messenger') || adName.includes('ماسنجر') || adName.includes('messenger')) {
                     hasMessengerIndicator = true;
+                    hasMessageCta = true;
+                } else if (cta === 'INSTAGRAM_MESSAGE' || (platform === 'INSTAGRAM' && !hasMessengerIndicator) || adName.includes('انستا') || adName.includes('انستجرام') || adName.includes('انستقرام') || adName.includes('instagram') || adName.includes('insta')) {
+                    if (!hasMessengerIndicator) {
+                        hasInstagramIndicator = true;
+                    }
                     hasMessageCta = true;
                 } else if (['CONTACT_US', 'GET_QUOTE'].includes(cta)) {
                     hasMessageCta = true;
@@ -175,14 +232,16 @@ export default function SharedAdReport({
             campaign.adsets.forEach((adset) => {
                 const dest = (adset.destination_type || '').toUpperCase();
                 const adsetName = (adset.name || '').toLowerCase();
-                if (dest.includes('WHATSAPP') || adsetName.includes('واتس') || adsetName.includes('whatsapp')) {
+                if (dest.includes('MESSENGER') || adsetName.includes('ماسنجر') || adsetName.includes('messenger')) {
+                    hasMessengerIndicator = true;
+                    hasMessageCta = true;
+                } else if (dest.includes('WHATSAPP') || adsetName.includes('واتس') || adsetName.includes('whatsapp')) {
                     hasWhatsappIndicator = true;
                     hasMessageCta = true;
                 } else if (dest.includes('INSTAGRAM') || adsetName.includes('انستا') || adsetName.includes('انستجرام') || adsetName.includes('انستقرام') || adsetName.includes('instagram') || adsetName.includes('insta')) {
-                    hasInstagramIndicator = true;
-                    hasMessageCta = true;
-                } else if (dest.includes('MESSENGER') || adsetName.includes('ماسنجر') || adsetName.includes('messenger')) {
-                    hasMessengerIndicator = true;
+                    if (!hasMessengerIndicator) {
+                        hasInstagramIndicator = true;
+                    }
                     hasMessageCta = true;
                 }
             });
@@ -193,9 +252,6 @@ export default function SharedAdReport({
             hasInstagramIndicator ||
             hasMessengerIndicator ||
             goalType === 'messages' ||
-            goalType === 'instagram' ||
-            goalType === 'whatsapp' ||
-            goalType === 'messenger' ||
             objective === 'OUTCOME_ENGAGEMENT' ||
             objective === 'MESSAGES' ||
             objective.includes('ENGAGEMENT') ||
@@ -205,6 +261,20 @@ export default function SharedAdReport({
             name.includes('رسائل');
 
         if (isMessages) {
+            // Prioritize Messenger when detected
+            if (hasMessengerIndicator || (!hasWhatsappIndicator && !hasInstagramIndicator)) {
+                return {
+                    isMessages: true,
+                    goalType: 'messenger',
+                    badgeText: 'رسائل ماسنجر',
+                    badgeIcon: '💬',
+                    badgeClasses: 'bg-purple-50 text-purple-700 border-purple-200',
+                    resultLabel: 'رسائل ماسنجر',
+                    cpaLabel: 'تكلفة رسالة الماسنجر',
+                    showRoas: false,
+                };
+            }
+
             // Prioritize WhatsApp if WhatsApp indicator exists
             if (hasWhatsappIndicator) {
                 return {
@@ -220,28 +290,14 @@ export default function SharedAdReport({
             }
 
             // Instagram Direct
-            if (hasInstagramIndicator) {
-                return {
-                    isMessages: true,
-                    goalType: 'instagram',
-                    badgeText: 'رسائل إنستغرام دايركت',
-                    badgeIcon: '📸',
-                    badgeClasses: 'bg-gradient-to-r from-pink-50 to-purple-50 text-pink-700 border-pink-200',
-                    resultLabel: 'رسائل إنستغرام دايركت',
-                    cpaLabel: 'تكلفة رسالة إنستغرام',
-                    showRoas: false,
-                };
-            }
-
-            // Default to Messenger
             return {
                 isMessages: true,
-                goalType: 'messenger',
-                badgeText: 'رسائل ماسنجر',
-                badgeIcon: '💬',
-                badgeClasses: 'bg-purple-50 text-purple-700 border-purple-200',
-                resultLabel: 'رسائل ماسنجر',
-                cpaLabel: 'تكلفة رسالة الماسنجر',
+                goalType: 'instagram',
+                badgeText: 'رسائل إنستغرام دايركت',
+                badgeIcon: '📸',
+                badgeClasses: 'bg-gradient-to-r from-pink-50 to-purple-50 text-pink-700 border-pink-200',
+                resultLabel: 'رسائل إنستغرام دايركت',
+                cpaLabel: 'تكلفة رسالة إنستغرام',
                 showRoas: false,
             };
         }
@@ -381,8 +437,21 @@ export default function SharedAdReport({
         };
     };
 
+    // Formatted label for display
+    const getPresetDisplayLabel = () => {
+        if (datePreset === 'custom' && since && until) {
+            return `مدة محددة (${since} إلى ${until})`;
+        }
+        return allowedPresets[datePreset] || datePreset;
+    };
+
     // Handle Date Preset Change
     const handlePresetChange = (newPreset) => {
+        if (newPreset === 'custom') {
+            setCustomModalOpen(true);
+            return;
+        }
+
         if (newPreset === datePreset) return;
         setLoading(true);
         router.get(
@@ -396,12 +465,36 @@ export default function SharedAdReport({
         );
     };
 
-    // Handle Force Refresh
-    const handleRefresh = () => {
+    // Handle Custom Date Range Apply
+    const handleApplyCustomDates = (newSince, newUntil) => {
+        setCustomModalOpen(false);
         setLoading(true);
         router.get(
             window.location.pathname,
-            { date_preset: datePreset, refresh: 1 },
+            {
+                date_preset: 'custom',
+                since: newSince,
+                until: newUntil,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onFinish: () => setLoading(false),
+            }
+        );
+    };
+
+    // Handle Force Refresh
+    const handleRefresh = () => {
+        setLoading(true);
+        const params = { date_preset: datePreset, refresh: 1 };
+        if (datePreset === 'custom' && since && until) {
+            params.since = since;
+            params.until = until;
+        }
+        router.get(
+            window.location.pathname,
+            params,
             {
                 preserveState: true,
                 preserveScroll: true,
@@ -414,7 +507,7 @@ export default function SharedAdReport({
     const handleCopyReport = () => {
         if (!campaigns || campaigns.length === 0) return;
 
-        const presetLabel = allowedPresets[datePreset] || datePreset;
+        const presetLabel = getPresetDisplayLabel();
         const clientName = report?.name || 'العميل';
         const updateTime = lastUpdatedFormatted || '';
 
@@ -583,6 +676,31 @@ export default function SharedAdReport({
                             <span className="text-xs font-bold text-gray-500 ml-2 hidden sm:inline">الفترة الزمنية:</span>
                             {Object.entries(allowedPresets).map(([key, label]) => {
                                 const isActive = datePreset === key;
+                                if (key === 'custom') {
+                                    return (
+                                        <button
+                                            key={key}
+                                            type="button"
+                                            onClick={() => handlePresetChange(key)}
+                                            disabled={loading}
+                                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1.5 ${
+                                                isActive
+                                                    ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-sm shadow-indigo-500/25 ring-2 ring-indigo-500/30'
+                                                    : 'bg-indigo-50/70 hover:bg-indigo-100/80 text-indigo-700 border border-indigo-200/80'
+                                            }`}
+                                        >
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                            <span>{label}</span>
+                                            {isActive && since && until && (
+                                                <span className="bg-white/25 px-1.5 py-0.5 rounded-md text-[10px] font-mono font-normal">
+                                                    {since} : {until}
+                                                </span>
+                                            )}
+                                        </button>
+                                    );
+                                }
                                 return (
                                     <button
                                         key={key}
@@ -720,7 +838,7 @@ export default function SharedAdReport({
                                         </span>
                                         <div>
                                             <h3 className="text-sm sm:text-base font-extrabold text-white flex items-center gap-2">
-                                                <span>إجمالي نتائج الحملات ({allowedPresets[datePreset] || datePreset})</span>
+                                                <span>إجمالي نتائج الحملات ({getPresetDisplayLabel()})</span>
                                             </h3>
                                             <p className="text-[11px] text-indigo-200/70 font-medium">
                                                 ملخص المجموع الإجمالي لكافة الحملات الإعلانية المحددة
@@ -1170,6 +1288,16 @@ export default function SharedAdReport({
                         )}
                     </div>
                 )}
+
+                {/* Custom Date Range Modal */}
+                <CustomDateRangeModal
+                    isOpen={customModalOpen}
+                    onClose={() => setCustomModalOpen(false)}
+                    initialSince={since}
+                    initialUntil={until}
+                    onApply={handleApplyCustomDates}
+                    loading={loading}
+                />
             </main>
 
             {/* Footer */}

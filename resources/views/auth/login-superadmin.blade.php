@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>دخول المشرف العام | لوحة التحكم المركزية - فاست أوردر (Fast Order)</title>
     <meta name="robots" content="noindex, nofollow">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta property="og:title" content="دخول المشرف العام | فاست أوردر">
     <meta property="og:description" content="لوحة التحكم المركزية لمنصة فاست أوردر">
     <meta property="og:image" content="{{ asset('images/logo.png') }}">
@@ -355,5 +358,13 @@
         </a>
     </div>
 </div>
+<script>
+    // منع استرجاع الصفحة من الذاكرة المؤقتة (bfcache) على الهواتف لضمان تحديث الجلسة دائماً
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            window.location.reload();
+        }
+    });
+</script>
 </body>
 </html>

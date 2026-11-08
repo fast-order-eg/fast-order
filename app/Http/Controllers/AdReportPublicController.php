@@ -31,18 +31,37 @@ class AdReportPublicController extends Controller
         }
 
         $datePreset = $request->query('date_preset', 'maximum');
-        if (!array_key_exists($datePreset, AdScopeMarketingService::ALLOWED_PRESETS)) {
+        $since = $request->query('since');
+        $until = $request->query('until');
+
+        // Sanitize since and until (must be YYYY-MM-DD)
+        if ($since && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $since)) {
+            $since = null;
+        }
+        if ($until && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $until)) {
+            $until = null;
+        }
+
+        if ($since && $until) {
+            $datePreset = 'custom';
+        } elseif (!array_key_exists($datePreset, AdScopeMarketingService::ALLOWED_PRESETS)) {
             $datePreset = 'maximum';
         }
 
         $forceRefresh = (bool) $request->boolean('refresh');
         $campaignIds = $report->getCleanCampaignIds();
 
+        $cacheKey = ($datePreset === 'custom' && $since && $until)
+            ? "shared_ad_report_{$report->id}_custom_{$since}_{$until}"
+            : "shared_ad_report_{$report->id}_{$datePreset}";
+
         $adsData = $this->adService->getCampaignsSummaryByCampaignIds(
             $campaignIds,
             $datePreset,
             $forceRefresh,
-            "shared_ad_report_{$report->id}_{$datePreset}"
+            $cacheKey,
+            $since,
+            $until
         );
 
         // If AJAX JSON request (e.g. background polling or quick refresh API)
@@ -65,6 +84,8 @@ class AdReportPublicController extends Controller
             'show_summary'   => (bool) $report->show_summary,
             'adsData'        => $adsData,
             'datePreset'     => $datePreset,
+            'since'          => $since,
+            'until'          => $until,
             'allowedPresets' => AdScopeMarketingService::ALLOWED_PRESETS,
             'hasCampaigns'   => $adsData['has_campaigns'] ?? false,
             'campaignIds'    => $campaignIds,

@@ -65,13 +65,9 @@
         }
     </style>
     <script>
-        // Automatic refresh / redirect back
+        // إعادة التوجيه التلقائي إلى صفحة تسجيل الدخول بدلاً من history.back لمنع الحلقات اللانهائية
         setTimeout(function() {
-            if (window.history.length > 1) {
-                window.history.back();
-            } else {
-                window.location.reload();
-            }
+            window.location.href = '/login';
         }, 1500);
     </script>
 </head>
@@ -79,10 +75,10 @@
     <div class="box">
         <div class="icon">⏱️</div>
         <h1>انتهت صلاحية الجلسة (419)</h1>
-        <p>تم انتهاء صلاحية الجلسة الحالية لأسباب أمنية. جاري إعادة توجيهك وتحديث الصفحة تلقائياً...</p>
-        <button onclick="window.history.length > 1 ? window.history.back() : window.location.reload();" class="btn">
-            اضغط هنا لتحديث الصفحة الآن
-        </button>
+        <p>تم انتهاء صلاحية الجلسة الحالية لأسباب أمنية. جاري إعادة توجيهك إلى صفحة تسجيل الدخول تلقائياً...</p>
+        <a href="/login" class="btn">
+            تسجيل الدخول الآن
+        </a>
     </div>
 </body>
 </html>

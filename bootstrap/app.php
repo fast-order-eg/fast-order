@@ -44,8 +44,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'impersonate.cookie' => \App\Http\Middleware\HandleImpersonation::class,
         ]);
 
-        // استثناء مسارات المتجر العامة و checkout من CSRF لمنع فشل الطلبات في متصفحات التطبيقات والويب
+        // استثناء مسارات المتجر العامة و checkout و login من CSRF لمنع فشل الطلبات في متصفحات الموبايل والويب
         $middleware->validateCsrfTokens(except: [
+            'login',
+            '*/login',
+            'admin/login',
+            '*/admin/login',
+            'register',
             '*/admin/logout',
             'logout',
             'tenants/*',
@@ -150,6 +155,27 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // معالجة خطأ 419 (انتهاء الجلسة / CSRF Token) بسلاسة دون إظهار شاشة خطأ ميتة للمستخدم
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, \Illuminate\Http\Request $request) {
+            if ($e->getStatusCode() === 419) {
+                if ($request->is('login') || $request->is('admin/login') || $request->is('*/login') || $request->is('register')) {
+                    return redirect()->to($request->fullUrl())
+                        ->withInput($request->except(['password', 'password_confirmation', '_token']))
+                        ->with('error', 'انتهت صلاحية الجلسة، تم تحديث الصفحة تلقائياً. يرجى إعادة إدخال كلمة المرور.');
+                }
+
+                if ($request->expectsJson() || $request->is('api/*') || $request->is('*/api/*') || $request->is('public-api/*')) {
+                    return response()->json([
+                        'message' => 'انتهت صلاحية الجلسة، يرجى تحديث الصفحة',
+                        'status' => 419
+                    ], 419);
+                }
+
+                return redirect()->to('/login')
+                    ->withInput($request->except(['password', 'password_confirmation', '_token']))
+                    ->with('error', 'انتهت صلاحية الجلسة، يرجى تسجيل الدخول مجدداً.');
+            }
+        });
+
         $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, \Illuminate\Http\Request $request) {
             if ($request->is('login') || $request->is('admin/login') || $request->is('*/login') || $request->is('register')) {
                 return redirect()->to($request->fullUrl())
@@ -164,9 +190,9 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 419);
             }
 
-            return redirect()->back()
+            return redirect()->to('/login')
                 ->withInput($request->except(['password', 'password_confirmation', '_token']))
-                ->with('error', 'انتهت صلاحية الجلسة، يرجى إعادة المحاولة.');
+                ->with('error', 'انتهت صلاحية الجلسة، يرجى تسجيل الدخول مجدداً.');
         });
 
         $exceptions->report(function (\Throwable $e) {
