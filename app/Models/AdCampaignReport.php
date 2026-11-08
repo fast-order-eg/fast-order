@@ -51,7 +51,7 @@ class AdCampaignReport extends Model
         $cleaned = [];
         foreach ($raw as $id) {
             $val = trim((string) $id);
-            if (!empty($val) && !in_array($val, $cleaned, true)) {
+            if (!empty($val) && ctype_digit($val) && !in_array($val, $cleaned, true)) {
                 $cleaned[] = $val;
             }
         }

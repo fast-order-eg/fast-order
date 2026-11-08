@@ -80,8 +80,10 @@ class AdScopeMarketingService
             $datePreset = 'maximum';
         }
 
-        // Clean campaign IDs array
-        $campaignIds = array_values(array_filter(array_map('trim', $campaignIds)));
+        // Clean campaign IDs array: must be non-empty numeric IDs
+        $campaignIds = array_values(array_filter(array_map('trim', array_map('strval', $campaignIds)), function ($id) {
+            return !empty($id) && ctype_digit($id);
+        }));
 
         if (empty($campaignIds)) {
             return [

@@ -239,6 +239,8 @@ class Tenant extends Model
             return [];
         }
 
-        return array_values(array_filter(array_map('trim', array_map('strval', $raw))));
+        return array_values(array_filter(array_map('trim', array_map('strval', $raw)), function ($id) {
+            return !empty($id) && ctype_digit($id);
+        }));
     }
 }

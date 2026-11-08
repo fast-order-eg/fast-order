@@ -152,13 +152,27 @@ class AdReportController extends Controller
      */
     protected function parseCampaignIds(string $input): array
     {
-        $tokens = preg_split('/[\r\n,;\s]+/', $input);
+        // Extract numeric sequences of 6+ digits (Meta campaign IDs)
+        preg_match_all('/\b\d{6,25}\b/', $input, $matches);
         $result = [];
 
-        foreach ($tokens as $token) {
-            $cleaned = trim($token);
-            if (!empty($cleaned) && !in_array($cleaned, $result, true)) {
-                $result[] = $cleaned;
+        if (!empty($matches[0])) {
+            foreach ($matches[0] as $id) {
+                $cleaned = trim($id);
+                if (!empty($cleaned) && !in_array($cleaned, $result, true)) {
+                    $result[] = $cleaned;
+                }
+            }
+        }
+
+        // Fallback: if no 6+ digit numbers found, try split and keep only numeric tokens
+        if (empty($result)) {
+            $tokens = preg_split('/[\r\n,;\s]+/', $input);
+            foreach ($tokens as $token) {
+                $cleaned = trim($token);
+                if (!empty($cleaned) && ctype_digit($cleaned) && !in_array($cleaned, $result, true)) {
+                    $result[] = $cleaned;
+                }
             }
         }
 
