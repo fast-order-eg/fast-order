@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>الباقات والأسعار | فاست أوردر (Fast Order) — باقات مرنة بدون عمولة | بديل ايزي اوردر</title>
     <meta name="title" content="الباقات والأسعار | فاست أوردر (Fast Order) — باقات مرنة بدون عمولة | بديل ايزي اوردر">
-    <meta name="description" content="اكتشف باقات وأسعار فاست أوردر (Fast Order). باقة الدفع على الطلب (2ج لكل أوردر) أو اشتراك شهري مع تجربة مجانية 7 أيام بدون عمولات وبديل اقتصادي متفوق لمنصة ايزي اوردر وشوبيفاي في مصر.">
+    <meta name="description" content="اكتشف باقات وأسعار فاست أوردر (Fast Order). باقة الدفع على الطلب (2ج لكل أوردر) أو اشتراك شهري أو سنوي شامل بدون عمولات وبديل اقتصادي متفوق لمنصة ايزي اوردر وشوبيفاي في مصر.">
     <meta name="keywords" content="اسعار فاست اوردر, باقات فاست اوردر, بديل ايزي اوردر, اسعار ايزي اوردر, انشاء متجر الكتروني, ستور اونلاين, انشاء ستور في مصر, منصة تجارة الكترونية, تكلفة متجر الكتروني, شوبيفاي مصر, دفع عند الاستلام">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="https://fast-order-eg.tech/pricing">
@@ -14,7 +14,7 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="فاست أوردر — Fast Order">
     <meta property="og:title" content="باقات وأسعار فاست أوردر | أرخص وأسرع منصة متاجر في مصر | بديل ايزي اوردر">
-    <meta property="og:description" content="اختر الباقة المناسبة لمتجرك: ادفع 2 جنيه فقط لكل أوردر أو باقة شهرية غير محدودة مع 0% عمولة وتجربة مجانية 7 أيام.">
+    <meta property="og:description" content="اختر الباقة المناسبة لمتجرك: ادفع 2 جنيه فقط لكل أوردر أو باقة شهرية أو سنوية شاملة مع 0% عمولة على المبيعات.">
     <meta property="og:image" content="{{ asset('images/logo.png') }}">
     <meta property="og:image:secure_url" content="{{ asset('images/logo.png') }}">
     <meta property="og:image:type" content="image/png">
@@ -169,7 +169,7 @@
                     </a>
                     @if (Route::has('register'))
                         <a href="{{ route('register') }}" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white font-bold text-sm shadow-lg shadow-indigo-500/25 transition-all transform hover:-translate-y-0.5">
-                            ابدأ تجربتك المجانية <i class="fa-solid fa-arrow-left mr-1.5 text-xs"></i>
+                            ابدأ متجرك الآن <i class="fa-solid fa-arrow-left mr-1.5 text-xs"></i>
                         </a>
                     @endif
                 @endauth
@@ -181,13 +181,13 @@
     <section class="relative pt-16 pb-12 text-center px-4 sm:px-6 lg:px-8 z-10">
         <div class="max-w-3xl mx-auto">
             <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-bold mb-6 animate-float">
-                <i class="fa-solid fa-sparkles"></i> 0% عمولة على مبيعاتك + تجربة مجانية 7 أيام
+                <i class="fa-solid fa-sparkles"></i> 0% عمولة على مبيعاتك + باقات مرنة بالجنيه المصري
             </div>
             <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight mb-6">
                 باقات وأسعار مصممة <br class="hidden sm:block"> <span class="gradient-text">لنمو متجرك الإلكتروني بسرعة</span>
             </h1>
             <p class="text-lg sm:text-xl text-slate-400 font-medium max-w-2xl mx-auto mb-10 leading-relaxed">
-                اختر الباقة المناسبة لحجم تجارتك وابدأ البيع خلال دقائق. جميع الباقات تشمل تجربة مجانية بدون بطاقة ائتمانية وبدون أي رسوم أو عمولات خفية.
+                اختر الباقة المناسبة لحجم تجارتك وابدأ البيع خلال دقائق وبدون أي رسوم أو عمولات خفية على مبيعاتك.
             </p>
 
             <!-- Monthly / Annual Toggle Button -->
@@ -300,11 +300,11 @@
                     <div>
                         <a href="{{ Route::has('register') ? route('register', ['plan' => $plan['slug'] ?? '']) : '#' }}" 
                            class="w-full py-4 px-6 rounded-2xl font-black text-base text-center block transition-all duration-300 shadow-lg transform hover:-translate-y-0.5 {{ $isPopular ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white shadow-indigo-500/30' : 'bg-slate-800 hover:bg-slate-700 text-white hover:text-white border border-slate-700 hover:border-slate-600' }}">
-                            <span>ابدأ تجربتك المجانية لمدة {{ $trialDays }} يوماً</span>
+                            <span>ابدأ الآن مع {{ $name }}</span>
                             <i class="fa-solid fa-arrow-left ml-2 text-xs"></i>
                         </a>
                         <p class="text-center text-[11px] text-slate-500 mt-2.5 font-medium">
-                            <i class="fa-solid fa-shield-halved mr-1 text-emerald-500"></i> بدون بطاقة ائتمانية • إلغاء في أي وقت
+                            <i class="fa-solid fa-shield-halved mr-1 text-emerald-500"></i> تفعيل فوري • 0% عمولة على المبيعات
                         </p>
                     </div>
                 </div>
@@ -467,12 +467,12 @@
                 جاهز لإطلاق متجرك الإلكتروني ومضاعفة مبيعاتك؟ 🚀
             </h2>
             <p class="text-indigo-100 text-lg sm:text-xl font-medium max-w-2xl mx-auto mb-8 relative z-10">
-                انضم لآلاف المتاجر الناجحة على فاست أوردر. ابدأ تجربتك المجانية لمدة 7 أيام الآن دون أي مخاطرة وبدون عمولات على مبيعاتك!
+                انضم لآلاف المتاجر الناجحة على فاست أوردر. ابدأ متجرك الآن واشترك في الباقة الأنسب لتجارتك بدون أي عمولات على مبيعاتك!
             </p>
             <div class="flex flex-wrap items-center justify-center gap-4 relative z-10">
                 @if (Route::has('register'))
                     <a href="{{ route('register') }}" class="px-8 py-4 rounded-2xl bg-white text-slate-950 hover:bg-slate-100 font-black text-base shadow-xl transition-all transform hover:-translate-y-1">
-                        ابدأ تجربتك المجانية الآن <i class="fa-solid fa-arrow-left ml-2"></i>
+                        ابدأ متجرك الآن <i class="fa-solid fa-arrow-left ml-2"></i>
                     </a>
                 @endif
                 <a href="#pricing-cards" class="px-8 py-4 rounded-2xl bg-black/30 hover:bg-black/40 text-white border border-white/20 font-bold text-base backdrop-blur-md transition-all">

@@ -83,103 +83,110 @@
 
     $plans = $plans ?? [
         [
-            'id' => 'starter',
-            'name_ar' => 'الباقة التجريبية (Starter)',
-            'name_en' => 'Starter Trial Plan',
-            'badge_ar' => 'مجاني 7 أيام',
-            'badge_en' => 'Free 7 Days',
-            'price_monthly' => '0',
-            'price_yearly' => '0',
-            'period_ar' => 'شهر',
-            'period_en' => 'month',
-            'description_ar' => 'مثالية للبائعين المبتدئين لتجربة المنصة واستكشاف جميع المميزات الأساسية بدون مخاطرة.',
-            'description_en' => 'Perfect for beginner sellers to try the platform and explore all core features risk-free.',
+            'id' => 'pay_per_order',
+            'name_ar' => 'باقة الدفع على الطلب (2ج)',
+            'name_en' => 'Pay Per Order (2 EGP)',
+            'badge_ar' => 'الأكثر مرونة وتوفيراً 🔥',
+            'badge_en' => 'Most Flexible',
+            'price' => '2',
+            'price_monthly' => '2',
+            'price_yearly' => '2',
+            'period_ar' => 'لكل أوردر مفتوح',
+            'period_en' => 'per order',
+            'description_ar' => 'بدون أي اشتراك شهري ثابت! اشحن محفظتك بإنستاباي أو فودافون كاش، وادفع 2 جنيه فقط لما يجيلك أوردر وتفتحه.',
+            'description_en' => 'Zero monthly subscription! Top up via InstaPay or Vodafone Cash and pay only 2 EGP per unlocked order.',
             'featured' => false,
             'features_ar' => [
-                'متجر إلكتروني متكامل وسريع',
-                'إضافة حتى 50 منتج',
-                'ثيم كلاسيكي ونظيف متجاوب',
-                '0% عمولة على مبيعاتك',
-                'لوحة تحكم باللغتين العربية والإنجليزية',
-                'دعم فني عبر البريد الإلكتروني',
+                'خصم 2 ج.م فقط عند فتح ومعاينة كل أوردر',
+                'بدون أي مصاريف أو اشتراكات شهرية ثابتة',
+                'شحن المحفظة فوراً بـ فودافون كاش وإنستا باي',
+                'منتجات وثيمات وتصاميم غير محدودة',
+                'ربط دومين خاص وبكسل فيسبوك وتيك توك مجاناً',
+                '0% عمولة على المبيعات بالكامل',
+                'دعم فني وتجاوب لحظي متواصل',
             ],
             'features_en' => [
-                'Fully integrated fast online store',
-                'Add up to 50 products',
-                'Clean & responsive classic theme',
-                '0% commission on your sales',
-                'Bilingual control panel (AR/EN)',
-                'Email customer support',
+                'Pay only 2 EGP per unlocked order',
+                'Zero fixed monthly fees or hidden deductions',
+                'Instant top-up via Vodafone Cash & InstaPay',
+                'Unlimited products, themes & designs',
+                'Free custom domain & pixel connections',
+                '0% sales commission',
+                'Continuous live technical support',
             ],
-            'cta_text_ar' => 'ابدأ تجربتك المجانية',
-            'cta_text_en' => 'Start Your Free Trial',
-            'cta_link' => Route::has('register') ? route('register') : '#',
+            'cta_text_ar' => 'ابدأ بباقة الطلب (2ج)',
+            'cta_text_en' => 'Choose Pay Per Order Plan',
+            'cta_link' => Route::has('register') ? route('register', ['plan' => 'commission']) : '#',
         ],
         [
-            'id' => 'growth',
-            'name_ar' => 'باقة النمو (Growth)',
-            'name_en' => 'Growth Plan',
-            'badge_ar' => 'الأكثر طلباً',
+            'id' => 'monthly_unlimited',
+            'name_ar' => 'الباقة الشهرية الشاملة',
+            'name_en' => 'Monthly Unlimited Plan',
+            'badge_ar' => 'الأكثر طلباً للمتاجر النشطة ⭐',
             'badge_en' => 'Most Popular',
-            'price_monthly' => '299',
-            'price_yearly' => '239',
-            'period_ar' => 'شهر',
-            'period_en' => 'month',
-            'description_ar' => 'موجهة للمتاجر الناشئة والمتوسطة الراغبة في التوسع وبناء علامة تجارية قوية ومستدامة.',
-            'description_en' => 'Aimed at startups and medium stores looking to expand and build a strong, sustainable brand.',
+            'price' => '500',
+            'original_price' => '1000',
+            'price_monthly' => '500',
+            'price_yearly' => '500',
+            'period_ar' => 'شهرياً (بدلاً من 1000ج)',
+            'period_en' => 'monthly (instead of 1000 EGP)',
+            'description_ar' => 'فتح ومعاينة غير محدودة لجميع الأوردرات بدون أي خصم إضافي للطلبات، مع كافة الثيمات والمميزات الاحترافية.',
+            'description_en' => 'Unlimited order views & zero deductions per order, with all premium themes and features unlocked.',
             'featured' => true,
             'features_ar' => [
-                'منتجات غير محدودة',
-                'ربط دومين خاص (Custom Domain) + SSL مجاني',
-                'جميع الثيمات الاحترافية (Modern, Vibrant, Starter)',
-                'ربط بكسل Meta و TikTok و Google Analytics',
-                'تقارير مبيعات وتحليلات متقدمة',
-                'دعم فني مباشر 24/7 عبر الدردشة والبريد',
+                'أوردرات ومبيعات غير محدودة بدون أي خصم 2ج',
+                '0% عمولة وبدون أي رسوم خفية على المبيعات',
+                'معاينة كاملة لكافة بيانات العملاء والطلبات',
+                'جميع الثيمات والتصاميم مفتوحة مجاناً',
+                'سيرفرات فائقة السرعة وأولوية معالجة',
+                'دعم فني سريع ومباشر VIP',
             ],
             'features_en' => [
-                'Unlimited products upload',
-                'Custom domain connection + free SSL',
-                'All professional themes (Modern, Vibrant, Starter)',
-                'Meta Pixel, TikTok Pixel & Google Analytics',
-                'Advanced sales reports & analytics',
-                '24/7 live chat and email support',
+                'Unlimited orders with zero deduction per order',
+                '0% commission and zero hidden fees',
+                'Full customer and order details access',
+                'All premium themes unlocked for free',
+                'Dedicated high-performance servers',
+                'Dedicated VIP 24/7 technical support',
             ],
-            'cta_text_ar' => 'اشترك الآن وابدأ النمو',
-            'cta_text_en' => 'Subscribe Now & Grow',
-            'cta_link' => Route::has('register') ? route('register') : '#',
+            'cta_text_ar' => 'اشترك في الباقة الشهرية (500ج)',
+            'cta_text_en' => 'Subscribe to Monthly Plan (500 EGP)',
+            'cta_link' => Route::has('register') ? route('register', ['plan' => 'monthly']) : '#',
         ],
         [
-            'id' => 'pro',
-            'name_ar' => 'باقة الاحتراف (Pro)',
-            'name_en' => 'Pro Professional Plan',
-            'badge_ar' => 'للشركات الكبرى',
-            'badge_en' => 'For Large Brands',
-            'price_monthly' => '799',
-            'price_yearly' => '639',
-            'period_ar' => 'شهر',
-            'period_en' => 'month',
-            'description_ar' => 'موجهة للشركات والعلامات التجارية الكبيرة ذات الحجم العالي من الطلبات وحركة المرور الكثيفة.',
-            'description_en' => 'Designed for enterprises and large brands with high order volume and intense web traffic.',
+            'id' => 'yearly_unlimited',
+            'name_ar' => 'الباقة السنوية (أفضل توفير)',
+            'name_en' => 'Yearly Unlimited Plan',
+            'badge_ar' => 'وفّر شهرين كاملين 👑',
+            'badge_en' => '2 Months Free (Best Value)',
+            'price' => '5000',
+            'original_price' => '6000',
+            'price_monthly' => '416',
+            'price_yearly' => '5000',
+            'period_ar' => 'سنوياً (~416ج/شهر)',
+            'period_en' => 'yearly (~416 EGP/mo)',
+            'description_ar' => 'أفضل قيمة واستثمار لعلامتك التجارية: وفّر 1000 ج.م سنوياً مع كافة المميزات مفتوحة وأولوية دعم VIP.',
+            'description_en' => 'Best value investment: Save 1,000 EGP yearly with all features unlocked and top VIP priority.',
             'featured' => false,
             'features_ar' => [
-                'جميع مميزات باقة النمو كاملة',
-                'أولوية قصوى في معالجة السيرفرات والأداء',
-                'إدارة الموظفين والصلاحيات المتقدمة',
-                'تخصيص كامل للثيمات عبر أسلوب CSS مخصص',
-                'تقارير ذكية وسلسلة الإمداد والمخزون',
-                'مدير حساب مخصص + دعم VIP هاتف وواتساب',
+                'وفر شهرين كاملين مجاناً (5000ج بدلاً من 6000ج)',
+                'أوردرات ومبيعات غير محدودة طوال السنة',
+                'ربط نطاق مخصص (Custom Domain) مجاناً',
+                '0% عمولة على الإطلاق على المبيعات',
+                'مدير حساب مخصص وأولوية في التحديثات',
+                'دعم فني وتدريب VIP على مدار الساعة',
             ],
             'features_en' => [
-                'Includes all Growth plan features',
-                'High-performance dedicated server routing',
-                'Staff accounts & advanced permission management',
-                'Full CSS customizing options for themes',
-                'Smart inventory and supply chain reports',
-                'Dedicated account manager + Phone/WhatsApp VIP support',
+                'Save 2 full months (5000 EGP instead of 6000 EGP)',
+                'Unlimited orders and sales year-round',
+                'Free custom domain connection with SSL',
+                '0% commission on all sales',
+                'Dedicated account manager & priority updates',
+                'VIP 24/7 technical support and onboarding',
             ],
-            'cta_text_ar' => 'تواصل مع المبيعات / اشترك الآن',
-            'cta_text_en' => 'Contact Sales / Subscribe Now',
-            'cta_link' => Route::has('register') ? route('register') : '#',
+            'cta_text_ar' => 'اشترك سنوياً ووفر شهرين 👑',
+            'cta_text_en' => 'Subscribe Yearly & Save 2 Months',
+            'cta_link' => Route::has('register') ? route('register', ['plan' => 'yearly']) : '#',
         ],
     ];
 
@@ -547,16 +554,16 @@
                 dashboard: 'لوحة التحكم',
                 login: 'تسجيل الدخول',
                 startNow: 'ابدأ',
-                startFree: 'ابدأ مجاناً',
+                startFree: 'ابدأ الآن',
                 browseFeatures: 'المميزات',
-                heroBadge: '⚡ المنصة الأسرع لزيادة مبيعات الدفع عند الاستلام في مصر',
+                heroBadge: '⚡ المنصة الأسرع لمتاجر الدفع عند الاستلام في مصر',
                 heroTitle: 'أنشئ متجرك الإلكتروني في دقائق',
                 heroTitleGradient: 'واستقبل أوردرات الدفع عند الاستلام فوراً!',
-                heroDesc: 'المنصة الأسرع في مصر لمبيعات الدفع عند الاستلام، مع شيك أوت سريع وعمولة 0% على كل أرباحك.',
-                heroCtaStart: 'ابدأ متجرك الآن مجاناً',
-                heroCtaFeatures: 'كل المميزات',
-                heroCheckFree: '7 أيام تجربة مجانية كاملة',
-                heroCheckNoCard: 'بدون أي بطاقة ائتمان',
+                heroDesc: 'شيك أوت فائق السرعة في خطوة واحدة لمضاعفة مبيعاتك، أسعار شحن مخصصة لـ 27 محافظة، وربط بيكسل تيك توك وفيسبوك بضغطة زر — مع 0% عمولة على مبيعاتك.',
+                heroCtaStart: 'ابدأ متجرك الآن 🚀',
+                heroCtaFeatures: 'استكشف الباقات والأسعار',
+                heroCheckFree: 'تفعيل فوري في دقيقة',
+                heroCheckNoCard: 'بدون اشتراكات دولارية مكلفة',
                 heroCheckZeroComm: '0% عمولة على مبيعاتك',
                 heroCheckSupport: 'دعم فني وتدريب مصري 24/7',
                 
@@ -591,7 +598,7 @@
                 
                 pricingSub: 'باقات واضحة وبدون عمولات',
                 pricingTitle: 'اختار الباقة اللي تناسب حجم شغلك بدون أي مصاريف خفية',
-                pricingDesc: 'ابدأ مجاناً لمدة 7 أيام أو اختار باقة الدفع على الطلب (2 جنيه فقط مع كل أوردر مفتوح) أو الاشتراك الشهري الشامل بدون عمولات نهائياً!',
+                pricingDesc: 'اختر باقة الدفع على الطلب (2 جنيه فقط لكل أوردر) أو الاشتراك الشهري أو السنوي الشامل بعمولة 0% وبدون أي مصاريف خفية.',
                 pricingIncluded: 'المميزات المشمولة في الباقة:',
                 pricingGuarantee: 'جميع الباقات تشمل استضافة سحابية سريعة جداً، شهادة أمان SSL مجانية، ونسخ احتياطي يومي تلقائي.',
                 
@@ -609,7 +616,7 @@
                 
                 finalCtaSub: '🚀 ابدأ رحلة نجاحك النهاردة',
                 finalCtaTitle: 'جاهز تنقل تجارتك الإلكترونية لمستوى تاني من المبيعات؟',
-                finalCtaDesc: 'أنشئ متجرك في أقل من 3 دقايق، استمتع بتجربة 7 أيام مجاناً، وابدأ استلم أوردراتك بعمولة 0% على كل المبيعات!',
+                finalCtaDesc: 'أنشئ متجرك في أقل من 3 دقايق، وابدأ استلم أوردرات الدفع عند الاستلام بعمولة 0% على كل المبيعات!',
                 finalCtaSupport: 'تواصل مع الدعم الفني',
                 
                 footerDesc: 'فاست اوردر هي المنصة الأسرع والأسهل لإنشاء المتاجر الإلكترونية وصفحات الهبوط لمبيعات الدفع عند الاستلام في مصر، بدون عمولات أو تعقيدات تقنية.',
@@ -636,16 +643,16 @@
                 dashboard: 'Dashboard',
                 login: 'Login',
                 startNow: 'Start',
-                startFree: 'Start Free',
+                startFree: 'Start Now',
                 browseFeatures: 'Features',
-                heroBadge: '⚡ The Fastest Platform for Cash on Delivery in Egypt',
+                heroBadge: '⚡ The Fastest Platform for Cash on Delivery Stores in Egypt',
                 heroTitle: 'Launch Your Online Store in Minutes',
                 heroTitleGradient: 'And Receive Cash on Delivery Orders Instantly!',
-                heroDesc: 'The fastest platform in Egypt for Cash on Delivery sales, featuring ultra-fast checkout and 0% sales commission.',
-                heroCtaStart: 'Start Your Store Free',
-                heroCtaFeatures: 'All Features',
-                heroCheckFree: '7-Day Free Trial',
-                heroCheckNoCard: 'No Credit Card Required',
+                heroDesc: 'Ultra-fast one-step checkout to maximize your sales, custom 27 governorates shipping, and instant TikTok & Meta pixel integration — with 0% sales commission.',
+                heroCtaStart: 'Start Your Store Now 🚀',
+                heroCtaFeatures: 'Explore Plans & Pricing',
+                heroCheckFree: 'Instant 1-Minute Setup',
+                heroCheckNoCard: 'Fair Local EGP Pricing',
                 heroCheckZeroComm: '0% Sales Commission',
                 heroCheckSupport: '24/7 Technical Support',
                 
@@ -680,7 +687,7 @@
                 
                 pricingSub: 'Transparent Pricing & No Commissions',
                 pricingTitle: 'Plans Designed to Grow Your Business with No Hidden Fees',
-                pricingDesc: 'Start free for 7 days and upgrade as your store grows. All plans enjoy 0% commission on sales!',
+                pricingDesc: 'Choose Pay Per Order (2 EGP), Monthly, or Yearly Unlimited plan with 0% commission and zero hidden fees.',
                 pricingMonthlyToggle: 'Monthly Pay',
                 pricingAnnualToggle: 'Annual Pay',
                 pricingSaveDiscount: 'Save 20% 🔥',
@@ -701,7 +708,7 @@
                 
                 finalCtaSub: '🚀 Launch Into Success Today',
                 finalCtaTitle: 'Ready to Take Your E-Commerce to the Next Level?',
-                finalCtaDesc: 'Create your store now in less than 3 minutes, enjoy 7 days free, and never pay any commission on your sales!',
+                finalCtaDesc: 'Create your store in less than 3 minutes, and start receiving Cash on Delivery orders with 0% commission on your sales!',
                 finalCtaSupport: 'Contact Support',
                 
                 footerDesc: 'Fast Order is the all-in-one platform for building and growing e-commerce stores in the Arab world with blazing speeds and smart technologies, designed to enable merchants to grow without commissions or tech limits.',
@@ -882,38 +889,27 @@
                                 <span class="text-gradient" x-text="trans('heroTitleGradient')"></span>
                             </h1>
 
-                            <!-- Feature Points (متقسمة نقاط وتوزيعة أسلس وأبعد بدون دش) -->
-                            <div class="space-y-3 max-w-xl mx-auto lg:mx-0 pt-1 pb-1">
-                                <!-- Point 1 -->
-                                <div class="flex items-start gap-3.5 bg-white/75 dark:bg-white/[0.04] backdrop-blur-md p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 dark:border-white/10 text-right shadow-xs hover:border-brand-500/40 transition-all">
-                                    <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
-                                        <i class="fa-solid fa-bolt text-base"></i>
-                                    </div>
-                                    <div>
-                                        <div class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">شيك أوت سريع في خطوة واحدة</div>
-                                        <div class="text-[11px] sm:text-xs text-slate-500 dark:text-gray-400 mt-0.5 leading-relaxed">يسهل على عميلك الشراء في ثواني بدون تعقيد ليضاعف نسبة المبيعات ويقلل السلات المتروكة.</div>
-                                    </div>
-                                </div>
-                                <!-- Point 2 -->
-                                <div class="flex items-start gap-3.5 bg-white/75 dark:bg-white/[0.04] backdrop-blur-md p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 dark:border-white/10 text-right shadow-xs hover:border-brand-500/40 transition-all">
-                                    <div class="w-9 h-9 rounded-xl bg-brand-500/10 text-brand-500 dark:text-brand-400 flex items-center justify-center shrink-0 mt-0.5">
-                                        <i class="fa-solid fa-truck-fast text-base"></i>
-                                    </div>
-                                    <div>
-                                        <div class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">مخصص بالكامل للدفع عند الاستلام</div>
-                                        <div class="text-[11px] sm:text-xs text-slate-500 dark:text-gray-400 mt-0.5 leading-relaxed">تخصيص أسعار شحن الـ 27 محافظة مصرية، مع تأكيد وتتبع فوري للأوردرات عبر الواتساب.</div>
-                                    </div>
-                                </div>
-                                <!-- Point 3 -->
-                                <div class="flex items-start gap-3.5 bg-white/75 dark:bg-white/[0.04] backdrop-blur-md p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 dark:border-white/10 text-right shadow-xs hover:border-brand-500/40 transition-all">
-                                    <div class="w-9 h-9 rounded-xl bg-pink-500/10 text-pink-500 dark:text-pink-400 flex items-center justify-center shrink-0 mt-0.5">
-                                        <i class="fa-solid fa-shield-halved text-base"></i>
-                                    </div>
-                                    <div>
-                                        <div class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">0% عمولة مبيعات + ربط بيكسل فوري</div>
-                                        <div class="text-[11px] sm:text-xs text-slate-500 dark:text-gray-400 mt-0.5 leading-relaxed">أرباحك ملكك بالكامل بدون نسب مقتطعة، مع ربط بيكسل تيك توك وفيسبوك وسناب شات بدون كود.</div>
-                                    </div>
-                                </div>
+                            <!-- Headline & Subtitle (Clean, concise & high-converting) -->
+                            <p class="text-base sm:text-lg text-slate-600 dark:text-gray-300 font-normal leading-relaxed max-w-xl mx-auto lg:mx-0" x-text="trans('heroDesc')">
+                            </p>
+
+                            <!-- Modern Compact Feature Pills (بدون كروت متراكمة ودش كلام) -->
+                            <div class="flex flex-wrap items-center justify-center lg:justify-start gap-2 pt-1 pb-1">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 text-xs font-bold shadow-xs">
+                                    <i class="fa-solid fa-bolt text-amber-500"></i>
+                                    <span x-show="lang === 'ar'">شيك أوت سريع خطوة واحدة</span>
+                                    <span x-show="lang === 'en'">1-Step Fast Checkout</span>
+                                </span>
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-500/10 text-brand-700 dark:text-brand-300 border border-brand-500/20 text-xs font-bold shadow-xs">
+                                    <i class="fa-solid fa-truck-fast text-brand-500"></i>
+                                    <span x-show="lang === 'ar'">شحن لـ 27 محافظة</span>
+                                    <span x-show="lang === 'en'">27 Governorates Shipping</span>
+                                </span>
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-500/10 text-pink-700 dark:text-pink-300 border border-pink-500/20 text-xs font-bold shadow-xs">
+                                    <i class="fa-solid fa-chart-line text-pink-500"></i>
+                                    <span x-show="lang === 'ar'">ربط بيكسل فوري</span>
+                                    <span x-show="lang === 'en'">Instant Pixel Tracking</span>
+                                </span>
                             </div>
 
                             <!-- CTA Buttons -->
@@ -922,8 +918,8 @@
                                     <span x-text="trans('heroCtaStart')"></span>
                                     <i class="fa-solid fa-rocket text-xs"></i>
                                 </a>
-                                <a href="#features" class="px-5 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-bold text-xs sm:text-base text-slate-700 dark:text-gray-300 bg-white dark:bg-dark-card hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-white/10 transition-all text-center flex items-center justify-center gap-1.5 whitespace-nowrap">
-                                    <i class="fa-solid fa-layer-group text-brand-500 dark:text-brand-400 text-xs"></i>
+                                <a href="#pricing" class="px-5 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-bold text-xs sm:text-base text-slate-700 dark:text-gray-300 bg-white dark:bg-dark-card hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-white/10 transition-all text-center flex items-center justify-center gap-1.5 whitespace-nowrap">
+                                    <i class="fa-solid fa-tags text-brand-500 dark:text-brand-400 text-xs"></i>
                                     <span x-text="trans('heroCtaFeatures')"></span>
                                 </a>
                             </div>
@@ -932,11 +928,11 @@
                             <div class="pt-3 sm:pt-4 border-t border-slate-200/70 dark:border-white/10 flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-2 text-xs font-semibold text-slate-500 dark:text-gray-400">
                                 <div class="inline-flex items-center gap-1.5">
                                     <i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i>
-                                    <span x-text="trans('heroCheckFree')"></span>
+                                    <span x-text="trans('heroCheckZeroComm')"></span>
                                 </div>
                                 <div class="inline-flex items-center gap-1.5">
                                     <i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i>
-                                    <span x-text="trans('heroCheckZeroComm')"></span>
+                                    <span x-text="trans('heroCheckFree')"></span>
                                 </div>
                                 <div class="inline-flex items-center gap-1.5">
                                     <i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i>
@@ -964,7 +960,7 @@
                                             <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
                                         </div>
                                         <div class="text-xs text-slate-500 dark:text-gray-400 font-mono bg-slate-100 dark:bg-dark-bg/60 px-3 py-1 rounded-full border border-slate-200 dark:border-white/5">
-                                            https://my-store.fastorder.test/admin
+                                            https://my-store.fast-order-eg.tech/admin
                                         </div>
                                         <div class="w-6"></div>
                                     </div>

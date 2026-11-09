@@ -13,8 +13,10 @@ class PlatformPricingController extends Controller
      */
     public function index(Request $request)
     {
-        // جلب الباقات النشطة مرتبة حسب السعر الشهري
+        // جلب الباقات النشطة (استبعاد الباقة المجانية) مرتبة حسب السعر الشهري
         $plans = SubscriptionPlan::where('is_active', true)
+            ->where('slug', '!=', 'free')
+            ->where('slug', '!=', 'trial')
             ->orderBy('price_monthly', 'asc')
             ->get();
 
