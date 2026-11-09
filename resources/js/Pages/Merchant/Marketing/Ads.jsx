@@ -322,53 +322,70 @@ export default function MarketingAdsIndex({
         const adName = (ad.name || '').toLowerCase();
         const campName = (campaign.name || '').toLowerCase();
         const cta = (creative.cta_type || creative.call_to_action_type || '').toUpperCase();
-        const platform = (creative.platform || ad.platform || '').toUpperCase();
+        const adPlatform = (ad.platform || creative.platform || '').toUpperCase();
+        const campPlatform = (campaign.platform || '').toUpperCase();
+        const campGoal = (campaign.goal_type || '').toLowerCase();
 
-        const postUrl = ad.post_url
-            || creative.post_url
-            || creative.instagram_permalink_url
-            || ad.facebook_post_url
-            || creative.preview_url
-            || creative.link_url
-            || '';
-
-        const postUrlLower = postUrl.toLowerCase();
-        const isInstaUrl = postUrlLower.includes('instagram.com') || postUrlLower.includes('instagr.am');
-        const isWhatsappUrl = postUrlLower.includes('wa.me') || postUrlLower.includes('whatsapp.com');
-
-        const isInstagram =
-            platform === 'INSTAGRAM' ||
-            isInstaUrl ||
-            Boolean(creative.instagram_permalink_url) ||
-            cta === 'INSTAGRAM_MESSAGE' ||
-            cta.includes('INSTAGRAM') ||
-            adName.includes('انستا') || adName.includes('انستجرام') || adName.includes('انستقرام') || adName.includes('instagram') || adName.includes('insta') ||
-            campName.includes('انستا') || campName.includes('انستجرام') || campName.includes('انستقرام') || campName.includes('instagram') || campName.includes('insta');
-
-        const isWhatsapp =
-            platform === 'WHATSAPP' ||
-            isWhatsappUrl ||
-            cta === 'WHATSAPP_MESSAGE' ||
-            adName.includes('واتس') || adName.includes('whatsapp') ||
-            campName.includes('واتس') || campName.includes('whatsapp');
-
-        let resolvedUrl = postUrl;
-        if (!resolvedUrl) {
-            const imgUrl = creative.image_url || creative.thumbnail_url || '';
-            const match = imgUrl.match(/_(\d{15,22})_/);
-            if (match && match[1]) {
-                resolvedUrl = `https://www.facebook.com/photo/?fbid=${match[1]}`;
-            } else if (ad.id) {
-                resolvedUrl = `https://www.facebook.com/ads/experience/confirmation/?ad_id=${ad.id}`;
-            } else {
-                resolvedUrl = isInstagram ? 'https://instagram.com' : 'https://facebook.com';
+        // 1. Resolve Facebook canonical URL if possible from effective_object_story_id (pageId_postId)
+        const storyId = creative.effective_object_story_id || creative.object_story_id || ad.effective_object_story_id || '';
+        let canonicalFbUrl = '';
+        if (storyId && typeof storyId === 'string' && storyId.includes('_')) {
+            const parts = storyId.split('_');
+            if (parts[0] && parts[1]) {
+                canonicalFbUrl = `https://www.facebook.com/${parts[0]}/posts/${parts[1]}`;
             }
         }
 
+        // 2. Best candidate Facebook URL
+        const fbCandidate = canonicalFbUrl || ad.facebook_post_url || creative.facebook_post_url || '';
+
+        // 3. Raw post URL
+        let rawPostUrl = ad.post_url || creative.post_url || creative.preview_url || creative.link_url || '';
+
+        // If rawPostUrl is generic "facebook.com/posts/{id}" (which gives 404 without page ID), prioritize canonicalFbUrl
+        if (rawPostUrl && /facebook\.com\/posts\/\d+\/?$/i.test(rawPostUrl.trim())) {
+            if (canonicalFbUrl) {
+                rawPostUrl = canonicalFbUrl;
+            } else {
+                const imgUrl = creative.image_url || creative.thumbnail_url || '';
+                const match = imgUrl.match(/_(\d{15,22})_/);
+                if (match && match[1]) {
+                    rawPostUrl = `https://www.facebook.com/photo/?fbid=${match[1]}`;
+                } else if (ad.id) {
+                    rawPostUrl = `https://www.facebook.com/ads/experience/confirmation/?ad_id=${ad.id}`;
+                }
+            }
+        }
+
+        // 4. Determine platform intent
+        const isCampMessenger = campGoal === 'messenger' || campName.includes('ماسنجر') || campName.includes('messenger');
+        const isAdMessenger = adName.includes('ماسنجر') || adName.includes('messenger') || ['MESSAGE_PAGE', 'SEND_MESSAGE'].includes(cta);
+        const isCampFacebook = campPlatform === 'FACEBOOK' || isCampMessenger;
+        const isAdFacebook = adPlatform === 'FACEBOOK';
+
+        const isCampWhatsapp = campGoal === 'whatsapp' || campName.includes('واتس') || campName.includes('whatsapp');
+        const isAdWhatsapp = adPlatform === 'WHATSAPP' || cta === 'WHATSAPP_MESSAGE' || adName.includes('واتس') || adName.includes('whatsapp') || rawPostUrl.toLowerCase().includes('wa.me');
+
+        // If the campaign or ad is Facebook / Messenger, force Facebook platform
+        const isForceFacebook = isCampFacebook || isAdFacebook || isCampMessenger || isAdMessenger;
+
+        const isInstagram = !isForceFacebook && !isCampWhatsapp && !isAdWhatsapp && (
+            adPlatform === 'INSTAGRAM' ||
+            campPlatform === 'INSTAGRAM' ||
+            campGoal === 'instagram_direct' ||
+            cta === 'INSTAGRAM_MESSAGE' ||
+            (rawPostUrl.toLowerCase().includes('instagram.com') || rawPostUrl.toLowerCase().includes('instagr.am')) ||
+            adName.includes('انستا') || adName.includes('instagram') ||
+            campName.includes('انستا') || campName.includes('instagram')
+        );
+
+        const isWhatsapp = !isInstagram && (isCampWhatsapp || isAdWhatsapp);
+
         if (isInstagram) {
+            const instaUrl = creative.instagram_permalink_url || (rawPostUrl.toLowerCase().includes('instagram.com') ? rawPostUrl : '') || 'https://instagram.com';
             return {
                 platform: 'INSTAGRAM',
-                url: resolvedUrl,
+                url: instaUrl,
                 label: 'فتح في إنستجرام ↗',
                 title: 'فتح منشور الإعلان في إنستجرام',
                 buttonClasses: 'bg-gradient-to-r from-purple-600 via-pink-600 to-rose-500 hover:from-purple-700 hover:via-pink-700 hover:to-rose-600 text-white shadow-sm',
@@ -377,9 +394,10 @@ export default function MarketingAdsIndex({
         }
 
         if (isWhatsapp) {
+            const waUrl = rawPostUrl.toLowerCase().includes('wa.me') ? rawPostUrl : (fbCandidate || rawPostUrl || '#');
             return {
                 platform: 'WHATSAPP',
-                url: resolvedUrl,
+                url: waUrl,
                 label: 'محادثة واتساب ↗',
                 title: 'فتح محادثة واتساب',
                 buttonClasses: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm',
@@ -387,9 +405,11 @@ export default function MarketingAdsIndex({
             };
         }
 
+        // Facebook
+        const fbUrl = fbCandidate || rawPostUrl || (ad.id ? `https://www.facebook.com/ads/experience/confirmation/?ad_id=${ad.id}` : 'https://facebook.com');
         return {
             platform: 'FACEBOOK',
-            url: resolvedUrl,
+            url: fbUrl,
             label: 'فتح في فيسبوك ↗',
             title: 'فتح منشور الإعلان في فيسبوك',
             buttonClasses: 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm',
@@ -1212,7 +1232,7 @@ export default function MarketingAdsIndex({
                                                                                             target="_blank"
                                                                                             rel="noopener noreferrer"
                                                                                             className="w-20 h-20 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0 border border-gray-200 relative group block cursor-pointer"
-                                                                                            title="اضغط لفتح المنشور على فيسبوك"
+                                                                                            title={platformInfo.title}
                                                                                         >
                                                                                             <img
                                                                                                 src={imageUrl}

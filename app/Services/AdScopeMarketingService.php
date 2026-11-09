@@ -289,32 +289,75 @@ class AdScopeMarketingService
                         }
                     }
 
-                    // Extract Post link - prioritize Facebook if not purely an instagram campaign
-                    $fbPostUrl = null;
+                    // 1. Extract canonical Facebook Post link from effective_object_story_id (pageId_postId)
+                    $canonicalFbUrl = null;
+                    $storyId = $creative['effective_object_story_id'] ?? $creative['object_story_id'] ?? $ad['effective_object_story_id'] ?? null;
+                    if (!empty($storyId) && str_contains($storyId, '_')) {
+                        $parts = explode('_', $storyId, 2);
+                        if (!empty($parts[0]) && !empty($parts[1]) && is_numeric($parts[0]) && is_numeric($parts[1])) {
+                            $canonicalFbUrl = "https://www.facebook.com/{$parts[0]}/posts/{$parts[1]}";
+                        }
+                    }
+
+                    // 2. Fallback: photo URL from image or ad experience confirmation URL
+                    $fbPhotoUrl = null;
                     $imgUrl = $creative['image_url'] ?? $creative['thumbnail_url'] ?? '';
                     if (preg_match('/_(\d{15,22})_/', $imgUrl, $m)) {
-                        $fbPostUrl = "https://www.facebook.com/photo/?fbid={$m[1]}";
+                        $fbPhotoUrl = "https://www.facebook.com/photo/?fbid={$m[1]}";
                     } elseif (!empty($ad['id'])) {
-                        $fbPostUrl = "https://www.facebook.com/ads/experience/confirmation/?ad_id={$ad['id']}";
+                        $fbPhotoUrl = "https://www.facebook.com/ads/experience/confirmation/?ad_id={$ad['id']}";
                     }
 
-                    $postUrl = $ad['post_url'] ?? $creative['post_url'] ?? $creative['preview_url'] ?? null;
-                    if (empty($postUrl) || (str_contains(strtolower($postUrl), 'instagram.com') && $hasMessengerIndicator)) {
-                        $postUrl = $fbPostUrl ?: ($creative['instagram_permalink_url'] ?? $postUrl);
+                    // 3. Raw post URL from API
+                    $rawPostUrl = $ad['post_url'] ?? $creative['post_url'] ?? $creative['preview_url'] ?? null;
+
+                    // If rawPostUrl is generic "facebook.com/posts/{id}" (which gives 404 without page ID), prioritize canonicalFbUrl
+                    $bestFbUrl = $canonicalFbUrl;
+                    if (!$bestFbUrl) {
+                        if (!empty($rawPostUrl) && !preg_match('#facebook\.com/posts/\d+/?$#i', trim($rawPostUrl))) {
+                            $bestFbUrl = $rawPostUrl;
+                        } else {
+                            $bestFbUrl = $fbPhotoUrl ?: $rawPostUrl;
+                        }
                     }
 
-                    $isAdInsta = (!$hasMessengerIndicator) && (
+                    $isAdInsta = (!$hasMessengerIndicator && !$hasWhatsappIndicator && ($campaign['platform'] ?? '') !== 'FACEBOOK') && (
                         ($creative['platform'] ?? $ad['platform'] ?? '') === 'INSTAGRAM'
                         || $cta === 'INSTAGRAM_MESSAGE'
                         || (str_contains(strtolower($adName), 'انستا') || str_contains(strtolower($adName), 'instagram'))
                     );
 
+                    $isAdWhatsapp = $hasWhatsappIndicator || ($cta === 'WHATSAPP_MESSAGE') || (str_contains(strtolower($adName), 'واتس') || str_contains(strtolower($adName), 'whatsapp'));
+
+                    if ($isAdInsta) {
+                        $postUrl = $creative['instagram_permalink_url'] ?? $rawPostUrl ?? 'https://www.instagram.com';
+                        $platform = 'INSTAGRAM';
+                        $platformLabel = 'إنستغرام';
+                        $buttonLabel = 'فتح في إنستجرام ↗';
+                    } elseif ($isAdWhatsapp) {
+                        $postUrl = $bestFbUrl ?: $rawPostUrl;
+                        $platform = 'WHATSAPP';
+                        $platformLabel = 'واتساب';
+                        $buttonLabel = 'محادثة واتساب ↗';
+                    } else {
+                        // Facebook is primary
+                        $postUrl = $bestFbUrl ?: $fbPhotoUrl ?: $rawPostUrl;
+                        $platform = 'FACEBOOK';
+                        $platformLabel = 'فيسبوك';
+                        $buttonLabel = 'فتح في فيسبوك ↗';
+                    }
+
                     $ad['post_url'] = $postUrl;
-                    $ad['facebook_post_url'] = $fbPostUrl ?: $postUrl;
+                    $ad['facebook_post_url'] = $bestFbUrl ?: $fbPhotoUrl ?: $postUrl;
                     $ad['instagram_permalink_url'] = $creative['instagram_permalink_url'] ?? null;
-                    $ad['platform'] = $isAdInsta ? 'INSTAGRAM' : 'FACEBOOK';
-                    $ad['platform_label'] = $isAdInsta ? 'إنستغرام' : 'فيسبوك';
-                    $ad['open_button_label'] = $isAdInsta ? 'فتح في إنستجرام ↗' : 'فتح في فيسبوك ↗';
+                    $ad['platform'] = $platform;
+                    $ad['platform_label'] = $platformLabel;
+                    $ad['open_button_label'] = $buttonLabel;
+                    if ($canonicalFbUrl) {
+                        $ad['creative']['effective_object_story_id'] = $storyId;
+                        $ad['creative']['facebook_post_url'] = $canonicalFbUrl;
+                        $ad['creative']['post_url'] = $canonicalFbUrl;
+                    }
                 }
                 unset($ad);
             }
