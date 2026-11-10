@@ -572,6 +572,9 @@
       const mainImgFormatted = resolveShopImg(p.image_url);
       const galleryImgsFormatted = (p.images || []).map(resolveShopImg).filter(Boolean);
       const imgs = Array.from(new Set([mainImgFormatted, ...galleryImgsFormatted, ...colorImgs].filter(Boolean)));
+      if (imgs.length === 0) {
+        imgs.push(typeof window.getStoreFallbackImage === 'function' ? window.getStoreFallbackImage() : '/images/logo.png');
+      }
 
       const price = window.BirdCart.formatPrice ? window.BirdCart.formatPrice(p.price_after, p.price_before) : '';
       const descList = (p.description || '').split(/\r?\n|\u2022|-/).map(s => s.trim()).filter(Boolean).map(s => `<li>${s}</li>`).join('');
@@ -580,7 +583,7 @@
           <div class="card p-gallery-card" style="padding:16px">
             <div class="p-gallery">
               <div class="p-main">
-                <img id="pMain" src="${imgs[0] || ''}" alt="${p.name || ''}" onerror="if(this.dataset.fallbackApplied !== '1'){this.dataset.fallbackApplied='1'; if('${imgs[0] || ''}' && this.src !== '${imgs[0] || ''}'){this.src='${imgs[0] || ''}';}}">
+                <img id="pMain" src="${imgs[0]}" alt="${p.name || ''}" onerror="if(typeof window.handleImageError==='function'){window.handleImageError(this);}else{this.onerror=null;this.src='/images/logo.png';}">
               </div>
               ${imgs.length > 1 ? `<div class="p-thumbs">${imgs.map((src, i) => `<button type="button" class="p-thumb ${i === 0 ? 'active' : ''}" data-idx="${i}"><img src="${src}" alt="thumb ${i + 1}" onerror="this.parentElement.style.opacity='0.4';"></button>`).join('')}</div>` : ''}
             </div>
