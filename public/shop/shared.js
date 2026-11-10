@@ -396,6 +396,78 @@ function injectStorefrontLangSwitcher() {
 
 function createEl(tag, cls){const el=document.createElement(tag); if(cls) el.className=cls; return el;}
 
+// ======================================
+// Universal Image Fallback Engine (Store Logo -> Fast Order Brand Logo)
+// ======================================
+window.getBrandLogo = function() {
+  var s = window.__SITE_SETTINGS__ || {};
+  return s.brand_logo_url || '/images/logo.png';
+};
+
+window.getStoreLogo = function() {
+  var s = window.__SITE_SETTINGS__ || {};
+  var brandLogo = window.getBrandLogo();
+  if (s.store_logo_url && s.store_logo_url.trim() !== '') {
+    return s.store_logo_url;
+  }
+  if (s.logo_url && s.logo_url.trim() !== '' && !s.logo_url.includes('dummyimage.com') && s.logo_url !== brandLogo) {
+    return s.logo_url;
+  }
+  return null;
+};
+
+window.getStoreFallbackImage = function() {
+  return window.getStoreLogo() || window.getBrandLogo();
+};
+
+window.handleImageError = function(img) {
+  if (!img) return;
+  var brandLogo = window.getBrandLogo();
+  var storeLogo = window.getStoreLogo();
+
+  var attempts = parseInt(img.dataset.imgErrTries || '0', 10);
+  img.dataset.imgErrTries = (attempts + 1).toString();
+
+  // 1) Try store logo first if available, not already failed, and image isn't already pointing to it
+  if (attempts === 0 && storeLogo && img.src !== storeLogo) {
+    img.src = storeLogo;
+    img.classList.add('fallback-logo', 'store-fallback-logo');
+    img.style.objectFit = 'contain';
+    img.style.backgroundColor = '#f8fafc';
+    return;
+  }
+
+  // 2) Fallback to Fast Order brand logo
+  if (attempts <= 1 && img.src !== brandLogo) {
+    img.src = brandLogo;
+    img.classList.add('fallback-logo', 'brand-fallback-logo');
+    img.style.objectFit = 'contain';
+    img.style.backgroundColor = '#f8fafc';
+    return;
+  }
+
+  // Prevent infinite loop if both fail
+  img.onerror = null;
+  img.dataset.imgHandled = 'done';
+};
+
+// Global capture-phase listener: Catches any broken image across any page or script dynamically
+if (!window.__IMG_ERR_LISTENER_BOUND__) {
+  window.__IMG_ERR_LISTENER_BOUND__ = true;
+  window.addEventListener('error', function(event) {
+    var target = event.target;
+    if (target && target.tagName === 'IMG') {
+      if (target.dataset.imgHandled === 'done') return;
+      var attempts = parseInt(target.dataset.imgErrTries || '0', 10);
+      if (attempts >= 2) {
+        target.dataset.imgHandled = 'done';
+        return;
+      }
+      window.handleImageError(target);
+    }
+  }, true);
+}
+
 function formatEGP(amount){
   const val = Math.round(Number(amount||0));
   const currentLang = getStorefrontLang();
@@ -427,12 +499,11 @@ function productCard(p){
   
   const link = createEl('a'); link.href = `/shop/product.html?id=${p.id}`; link.style.textDecoration='none'; link.style.color='inherit';
   const img = createEl('img'); 
-  img.src = p.image_url || 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image'; 
+  img.src = p.image_url || window.getStoreFallbackImage(); 
   img.alt = p.name || '';
   img.loading = 'lazy';
   img.onerror = function() {
-    this.onerror = null;
-    this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 450' fill='%231e293b'%3E%3Crect width='600' height='450' fill='%231e293b'/%3E%3Cpath d='M260 200a30 30 0 100-60 30 30 0 000 60zm-70 120h220l-70-90-50 60-35-45-65 75z' fill='%23475569'/%3E%3Ctext x='50%25' y='80%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-size='20' font-family='sans-serif'%3E" + encodeURIComponent(getStorefrontLang() === 'en' ? 'No Image' : 'لا تتوفر صورة') + "%3C/text%3E%3C/svg%3E";
+    window.handleImageError(this);
   };
   link.appendChild(img);
   
@@ -618,8 +689,12 @@ function categoryCard(c){
   });
   
   const img = createEl('img'); 
-  img.src = c.image_url || 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image'; 
+  img.src = c.image_url || window.getStoreFallbackImage(); 
   img.alt = c.name || ''; 
+  img.loading = 'lazy';
+  img.onerror = function() {
+    window.handleImageError(this);
+  };
   card.appendChild(img);
   
   const body = createEl('div','body');
@@ -1278,7 +1353,7 @@ window.openQuickAddModal = function(productId) {
 
       let html = `
         <div class="quick-modal-product-info" style="display:flex; gap:16px; margin-bottom:20px; border-bottom:1px solid #f1f5f9; padding-bottom:16px; align-items: flex-start;">
-          <img id="qm-image" src="${p.image_url || '/shop/placeholder.jpg'}" style="width:90px; height:90px; object-fit:cover; border-radius:12px; border:1px solid #e2e8f0;" onerror="this.src='/shop/placeholder.jpg'">
+          <img id="qm-image" src="${p.image_url || window.getStoreFallbackImage()}" style="width:90px; height:90px; object-fit:cover; border-radius:12px; border:1px solid #e2e8f0;" onerror="window.handleImageError(this)">
           <div style="flex:1;">
             <h3 id="qm-name" style="margin:0 0 8px 0; font-size:1.05rem; color:#1e293b; line-height:1.4; font-weight:700;">${p.name}</h3>
             <div style="display:flex; align-items:baseline; gap:8px;">

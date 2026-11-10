@@ -92,7 +92,7 @@ class StorefrontController extends Controller
         // Fetch settings for the current tenant
         $tenant = app()->bound(\App\Models\Tenant::class) ? app(\App\Models\Tenant::class) : null;
         $storeName = Setting::get('store_name') ?: ($tenant?->name ?? 'متجر إلكتروني');
-        $storeLogo = Setting::get('logo') ? asset('storage/' . Setting::get('logo')) : ($tenant?->logo ? asset('storage/' . $tenant->logo) : asset('images/logo.png'));
+        $storeLogo = Setting::getLogoUrl();
         $storeDescription = Setting::get('store_description') ?: ('تسوق أفضل المنتجات والعروض الحصرية بأعلى جودة وأفضل الأسعار من متجر ' . $storeName);
         $facebookPixelId = Setting::get('facebook_pixel_id', '');
         $tiktokPixelId = Setting::get('tiktok_pixel_id', '');
@@ -141,7 +141,9 @@ class StorefrontController extends Controller
             'whatsapp' => Setting::get('whatsapp', '201146520922'),
             'facebook_page' => Setting::get('facebook_page', ''),
             'store_name' => $storeName,
-            'logo_url' => Setting::get('logo') ? asset('storage/' . Setting::get('logo')) : asset('images/logo.png'),
+            'store_logo_url' => Setting::getStoreLogoUrl(),
+            'brand_logo_url' => Setting::getBrandLogoUrl(),
+            'logo_url' => Setting::getLogoUrl(),
             'facebook_pixel_id' => $facebookPixelId,
             'tiktok_pixel_id' => $tiktokPixelId,
             'google_analytics_id' => $googleAnalyticsId,
@@ -1256,12 +1258,12 @@ s0.parentNode.insertBefore(s1,s0);
             $html = preg_replace('/(<a[^>]*class=["\'][^"\']*brand[^"\']*["\'][^>]*>[\s\S]*?<span[^>]*>)(.*?)(<\/span>)/i', '$1' . e($storeName) . '$3', $html);
         }
 
-        if ($logo) {
-            $logoUrl = asset('storage/' . $logo);
+        $resolvedLogoUrl = Setting::getLogoUrl();
+        if ($resolvedLogoUrl) {
             if (preg_match('/(<img id="siteLogo"[^>]*src=")[^"]*("[^>]*>)/i', $html)) {
-                $html = preg_replace('/(<img id="siteLogo"[^>]*src=")[^"]*("[^>]*>)/i', '$1' . e($logoUrl) . '$2', $html);
+                $html = preg_replace('/(<img id="siteLogo"[^>]*src=")[^"]*("[^>]*>)/i', '$1' . e($resolvedLogoUrl) . '$2', $html);
             } else {
-                $html = preg_replace('/(<a[^>]*class=["\'][^"\']*brand[^"\']*["\'][^>]*>[\s\S]*?<img[^>]*src=")[^"]*("[^>]*>)/i', '$1' . e($logoUrl) . '$2', $html);
+                $html = preg_replace('/(<a[^>]*class=["\'][^"\']*brand[^"\']*["\'][^>]*>[\s\S]*?<img[^>]*src=")[^"]*("[^>]*>)/i', '$1' . e($resolvedLogoUrl) . '$2', $html);
             }
         }
 

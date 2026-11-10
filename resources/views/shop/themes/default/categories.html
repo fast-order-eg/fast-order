@@ -34,7 +34,7 @@
   <header class="container header">
     <a href="/shop/index.html" class="brand" style="text-decoration:none;color:inherit">
       <img src="/images/logo.png?v=202604031" alt="Store"
-        onerror="this.src='https://dummyimage.com/48x48/111827/ffffff&text=K'" />
+        onerror="this.onerror=null;this.src='/images/logo.png';" />
       <span>Store</span>
     </a>
     <button class="menu-toggle" aria-label="القائمة"><span></span><span></span><span></span></button>
@@ -109,7 +109,7 @@
 
             subcategories.forEach(sub => {
               html += '<div class="card category-card" style="cursor: pointer;" onclick="location.href=\'/shop/category-products.html?id=' + sub.id + '&name=' + encodeURIComponent(sub.name) + '\'">';
-              html += '<img src="' + (sub.image_url || 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image') + '" alt="' + sub.name + '" style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block;">';
+              html += '<img src="' + (sub.image_url || (typeof window.getStoreFallbackImage === 'function' ? window.getStoreFallbackImage() : '/images/logo.png')) + '" alt="' + (sub.name || '') + '" onerror="if(typeof window.handleImageError===\'function\'){window.handleImageError(this);}else{this.onerror=null;this.src=\'/images/logo.png\';}" style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block;">';
               html += '<div class="body">';
               html += '<h3 class="title">' + sub.name + '</h3>';
               html += '</div>';
@@ -132,7 +132,7 @@
             html += '<div class="subcategories-grid grid">';
             subcategories.forEach(sub => {
               html += '<div class="card category-card" style="cursor: pointer;" onclick="location.href=\'/shop/category-products.html?id=' + sub.id + '&name=' + encodeURIComponent(sub.name) + '\'">';
-              html += '<img src="' + (sub.image_url || 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image') + '" alt="' + sub.name + '" style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block;">';
+              html += '<img src="' + (sub.image_url || (typeof window.getStoreFallbackImage === 'function' ? window.getStoreFallbackImage() : '/images/logo.png')) + '" alt="' + (sub.name || '') + '" onerror="if(typeof window.handleImageError===\'function\'){window.handleImageError(this);}else{this.onerror=null;this.src=\'/images/logo.png\';}" style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block;">';
               html += '<div class="body"><h3 class="title">' + sub.name + '</h3>';
               html += '</div></div>';
             });
@@ -148,7 +148,7 @@
           html += '</div><div class="subcategories-grid grid">';
           categoriesWithoutMainCategory.forEach(cat => {
             html += '<div class="card category-card" style="cursor: pointer;" onclick="location.href=\'/shop/category-products.html?id=' + cat.id + '&name=' + encodeURIComponent(cat.name) + '\'">';
-            html += '<img src="' + (cat.image_url || 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image') + '" alt="' + cat.name + '" style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block;">';
+            html += '<img src="' + (cat.image_url || (typeof window.getStoreFallbackImage === 'function' ? window.getStoreFallbackImage() : '/images/logo.png')) + '" alt="' + (cat.name || '') + '" onerror="if(typeof window.handleImageError===\'function\'){window.handleImageError(this);}else{this.onerror=null;this.src=\'/images/logo.png\';}" style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block;">';
             html += '<div class="body"><h3 class="title">' + cat.name + '</h3>';
             html += '</div></div>';
           });

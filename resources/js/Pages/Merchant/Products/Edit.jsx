@@ -4,12 +4,14 @@ import MerchantLayout from '@/Layouts/MerchantLayout';
 
 const InputField = ({ label, name, data, setData, errors, type = 'text', required = false, placeholder, hint, disabled = false, children }) => (
     <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+        <label htmlFor={`field-${name}`} className="block text-sm font-semibold text-gray-700 mb-1.5">
             {label} {required && <span className="text-red-500">*</span>}
         </label>
         {children || (
             <input
                 type={type}
+                name={name}
+                id={`field-${name}`}
                 value={data[name] !== undefined && data[name] !== null ? data[name] : ''}
                 onChange={(e) => setData(name, e.target.value)}
                 placeholder={placeholder}
@@ -27,18 +29,8 @@ const InputField = ({ label, name, data, setData, errors, type = 'text', require
     </div>
 );
 
-const compressImage = (file, maxWidth = 1600, quality = 0.82) => {
-    return new Promise((resolve) => {
-        if (!file || !file.type || !file.type.startsWith('image/')) {
-            return resolve(file);
-        }
-        if (file.type === 'image/svg+xml' || file.type === 'image/gif') {
-            return resolve(file);
-        }
-        if (file.size < 350 * 1024) {
-            return resolve(file);
-        }
-
+const fallbackCompress = (file, maxWidth, quality, resolve) => {
+    try {
         const img = new Image();
         const url = URL.createObjectURL(file);
         img.onload = () => {
@@ -60,12 +52,8 @@ const compressImage = (file, maxWidth = 1600, quality = 0.82) => {
             ctx.drawImage(img, 0, 0, width, height);
             canvas.toBlob((blob) => {
                 if (blob && blob.size < file.size) {
-                    const cleanName = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
-                    const compressed = new File([blob], cleanName, {
-                        type: 'image/jpeg',
-                        lastModified: Date.now()
-                    });
-                    resolve(compressed);
+                    const cleanName = (file.name || 'image').replace(/\.[^/.]+$/, "") + ".jpg";
+                    resolve(new File([blob], cleanName, { type: 'image/jpeg', lastModified: Date.now() }));
                 } else {
                     resolve(file);
                 }
@@ -76,6 +64,58 @@ const compressImage = (file, maxWidth = 1600, quality = 0.82) => {
             resolve(file);
         };
         img.src = url;
+    } catch (e) {
+        resolve(file);
+    }
+};
+
+const compressImage = (file, maxWidth = 1600, quality = 0.8) => {
+    return new Promise((resolve) => {
+        if (!file || !file.type || !file.type.startsWith('image/')) {
+            return resolve(file);
+        }
+        if (file.type === 'image/svg+xml' || file.type === 'image/gif') {
+            return resolve(file);
+        }
+        if (file.size < 300 * 1024) {
+            return resolve(file);
+        }
+
+        if (typeof createImageBitmap === 'function') {
+            createImageBitmap(file)
+                .then((bitmap) => {
+                    let { width, height } = bitmap;
+                    if (width > maxWidth || height > maxWidth) {
+                        if (width > height) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        } else {
+                            width = Math.round((width * maxWidth) / height);
+                            height = maxWidth;
+                        }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(bitmap, 0, 0, width, height);
+                    bitmap.close();
+                    canvas.toBlob((blob) => {
+                        if (blob && blob.size < file.size) {
+                            const cleanName = (file.name || 'image').replace(/\.[^/.]+$/, "") + ".jpg";
+                            resolve(new File([blob], cleanName, { type: 'image/jpeg', lastModified: Date.now() }));
+                        } else {
+                            resolve(file);
+                        }
+                    }, 'image/jpeg', quality);
+                })
+                .catch(() => {
+                    fallbackCompress(file, maxWidth, quality, resolve);
+                });
+            return;
+        }
+
+        fallbackCompress(file, maxWidth, quality, resolve);
     });
 };
 
@@ -141,6 +181,8 @@ export default function Edit({ product, categories, allProducts = [] }) {
     const [showVariantsStockSection, setShowVariantsStockSection] = useState(false);
     const [selectingColorIndex, setSelectingColorIndex] = useState(null);
     const [uploadingColorImage, setUploadingColorImage] = useState(false);
+    const [isCompressing, setIsCompressing] = useState(false);
+    const [validationError, setValidationError] = useState('');
 
     const { data, setData, post, processing, errors, transform, progress } = useForm({
         _method: 'PUT',
@@ -206,13 +248,17 @@ export default function Edit({ product, categories, allProducts = [] }) {
     const handleMainImage = async (e) => {
         const file = e.target.files && e.target.files[0];
         if (file) {
+            setIsCompressing(true);
             try {
                 const compressed = await compressImage(file);
                 setData('main_image', compressed);
                 setMainImagePreview(URL.createObjectURL(compressed));
+                if (validationError) setValidationError('');
             } catch (err) {
                 setData('main_image', file);
                 setMainImagePreview(URL.createObjectURL(file));
+            } finally {
+                setIsCompressing(false);
             }
         }
     };
@@ -220,6 +266,7 @@ export default function Edit({ product, categories, allProducts = [] }) {
     const handleGalleryChange = async (e) => {
         const files = Array.from(e.target.files || []);
         if (files.length > 0) {
+            setIsCompressing(true);
             try {
                 const compressedFiles = await Promise.all(files.map(f => compressImage(f)));
                 setData('gallery', [...(data.gallery || []), ...compressedFiles]);
@@ -229,6 +276,8 @@ export default function Edit({ product, categories, allProducts = [] }) {
                 setData('gallery', [...(data.gallery || []), ...files]);
                 const newPreviews = files.map(f => URL.createObjectURL(f));
                 setGalleryPreviews(prev => [...prev, ...newPreviews]);
+            } finally {
+                setIsCompressing(false);
             }
         }
     };
@@ -520,32 +569,39 @@ export default function Edit({ product, categories, allProducts = [] }) {
     };
 
     const handleSubmit = (e) => {
-        e.preventDefault();
+        if (e && e.preventDefault) e.preventDefault();
+
+        if (isCompressing) {
+            setValidationError('يرجى الانتظار ثانية واحدة حتى اكتمال ضغط وتجهيز الصور');
+            return;
+        }
 
         // 1. فحص الحقول الأساسية قبل الإرسال لمنع أي تعليق
         if (!data.name || !data.name.trim()) {
-            alert('يرجى إدخال اسم المنتج');
-            const el = document.querySelector('[name="name"]');
+            setValidationError('يرجى إدخال اسم المنتج');
+            const el = document.getElementById('field-name') || document.querySelector('[name="name"]');
             el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             el?.focus();
             return;
         }
 
         if (!data.category_id) {
-            alert('يرجى اختيار تصنيف المنتج');
-            const el = document.querySelector('select');
+            setValidationError('يرجى اختيار تصنيف المنتج');
+            const el = document.getElementById('field-category_id') || document.querySelector('select[name="category_id"]');
             el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             el?.focus();
             return;
         }
 
         if (data.price_after === '' || data.price_after === null || Number(data.price_after) < 0) {
-            alert('يرجى تحديد السعر بعد الخصم (سعر البيع الفعلي للمنتج)');
-            const el = document.querySelector('[name="price_after"]');
+            setValidationError('يرجى تحديد سعر البيع الفعلي للمنتج');
+            const el = document.getElementById('field-price_after') || document.querySelector('[name="price_after"]');
             el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             el?.focus();
             return;
         }
+
+        setValidationError('');
 
         const cleaned = variantsStock.map(v => {
             const { _userEdited, _userEditedQty, ...rest } = v;
@@ -569,7 +625,7 @@ export default function Edit({ product, categories, allProducts = [] }) {
             onError: (errs) => {
                 const firstKey = Object.keys(errs || {})[0];
                 if (firstKey) {
-                    const el = document.querySelector(`[name="${firstKey}"]`) || document.getElementById('form-error-banner');
+                    const el = document.getElementById(`field-${firstKey}`) || document.querySelector(`[name="${firstKey}"]`) || document.getElementById('form-error-banner');
                     el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             }
@@ -605,6 +661,15 @@ export default function Edit({ product, categories, allProducts = [] }) {
                     </a>
                 </div>
 
+                {validationError && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 text-red-800 text-sm font-bold flex items-center gap-2 shadow-sm animate-shake">
+                        <svg className="w-5 h-5 text-red-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>{validationError}</span>
+                    </div>
+                )}
+
                 <form onSubmit={handleSubmit} encType="multipart/form-data" className="space-y-6">
                     {/* Basic Info */}
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
@@ -616,10 +681,15 @@ export default function Edit({ product, categories, allProducts = [] }) {
                             <InputField label="اسم المنتج" name="name" required placeholder="أدخل اسم المنتج" data={data} setData={setData} errors={errors} />
                             
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1.5">التصنيف <span className="text-red-500">*</span></label>
+                                <label htmlFor="field-category_id" className="block text-sm font-semibold text-gray-700 mb-1.5">التصنيف <span className="text-red-500">*</span></label>
                                 <select
+                                    name="category_id"
+                                    id="field-category_id"
                                     value={data.category_id}
-                                    onChange={(e) => setData('category_id', e.target.value)}
+                                    onChange={(e) => {
+                                        setData('category_id', e.target.value);
+                                        if (validationError) setValidationError('');
+                                    }}
                                     className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white ${
                                         errors.category_id ? 'border-red-400 bg-red-50' : 'border-gray-300'
                                     }`}
@@ -1195,7 +1265,16 @@ export default function Edit({ product, categories, allProducts = [] }) {
                                     }`}
                                     style={{ height: '180px' }}
                                 >
-                                    {mainImagePreview ? (
+                                    {isCompressing ? (
+                                        <div className="flex flex-col items-center justify-center text-center p-4">
+                                            <svg className="w-8 h-8 text-orange-600 animate-spin mb-2" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                            </svg>
+                                            <p className="text-xs text-orange-700 font-bold">جاري ضغط وتجهيز الصورة...</p>
+                                            <p className="text-[10px] text-gray-500 mt-1">يتم تقليل الحجم لتسريع المتجر</p>
+                                        </div>
+                                    ) : mainImagePreview ? (
                                         <>
                                             <img
                                                 src={mainImagePreview}
@@ -1212,14 +1291,14 @@ export default function Edit({ product, categories, allProducts = [] }) {
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
                                             <p className="text-xs text-gray-600 font-semibold">اضغط لرفع الصورة الرئيسية</p>
-                                            <p className="text-[10px] text-gray-400 mt-1">JPG, PNG, WebP (حد أقصى 4MB)</p>
+                                            <p className="text-[10px] text-gray-400 mt-1">يتم ضغطها وتجهيزها أوتوماتيكياً</p>
                                         </div>
                                     )}
                                 </div>
                                 <input
                                     ref={mainImageRef}
                                     type="file"
-                                    accept="image/jpeg,image/png,image/webp"
+                                    accept="image/jpeg,image/png,image/webp,image/*"
                                     onChange={handleMainImage}
                                     className="hidden"
                                 />
@@ -1481,10 +1560,18 @@ export default function Edit({ product, categories, allProducts = [] }) {
                         </Link>
                         <button
                             type="submit"
-                            disabled={processing}
+                            disabled={processing || isCompressing}
                             className="flex items-center justify-center gap-2 px-8 py-3 bg-orange-600 text-white rounded-xl text-sm font-semibold hover:bg-orange-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
                         >
-                            {processing ? (
+                            {isCompressing ? (
+                                <>
+                                    <svg className="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                    </svg>
+                                    جاري تجهيز الصور...
+                                </>
+                            ) : processing ? (
                                 <>
                                     <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -1504,6 +1591,63 @@ export default function Edit({ product, categories, allProducts = [] }) {
                     </div>
                 </form>
             </div>
+
+            {/* Floating / Sticky Save Bar for Mobile */}
+            <div className="fixed bottom-0 left-0 right-0 p-3 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-xl z-40 sm:hidden flex items-center justify-between gap-3">
+                <Link href="/admin/products" className="px-4 py-2.5 text-xs font-semibold text-gray-600 bg-gray-100 rounded-lg">إلغاء</Link>
+                <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={processing || isCompressing}
+                    className="flex-1 py-2.5 px-4 bg-orange-600 text-white rounded-lg text-sm font-bold shadow-md hover:bg-orange-700 disabled:opacity-60 flex items-center justify-center gap-2"
+                >
+                    {isCompressing ? (
+                        <>
+                            <svg className="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            جاري تجهيز الصور...
+                        </>
+                    ) : processing ? (
+                        'جاري الحفظ...'
+                    ) : (
+                        'حفظ التعديلات'
+                    )}
+                </button>
+            </div>
+
+            {/* Full-screen Upload & Processing Modal */}
+            {processing && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl space-y-4" dir="rtl">
+                        <div className="w-14 h-14 mx-auto rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
+                            <svg className="w-8 h-8 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-gray-900 text-base">جاري حفظ التعديلات والرفع للسيرفر...</h3>
+                            <p className="text-xs text-gray-500 mt-1">يرجى الانتظار وعدم إغلاق الصفحة</p>
+                        </div>
+                        {progress && (
+                            <div className="space-y-1.5 pt-2">
+                                <div className="flex justify-between text-xs font-bold text-orange-600">
+                                    <span>نسبة رفع الصور:</span>
+                                    <span>{progress.percentage}%</span>
+                                </div>
+                                <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                                    <div
+                                        className="bg-orange-600 h-2.5 rounded-full transition-all duration-200"
+                                        style={{ width: `${progress.percentage}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Color Image Selection Modal */}
             {selectingColorIndex !== null && data.colors[selectingColorIndex] && (

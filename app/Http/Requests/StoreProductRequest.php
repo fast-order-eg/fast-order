@@ -33,9 +33,9 @@ class StoreProductRequest extends FormRequest
                 })
             ],
             'shipping_type'       => ['required', 'in:free,governorate'],
-            'main_image'          => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:20480'],
+            'main_image'          => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,heic,heif,jfif', 'max:20480'],
             'gallery'             => ['nullable', 'array'],
-            'gallery.*'           => ['image', 'mimes:jpg,jpeg,png,webp', 'max:20480'],
+            'gallery.*'           => ['image', 'mimes:jpg,jpeg,png,webp,heic,heif,jfif', 'max:20480'],
         ];
     }
 
