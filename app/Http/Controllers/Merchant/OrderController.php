@@ -143,32 +143,33 @@ class OrderController extends Controller
             }
         }
 
-        $pageOrders->transform(function ($order) use ($phoneCounts, $tenant) {
+        $tenant = app()->bound(\App\Models\Tenant::class) ? app(\App\Models\Tenant::class) : null;
+        $tenantId = $tenant?->id ?? session('tenant_id') ?? config('tenant.id');
+
+        $pageOrders->transform(function ($order) use ($phoneCounts, $tenantId) {
             $clean = static::normalizeCustomerPhone($order->customer_phone);
             $count = (strlen($clean) >= 6 && isset($phoneCounts[$clean])) ? (int) $phoneCounts[$clean] : 1;
             $order->duplicate_count = $count;
             $order->is_duplicate = ($count > 1);
-            $order->rto_assessment = \App\Services\RtoShieldService::assessRisk($order->customer_phone, $tenant->id);
+            $order->rto_assessment = \App\Services\RtoShieldService::assessRisk($order->customer_phone, $tenantId);
             return $order;
         });
 
         // قائمة المنتجات للفلتر
         $productsList = Product::orderBy('name')->get(['id', 'name']);
 
-        $tenant = app(\App\Models\Tenant::class);
-
-        $activeSub = $tenant->subscriptions()->where('status', 'active')->latest()->first();
+        $activeSub = $tenant ? $tenant->subscriptions()->where('status', 'active')->latest()->first() : null;
         $isCommission = $activeSub && ($activeSub->plan?->slug === 'commission' || str_contains($activeSub->plan?->name ?? '', 'عمولة'));
 
         $isSubscriptionExpired = false;
-        if (!$isCommission) {
+        if (!$isCommission && $tenant) {
             if ($tenant->subscription_status === 'expired' || ($tenant->subscription_ends_at && $tenant->subscription_ends_at->isPast())) {
                 $isSubscriptionExpired = true;
             }
         }
 
         // شركات الشحن المفعلة لدى التاجر
-        $activeShippingGateways = \App\Models\ShippingGateway::withoutGlobalScopes()
+        $activeShippingGateways = ($tenant ? \App\Models\ShippingGateway::withoutGlobalScopes()
             ->where('tenant_id', $tenant->id)
             ->where('is_active', true)
             ->get(['id', 'provider'])
@@ -183,7 +184,7 @@ class OrderController extends Controller
                         default  => $gw->provider,
                     },
                 ];
-            })->values()->toArray();
+            }) : collect())->values()->toArray();
 
         return Inertia::render('Merchant/Orders/Index', [
             'orders'                 => $orders,
@@ -191,7 +192,7 @@ class OrderController extends Controller
             'statusCounts'           => $statusCounts,
             'productsList'           => $productsList,
             'activeShippingGateways' => $activeShippingGateways,
-            'wallet_balance'         => (float) ($tenant->wallet_balance ?? 0),
+            'wallet_balance'         => (float) ($tenant?->wallet_balance ?? 0),
             'isSubscriptionExpired'  => $isSubscriptionExpired,
             'filters'                => $request->only(['search', 'status', 'quick_filter', 'date_from', 'date_to', 'product_id']),
         ]);
@@ -424,7 +425,10 @@ class OrderController extends Controller
             return $c->format('Y-m-d h:i') . ' ' . $period;
         };
 
-        $rtoAssessment = \App\Services\RtoShieldService::assessRisk($order->customer_phone, $tenant->id);
+        $tenant = app()->bound(\App\Models\Tenant::class) ? app(\App\Models\Tenant::class) : null;
+        $tenantId = $tenant?->id ?? $order->tenant_id ?? session('tenant_id') ?? config('tenant.id');
+
+        $rtoAssessment = \App\Services\RtoShieldService::assessRisk($order->customer_phone, $tenantId);
 
         return Inertia::render('Merchant/Orders/Show', [
             'order' => [
@@ -465,7 +469,7 @@ class OrderController extends Controller
             'governorates'             => $governorates,
             'active_shipping_gateways' => $activeShippingGateways,
             'is_auto_confirm_enabled'  => (bool) \App\Models\Setting::get('auto_confirm_enabled', false, $order->tenant_id),
-            'wallet_balance'           => (float) ($tenant->wallet_balance ?? 0),
+            'wallet_balance'           => (float) ($tenant?->wallet_balance ?? 0),
         ]);
     }
 
