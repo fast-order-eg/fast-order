@@ -792,9 +792,9 @@
                 <!-- Brand Logo -->
                 <a href="/" class="flex items-center gap-2.5 sm:gap-3 group">
                     <div class="relative flex items-center justify-center shrink-0">
-                        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl p-[1.5px] bg-gradient-to-tr from-brand-500 via-indigo-500 to-pink-500 shadow-sm border border-brand-500/20 group-hover:scale-105 group-hover:shadow-brand-500/25 transition-all duration-300 flex items-center justify-center">
-                            <div class="w-full h-full rounded-[14px] bg-white dark:bg-slate-900 p-1 flex items-center justify-center overflow-hidden">
-                                <img src="{{ asset('images/logo.png') }}" alt="فاست اوردر" class="w-full h-full object-contain">
+                        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full p-[1.5px] bg-gradient-to-tr from-brand-500 via-pink-500 to-indigo-500 shadow-md group-hover:scale-105 group-hover:shadow-brand-500/30 transition-all duration-300 flex items-center justify-center">
+                            <div class="w-full h-full rounded-full bg-white flex items-center justify-center p-1.5 overflow-hidden shadow-inner">
+                                <img src="{{ asset('images/logo.png') }}" alt="فاست اوردر" class="w-full h-full object-contain rounded-full">
                             </div>
                         </div>
                     </div>
@@ -1007,28 +1007,6 @@
                                             <img src="{{ asset('images/hero-mobile-mockup.png') }}" 
                                                  alt="متجر إلكتروني للموبايل وشيك أوت سريع" 
                                                  class="w-full h-auto object-contain rounded-xl transform transition-transform duration-700 group-hover:scale-[1.03] drop-shadow-2xl">
-                                        </div>
-                                    </div>
-
-                                    <!-- Floating Badge 1 (Live Sale Notification) -->
-                                    <div class="absolute -top-3 -right-2 sm:-top-5 sm:-right-4 z-20 bg-white/95 dark:bg-dark-card/95 backdrop-blur-xl border border-emerald-500/30 p-2.5 sm:p-3 rounded-2xl shadow-xl flex items-center gap-2.5 animate-float">
-                                        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center text-white text-sm shadow-md shadow-emerald-500/25">
-                                            <i class="fa-solid fa-bolt"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white">أوردر جديد مستلم!</div>
-                                            <div class="text-[10px] sm:text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">+850 ج.م (عمولة 0%)</div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Floating Badge 2 (Fast COD & Shipping) -->
-                                    <div class="absolute -bottom-3 -left-2 sm:-bottom-5 sm:-left-4 z-20 bg-white/95 dark:bg-dark-card/95 backdrop-blur-xl border border-brand-500/30 p-2.5 sm:p-3 rounded-2xl shadow-xl flex items-center gap-2.5 animate-float-delayed">
-                                        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white text-sm shadow-md shadow-brand-500/25">
-                                            <i class="fa-solid fa-truck-fast"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white">شحن لـ 27 محافظة</div>
-                                            <div class="text-[10px] sm:text-[11px] text-brand-600 dark:text-brand-300 font-semibold">ربط تلقائي مع شركات الشحن</div>
                                         </div>
                                     </div>
                                 </div>
@@ -1598,9 +1576,9 @@
                     <div class="lg:col-span-4 space-y-6">
                         <a href="/" class="flex items-center gap-3 group">
                             <div class="relative flex items-center justify-center shrink-0">
-                                <div class="w-11 h-11 rounded-2xl p-[1.5px] bg-gradient-to-tr from-brand-500 via-indigo-500 to-pink-500 shadow-sm border border-brand-500/20 group-hover:scale-105 transition-all duration-300 flex items-center justify-center">
-                                    <div class="w-full h-full rounded-[14px] bg-white dark:bg-slate-900 p-1 flex items-center justify-center overflow-hidden">
-                                        <img src="{{ asset('images/logo.png') }}" alt="فاست أوردر" class="w-full h-full object-contain">
+                                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full p-[1.5px] bg-gradient-to-tr from-brand-500 via-pink-500 to-indigo-500 shadow-md group-hover:scale-105 transition-all duration-300 flex items-center justify-center">
+                                    <div class="w-full h-full rounded-full bg-white flex items-center justify-center p-1.5 overflow-hidden shadow-inner">
+                                        <img src="{{ asset('images/logo.png') }}" alt="فاست أوردر" class="w-full h-full object-contain rounded-full">
                                     </div>
                                 </div>
                             </div>
