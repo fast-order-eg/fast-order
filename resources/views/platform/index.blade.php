@@ -750,31 +750,31 @@
         phraseAnimating: false,
         heroPhrases: {
             ar: [
-                'واستقبل أوردِرات الدفع عند الاستلام فوراً! ⚡',
-                'بشيك أوت فائق السرعة في خطوة واحدة 🚀',
-                'مع بيكسل تيك توك وفيسبوك بدون توقف 📈',
-                'بدون أي عمولة على مبيعاتك وأرباحك ✨'
+                { text: 'واستقبل أوردِرات الدفع عند الاستلام فوراً!', icon: 'fa-solid fa-bolt text-amber-500' },
+                { text: 'بشيك أوت فائق السرعة في خطوة واحدة', icon: 'fa-solid fa-rocket text-indigo-500' },
+                { text: 'مع بيكسل تيك توك وفيسبوك بدون توقف', icon: 'fa-solid fa-chart-line text-emerald-500' },
+                { text: 'بدون أي عمولة على مبيعاتك وأرباحك', icon: 'fa-solid fa-gem text-pink-500' }
             ],
             en: [
-                'Receive Cash on Delivery Orders Instantly! ⚡',
-                'With 1-Step Lightning Fast Checkout 🚀',
-                'Instant Meta & TikTok Pixel Tracking 📈',
-                'With 0% Commission on Your Sales ✨'
+                { text: 'Receive Cash on Delivery Orders Instantly!', icon: 'fa-solid fa-bolt text-amber-500' },
+                { text: 'With 1-Step Lightning Fast Checkout', icon: 'fa-solid fa-rocket text-indigo-500' },
+                { text: 'Instant Meta & TikTok Pixel Tracking', icon: 'fa-solid fa-chart-line text-emerald-500' },
+                { text: 'With 0% Commission on Your Sales', icon: 'fa-solid fa-gem text-pink-500' }
             ]
         },
         get currentHeroPhrase() {
-            var list = this.heroPhrases[lang] || this.heroPhrases['ar'];
-            return list[this.heroPhraseIdx % list.length];
+            var list = (this.heroPhrases && this.heroPhrases[lang]) ? this.heroPhrases[lang] : (this.heroPhrases ? this.heroPhrases['ar'] : []);
+            return (list && list.length > 0) ? list[this.heroPhraseIdx % list.length] : { text: '', icon: '' };
         },
         initHeroCycle() {
             setInterval(() => {
                 this.phraseAnimating = true;
                 setTimeout(() => {
-                    var list = this.heroPhrases[lang] || this.heroPhrases['ar'];
+                    var list = (this.heroPhrases && this.heroPhrases[lang]) ? this.heroPhrases[lang] : (this.heroPhrases ? this.heroPhrases['ar'] : []);
                     this.heroPhraseIdx = (this.heroPhraseIdx + 1) % list.length;
                     this.phraseAnimating = false;
                 }, 300);
-            }, 3000);
+            }, 3500);
         }
     }" x-init="initHeroCycle()">
 
@@ -906,11 +906,14 @@
                             </div>
 
                             <!-- Heading with Dynamic Cycling Words & Shimmer Gradient -->
-                            <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-snug sm:leading-tight text-slate-900 dark:text-white">
-                                <span x-text="trans('heroTitle')"></span> <br class="hidden sm:block">
-                                <span class="inline-block transition-all duration-300 transform" 
+                            <h1 class="text-2xl sm:text-3xl lg:text-4xl xl:text-[44px] font-black leading-[1.45] sm:leading-[1.5] lg:leading-[1.55] text-slate-900 dark:text-white">
+                                <span class="block mb-2 sm:mb-3.5" x-text="trans('heroTitle')"></span>
+                                <span class="inline-flex items-center flex-wrap gap-2.5 transition-all duration-300 transform" 
                                       :class="phraseAnimating ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'">
-                                    <span class="animate-gradient-text" x-text="currentHeroPhrase"></span>
+                                    <span class="animate-gradient-text" x-text="currentHeroPhrase.text"></span>
+                                    <span class="inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 dark:bg-white/10 border border-slate-200/80 dark:border-white/10 shadow-xs shrink-0">
+                                        <i :class="currentHeroPhrase.icon" class="text-sm sm:text-base"></i>
+                                    </span>
                                 </span>
                             </h1>
 
