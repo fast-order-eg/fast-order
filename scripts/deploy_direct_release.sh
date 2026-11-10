@@ -20,6 +20,13 @@ if [ ! -d "$RELEASE_DIR" ]; then
     exit 1
 fi
 
+# A Vite hot file makes production browsers load JavaScript from localhost.
+# Reject the release before touching the live symlink.
+if [ -e "$RELEASE_DIR/public/hot" ]; then
+    echo "CRITICAL: public/hot found in release. Refusing production activation."
+    exit 1
+fi
+
 echo "🔗 Linking shared environment and storage..."
 if [ -f "$SHARED_DIR/.env" ]; then
     ln -sfn "$SHARED_DIR/.env" "$RELEASE_DIR/.env"

@@ -60,7 +60,16 @@ $targets = @(
     "package.json", "package-lock.json", "vite.config.js"
 )
 
-tar.exe -czf $ArchivePath --exclude="public/storage" --exclude="bootstrap/cache/*.php" @targets
+tar.exe -czf $ArchivePath --exclude="public/storage" --exclude="public/hot" --exclude="bootstrap/cache/*.php" @targets
+
+if ($LASTEXITCODE -ne 0) {
+    throw "Release archive creation failed. Deployment aborted."
+}
+
+$archiveEntries = @(tar.exe -tzf $ArchivePath)
+if ($LASTEXITCODE -ne 0 -or ($archiveEntries | Where-Object { $_ -match '^(\./)?public/hot$' })) {
+    throw "Unsafe release archive: could not inspect it or found the Vite development hot file. Deployment aborted."
+}
 
 if (-not (Test-Path $ArchivePath)) {
     Write-Error "Failed to create archive!"

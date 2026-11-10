@@ -451,15 +451,25 @@
             box-shadow: 0 20px 45px -10px rgba(99, 102, 241, 0.35);
         }
 
-        .text-gradient {
-            background: linear-gradient(135deg, #1e293b 0%, #4f46e5 50%, #f43f5e 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        @keyframes textShimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        .dark .text-gradient {
-            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 50%, #f43f5e 100%);
+
+        .text-gradient, .animate-gradient-text {
+            background: linear-gradient(135deg, #1e293b 0%, #4f46e5 35%, #f43f5e 70%, #4f46e5 100%);
+            background-size: 250% auto;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            animation: textShimmer 6s ease infinite;
+        }
+        .dark .text-gradient, .dark .animate-gradient-text {
+            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 35%, #f43f5e 70%, #ffffff 100%);
+            background-size: 250% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textShimmer 6s ease infinite;
         }
 
         .text-gradient-primary {
@@ -560,6 +570,7 @@
                 heroTitle: 'أنشئ متجرك الإلكتروني في دقائق',
                 heroTitleGradient: 'واستقبل أوردرات الدفع عند الاستلام فوراً!',
                 heroDesc: 'شيك أوت فائق السرعة في خطوة واحدة لمضاعفة مبيعاتك، أسعار شحن مخصصة لـ 27 محافظة، وربط بيكسل تيك توك وفيسبوك بضغطة زر — مع 0% عمولة على مبيعاتك.',
+                heroDescMobile: 'شيك أوت سريع في خطوة واحدة، شحن لـ 27 محافظة، وبدون أي عمولة على مبيعاتك.',
                 heroCtaStart: 'ابدأ متجرك الآن 🚀',
                 heroCtaFeatures: 'استكشف الباقات والأسعار',
                 heroCheckFree: 'تفعيل فوري في دقيقة',
@@ -649,6 +660,7 @@
                 heroTitle: 'Launch Your Online Store in Minutes',
                 heroTitleGradient: 'And Receive Cash on Delivery Orders Instantly!',
                 heroDesc: 'Ultra-fast one-step checkout to maximize your sales, custom 27 governorates shipping, and instant TikTok & Meta pixel integration — with 0% sales commission.',
+                heroDescMobile: '1-step fast checkout, 27 governorates shipping, with 0% commission.',
                 heroCtaStart: 'Start Your Store Now 🚀',
                 heroCtaFeatures: 'Explore Plans & Pricing',
                 heroCheckFree: 'Instant 1-Minute Setup',
@@ -733,8 +745,38 @@
     <div x-data="{ 
         trans(key) {
             return window.translations[lang][key] || key;
+        },
+        heroPhraseIdx: 0,
+        phraseAnimating: false,
+        heroPhrases: {
+            ar: [
+                'واستقبل أوردِرات الدفع عند الاستلام فوراً! ⚡',
+                'بشيك أوت فائق السرعة في خطوة واحدة 🚀',
+                'مع بيكسل تيك توك وفيسبوك بدون توقف 📈',
+                'بدون أي عمولة على مبيعاتك وأرباحك ✨'
+            ],
+            en: [
+                'Receive Cash on Delivery Orders Instantly! ⚡',
+                'With 1-Step Lightning Fast Checkout 🚀',
+                'Instant Meta & TikTok Pixel Tracking 📈',
+                'With 0% Commission on Your Sales ✨'
+            ]
+        },
+        get currentHeroPhrase() {
+            var list = this.heroPhrases[lang] || this.heroPhrases['ar'];
+            return list[this.heroPhraseIdx % list.length];
+        },
+        initHeroCycle() {
+            setInterval(() => {
+                this.phraseAnimating = true;
+                setTimeout(() => {
+                    var list = this.heroPhrases[lang] || this.heroPhrases['ar'];
+                    this.heroPhraseIdx = (this.heroPhraseIdx + 1) % list.length;
+                    this.phraseAnimating = false;
+                }, 300);
+            }, 3000);
         }
-    }">
+    }" x-init="initHeroCycle()">
 
         <!-- Background Glow Orbs -->
         <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] overflow-hidden pointer-events-none z-0">
@@ -750,9 +792,9 @@
                 <!-- Brand Logo -->
                 <a href="/" class="flex items-center gap-2.5 sm:gap-3 group">
                     <div class="relative flex items-center justify-center shrink-0">
-                        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full p-1 bg-gradient-to-tr from-brand-500 via-pink-500 to-indigo-500 ring-[3px] ring-brand-500/25 dark:ring-brand-400/25 group-hover:ring-brand-500/50 group-hover:scale-105 transition-all duration-300 shadow-md flex items-center justify-center">
-                            <div class="w-full h-full rounded-full bg-white dark:bg-slate-900 p-1 flex items-center justify-center overflow-hidden">
-                                <img src="{{ asset('images/logo.png') }}" alt="فاست اوردر" class="w-full h-full object-contain rounded-full">
+                        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl p-[1.5px] bg-gradient-to-tr from-brand-500 via-indigo-500 to-pink-500 shadow-sm border border-brand-500/20 group-hover:scale-105 group-hover:shadow-brand-500/25 transition-all duration-300 flex items-center justify-center">
+                            <div class="w-full h-full rounded-[14px] bg-white dark:bg-slate-900 p-1 flex items-center justify-center overflow-hidden">
+                                <img src="{{ asset('images/logo.png') }}" alt="فاست اوردر" class="w-full h-full object-contain">
                             </div>
                         </div>
                     </div>
@@ -762,23 +804,13 @@
                     </span>
                 </a>
 
-                <!-- Desktop Navigation Links -->
-                <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600 dark:text-gray-300">
-                    <a href="#features" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors py-2 flex items-center gap-1.5">
-                        <i class="fa-solid fa-star text-xs text-brand-500"></i> <span x-text="trans('features')"></span>
-                    </a>
-                    <a href="#how-it-works" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors py-2 flex items-center gap-1.5">
-                        <i class="fa-solid fa-route text-xs text-pink-500"></i> <span x-text="trans('howItWorks')"></span>
-                    </a>
-                    <a href="#pricing" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors py-2 flex items-center gap-1.5">
-                        <i class="fa-solid fa-tags text-xs text-amber-500"></i> <span x-text="trans('pricing')"></span>
-                    </a>
-                    <a href="#testimonials" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors py-2 flex items-center gap-1.5">
-                        <i class="fa-solid fa-heart text-xs text-rose-500"></i> <span x-text="trans('partners')"></span>
-                    </a>
-                    <a href="#faq" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors py-2 flex items-center gap-1.5">
-                        <i class="fa-solid fa-circle-question text-xs text-cyan-500"></i> <span x-text="trans('faq')"></span>
-                    </a>
+                <!-- Desktop Navigation Links (Clean & Icon-Free) -->
+                <nav class="hidden md:flex items-center gap-7 lg:gap-8 text-sm font-semibold text-slate-600 dark:text-gray-300">
+                    <a href="#features" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors py-2" x-text="trans('features')"></a>
+                    <a href="#how-it-works" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors py-2" x-text="trans('howItWorks')"></a>
+                    <a href="#pricing" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors py-2" x-text="trans('pricing')"></a>
+                    <a href="#testimonials" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors py-2" x-text="trans('partners')"></a>
+                    <a href="#faq" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors py-2" x-text="trans('faq')"></a>
                 </nav>
 
                 <!-- Action Buttons & Controls (Theme / Language Toggle) -->
@@ -835,22 +867,12 @@
                     </button>
                 </div>
 
-                <div class="flex flex-col space-y-3 font-semibold text-slate-700 dark:text-gray-200">
-                    <a href="#features" @click="mobileMenuOpen = false" class="py-2.5 px-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-3">
-                        <i class="fa-solid fa-star text-brand-500 dark:text-brand-400 w-5"></i> <span x-text="trans('features')"></span>
-                    </a>
-                    <a href="#how-it-works" @click="mobileMenuOpen = false" class="py-2.5 px-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-3">
-                        <i class="fa-solid fa-route text-pink-500 dark:text-pink-400 w-5"></i> <span x-text="trans('howItWorks')"></span>
-                    </a>
-                    <a href="#pricing" @click="mobileMenuOpen = false" class="py-2.5 px-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-3">
-                        <i class="fa-solid fa-tags text-amber-500 dark:text-amber-400 w-5"></i> <span x-text="trans('pricing')"></span>
-                    </a>
-                    <a href="#testimonials" @click="mobileMenuOpen = false" class="py-2.5 px-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-3">
-                        <i class="fa-solid fa-heart text-rose-500 dark:text-rose-400 w-5"></i> <span x-text="trans('partners')"></span>
-                    </a>
-                    <a href="#faq" @click="mobileMenuOpen = false" class="py-2.5 px-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 flex items-center gap-3">
-                        <i class="fa-solid fa-circle-question text-cyan-500 dark:text-cyan-400 w-5"></i> <span x-text="trans('faq')"></span>
-                    </a>
+                <div class="flex flex-col space-y-1.5 font-semibold text-slate-700 dark:text-gray-200">
+                    <a href="#features" @click="mobileMenuOpen = false" class="py-2.5 px-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors" x-text="trans('features')"></a>
+                    <a href="#how-it-works" @click="mobileMenuOpen = false" class="py-2.5 px-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors" x-text="trans('howItWorks')"></a>
+                    <a href="#pricing" @click="mobileMenuOpen = false" class="py-2.5 px-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors" x-text="trans('pricing')"></a>
+                    <a href="#testimonials" @click="mobileMenuOpen = false" class="py-2.5 px-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors" x-text="trans('partners')"></a>
+                    <a href="#faq" @click="mobileMenuOpen = false" class="py-2.5 px-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors" x-text="trans('faq')"></a>
                 </div>
                 <div class="pt-4 border-t border-slate-200 dark:border-white/10 flex flex-col gap-3">
                     <a href="{{ Route::has('login') ? route('login') : url('/login') }}" class="w-full py-3 rounded-xl text-center font-bold text-slate-700 dark:text-gray-200 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
@@ -877,24 +899,29 @@
                             <!-- Badge -->
                             <div class="inline-flex items-center gap-2 px-3.5 py-1.5 sm:py-2 rounded-full bg-brand-500/10 border border-brand-500/25 text-brand-600 dark:text-brand-300 text-xs sm:text-sm font-semibold shadow-inner">
                                 <span class="flex h-2 w-2 relative shrink-0">
-                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
-                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-pink-500"></span>
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                                 </span>
                                 <span x-text="trans('heroBadge')"></span>
                             </div>
 
-                            <!-- Heading -->
+                            <!-- Heading with Dynamic Cycling Words & Shimmer Gradient -->
                             <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-snug sm:leading-tight text-slate-900 dark:text-white">
                                 <span x-text="trans('heroTitle')"></span> <br class="hidden sm:block">
-                                <span class="text-gradient" x-text="trans('heroTitleGradient')"></span>
+                                <span class="inline-block transition-all duration-300 transform" 
+                                      :class="phraseAnimating ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'">
+                                    <span class="animate-gradient-text" x-text="currentHeroPhrase"></span>
+                                </span>
                             </h1>
 
-                            <!-- Headline & Subtitle (Clean, concise & high-converting) -->
-                            <p class="text-base sm:text-lg text-slate-600 dark:text-gray-300 font-normal leading-relaxed max-w-xl mx-auto lg:mx-0" x-text="trans('heroDesc')">
+                            <!-- Headline & Subtitle (Concise on mobile, detailed on desktop) -->
+                            <p class="text-sm sm:hidden text-slate-600 dark:text-gray-300 font-normal leading-relaxed max-w-sm mx-auto" x-text="trans('heroDescMobile')">
+                            </p>
+                            <p class="hidden sm:block text-base sm:text-lg text-slate-600 dark:text-gray-300 font-normal leading-relaxed max-w-xl mx-auto lg:mx-0" x-text="trans('heroDesc')">
                             </p>
 
-                            <!-- Modern Compact Feature Pills (بدون كروت متراكمة ودش كلام) -->
-                            <div class="flex flex-wrap items-center justify-center lg:justify-start gap-2 pt-1 pb-1">
+                            <!-- Modern Compact Feature Pills (Hidden on mobile to keep view clean) -->
+                            <div class="hidden sm:flex flex-wrap items-center justify-center lg:justify-start gap-2 pt-1 pb-1">
                                 <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 text-xs font-bold shadow-xs">
                                     <i class="fa-solid fa-bolt text-amber-500"></i>
                                     <span x-show="lang === 'ar'">شيك أوت سريع خطوة واحدة</span>
@@ -918,13 +945,12 @@
                                     <span x-text="trans('heroCtaStart')"></span>
                                     <i class="fa-solid fa-rocket text-xs"></i>
                                 </a>
-                                <a href="#pricing" class="px-5 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-bold text-xs sm:text-base text-slate-700 dark:text-gray-300 bg-white dark:bg-dark-card hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-white/10 transition-all text-center flex items-center justify-center gap-1.5 whitespace-nowrap">
-                                    <i class="fa-solid fa-tags text-brand-500 dark:text-brand-400 text-xs"></i>
+                                <a href="#pricing" class="px-5 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-bold text-xs sm:text-base text-slate-700 dark:text-gray-300 bg-white dark:bg-dark-card hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-white/10 transition-all text-center flex items-center justify-center whitespace-nowrap">
                                     <span x-text="trans('heroCtaFeatures')"></span>
                                 </a>
                             </div>
 
-                            <!-- Trust Checkmarks -->
+                            <!-- Trust Checkmarks (Only essentials shown on mobile) -->
                             <div class="pt-3 sm:pt-4 border-t border-slate-200/70 dark:border-white/10 flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-2 text-xs font-semibold text-slate-500 dark:text-gray-400">
                                 <div class="inline-flex items-center gap-1.5">
                                     <i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i>
@@ -934,7 +960,7 @@
                                     <i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i>
                                     <span x-text="trans('heroCheckFree')"></span>
                                 </div>
-                                <div class="inline-flex items-center gap-1.5">
+                                <div class="inline-flex items-center gap-1.5 hidden sm:inline-flex">
                                     <i class="fa-solid fa-circle-check text-emerald-500 text-xs"></i>
                                     <span x-text="trans('heroCheckNoCard')"></span>
                                 </div>
@@ -947,11 +973,68 @@
                         </div>
 
                         <!-- Hero Visual Mockup -->
-                        <div class="lg:col-span-5 relative">
-                            <div class="relative mx-auto max-w-lg lg:max-w-none animate-float">
+                        <div class="lg:col-span-5 relative" x-data="{ visualTab: 'store' }">
+                            <div class="relative mx-auto max-w-md lg:max-w-none">
                                 
-                                <!-- Main Dashboard Glass Window -->
-                                <div class="glass-card rounded-3xl p-5 border shadow-2xl relative z-10 overflow-hidden">
+                                <!-- Ambient Glowing Aura -->
+                                <div class="absolute -inset-4 bg-gradient-to-tr from-brand-500/30 via-pink-500/25 to-indigo-500/30 rounded-3xl blur-2xl opacity-75 animate-pulse-slow pointer-events-none -z-10"></div>
+
+                                <!-- Visual Switcher Tabs (Desktop Only) -->
+                                <div class="hidden sm:flex items-center justify-center gap-2 mb-3 bg-white/70 dark:bg-dark-card/70 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 dark:border-white/10 w-fit mx-auto shadow-sm">
+                                    <button type="button" @click="visualTab = 'store'" :class="visualTab === 'store' ? 'bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-md' : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
+                                        <i class="fa-solid fa-mobile-screen"></i> <span>متجر الموبايل والشيك أوت</span>
+                                    </button>
+                                    <button type="button" @click="visualTab = 'dashboard'" :class="visualTab === 'dashboard' ? 'bg-gradient-to-r from-brand-600 to-indigo-600 text-white shadow-md' : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5">
+                                        <i class="fa-solid fa-chart-pie"></i> <span>لوحة تحكم الأوردرات</span>
+                                    </button>
+                                </div>
+
+                                <!-- 3D Mobile Showcase Card (Active on Mobile and Default on Desktop) -->
+                                <div x-show="visualTab === 'store'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="relative group">
+                                    <div class="glass-card rounded-3xl p-3 sm:p-4 border border-white/60 dark:border-white/10 shadow-2xl relative z-10 overflow-hidden bg-gradient-to-b from-white/80 to-white/40 dark:from-dark-card/80 dark:to-dark-card/40 backdrop-blur-xl">
+                                        
+                                        <!-- Card Header Mini Bar -->
+                                        <div class="flex items-center justify-between pb-2.5 px-2 mb-2 border-b border-slate-200/70 dark:border-white/10 text-xs">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                                <span class="font-bold text-slate-800 dark:text-white text-[11px]">متجر لايف • شيك أوت خطوة واحدة</span>
+                                            </div>
+                                            <span class="text-[10px] text-brand-600 dark:text-brand-300 font-semibold bg-brand-500/10 px-2 py-0.5 rounded-full">تحويل أسرع 3x</span>
+                                        </div>
+
+                                        <!-- 3D Mockup Image -->
+                                        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-slate-100/50 to-slate-200/30 dark:from-white/5 dark:to-white/[0.02] flex items-center justify-center p-2">
+                                            <img src="{{ asset('images/hero-mobile-mockup.png') }}" 
+                                                 alt="متجر إلكتروني للموبايل وشيك أوت سريع" 
+                                                 class="w-full h-auto object-contain rounded-xl transform transition-transform duration-700 group-hover:scale-[1.03] drop-shadow-2xl">
+                                        </div>
+                                    </div>
+
+                                    <!-- Floating Badge 1 (Live Sale Notification) -->
+                                    <div class="absolute -top-3 -right-2 sm:-top-5 sm:-right-4 z-20 bg-white/95 dark:bg-dark-card/95 backdrop-blur-xl border border-emerald-500/30 p-2.5 sm:p-3 rounded-2xl shadow-xl flex items-center gap-2.5 animate-float">
+                                        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center text-white text-sm shadow-md shadow-emerald-500/25">
+                                            <i class="fa-solid fa-bolt"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white">أوردر جديد مستلم!</div>
+                                            <div class="text-[10px] sm:text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">+850 ج.م (عمولة 0%)</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Floating Badge 2 (Fast COD & Shipping) -->
+                                    <div class="absolute -bottom-3 -left-2 sm:-bottom-5 sm:-left-4 z-20 bg-white/95 dark:bg-dark-card/95 backdrop-blur-xl border border-brand-500/30 p-2.5 sm:p-3 rounded-2xl shadow-xl flex items-center gap-2.5 animate-float-delayed">
+                                        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white text-sm shadow-md shadow-brand-500/25">
+                                            <i class="fa-solid fa-truck-fast"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white">شحن لـ 27 محافظة</div>
+                                            <div class="text-[10px] sm:text-[11px] text-brand-600 dark:text-brand-300 font-semibold">ربط تلقائي مع شركات الشحن</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Dashboard Glass Window (Available via Tab) -->
+                                <div x-show="visualTab === 'dashboard'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="glass-card rounded-3xl p-5 border shadow-2xl relative z-10 overflow-hidden">
                                     <!-- Window Header -->
                                     <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-white/10 mb-4">
                                         <div class="flex items-center gap-2">
@@ -1035,28 +1118,6 @@
                                             <span><span x-text="trans('mockupActiveTheme')"></span> <strong class="text-slate-800 dark:text-white">Modern Luxury</strong></span>
                                         </div>
                                         <span class="text-emerald-500 dark:text-emerald-400 font-semibold" x-text="trans('mockupPixelConnected')"></span>
-                                    </div>
-                                </div>
-
-                                <!-- Floating Element 1 (Top Left) -->
-                                <div class="hidden sm:flex absolute -top-6 -left-6 z-20 bg-white/95 dark:bg-dark-card/90 backdrop-blur-xl border border-slate-200 dark:border-white/15 p-3.5 rounded-2xl shadow-xl items-center gap-3 animate-float-delayed">
-                                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 to-rose-500 flex items-center justify-center text-white text-lg shadow-md shadow-pink-500/30">
-                                        <i class="fa-solid fa-bell animate-bounce" style="animation-duration: 3s;"></i>
-                                    </div>
-                                    <div>
-                                        <div class="text-xs font-bold text-slate-800 dark:text-white" x-text="trans('mockupNewSaleNotif')"></div>
-                                        <div class="text-[11px] text-emerald-500 font-semibold">+850 EGP (0% fee)</div>
-                                    </div>
-                                </div>
-
-                                <!-- Floating Element 2 (Bottom Right) -->
-                                <div class="hidden sm:flex absolute -bottom-6 -right-6 z-20 bg-white/95 dark:bg-dark-card/90 backdrop-blur-xl border border-slate-200 dark:border-white/15 p-3.5 rounded-2xl shadow-xl items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white text-lg shadow-md shadow-brand-500/30">
-                                        <i class="fa-solid fa-chart-line"></i>
-                                    </div>
-                                    <div>
-                                        <div class="text-xs font-bold text-slate-800 dark:text-white" x-text="trans('mockupConvRate')"></div>
-                                        <div class="text-[11px] text-brand-600 dark:text-brand-300 font-semibold" x-text="trans('mockupAboveAvg')"></div>
                                     </div>
                                 </div>
 
@@ -1537,9 +1598,9 @@
                     <div class="lg:col-span-4 space-y-6">
                         <a href="/" class="flex items-center gap-3 group">
                             <div class="relative flex items-center justify-center shrink-0">
-                                <div class="w-14 h-14 rounded-full p-1 bg-gradient-to-tr from-brand-500 via-pink-500 to-indigo-500 ring-[3px] ring-brand-500/25 dark:ring-brand-400/25 group-hover:ring-brand-500/50 transition-all duration-300 shadow-md flex items-center justify-center">
-                                    <div class="w-full h-full rounded-full bg-white dark:bg-slate-900 p-1 flex items-center justify-center overflow-hidden">
-                                        <img src="{{ asset('images/logo.png') }}" alt="فاست أوردر" class="w-full h-full object-contain rounded-full">
+                                <div class="w-11 h-11 rounded-2xl p-[1.5px] bg-gradient-to-tr from-brand-500 via-indigo-500 to-pink-500 shadow-sm border border-brand-500/20 group-hover:scale-105 transition-all duration-300 flex items-center justify-center">
+                                    <div class="w-full h-full rounded-[14px] bg-white dark:bg-slate-900 p-1 flex items-center justify-center overflow-hidden">
+                                        <img src="{{ asset('images/logo.png') }}" alt="فاست أوردر" class="w-full h-full object-contain">
                                     </div>
                                 </div>
                             </div>
