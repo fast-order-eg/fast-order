@@ -309,8 +309,8 @@
     <meta property="og:url" content="https://fast-order-eg.tech">
     <meta property="og:title" content="فاست أوردر | Fast Order — أنشئ متجرك الإلكتروني واستقبل أوردراتك في دقائق | بديل ايزي اوردر">
     <meta property="og:description" content="المنصة الأسرع والأوفر في مصر لمبيعات الدفع عند الاستلام. شيك أوت فائق السرعة، 0% عمولة، ربط بيكسل فيسبوك وتيك توك، وتأكيد فوري للطلبات عبر الواتساب. البديل الأقوى لمنصة ايزي اوردر وشوبيفاي.">
-    <meta property="og:image" content="{{ asset('images/logo.png') }}">
-    <meta property="og:image:secure_url" content="{{ asset('images/logo.png') }}">
+    <meta property="og:image" content="{{ asset('images/logo.png?v=2') }}">
+    <meta property="og:image:secure_url" content="{{ asset('images/logo.png?v=2') }}">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="512">
     <meta property="og:image:height" content="512">
@@ -323,7 +323,7 @@
     <meta name="twitter:url" content="https://fast-order-eg.tech">
     <meta name="twitter:title" content="فاست أوردر | Fast Order — أفضل منصة لإنشاء متجر إلكتروني وستور في مصر">
     <meta name="twitter:description" content="أنشئ متجرك الإلكتروني في دقائق مع فاست أوردر. شيك أوت سريع، عمولة 0%، وبديل اقتصادي متفوق لمنصة ايزي اوردر وشوبيفاي.">
-    <meta name="twitter:image" content="{{ asset('images/logo.png') }}">
+    <meta name="twitter:image" content="{{ asset('images/logo.png?v=2') }}">
 
     <!-- Schema.org Structured Data (JSON-LD) for Search Engines & AI Models (ChatGPT, Gemini, Perplexity) -->
     <script type="application/ld+json">
@@ -794,7 +794,7 @@
                     <div class="relative flex items-center justify-center shrink-0">
                         <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full p-[1.5px] bg-gradient-to-tr from-brand-500 via-pink-500 to-indigo-500 shadow-md group-hover:scale-105 group-hover:shadow-brand-500/30 transition-all duration-300 flex items-center justify-center">
                             <div class="w-full h-full rounded-full bg-white flex items-center justify-center p-1.5 overflow-hidden shadow-inner">
-                                <img src="{{ asset('images/logo.png') }}" alt="فاست اوردر" class="w-full h-full object-contain rounded-full">
+                                <img src="{{ asset('images/logo.png?v=2') }}" alt="فاست اوردر" class="w-full h-full object-contain rounded-full">
                             </div>
                         </div>
                     </div>
@@ -1578,7 +1578,7 @@
                             <div class="relative flex items-center justify-center shrink-0">
                                 <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full p-[1.5px] bg-gradient-to-tr from-brand-500 via-pink-500 to-indigo-500 shadow-md group-hover:scale-105 transition-all duration-300 flex items-center justify-center">
                                     <div class="w-full h-full rounded-full bg-white flex items-center justify-center p-1.5 overflow-hidden shadow-inner">
-                                        <img src="{{ asset('images/logo.png') }}" alt="فاست أوردر" class="w-full h-full object-contain rounded-full">
+                                        <img src="{{ asset('images/logo.png?v=2') }}" alt="فاست أوردر" class="w-full h-full object-contain rounded-full">
                                     </div>
                                 </div>
                             </div>
