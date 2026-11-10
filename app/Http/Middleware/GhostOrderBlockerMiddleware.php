@@ -39,26 +39,30 @@ class GhostOrderBlockerMiddleware
                 }
             }
 
-            // Check Phone with normalizations
+            // Check Phone with normalizations & RTO Shield Global rules
             if (!empty($phone)) {
-                $normalizedPhone = preg_replace('/[^0-9]/', '', $phone);
-                $phoneVariants = array_filter(array_unique([
-                    $phone,
-                    $normalizedPhone,
-                    str_starts_with($normalizedPhone, '20') ? substr($normalizedPhone, 2) : null,
-                    str_starts_with($normalizedPhone, '20') ? '0' . substr($normalizedPhone, 2) : null,
-                    str_starts_with($normalizedPhone, '0') ? substr($normalizedPhone, 1) : null,
-                    str_starts_with($normalizedPhone, '0') ? '2' . $normalizedPhone : null,
-                    '0' . ltrim($normalizedPhone, '0'),
-                ]));
+                $phoneVariants = \App\Services\RtoShieldService::getPhoneVariants($phone);
 
-                $isPhoneBlocked = BlacklistRecord::where('tenant_id', $tenantId)
+                // Check SuperAdmin Global Whitelist (allows customer if admin unblocked globally)
+                $isWhitelisted = BlacklistRecord::withoutGlobalScope(\App\Scopes\TenantScope::class)
+                    ->where('is_whitelisted', true)
                     ->where('type', 'phone')
                     ->whereIn('value', $phoneVariants)
                     ->exists();
 
-                if ($isPhoneBlocked) {
-                    return $this->blockResponse($request, 'عذراً، هذا الرقم محظور من إتمام الطلبات.');
+                if (!$isWhitelisted) {
+                    $isPhoneBlocked = BlacklistRecord::withoutGlobalScope(\App\Scopes\TenantScope::class)
+                        ->where('type', 'phone')
+                        ->where(function ($q) use ($tenantId) {
+                            $q->where('tenant_id', $tenantId)
+                              ->orWhere('is_global', true);
+                        })
+                        ->whereIn('value', $phoneVariants)
+                        ->exists();
+
+                    if ($isPhoneBlocked) {
+                        return $this->blockResponse($request, 'عذراً، هذا الرقم محظور من إتمام الطلبات.');
+                    }
                 }
             }
 

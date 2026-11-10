@@ -593,6 +593,27 @@ export default function OrdersIndex({ orders, totalAmount, statusCounts, product
                                                 <div className="text-xs text-gray-500 font-mono mt-0.5" dir="ltr">
                                                     {order.is_unlocked || wallet_balance >= 2 ? order.customer_phone : `${order.customer_phone?.substring(0, 4)}******`}
                                                 </div>
+                                                {order.rto_assessment && (
+                                                    <div className="mt-1 flex items-center gap-1">
+                                                        <span
+                                                            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
+                                                                order.rto_assessment.risk_level === 'high'
+                                                                    ? 'bg-red-50 text-red-700 border border-red-200'
+                                                                    : (order.rto_assessment.risk_level === 'medium'
+                                                                        ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                                                                        : (order.rto_assessment.risk_level === 'whitelisted'
+                                                                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                                                            : 'bg-green-50 text-green-700 border border-green-200'))
+                                                            }`}
+                                                            title={order.rto_assessment.reasons?.join(' | ') || order.rto_assessment.badge_text}
+                                                        >
+                                                            <span>{order.rto_assessment.badge_text}</span>
+                                                            {order.rto_assessment.returned_orders > 0 && (
+                                                                <span className="text-red-700 font-black">({order.rto_assessment.returned_orders} مرتجع)</span>
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </td>
                                             <td className="px-6 py-4 text-gray-600 font-medium">
                                                 {order.governorate}
@@ -769,6 +790,23 @@ export default function OrdersIndex({ orders, totalAmount, statusCounts, product
                                             </span>
                                             <span>{order.governorate}</span>
                                         </div>
+                                        {order.rto_assessment && (
+                                            <div className="mt-1 flex items-center gap-1">
+                                                <span
+                                                    className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
+                                                        order.rto_assessment.risk_level === 'high'
+                                                            ? 'bg-red-50 text-red-700 border border-red-200'
+                                                            : (order.rto_assessment.risk_level === 'medium'
+                                                                ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                                                                : (order.rto_assessment.risk_level === 'whitelisted'
+                                                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                                                    : 'bg-green-50 text-green-700 border border-green-200'))
+                                                    }`}
+                                                >
+                                                    {order.rto_assessment.badge_text}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="flex items-center gap-2 pt-1">
                                         {order.is_unlocked || wallet_balance >= 2 ? (

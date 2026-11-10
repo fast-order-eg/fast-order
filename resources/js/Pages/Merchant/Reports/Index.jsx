@@ -1,28 +1,44 @@
 import React, { useState, useMemo } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import MerchantLayout from '@/Layouts/MerchantLayout';
 
+// Format currency without decimals, English numbers
+const formatEGP = (amount) => {
+    const val = Math.round(Number(amount) || 0);
+    return new Intl.NumberFormat('en-US').format(val) + ' ج.م';
+};
+
 // ========================================================
-// مكون كرت الإحصائيات (StatCard)
+// مكون كرت الإحصائيات المالية
 // ========================================================
-function StatCard({ title, value, icon, color }) {
-    const colors = {
-        indigo: { bg: 'bg-indigo-50/80', border: 'border-indigo-100', iconBg: 'bg-indigo-500', text: 'text-indigo-900', iconText: 'text-indigo-600' },
-        emerald: { bg: 'bg-emerald-50/80', border: 'border-emerald-100', iconBg: 'bg-emerald-500', text: 'text-emerald-900', iconText: 'text-emerald-600' },
-        amber: { bg: 'bg-amber-50/80', border: 'border-amber-100', iconBg: 'bg-amber-500', text: 'text-amber-900', iconText: 'text-amber-600' },
-        sky: { bg: 'bg-sky-50/80', border: 'border-sky-100', iconBg: 'bg-sky-500', text: 'text-sky-900', iconText: 'text-sky-600' },
-        rose: { bg: 'bg-rose-50/80', border: 'border-rose-100', iconBg: 'bg-rose-500', text: 'text-rose-900', iconText: 'text-rose-600' },
+function MetricCard({ title, value, subtitle, icon, color = 'indigo' }) {
+    const colorClasses = {
+        emerald: 'bg-emerald-50/70 border-emerald-200 text-emerald-950 icon-emerald',
+        rose: 'bg-rose-50/70 border-rose-200 text-rose-950 icon-rose',
+        amber: 'bg-amber-50/70 border-amber-200 text-amber-950 icon-amber',
+        indigo: 'bg-indigo-50/70 border-indigo-200 text-indigo-950 icon-indigo',
+        blue: 'bg-blue-50/70 border-blue-200 text-blue-950 icon-blue',
+        purple: 'bg-purple-50/70 border-purple-200 text-purple-950 icon-purple',
     };
-    const c = colors[color] || colors.indigo;
+
+    const iconBg = {
+        emerald: 'bg-emerald-500 text-white',
+        rose: 'bg-rose-500 text-white',
+        amber: 'bg-amber-500 text-white',
+        indigo: 'bg-indigo-600 text-white',
+        blue: 'bg-blue-500 text-white',
+        purple: 'bg-purple-600 text-white',
+    };
 
     return (
-        <div className={`p-6 rounded-2xl border ${Math.round(c.bg)} ${c.border} shadow-sm transition-all duration-300 hover:shadow-md`}>
-            <div className="flex items-center justify-between">
+        <div className={`p-5 rounded-2xl border shadow-xs transition-all duration-300 hover:shadow-md bg-white ${colorClasses[color] || ''}`}>
+            <div className="flex items-start justify-between">
                 <div>
-                    <p className="text-sm font-medium text-gray-500">{title}</p>
-                    <h3 className={`text-2xl font-bold ${c.text} mt-2`}>{value}</h3>
+                    <span className="text-xs font-semibold text-gray-500 block mb-1">{title}</span>
+                    <h3 className="text-2xl font-black text-gray-900 tracking-tight">{value}</h3>
+                    {subtitle && <p className="text-xs text-gray-500 mt-1.5">{subtitle}</p>}
                 </div>
-                <div className={`w-12 h-12 rounded-xl ${c.iconBg} bg-opacity-10 flex items-center justify-center ${c.iconText}`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 ${iconBg[color] || 'bg-gray-800 text-white'}`}>
                     {icon}
                 </div>
             </div>
@@ -31,248 +47,155 @@ function StatCard({ title, value, icon, color }) {
 }
 
 // ========================================================
-// الرسم البياني التفاعلي التلقائي (RTL Interactive SVG Chart)
+// الرسم البياني التفاعلي لصافي الربح والمبيعات
 // ========================================================
-function InteractiveChart({ labels, sales, orders, monthName }) {
-    const [chartMode, setChartMode] = useState('both'); // both, sales, orders
+function ProfitChart({ labels, sales, profit, periodLabel }) {
+    const [chartMode, setChartMode] = useState('both'); // both, sales, profit
     const [hoveredIndex, setHoveredIndex] = useState(null);
 
     const width = 800;
-    const height = 320;
+    const height = 300;
     const padding = 45;
 
-    const maxSales = useMemo(() => Math.max(...sales, 100), [sales]);
-    const maxOrders = useMemo(() => Math.max(...orders, 10), [orders]);
+    const maxSales = useMemo(() => Math.max(...sales, ...profit, 100), [sales, profit]);
 
     const salesPoints = useMemo(() => {
+        if (!labels.length) return [];
         return sales.map((val, idx) => {
-            const x = padding + idx * ((width - 2 * padding) / (labels.length - 1));
+            const x = padding + idx * ((width - 2 * padding) / Math.max(1, labels.length - 1));
             const y = height - padding - (val / maxSales) * (height - 2 * padding);
-            return { x, y, val, day: labels[idx] };
+            return { x, y, val, label: labels[idx] };
         });
     }, [sales, maxSales, labels]);
 
-    const ordersPoints = useMemo(() => {
-        return orders.map((val, idx) => {
-            const x = padding + idx * ((width - 2 * padding) / (labels.length - 1));
-            const y = height - padding - (val / maxOrders) * (height - 2 * padding);
-            return { x, y, val, day: labels[idx] };
+    const profitPoints = useMemo(() => {
+        if (!labels.length) return [];
+        return profit.map((val, idx) => {
+            const x = padding + idx * ((width - 2 * padding) / Math.max(1, labels.length - 1));
+            const y = height - padding - (val / maxSales) * (height - 2 * padding);
+            return { x, y, val, label: labels[idx] };
         });
-    }, [orders, maxOrders, labels]);
+    }, [profit, maxSales, labels]);
 
     const salesPath = useMemo(() => {
-        if (salesPoints.length === 0) return '';
-        return salesPoints.reduce((acc, p, i) => {
-            return i === 0 ? `M ${Math.round(p.x)} ${p.y}` : `${acc} L ${Math.round(p.x)} ${p.y}`;
-        }, '');
+        if (!salesPoints.length) return '';
+        return salesPoints.reduce((acc, p, i) => `${acc} ${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`, '');
     }, [salesPoints]);
 
-    const salesAreaPath = useMemo(() => {
-        if (salesPoints.length === 0) return '';
-        const first = salesPoints[0];
-        const last = salesPoints[salesPoints.length - 1];
-        return `${salesPath} L ${last.x} ${height - padding} L ${first.x} ${height - padding} Z`;
-    }, [salesPoints, salesPath]);
-
-    const ordersPath = useMemo(() => {
-        if (ordersPoints.length === 0) return '';
-        return ordersPoints.reduce((acc, p, i) => {
-            return i === 0 ? `M ${Math.round(p.x)} ${p.y}` : `${acc} L ${Math.round(p.x)} ${p.y}`;
-        }, '');
-    }, [ordersPoints]);
-
-    const gridLines = [0, 0.25, 0.5, 0.75, 1];
-
-    const formatCurrency = (val) => new Intl.NumberFormat('en-US', {maximumFractionDigits: 0}).format(Math.round(val)) + ' ج.م';
-    const formatNumber = (val) => new Intl.NumberFormat('en-US', {maximumFractionDigits: 0}).format(Math.round(val));
+    const profitPath = useMemo(() => {
+        if (!profitPoints.length) return '';
+        return profitPoints.reduce((acc, p, i) => `${acc} ${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`, '');
+    }, [profitPoints]);
 
     return (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-gray-100 pb-4">
                 <div>
-                    <h3 className="text-lg font-bold text-gray-900">تطور المبيعات والطلبات اليومية</h3>
-                    <p className="text-sm text-gray-500 mt-1">تقرير بياني لشهر {monthName}</p>
+                    <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+                        <span>📈 تطور المبيعات وصافي الربح اليومي</span>
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">{periodLabel}</p>
                 </div>
-                <div className="flex bg-gray-100 p-1 rounded-xl self-start">
+
+                <div className="flex items-center gap-1.5 bg-gray-100 p-1 rounded-xl text-xs font-semibold">
                     <button
+                        type="button"
                         onClick={() => setChartMode('both')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                            chartMode === 'both' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-950'
-                        }`}
+                        className={`px-3 py-1.5 rounded-lg transition-all ${chartMode === 'both' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-900'}`}
                     >
                         الكل
                     </button>
                     <button
+                        type="button"
                         onClick={() => setChartMode('sales')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                            chartMode === 'sales' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-950'
-                        }`}
+                        className={`px-3 py-1.5 rounded-lg transition-all ${chartMode === 'sales' ? 'bg-indigo-600 text-white shadow-xs' : 'text-gray-500 hover:text-gray-900'}`}
                     >
-                        المبيعات
+                        المبيعات 💵
                     </button>
                     <button
-                        onClick={() => setChartMode('orders')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                            chartMode === 'orders' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-600 hover:text-gray-950'
-                        }`}
+                        type="button"
+                        onClick={() => setChartMode('profit')}
+                        className={`px-3 py-1.5 rounded-lg transition-all ${chartMode === 'profit' ? 'bg-emerald-600 text-white shadow-xs' : 'text-gray-500 hover:text-gray-900'}`}
                     >
-                        الطلبات
+                        صافي الربح 🏆
                     </button>
                 </div>
             </div>
 
-            <div className="relative">
-                {/* SVG Graph */}
-                <svg viewBox={`0 0 ${Math.round(width)} ${height}`} className="w-full h-auto overflow-visible select-none">
-                    <defs>
-                        <linearGradient id="chartSalesGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#4f46e5" stopOpacity="0.25" />
-                            <stop offset="100%" stopColor="#4f46e5" stopOpacity="0.0" />
-                        </linearGradient>
-                        <linearGradient id="chartOrdersGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.25" />
-                            <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.0" />
-                        </linearGradient>
-                    </defs>
-
-                    {/* Grid Lines */}
-                    {gridLines.map((ratio, i) => {
-                        const y = padding + ratio * (height - 2 * padding);
-                        return (
-                            <line
-                                key={i}
-                                x1={padding}
-                                y1={y}
-                                x2={width - padding}
-                                y2={y}
-                                stroke="#f1f5f9"
-                                strokeWidth="1"
-                                strokeDasharray="4 4"
-                            />
-                        );
-                    })}
-
-                    {/* Sales Area & Path */}
-                    {(chartMode === 'both' || chartMode === 'sales') && (
-                        <>
-                            <path d={salesAreaPath} fill="url(#chartSalesGrad)" />
-                            <path d={salesPath} fill="none" stroke="#4f46e5" strokeWidth="3" strokeLinecap="round" />
-                        </>
-                    )}
-
-                    {/* Orders Path */}
-                    {(chartMode === 'both' || chartMode === 'orders') && (
-                        <path d={ordersPath} fill="none" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" />
-                    )}
-
-                    {/* Interactive Hover Guides & Circles */}
-                    {labels.map((day, idx) => {
-                        const sPt = salesPoints[idx];
-                        const oPt = ordersPoints[idx];
-                        const x = sPt.x;
-
+            {/* SVG Chart */}
+            <div className="relative overflow-x-auto">
+                <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-64 overflow-visible">
+                    {/* Grid lines */}
+                    {[0, 0.25, 0.5, 0.75, 1].map((pct, idx) => {
+                        const y = height - padding - pct * (height - 2 * padding);
                         return (
                             <g key={idx}>
-                                {/* Invisible vertical interaction bar */}
-                                <rect
-                                    x={x - (width - 2 * padding) / (labels.length - 1) / 2}
-                                    y={padding}
-                                    width={(width - 2 * padding) / (labels.length - 1)}
-                                    height={height - 2 * padding}
-                                    fill="transparent"
-                                    className="cursor-pointer"
-                                    onMouseEnter={() => setHoveredIndex(idx)}
-                                    onMouseLeave={() => setHoveredIndex(null)}
-                                />
-
-                                {/* Vertical Line on hover */}
-                                {hoveredIndex === idx && (
-                                    <line
-                                        x1={x}
-                                        y1={padding}
-                                        x2={x}
-                                        y2={height - padding}
-                                        stroke="#cbd5e1"
-                                        strokeWidth="1.5"
-                                        strokeDasharray="2 2"
-                                        className="pointer-events-none"
-                                    />
-                                )}
-
-                                {/* Sales Circle */}
-                                {(chartMode === 'both' || chartMode === 'sales') && hoveredIndex === idx && (
-                                    <circle
-                                        cx={x}
-                                        cy={sPt.y}
-                                        r="6"
-                                        fill="#4f46e5"
-                                        stroke="#ffffff"
-                                        strokeWidth="2"
-                                        className="pointer-events-none shadow"
-                                    />
-                                )}
-
-                                {/* Orders Circle */}
-                                {(chartMode === 'both' || chartMode === 'orders') && hoveredIndex === idx && (
-                                    <circle
-                                        cx={x}
-                                        cy={oPt.y}
-                                        r="6"
-                                        fill="#f59e0b"
-                                        stroke="#ffffff"
-                                        strokeWidth="2"
-                                        className="pointer-events-none shadow"
-                                    />
-                                )}
+                                <line x1={padding} y1={y} x2={width - padding} y2={y} stroke="#f3f4f6" strokeDasharray="3 3" />
+                                <text x={width - padding + 5} y={y + 4} fill="#9ca3af" fontSize="10" textAnchor="start">
+                                    {formatEGP(pct * maxSales)}
+                                </text>
                             </g>
                         );
                     })}
 
-                    {/* X-Axis Day Labels */}
-                    {labels.map((day, idx) => {
-                        const sPt = salesPoints[idx];
-                        // Show labels every 3 days or first/last to avoid congestion
-                        if (day === 1 || day === labels.length || day % 3 === 0) {
-                            return (
-                                <text
-                                    key={idx}
-                                    x={sPt.x}
-                                    y={height - 15}
-                                    textAnchor="middle"
-                                    className="text-[10px] font-medium fill-gray-400"
-                                >
-                                    {formatNumber(day)}
-                                </text>
-                            );
-                        }
-                        return null;
+                    {/* Sales Line */}
+                    {(chartMode === 'both' || chartMode === 'sales') && salesPath && (
+                        <path d={salesPath} fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    )}
+
+                    {/* Profit Line */}
+                    {(chartMode === 'both' || chartMode === 'profit') && profitPath && (
+                        <path d={profitPath} fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                    )}
+
+                    {/* Points & Hover Interaction */}
+                    {labels.map((lbl, idx) => {
+                        const sp = salesPoints[idx];
+                        const pp = profitPoints[idx];
+                        if (!sp || !pp) return null;
+                        const isHovered = hoveredIndex === idx;
+
+                        return (
+                            <g key={idx} onMouseEnter={() => setHoveredIndex(idx)} onMouseLeave={() => setHoveredIndex(null)} className="cursor-pointer">
+                                {/* Hover guide line */}
+                                {isHovered && (
+                                    <line x1={sp.x} y1={padding} x2={sp.x} y2={height - padding} stroke="#9ca3af" strokeDasharray="2 2" strokeWidth="1" />
+                                )}
+
+                                {(chartMode === 'both' || chartMode === 'sales') && (
+                                    <circle cx={sp.x} cy={sp.y} r={isHovered ? 6 : 3} fill="#6366f1" stroke="#ffffff" strokeWidth="2" />
+                                )}
+
+                                {(chartMode === 'both' || chartMode === 'profit') && (
+                                    <circle cx={pp.x} cy={pp.y} r={isHovered ? 7 : 3.5} fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+                                )}
+
+                                {/* X-axis label */}
+                                {(idx % Math.ceil(labels.length / 10) === 0 || idx === labels.length - 1) && (
+                                    <text x={sp.x} y={height - padding + 18} fill="#6b7280" fontSize="10" textAnchor="middle font-mono">
+                                        {lbl}
+                                    </text>
+                                )}
+                            </g>
+                        );
                     })}
                 </svg>
 
-                {/* Tooltip on hover */}
-                {hoveredIndex !== null && (
+                {/* Tooltip on Hover */}
+                {hoveredIndex !== null && salesPoints[hoveredIndex] && profitPoints[hoveredIndex] && (
                     <div
-                        className="absolute bg-slate-900 text-white rounded-lg p-2.5 text-xs shadow-lg pointer-events-none transition-all duration-150 border border-slate-800"
-                        style={{
-                            left: `${(salesPoints[hoveredIndex].x / width) * 100}%`,
-                            top: '10px',
-                            transform: 'translateX(-50%)',
-                        }}
+                        className="absolute top-2 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-4 py-2 rounded-xl text-xs shadow-lg space-y-1 pointer-events-none"
                     >
-                        <div className="font-semibold mb-1 text-gray-300">اليوم {labels[hoveredIndex]}</div>
-                        <div className="space-y-1">
-                            {(chartMode === 'both' || chartMode === 'sales') && (
-                                <div className="flex items-center gap-2">
-                                    <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
-                                    <span>المبيعات: {formatCurrency(sales[hoveredIndex])}</span>
-                                </div>
-                            )}
-                            {(chartMode === 'both' || chartMode === 'orders') && (
-                                <div className="flex items-center gap-2">
-                                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                                    <span>الطلبات: {formatNumber(orders[hoveredIndex])}</span>
-                                </div>
-                            )}
+                        <div className="font-bold border-b border-gray-700 pb-1 text-center">
+                            يوم {labels[hoveredIndex]}
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                            <span className="text-indigo-300">المبيعات:</span>
+                            <span className="font-bold">{formatEGP(salesPoints[hoveredIndex].val)}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                            <span className="text-emerald-300 font-bold">صافي الربح:</span>
+                            <span className="font-bold text-emerald-400">{formatEGP(profitPoints[hoveredIndex].val)}</span>
                         </div>
                     </div>
                 )}
@@ -282,103 +205,357 @@ function InteractiveChart({ labels, sales, orders, monthName }) {
 }
 
 // ========================================================
-// المكون الرئيسي لصفحة التقارير (ReportsIndex)
+// الصفحة الرئيسية للتقارير وصافي الربح
 // ========================================================
-export default function ReportsIndex({ chart, topProducts, governorates, payments, statuses, summary }) {
-    const formatCurrency = (val) => new Intl.NumberFormat('en-US', {maximumFractionDigits: 0}).format(Math.round(val)) + ' ج.م';
-    const formatNumber = (val) => new Intl.NumberFormat('en-US', {maximumFractionDigits: 0}).format(Math.round(val));
+export default function ReportsIndex({ chart, profitMetrics, topProducts, governorates, filters }) {
+    const [period, setPeriod] = useState(filters.period || 'this_month');
+    const [dateFrom, setDateFrom] = useState(filters.date_from || '');
+    const [dateTo, setDateTo] = useState(filters.date_to || '');
+
+    // Manual expenses state
+    const [adSpend, setAdSpend] = useState(profitMetrics.ad_spend || 0);
+    const [otherExpenses, setOtherExpenses] = useState(profitMetrics.other_expenses || 0);
+    const [isSavingExpenses, setIsSavingExpenses] = useState(false);
+
+    const handlePeriodChange = (newPeriod) => {
+        setPeriod(newPeriod);
+        router.get('/admin/reports', {
+            period: newPeriod,
+            ad_spend: adSpend,
+            other_expenses: otherExpenses,
+        }, { preserveState: true });
+    };
+
+    const handleCustomFilter = (e) => {
+        e.preventDefault();
+        router.get('/admin/reports', {
+            period: 'custom',
+            date_from: dateFrom,
+            date_to: dateTo,
+            ad_spend: adSpend,
+            other_expenses: otherExpenses,
+        }, { preserveState: true });
+    };
+
+    const handleSaveExpenses = (e) => {
+        e.preventDefault();
+        setIsSavingExpenses(true);
+
+        const periodKey = period === 'custom'
+            ? `custom_${dateFrom}_${dateTo}`
+            : (period === 'last_month' ? 'last_month' : (period === 'all_time' ? 'all_time' : 'this_month'));
+
+        router.post('/admin/reports/save-expenses', {
+            period_key: periodKey,
+            ad_spend: adSpend,
+            other_expenses: otherExpenses,
+        }, {
+            preserveScroll: true,
+            onFinish: () => setIsSavingExpenses(false),
+        });
+    };
 
     return (
-        <MerchantLayout title="التقارير والتحليلات">
-            <Head title="التقارير والإحصائيات" />
+        <MerchantLayout>
+            <Head title="التقارير وصافي الربح" />
 
             <div className="space-y-6 text-right" dir="rtl">
-                {/* Header */}
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-900">التقارير والتحليلات</h2>
-                    <p className="text-sm text-gray-500 mt-1">تابع أداء متجرك ومبيعاتك بشكل تفصيلي وسهل.</p>
+                {/* Header & Period Switcher */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <span className="p-2 bg-emerald-50 text-emerald-600 rounded-xl text-xl">
+                                💰
+                            </span>
+                            <h1 className="text-2xl font-black text-gray-900">التقارير وصافي الربح الحقيقي</h1>
+                        </div>
+                        <p className="text-gray-500 text-sm mt-1">
+                            احسب أرباحك الحقيقية بدقة بعد خصم تكلفة البضاعة المباعة (COGS)، مصاريف الشحن، المرتجعات، وصرف الإعلانات.
+                        </p>
+                    </div>
+
+                    {/* Period Tabs */}
+                    <div className="flex flex-wrap items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => handlePeriodChange('this_month')}
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${period === 'this_month' ? 'bg-gray-900 text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                        >
+                            هذا الشهر
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handlePeriodChange('last_month')}
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${period === 'last_month' ? 'bg-gray-900 text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                        >
+                            الشهر الماضي
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handlePeriodChange('all_time')}
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${period === 'all_time' ? 'bg-gray-900 text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                        >
+                            كل الأوقات
+                        </button>
+                    </div>
                 </div>
 
-                {/* Stats Cards Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard
-                        title="إجمالي المبيعات"
-                        value={formatCurrency(summary.total_revenue)}
+                {/* Custom Date Range (collapsible) */}
+                <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <form onSubmit={handleCustomFilter} className="flex flex-wrap items-center gap-2">
+                        <span className="font-bold text-gray-700">تحديد فترة مخصصة:</span>
+                        <input
+                            type="date"
+                            value={dateFrom}
+                            onChange={(e) => setDateFrom(e.target.value)}
+                            className="px-2.5 py-1.5 border rounded-lg text-xs"
+                        />
+                        <span className="text-gray-400">إلى</span>
+                        <input
+                            type="date"
+                            value={dateTo}
+                            onChange={(e) => setDateTo(e.target.value)}
+                            className="px-2.5 py-1.5 border rounded-lg text-xs"
+                        />
+                        <button type="submit" className="px-3 py-1.5 bg-gray-900 text-white rounded-lg font-bold hover:bg-black transition">
+                            تطبيق
+                        </button>
+                    </form>
+
+                    <div className="text-gray-500 font-medium">
+                        الفترة المعروضة: <span className="font-bold text-gray-900">{chart.period_label}</span>
+                    </div>
+                </div>
+
+                {/* ========================================================
+                    HERO: كارت صافي الربح الحقيقي
+                   ======================================================== */}
+                <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white p-6 md:p-8 rounded-3xl shadow-lg">
+                    <div className="absolute top-0 right-0 -mt-10 -mr-10 w-60 h-60 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+                    <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <span className="px-2.5 py-1 rounded-full bg-white/20 text-white text-xs font-bold backdrop-blur-xs">
+                                    🏆 صافي الربح الفعلي المحقق
+                                </span>
+                                <span className="text-emerald-200 text-xs font-semibold">
+                                    هامش ربح: {profitMetrics.net_margin}%
+                                </span>
+                            </div>
+                            <h2 className="text-4xl md:text-5xl font-black tracking-tight">
+                                {formatEGP(profitMetrics.realized_net_profit)}
+                            </h2>
+                            <p className="text-emerald-100 text-xs md:text-sm max-w-xl leading-relaxed">
+                                صافي الربح الفعلي بعد خصم تكلفة المنتجات المباعة (COGS) + تكاليف الشحن والمرتجعات + صرف الإعلانات والمصروفات.
+                            </p>
+                        </div>
+
+                        <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl space-y-2 text-xs shrink-0 md:min-w-64">
+                            <div className="flex justify-between items-center text-emerald-100">
+                                <span>المبيعات المحصلة (المسلمة):</span>
+                                <span className="font-bold text-white text-sm">{formatEGP(profitMetrics.delivered_revenue)}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-emerald-100">
+                                <span>مبيعات قيد التوصيل:</span>
+                                <span className="font-bold text-white text-sm">{formatEGP(profitMetrics.in_transit_revenue)}</span>
+                            </div>
+                            <div className="pt-2 border-t border-white/15 flex justify-between items-center">
+                                <span className="font-bold text-emerald-200">الربح المتوقع الإجمالي:</span>
+                                <span className="font-black text-amber-300 text-base">{formatEGP(profitMetrics.projected_net_profit)}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ========================================================
+                    معادلة تفكيك الأرباح والتكاليف (Profit Equation Cards)
+                   ======================================================== */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <MetricCard
+                        title="1. إجمالي المبيعات المحصلة"
+                        value={formatEGP(profitMetrics.delivered_revenue)}
+                        subtitle={`${profitMetrics.delivered_orders} طلب تم تسليمه بنجاح`}
+                        icon="💵"
                         color="indigo"
-                        icon={
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        }
                     />
-                    <StatCard
-                        title="الطلبات المكتملة"
-                        value={`${formatNumber(summary.completed_orders)} / ${formatNumber(summary.total_orders)}`}
-                        color="emerald"
-                        icon={
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                            </svg>
-                        }
-                    />
-                    <StatCard
-                        title="متوسط قيمة الطلب"
-                        value={formatCurrency(summary.avg_order_value)}
+
+                    <MetricCard
+                        title="2. تكلفة البضاعة (COGS)"
+                        value={`- ${formatEGP(profitMetrics.delivered_cogs)}`}
+                        subtitle="تكلفة شراء وتصنيع المنتجات"
+                        icon="📦"
                         color="amber"
-                        icon={
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                            </svg>
-                        }
                     />
-                    <StatCard
-                        title="المنتج الأكثر مبيعاً"
-                        value={summary.top_product}
-                        color="sky"
-                        icon={
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                            </svg>
-                        }
+
+                    <MetricCard
+                        title="3. الشحن وخسائر المرتجع"
+                        value={`- ${formatEGP(profitMetrics.total_shipping_cost)}`}
+                        subtitle={`شحن: ${formatEGP(profitMetrics.delivered_shipping_fees)} | مرتجع: ${formatEGP(profitMetrics.return_shipping_fees)}`}
+                        icon="🚚"
+                        color="rose"
+                    />
+
+                    <MetricCard
+                        title="4. صرف الإعلانات (مدخل)"
+                        value={`- ${formatEGP(profitMetrics.ad_spend)}`}
+                        subtitle="حملات فيسبوك / تيك توك / جوجل"
+                        icon="📢"
+                        color="purple"
+                    />
+
+                    <MetricCard
+                        title="5. مصروفات أخرى (مدخل)"
+                        value={`- ${formatEGP(profitMetrics.other_expenses)}`}
+                        subtitle="تغليف، رواتب، مصاريف تشغيل"
+                        icon="💼"
+                        color="blue"
                     />
                 </div>
 
-                {/* Interactive Chart */}
-                <InteractiveChart
+                {/* ========================================================
+                    ودجت إدخال صرف الإعلانات والمصروفات فورياً
+                   ======================================================== */}
+                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                    <form onSubmit={handleSaveExpenses} className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+                        <div className="space-y-1">
+                            <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
+                                <span>🎯 تسجيل صرف الإعلانات والمصروفات التشغيلية للفترة الحالية</span>
+                            </h3>
+                            <p className="text-xs text-gray-500">
+                                أدخل ما تم صرفه على الإعلانات أو مصاريف التغليف لحساب صافي الربح الحقيقي بدون الحاجة لأي ربط خارجي.
+                            </p>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">صرف الإعلانات (ج.م):</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="10"
+                                    value={adSpend}
+                                    onChange={(e) => setAdSpend(e.target.value)}
+                                    placeholder="مثال: 5000"
+                                    className="w-36 px-3 py-2 border rounded-xl text-sm font-mono text-left dir-ltr"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">مصروفات أخرى (ج.م):</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="10"
+                                    value={otherExpenses}
+                                    onChange={(e) => setOtherExpenses(e.target.value)}
+                                    placeholder="مثال: 1200"
+                                    className="w-36 px-3 py-2 border rounded-xl text-sm font-mono text-left dir-ltr"
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isSavingExpenses}
+                                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-xs disabled:opacity-50 mt-auto"
+                            >
+                                {isSavingExpenses ? 'جاري الحفظ...' : 'حفظ وتحديث الأرباح ✓'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                {/* ========================================================
+                    مؤشرات الأداء لعمليات الدفع عند الاستلام (COD Metrics)
+                   ======================================================== */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs flex items-center justify-between">
+                        <div>
+                            <span className="text-xs font-semibold text-gray-500 block mb-1">نسبة التسليم الناجح (Delivery Rate)</span>
+                            <span className="text-2xl font-black text-emerald-600">{profitMetrics.delivery_rate}%</span>
+                            <span className="text-[11px] text-gray-400 block mt-1">{profitMetrics.delivered_orders} من {profitMetrics.delivered_orders + profitMetrics.returned_orders} شحنة منتهية</span>
+                        </div>
+                        <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl font-bold">
+                            ✅
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs flex items-center justify-between">
+                        <div>
+                            <span className="text-xs font-semibold text-gray-500 block mb-1">نسبة المرتجعات (Return Rate)</span>
+                            <span className={`text-2xl font-black ${profitMetrics.return_rate > 25 ? 'text-rose-600' : 'text-amber-600'}`}>{profitMetrics.return_rate}%</span>
+                            <span className="text-[11px] text-gray-400 block mt-1">{profitMetrics.returned_orders} شحنات مرتجعة</span>
+                        </div>
+                        <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-xl font-bold">
+                            ↩️
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs flex items-center justify-between">
+                        <div>
+                            <span className="text-xs font-semibold text-gray-500 block mb-1">متوسط قيمة الطلب (AOV)</span>
+                            <span className="text-2xl font-black text-gray-900">{formatEGP(profitMetrics.avg_order_value)}</span>
+                            <span className="text-[11px] text-gray-400 block mt-1">لكل أوردر تم استلامه</span>
+                        </div>
+                        <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl font-bold">
+                            🛍️
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs flex items-center justify-between">
+                        <div>
+                            <span className="text-xs font-semibold text-gray-500 block mb-1">إجمالي طلبات الفترة</span>
+                            <span className="text-2xl font-black text-gray-900">{profitMetrics.total_orders}</span>
+                            <span className="text-[11px] text-gray-400 block mt-1">شاملة الملغية وقيد الشحن</span>
+                        </div>
+                        <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl font-bold">
+                            📊
+                        </div>
+                    </div>
+                </div>
+
+                {/* Chart Section */}
+                <ProfitChart
                     labels={chart.labels}
                     sales={chart.sales}
-                    orders={chart.orders}
-                    monthName={chart.month_name}
+                    profit={chart.profit}
+                    periodLabel={chart.period_label}
                 />
 
+                {/* Bottom Row: Top Products & Governorates */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Top Selling Products */}
-                    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <span>🔥</span> المنتجات الأكثر مبيعاً
-                        </h3>
+                    {/* Top Products with Profit Breakdown */}
+                    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                            <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
+                                <span>🏆 المنتجات الأكثر ربحية ومبيعاً</span>
+                            </h3>
+                            <span className="text-xs text-gray-400">مرتبة بصافي الربح</span>
+                        </div>
+
                         <div className="overflow-x-auto">
-                            <table className="w-full text-right border-collapse">
-                                <thead>
-                                    <tr className="border-b border-gray-150 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        <th className="pb-3 text-right">المنتج</th>
-                                        <th className="pb-3 text-center">الكمية المباعة</th>
-                                        <th className="pb-3 text-left">الإيرادات</th>
+                            <table className="w-full text-right text-xs">
+                                <thead className="bg-gray-50 text-gray-500 border-b border-gray-100">
+                                    <tr>
+                                        <th className="py-2.5 px-3">المنتج</th>
+                                        <th className="py-2.5 px-3">الكمية</th>
+                                        <th className="py-2.5 px-3">سعر التكلفة</th>
+                                        <th className="py-2.5 px-3">الإيراد</th>
+                                        <th className="py-2.5 px-3 text-left">صافي الربح</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100 text-sm">
+                                <tbody className="divide-y divide-gray-100">
                                     {topProducts.length === 0 ? (
                                         <tr>
-                                            <td colSpan="3" className="text-center py-6 text-gray-400 italic">
-                                                لا توجد منتجات مباعة بعد.
-                                            </td>
+                                            <td colSpan="5" className="text-center py-6 text-gray-400">لا توجد مبيعات مسجلة في هذه الفترة</td>
                                         </tr>
                                     ) : (
-                                        topProducts.map((p, idx) => (
-                                            <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                                                <td className="py-3 font-semibold text-gray-800">{p.name}</td>
-                                                <td className="py-3 text-center font-bold text-gray-700">{formatNumber(p.qty)}</td>
-                                                <td className="py-3 text-left font-bold text-indigo-600">{formatCurrency(p.revenue)}</td>
+                                        topProducts.map((p) => (
+                                            <tr key={p.id} className="hover:bg-gray-50/50">
+                                                <td className="py-2.5 px-3 font-semibold text-gray-900">{p.name}</td>
+                                                <td className="py-2.5 px-3 font-bold">{p.qty}</td>
+                                                <td className="py-2.5 px-3 font-mono text-gray-500">{formatEGP(p.cost_price)}</td>
+                                                <td className="py-2.5 px-3 font-mono text-gray-700">{formatEGP(p.revenue)}</td>
+                                                <td className="py-2.5 px-3 font-mono font-bold text-emerald-600 text-left">{formatEGP(p.profit)}</td>
                                             </tr>
                                         ))
                                     )}
@@ -387,105 +564,39 @@ export default function ReportsIndex({ chart, topProducts, governorates, payment
                         </div>
                     </div>
 
-                    {/* Sales by Governorate */}
-                    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <span>📍</span> المبيعات حسب المحافظات
-                        </h3>
+                    {/* Governorates Performance */}
+                    <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                            <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
+                                <span>🗺️ أداء المحافظات ونسب التسليم</span>
+                            </h3>
+                            <span className="text-xs text-gray-400">أعلى المحافظات طلباً</span>
+                        </div>
+
                         <div className="overflow-x-auto">
-                            <table className="w-full text-right border-collapse">
-                                <thead>
-                                    <tr className="border-b border-gray-150 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        <th className="pb-3 text-right">المحافظة</th>
-                                        <th className="pb-3 text-center">عدد الطلبات</th>
-                                        <th className="pb-3 text-left">إجمالي المبيعات</th>
+                            <table className="w-full text-right text-xs">
+                                <thead className="bg-gray-50 text-gray-500 border-b border-gray-100">
+                                    <tr>
+                                        <th className="py-2.5 px-3">المحافظة</th>
+                                        <th className="py-2.5 px-3">الطلبات</th>
+                                        <th className="py-2.5 px-3">تم التسليم</th>
+                                        <th className="py-2.5 px-3">مرتجع</th>
+                                        <th className="py-2.5 px-3 text-left">المبيعات</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100 text-sm">
+                                <tbody className="divide-y divide-gray-100">
                                     {governorates.length === 0 ? (
                                         <tr>
-                                            <td colSpan="3" className="text-center py-6 text-gray-400 italic">
-                                                لا توجد مبيعات مسجلة للمحافظات بعد.
-                                            </td>
+                                            <td colSpan="5" className="text-center py-6 text-gray-400">لا توجد بيانات للمحافظات</td>
                                         </tr>
                                     ) : (
                                         governorates.map((gov, idx) => (
-                                            <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                                                <td className="py-3 font-semibold text-gray-800">{gov.governorate}</td>
-                                                <td className="py-3 text-center font-bold text-gray-700">{formatNumber(gov.orders_count)}</td>
-                                                <td className="py-3 text-left font-bold text-emerald-600">{formatCurrency(gov.revenue)}</td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Payment Methods */}
-                    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <span>💳</span> توزيع طرق الدفع
-                        </h3>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-right border-collapse">
-                                <thead>
-                                    <tr className="border-b border-gray-150 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        <th className="pb-3 text-right">طريقة الدفع</th>
-                                        <th className="pb-3 text-center">عدد الطلبات</th>
-                                        <th className="pb-3 text-left">إجمالي القيمة</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100 text-sm">
-                                    {payments.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="3" className="text-center py-6 text-gray-400 italic">
-                                                لا توجد بيانات متاحة لطرق الدفع.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        payments.map((p, idx) => (
-                                            <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                                                <td className="py-3 font-semibold text-gray-800">{p.method_text}</td>
-                                                <td className="py-3 text-center font-bold text-gray-700">{formatNumber(p.orders_count)}</td>
-                                                <td className="py-3 text-left font-bold text-indigo-600">{formatCurrency(p.revenue)}</td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {/* Order Status Distribution */}
-                    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <span>📊</span> حالة الطلبات ونسب التوصيل
-                        </h3>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-right border-collapse">
-                                <thead>
-                                    <tr className="border-b border-gray-150 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                        <th className="pb-3 text-right">الحالة</th>
-                                        <th className="pb-3 text-center">عدد الطلبات</th>
-                                        <th className="pb-3 text-left">القيمة المالية</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100 text-sm">
-                                    {statuses.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="3" className="text-center py-6 text-gray-400 italic">
-                                                لا توجد طلبات بعد.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        statuses.map((s, idx) => (
-                                            <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                                                <td className="py-3 font-semibold text-gray-800">{s.status_text}</td>
-                                                <td className="py-3 text-center font-bold text-gray-700">{formatNumber(s.orders_count)}</td>
-                                                <td className="py-3 text-left font-bold text-emerald-600">{formatCurrency(s.revenue)}</td>
+                                            <tr key={idx} className="hover:bg-gray-50/50">
+                                                <td className="py-2.5 px-3 font-semibold text-gray-900">{gov.governorate}</td>
+                                                <td className="py-2.5 px-3 font-bold">{gov.orders_count}</td>
+                                                <td className="py-2.5 px-3 text-emerald-600 font-bold">{gov.delivered_count}</td>
+                                                <td className="py-2.5 px-3 text-rose-600 font-bold">{gov.returned_count}</td>
+                                                <td className="py-2.5 px-3 font-mono font-bold text-gray-900 text-left">{formatEGP(gov.revenue)}</td>
                                             </tr>
                                         ))
                                     )}

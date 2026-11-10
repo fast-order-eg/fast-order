@@ -148,6 +148,7 @@ export default function Edit({ product, categories, allProducts = [] }) {
         description: product.description || '',
         price_before: product.price_before ? Math.round(Number(product.price_before)) : '',
         price_after: product.price_after ? Math.round(Number(product.price_after)) : '',
+        cost_price: product.cost_price ? Math.round(Number(product.cost_price)) : '',
         stock: product.stock !== undefined ? product.stock : '',
         low_stock_threshold: product.low_stock_threshold !== undefined ? product.low_stock_threshold : '5',
         category_id: product.category_id || '',
@@ -643,7 +644,7 @@ export default function Edit({ product, categories, allProducts = [] }) {
                             <span className="w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs font-bold">٢</span>
                             السعر والمخزون
                         </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <InputField
                                 label="السعر قبل الخصم"
                                 name="price_before"
@@ -655,12 +656,22 @@ export default function Edit({ product, categories, allProducts = [] }) {
                                 errors={errors}
                             />
                             <InputField
-                                label="السعر بعد الخصم"
+                                label="سعر البيع (بعد الخصم)"
                                 name="price_after"
                                 type="number"
                                 required
                                 placeholder="0"
                                 hint="السعر الفعلي للمنتج"
+                                data={data}
+                                setData={setData}
+                                errors={errors}
+                            />
+                            <InputField
+                                label="سعر التكلفة (ج.م)"
+                                name="cost_price"
+                                type="number"
+                                placeholder="0"
+                                hint="لحساب صافي الربح في التقارير"
                                 data={data}
                                 setData={setData}
                                 errors={errors}

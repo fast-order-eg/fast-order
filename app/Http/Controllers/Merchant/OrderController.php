@@ -143,11 +143,12 @@ class OrderController extends Controller
             }
         }
 
-        $pageOrders->transform(function ($order) use ($phoneCounts) {
+        $pageOrders->transform(function ($order) use ($phoneCounts, $tenant) {
             $clean = static::normalizeCustomerPhone($order->customer_phone);
             $count = (strlen($clean) >= 6 && isset($phoneCounts[$clean])) ? (int) $phoneCounts[$clean] : 1;
             $order->duplicate_count = $count;
             $order->is_duplicate = ($count > 1);
+            $order->rto_assessment = \App\Services\RtoShieldService::assessRisk($order->customer_phone, $tenant->id);
             return $order;
         });
 
@@ -423,6 +424,8 @@ class OrderController extends Controller
             return $c->format('Y-m-d h:i') . ' ' . $period;
         };
 
+        $rtoAssessment = \App\Services\RtoShieldService::assessRisk($order->customer_phone, $tenant->id);
+
         return Inertia::render('Merchant/Orders/Show', [
             'order' => [
                 'id'               => $order->id,
@@ -435,6 +438,7 @@ class OrderController extends Controller
                 'ip_country'       => $order->ip_country,
                 'is_phone_blocked' => $isPhoneBlocked,
                 'is_ip_blocked'    => $isIpBlocked,
+                'rto_assessment'   => $rtoAssessment,
                 'governorate'      => $order->governorate,
                 'payment_method'   => $order->payment_method,
                 'payment_status'   => $order->payment_status,

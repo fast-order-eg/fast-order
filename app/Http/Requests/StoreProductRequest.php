@@ -21,6 +21,7 @@ class StoreProductRequest extends FormRequest
             'description'         => ['nullable', 'string'],
             'price_before'        => ['nullable', 'numeric', 'min:0'],
             'price_after'         => ['required', 'numeric', 'min:0'],
+            'cost_price'          => ['nullable', 'numeric', 'min:0'],
             'stock'               => ['required', 'integer', 'min:0'],
             'low_stock_threshold' => ['nullable', 'integer', 'min:0'],
             'category_id'         => [
