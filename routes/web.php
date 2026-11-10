@@ -132,6 +132,15 @@ Route::domain('app.' . $baseDomain)->group(function () {
         Route::post('/whatsapp-gateway/settings', [App\Http\Controllers\SuperAdmin\WhatsAppGatewayController::class, 'updateSettings'])->name('superadmin.whatsapp.update-settings');
         Route::post('/whatsapp-gateway/test', [App\Http\Controllers\SuperAdmin\WhatsAppGatewayController::class, 'sendTestMessage'])->name('superadmin.whatsapp.test');
 
+        // RTO Shield & Global Blacklist Management (Super Admin)
+        Route::prefix('blacklist')->name('superadmin.blacklist.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\SuperAdmin\BlacklistController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\SuperAdmin\BlacklistController::class, 'store'])->name('store');
+            Route::patch('/{id}/toggle-global', [\App\Http\Controllers\SuperAdmin\BlacklistController::class, 'toggleGlobal'])->name('toggle-global');
+            Route::post('/unblock-globally', [\App\Http\Controllers\SuperAdmin\BlacklistController::class, 'unblockGlobally'])->name('unblock-globally');
+            Route::delete('/{id}', [\App\Http\Controllers\SuperAdmin\BlacklistController::class, 'destroy'])->name('destroy');
+        });
+
         // Super Admin Profile & Team Management
         Route::get('/admins', [App\Http\Controllers\SuperAdmin\AdminProfileController::class, 'index'])->name('superadmin.admins.index');
         Route::put('/admins/profile', [App\Http\Controllers\SuperAdmin\AdminProfileController::class, 'updateProfile'])->name('superadmin.admins.profile.update');
@@ -265,6 +274,7 @@ Route::prefix('admin')->group(function () {
 
             // Reports routes
             Route::get('/reports', [App\Http\Controllers\Merchant\ReportController::class, 'index'])->name('merchant.reports.index');
+            Route::post('/reports/save-expenses', [App\Http\Controllers\Merchant\ReportController::class, 'saveExpenses'])->name('merchant.reports.save-expenses');
 
             // API Keys management routes
             Route::resource('/api-keys', App\Http\Controllers\Merchant\ApiKeyController::class)
@@ -506,11 +516,7 @@ Route::prefix('admin')->group(function () {
             }
 
             $formatImg = function($path) {
-                if (!$path) return null;
-                if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://') || str_starts_with($path, '/')) {
-                    return url($path);
-                }
-                return asset('storage/' . ltrim($path, '/'));
+                return \App\Models\Product::resolveImageUrl($path);
             };
 
             $locale = app()->getLocale();
@@ -539,17 +545,7 @@ Route::prefix('admin')->group(function () {
                 return response()->json(['data' => []])->header('Access-Control-Allow-Origin', '*');
             }
             $formatImg = function($path) {
-                if (!$path) return null;
-                if (str_starts_with($path, 'data:image/') || str_starts_with($path, 'data:')) {
-                    return $path;
-                }
-                if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-                    return $path;
-                }
-                if (str_starts_with($path, '/')) {
-                    return url($path);
-                }
-                return asset('storage/' . ltrim($path, '/'));
+                return \App\Models\Product::resolveImageUrl($path);
             };
 
             // Calculate sales count per product from real non-cancelled orders
@@ -649,17 +645,7 @@ Route::prefix('admin')->group(function () {
 
         Route::get('/public-api/products/{id}', function ($id) {
             $formatImg = function($path) {
-                if (!$path) return null;
-                if (str_starts_with($path, 'data:image/') || str_starts_with($path, 'data:')) {
-                    return $path;
-                }
-                if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-                    return $path;
-                }
-                if (str_starts_with($path, '/')) {
-                    return url($path);
-                }
-                return asset('storage/' . ltrim($path, '/'));
+                return \App\Models\Product::resolveImageUrl($path);
             };
 
             $prodQuery = Product::with(['category', 'images', 'upsells', 'crossSells']);
@@ -750,7 +736,7 @@ Route::prefix('admin')->group(function () {
                     'price_before' => $p->price_before,
                     'price_after' => $p->price_after ?? $p->price,
                     'stock' => $p->stock,
-                    'image_url' => $p->main_image_path ? asset('storage/' . $p->main_image_path) : ($p->image_url ?: null),
+                    'image_url' => \App\Models\Product::resolveImageUrl($p->main_image_path ?: $p->image_url),
                 ]);
                 
             return response()->json(['data' => $recs])->header('Access-Control-Allow-Origin', '*');

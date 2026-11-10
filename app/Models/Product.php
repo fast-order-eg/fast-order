@@ -18,6 +18,7 @@ class Product extends Model
         'price',
         'price_before',
         'price_after',
+        'cost_price',
         'price_tiers',
         'stock',
         'low_stock_threshold',
@@ -36,6 +37,7 @@ class Product extends Model
         'price' => 'integer',
         'price_before' => 'integer',
         'price_after' => 'integer',
+        'cost_price' => 'integer',
         'price_tiers' => 'array',
         'sizes' => 'array',
         'colors' => 'array',
@@ -49,6 +51,10 @@ class Product extends Model
     public static function resolveImageUrl(?string $path): ?string
     {
         if (!$path) return null;
+
+        if (str_starts_with($path, 'data:image/') || str_starts_with($path, 'data:')) {
+            return $path;
+        }
 
         if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
             return $path;

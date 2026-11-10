@@ -1336,9 +1336,8 @@ s0.parentNode.insertBefore(s1,s0);
 
             if ($product) {
                 // Structured Data (JSON-LD) for Product Schema
-                $imageUrl = $product->main_image_path 
-                    ? asset('storage/' . $product->main_image_path) 
-                    : ($product->image_url ?: 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image');
+                $imageUrl = \App\Models\Product::resolveImageUrl($product->main_image_path ?: $product->image_url)
+                    ?: 'https://dummyimage.com/600x400/e5e7eb/9ca3af.png&text=No+Image';
                 
                 $rawDescription = strip_tags($product->description);
                 $description = Str::limit($rawDescription, 160) ?: ('اشتري ' . $product->name . ' بأفضل سعر وتوصيل سريع من متجر ' . $storeName);

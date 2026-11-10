@@ -1023,6 +1023,41 @@ ${totalsBlock}${shippingBlock}`;
                                             </a>
                                         </div>
                                     </div>
+                                    {order.rto_assessment && (
+                                        <div className={`mt-2 p-3 rounded-xl border text-xs space-y-1.5 ${
+                                            order.rto_assessment.risk_level === 'high'
+                                                ? 'bg-rose-50/70 border-rose-200 text-rose-900'
+                                                : (order.rto_assessment.risk_level === 'medium'
+                                                    ? 'bg-amber-50/70 border-amber-200 text-amber-900'
+                                                    : (order.rto_assessment.risk_level === 'whitelisted'
+                                                        ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900'
+                                                        : 'bg-green-50/70 border-green-200 text-green-900'))
+                                        }`}>
+                                            <div className="flex items-center justify-between font-bold">
+                                                <span className="flex items-center gap-1.5">
+                                                    <span>🛡️ تقييم درع المرتجعات:</span>
+                                                    <span className="underline">{order.rto_assessment.badge_text}</span>
+                                                </span>
+                                                <span>نسبة الاستلام: {order.rto_assessment.delivery_rate}%</span>
+                                            </div>
+                                            <div className="text-[11px] opacity-85 flex flex-wrap gap-x-3 gap-y-0.5">
+                                                <span>إجمالي طلباته: {order.rto_assessment.total_orders}</span>
+                                                <span>استلم: {order.rto_assessment.delivered_orders}</span>
+                                                <span className="font-bold text-rose-700">مرتجع: {order.rto_assessment.returned_orders}</span>
+                                                <span>ملغي: {order.rto_assessment.cancelled_orders}</span>
+                                                {order.rto_assessment.reports_count > 0 && (
+                                                    <span className="font-bold text-rose-800">مبلغ عنه من {order.rto_assessment.reports_count} متاجر</span>
+                                                )}
+                                            </div>
+                                            {order.rto_assessment.reasons?.length > 0 && (
+                                                <ul className="list-disc list-inside text-[11px] space-y-0.5 pt-1 border-t border-current/10">
+                                                    {order.rto_assessment.reasons.map((r, idx) => (
+                                                        <li key={idx}>{r}</li>
+                                                    ))}
+                                                </ul>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
                                     <span className="text-xs text-gray-400 block mb-0.5">المحافظة:</span>
