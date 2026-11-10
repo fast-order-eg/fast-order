@@ -593,7 +593,7 @@ export default function OrdersIndex({ orders, totalAmount, statusCounts, product
                                                 <div className="text-xs text-gray-500 font-mono mt-0.5" dir="ltr">
                                                     {order.is_unlocked || wallet_balance >= 2 ? order.customer_phone : `${order.customer_phone?.substring(0, 4)}******`}
                                                 </div>
-                                                {order.rto_assessment && (
+                                                {order.rto_assessment && order.rto_assessment.has_issues && (
                                                     <div className="mt-1 flex items-center gap-1">
                                                         <span
                                                             className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
@@ -790,7 +790,7 @@ export default function OrdersIndex({ orders, totalAmount, statusCounts, product
                                             </span>
                                             <span>{order.governorate}</span>
                                         </div>
-                                        {order.rto_assessment && (
+                                        {order.rto_assessment && order.rto_assessment.has_issues && (
                                             <div className="mt-1 flex items-center gap-1">
                                                 <span
                                                     className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold ${

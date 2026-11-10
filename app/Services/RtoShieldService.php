@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\BlacklistRecord;
 use App\Models\Order;
 use App\Scopes\TenantScope;
-use Illuminate\Support\Facades\Cache;
 
 class RtoShieldService
 {
@@ -44,14 +43,16 @@ class RtoShieldService
 
     /**
      * Assess risk for a given customer phone number.
+     * Returns has_issues = true ONLY if customer has blacklists, returns, or cancellations.
      */
     public static function assessRisk(?string $phone, ?int $tenantId = null): array
     {
         if (empty($phone)) {
             return [
                 'phone' => '',
-                'risk_level' => 'unknown',
-                'badge_text' => 'غير محدد',
+                'has_issues' => false,
+                'risk_level' => 'clean',
+                'badge_text' => '',
                 'badge_color' => 'gray',
                 'is_blocked' => false,
                 'is_whitelisted' => false,
@@ -75,47 +76,30 @@ class RtoShieldService
             ->whereIn('value', $variants)
             ->exists();
 
-        if ($isWhitelisted) {
-            return [
-                'phone' => $phone,
-                'risk_level' => 'whitelisted',
-                'badge_text' => 'مستثنى وموثوق من الإدارة ⭐',
-                'badge_color' => 'emerald',
-                'is_blocked' => false,
-                'is_whitelisted' => true,
-                'is_local_blacklisted' => false,
-                'is_global_blacklisted' => false,
-                'reports_count' => 0,
-                'total_orders' => 0,
-                'delivered_orders' => 0,
-                'returned_orders' => 0,
-                'cancelled_orders' => 0,
-                'delivery_rate' => 100,
-                'reasons' => ['تم فك الحظر واعتماده كموثوق من السوبر أدمن.'],
-            ];
-        }
-
         // 2. Check local and global blacklist records
         $localQuery = BlacklistRecord::where('type', 'phone')->whereIn('value', $variants);
         if ($tenantId) {
             $localQuery->where('tenant_id', $tenantId);
         }
-        $isLocalBlacklisted = $localQuery->exists();
+        $isLocalBlacklisted = !$isWhitelisted && $localQuery->exists();
 
         $globalRecord = BlacklistRecord::withoutGlobalScope(TenantScope::class)
             ->where('is_global', true)
             ->where('type', 'phone')
             ->whereIn('value', $variants)
             ->first();
-        $isGlobalBlacklisted = (bool) $globalRecord;
+        $isGlobalBlacklisted = !$isWhitelisted && (bool) $globalRecord;
 
         // Count how many unique merchants reported this phone
-        $reportingTenantsCount = BlacklistRecord::withoutGlobalScope(TenantScope::class)
-            ->where('type', 'phone')
-            ->whereIn('value', $variants)
-            ->where('is_whitelisted', false)
-            ->distinct('tenant_id')
-            ->count('tenant_id');
+        $reportingTenantsCount = 0;
+        if (!$isWhitelisted) {
+            $reportingTenantsCount = BlacklistRecord::withoutGlobalScope(TenantScope::class)
+                ->where('type', 'phone')
+                ->whereIn('value', $variants)
+                ->where('is_whitelisted', false)
+                ->distinct('tenant_id')
+                ->count('tenant_id');
+        }
 
         // 3. Platform-wide Order History stats for this customer phone
         $ordersStats = Order::withoutGlobalScope(TenantScope::class)
@@ -134,27 +118,31 @@ class RtoShieldService
         $cancelledOrders = (int) ($ordersStats->cancelled ?? 0);
 
         $closedOrders = $deliveredOrders + $returnedOrders;
-        $deliveryRate = $closedOrders > 0 ? round(($deliveredOrders / $closedOrders) * 100, 1) : ($totalOrders > 0 ? 50 : 0);
+        $deliveryRate = $closedOrders > 0 ? round(($deliveredOrders / $closedOrders) * 100, 1) : 0;
 
-        // 4. Determine Risk Reasons & Risk Level
+        $isBlocked = $isLocalBlacklisted || $isGlobalBlacklisted;
+
+        // Has issues flag: ONLY true if there is a real problem (block, return, cancellation, or reports)
+        $hasIssues = $isBlocked || $returnedOrders > 0 || $cancelledOrders > 0 || $reportingTenantsCount > 0;
+
         $reasons = [];
 
         if ($isLocalBlacklisted) {
-            $reasons[] = 'مسجل في القائمة السوداء الخاصة بمتجرك.';
+            $reasons[] = 'مسجل في القائمة السوداء لمتجرك.';
         }
 
         if ($isGlobalBlacklisted) {
-            $reasons[] = 'مسجل في القائمة السوداء العامة للمنصة من قبل الإدارة.';
+            $reasons[] = 'مسجل في قائمة الحظر العام للمنصة.';
         }
 
         if ($reportingTenantsCount > 1) {
-            $reasons[] = "تم الإبلاغ عنه من قبل {$reportingTenantsCount} متاجر أخرى على المنصة.";
+            $reasons[] = "تم الإبلاغ عنه من قبل {$reportingTenantsCount} متاجر أخرى.";
         } elseif ($reportingTenantsCount === 1 && !$isLocalBlacklisted) {
-            $reasons[] = 'تم الإبلاغ عنه من متجر آخر على المنصة.';
+            $reasons[] = 'تم الإبلاغ عنه من متجر آخر.';
         }
 
         if ($returnedOrders > 0) {
-            $reasons[] = "سجل له {$returnedOrders} شحنة مرتجعة سابقة لم يستلمها.";
+            $reasons[] = "لديه {$returnedOrders} شحنة مرتجعة سابقة لم يستلمها.";
         }
 
         if ($cancelledOrders > 0) {
@@ -162,38 +150,55 @@ class RtoShieldService
         }
 
         // Decision logic
-        $riskLevel = 'safe';
-        $badgeText = 'عميل موثوق ✅';
-        $badgeColor = 'green';
-        $isBlocked = $isLocalBlacklisted || $isGlobalBlacklisted;
+        if (!$hasIssues) {
+            return [
+                'phone' => $phone,
+                'has_issues' => false,
+                'risk_level' => 'clean',
+                'badge_text' => '',
+                'badge_color' => 'gray',
+                'is_blocked' => false,
+                'is_whitelisted' => $isWhitelisted,
+                'is_local_blacklisted' => false,
+                'is_global_blacklisted' => false,
+                'reports_count' => 0,
+                'total_orders' => $totalOrders,
+                'delivered_orders' => $deliveredOrders,
+                'returned_orders' => 0,
+                'cancelled_orders' => 0,
+                'delivery_rate' => $deliveryRate,
+                'reasons' => [],
+            ];
+        }
 
-        if ($isBlocked || $returnedOrders >= 2 || ($reportingTenantsCount >= 2)) {
+        // If there ARE issues:
+        $riskLevel = 'medium';
+        $badgeText = 'تحذير طلب ⚠️';
+        $badgeColor = 'amber';
+
+        if ($isBlocked || $returnedOrders >= 2 || $reportingTenantsCount >= 2) {
             $riskLevel = 'high';
-            $badgeText = 'خطر مرتجع عالي 🚨';
+            $badgeText = $isBlocked ? 'محظور 🚫' : 'خطر مرتجع عالي 🚨';
             $badgeColor = 'red';
-        } elseif ($returnedOrders === 1 || $reportingTenantsCount === 1 || ($cancelledOrders >= 2)) {
-            $riskLevel = 'medium';
-            $badgeText = 'متوسط الخطورة ⚠️';
+        } elseif ($returnedOrders === 1) {
+            $badgeText = 'مرتجع سابق ⚠️';
             $badgeColor = 'amber';
-        } elseif ($totalOrders === 0) {
-            $riskLevel = 'new';
-            $badgeText = 'عميل جديد 🆕';
-            $badgeColor = 'blue';
-            $reasons[] = 'أول طلب لهذا العميل على المنصة.';
-        } else {
-            $riskLevel = 'safe';
-            $badgeText = "موثوق ({$deliveredOrders} طلبات مستلمة) ✅";
-            $badgeColor = 'green';
-            $reasons[] = "استلم {$deliveredOrders} طلبات بنجاح بمعدل تسليم {$deliveryRate}%.";
+        } elseif ($cancelledOrders >= 1) {
+            $badgeText = 'طلب ملغي سابق ⚠️';
+            $badgeColor = 'amber';
+        } elseif ($reportingTenantsCount === 1) {
+            $badgeText = 'بلاغ من متجر آخر ⚠️';
+            $badgeColor = 'amber';
         }
 
         return [
             'phone' => $phone,
+            'has_issues' => true,
             'risk_level' => $riskLevel,
             'badge_text' => $badgeText,
             'badge_color' => $badgeColor,
             'is_blocked' => $isBlocked,
-            'is_whitelisted' => false,
+            'is_whitelisted' => $isWhitelisted,
             'is_local_blacklisted' => $isLocalBlacklisted,
             'is_global_blacklisted' => $isGlobalBlacklisted,
             'reports_count' => $reportingTenantsCount,

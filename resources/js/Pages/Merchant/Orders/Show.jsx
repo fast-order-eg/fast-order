@@ -1023,7 +1023,7 @@ ${totalsBlock}${shippingBlock}`;
                                             </a>
                                         </div>
                                     </div>
-                                    {order.rto_assessment && (
+                                    {order.rto_assessment && order.rto_assessment.has_issues && (
                                         <div className={`mt-2 p-3 rounded-xl border text-xs space-y-1.5 ${
                                             order.rto_assessment.risk_level === 'high'
                                                 ? 'bg-rose-50/70 border-rose-200 text-rose-900'
