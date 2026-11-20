@@ -55,6 +55,17 @@
     </nav>
   </header>
 
+  <!-- Luxury Category Quick Navigation Tabs -->
+  <div class="lux-tabs-container">
+    <div class="lux-tabs-bar" id="luxCatTabs">
+      <a href="/shop/index.html" class="lux-tab-pill active"><i class="fa fa-gem"></i> <span>الرئيسية</span></a>
+      <a href="/shop/products.html" class="lux-tab-pill"><i class="fa fa-th-large"></i> <span>التشكيلة الكاملة</span></a>
+      <a href="/shop/products.html?sort=discount" class="lux-tab-pill"><i class="fa fa-percent"></i> <span>العروض والخصومات</span></a>
+      <a href="/shop/products.html?sort=best_sellers" class="lux-tab-pill"><i class="fa fa-star"></i> <span>الأكثر طلباً</span></a>
+      <a href="/shop/categories.html" class="lux-tab-pill"><i class="fa fa-layer-group"></i> <span>الأقسام</span></a>
+    </div>
+  </div>
+
   <!-- Homepage Dynamic Sections Wrapper -->
   <main id="homepageSections">
     <!-- Hero Slider -->
@@ -69,6 +80,42 @@
           </div>
         </div>
         <div class="slider-dots" id="sliderDots"></div>
+      </div>
+    </section>
+
+
+
+    <!-- Luxury Brand Trust Strip -->
+    <section class="lux-trust-strip">
+      <div class="lux-trust-inner">
+        <div class="lux-trust-item">
+          <div class="lux-trust-icon">💎</div>
+          <div class="lux-trust-text">
+            <strong>خامات وتصاميم أصلية</strong>
+            <small>جودة فائقة ومختارة بعناية</small>
+          </div>
+        </div>
+        <div class="lux-trust-item">
+          <div class="lux-trust-icon">📦</div>
+          <div class="lux-trust-text">
+            <strong>تغليف فاخر وأنيق</strong>
+            <small>يليق بطلباتك والهدايا الراقية</small>
+          </div>
+        </div>
+        <div class="lux-trust-item">
+          <div class="lux-trust-icon">🚚</div>
+          <div class="lux-trust-text">
+            <strong>شحن سريع ومعاينة</strong>
+            <small>توصيل آمن مع فحص قبل الدفع</small>
+          </div>
+        </div>
+        <div class="lux-trust-item">
+          <div class="lux-trust-icon">🔄</div>
+          <div class="lux-trust-text">
+            <strong>استبدال واسترجاع 14 يوم</strong>
+            <small>ضمان كامل لراحة بالك</small>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -138,6 +185,18 @@
       if (data.phone) {
         const callBtn = document.getElementById('callBtn');
         if (callBtn) callBtn.href = 'tel:' + data.phone;
+      }
+            if (data.main_categories && Array.isArray(data.main_categories)) {
+        const tabsBar = document.getElementById('luxCatTabs');
+        if (tabsBar) {
+          data.main_categories.slice(0, 6).forEach(cat => {
+            const a = document.createElement('a');
+            a.className = 'lux-tab-pill';
+            a.href = `/shop/category-products.html?id=${cat.id}&name=${encodeURIComponent(cat.name)}`;
+            a.innerHTML = `<i class="fa fa-angle-left"></i> <span>${cat.name}</span>`;
+            tabsBar.appendChild(a);
+          });
+        }
       }
       if (data.whatsapp) {
         const waBtn = document.getElementById('whatsappBtn');

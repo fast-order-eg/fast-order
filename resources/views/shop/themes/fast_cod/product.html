@@ -1477,8 +1477,10 @@
         el.style.backgroundColor = 'transparent';
       });
       const label = input.closest('.bundle-option');
-      label.style.borderColor = '#2563eb';
-      label.style.backgroundColor = '#eff6ff';
+      if (label) {
+        label.style.borderColor = '#16a34a';
+        label.style.backgroundColor = '#f0fdf4';
+      }
 
       const qty = parseInt(input.value);
       const totalBundlePrice = Number(input.dataset.price);
@@ -1511,8 +1513,11 @@
         }
       }
       
-      // Update stock indicator when quantity switches
+      // Update stock indicator and COD form summary
       updateStockIndicator();
+      if (typeof updateCodOrderSummary === 'function') {
+        updateCodOrderSummary();
+      }
     };
 
     function renderBundles(p) {
@@ -1528,15 +1533,15 @@
 
       let html = `
         <div style="margin: 16px 0; width: 100%; box-sizing: border-box;">
-          <label style="display: block; font-weight: 700; margin-bottom: 8px; font-size: 1rem; color: #111827;">اختر العرض المناسب لك</label>
+          <label style="display: block; font-weight: 700; margin-bottom: 8px; font-size: 1rem; color: #111827;">اختر العرض المناسب لك (وفّر أكثر مع الكميات)</label>
           <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
-            <label class="bundle-option" style="border: 2px solid #2563eb; background: #eff6ff; padding: 10px 14px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 12px; transition: all 0.2s; box-sizing: border-box; width: 100%;">
+            <label class="bundle-option" style="border: 2px solid #16a34a; background: #f0fdf4; padding: 10px 14px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 12px; transition: all 0.2s; box-sizing: border-box; width: 100%;">
               <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1 1 auto;">
-                <input type="radio" name="bundle_tier" value="1" data-price="${basePrice}" checked onchange="updateBundleSelection(this)" style="width: 18px; height: 18px; accent-color: #2563eb; flex-shrink: 0;">
+                <input type="radio" name="bundle_tier" value="1" data-price="${basePrice}" checked onchange="updateBundleSelection(this)" style="width: 18px; height: 18px; accent-color: #16a34a; flex-shrink: 0;">
                 <span style="font-weight: 700; font-size: 0.95rem; color: #111827; white-space: nowrap;">قطعة واحدة</span>
               </div>
               <div style="text-align: left; flex-shrink: 0;">
-                <div style="font-weight: bold; color: #2563eb; font-size: 1.05rem;">${BirdCart.formatEGP(basePrice)}</div>
+                <div style="font-weight: bold; color: #16a34a; font-size: 1.05rem;">${BirdCart.formatEGP(basePrice)}</div>
                 ${basePriceBefore > basePrice ? `<div style="font-size: 0.8rem; color: #6b7280; text-decoration: line-through;">بدلاً من ${BirdCart.formatEGP(basePriceBefore)}</div>` : ''}
               </div>
             </label>
@@ -1552,14 +1557,14 @@
         html += `
             <label class="bundle-option" style="border: 2px solid #e5e7eb; background: transparent; padding: 10px 14px; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 12px; transition: all 0.2s; box-sizing: border-box; width: 100%;">
               <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1 1 auto;">
-                <input type="radio" name="bundle_tier" value="${t.min_qty}" data-price="${tierPrice}" onchange="updateBundleSelection(this)" style="width: 18px; height: 18px; accent-color: #2563eb; flex-shrink: 0;">
+                <input type="radio" name="bundle_tier" value="${t.min_qty}" data-price="${tierPrice}" onchange="updateBundleSelection(this)" style="width: 18px; height: 18px; accent-color: #16a34a; flex-shrink: 0;">
                 <div style="display: flex; flex-direction: column; min-width: 0;">
-                  <span style="font-weight: 700; font-size: 0.95rem; color: #111827;">${t.min_qty} قطع (توفير!)</span>
+                  <span style="font-weight: 700; font-size: 0.95rem; color: #111827;">${t.min_qty} قطع (أفضل قيمة 🔥)</span>
                   ${totalSavings > 0 ? `<span style="font-size: 0.8rem; color: #16a34a; font-weight: 700;">وفر ${BirdCart.formatEGP(totalSavings)}</span>` : ''}
                 </div>
               </div>
               <div style="text-align: left; flex-shrink: 0;">
-                <div style="font-weight: bold; color: #2563eb; font-size: 1.05rem;">${BirdCart.formatEGP(tierPrice)} <span style="font-size:0.75rem;font-weight:normal;">/ الإجمالي</span></div>
+                <div style="font-weight: bold; color: #16a34a; font-size: 1.05rem;">${BirdCart.formatEGP(tierPrice)} <span style="font-size:0.75rem;font-weight:normal;">/ الإجمالي</span></div>
                 ${oldTotalPrice > tierPrice ? `<div style="font-size: 0.8rem; color: #6b7280; text-decoration: line-through;">بدلاً من ${BirdCart.formatEGP(oldTotalPrice)}</div>` : ''}
               </div>
             </label>
@@ -3071,8 +3076,11 @@ function handleCodFastSubmit(e) {
         id: p.id,
         name: p.name,
         price: unitPrice,
+        qty: qty,
         quantity: qty,
+        selectedSize: selectedSize,
         size: selectedSize,
+        selectedColor: selectedColor,
         color: selectedColor,
         image_url: p.image_url || ''
       }

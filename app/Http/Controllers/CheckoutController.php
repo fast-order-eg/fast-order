@@ -105,13 +105,15 @@ class CheckoutController extends Controller
                 }
 
                 $price = (float) ($item['price'] ?? 0);
-                $qty = max(1, (int) ($item['qty'] ?? 1));
+                $qty = max(1, (int) ($item['qty'] ?? $item['quantity'] ?? 1));
 
-                // 🛡️ حماية السعر: إذا كان للمنتج سعر في قاعدة البيانات وسعر الطلب المرسل صفر أو سالب
+                // 🛡️ حماية السعر: إذا كان للمنتج سعر في قاعدة البيانات وتم إرسال سعر غير صالح أو تم التلاعب به
                 if ($product) {
                     $dbBasePrice = (float) ($product->price_after ?? $product->price ?? 0);
-                    if ($dbBasePrice > 0 && $price <= 0) {
-                        $price = $dbBasePrice;
+                    if ($dbBasePrice > 0) {
+                        if ($price <= 0 || ($price < $dbBasePrice * 0.4 && empty($validated['coupon_code']))) {
+                            $price = $dbBasePrice;
+                        }
                     }
                 }
 
@@ -163,8 +165,8 @@ class CheckoutController extends Controller
                     'image'            => $product?->main_image_path
                                             ? asset('storage/' . $product->main_image_path)
                                             : ($product?->image_url ?? null),
-                    'selectedSize'     => $item['selectedSize']  ?? null,
-                    'selectedColor'    => $item['selectedColor'] ?? null,
+                    'selectedSize'     => $item['selectedSize'] ?? $item['size'] ?? null,
+                    'selectedColor'    => $item['selectedColor'] ?? $item['color'] ?? null,
                     'options'          => $options,
                     'piecesSelections' => $pieces,
                 ];

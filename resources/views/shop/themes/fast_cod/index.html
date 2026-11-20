@@ -56,6 +56,17 @@
     </nav>
   </header>
 
+  <!-- Quick Category Pills Navigation -->
+  <div class="cat-pills-container">
+    <div class="cat-pills-bar" id="codCatPills">
+      <a href="/shop/index.html" class="cat-pill active"><i class="fa fa-home"></i> <span>الرئيسية</span></a>
+      <a href="/shop/products.html" class="cat-pill"><i class="fa fa-th-large"></i> <span>جميع المنتجات</span></a>
+      <a href="/shop/products.html?sort=discount" class="cat-pill"><i class="fa fa-bolt"></i> <span>العروض والخصومات</span></a>
+      <a href="/shop/products.html?sort=best_sellers" class="cat-pill"><i class="fa fa-fire"></i> <span>الأكثر طلباً 🔥</span></a>
+      <a href="/shop/categories.html" class="cat-pill"><i class="fa fa-layer-group"></i> <span>الأقسام</span></a>
+    </div>
+  </div>
+
   <!-- Homepage Dynamic Sections Wrapper -->
   <main id="homepageSections">
     <!-- Hero Slider -->
@@ -70,6 +81,42 @@
           </div>
         </div>
         <div class="slider-dots" id="sliderDots"></div>
+      </div>
+    </section>
+
+
+
+    <!-- Fast COD Trust Features Strip -->
+    <section class="features-strip">
+      <div class="features-inner">
+        <div class="feature-item">
+          <div class="feature-icon">🚚</div>
+          <div class="feature-text">
+            <strong>شحن سريع ومجاني</strong>
+            <small>توصيل 24-48 ساعة لمحافظتك</small>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🔍</div>
+          <div class="feature-text">
+            <strong>معاينة قبل الدفع</strong>
+            <small>افحص المنتج قبل السداد</small>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🛡️</div>
+          <div class="feature-text">
+            <strong>ضمان استبدال أصلي</strong>
+            <small>استرجاع واستبدال 14 يوماً</small>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">💵</div>
+          <div class="feature-text">
+            <strong>الدفع عند الاستلام</strong>
+            <small>أمان وراحة بدون دفع مسبق</small>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -139,6 +186,18 @@
       if (data.phone) {
         const callBtn = document.getElementById('callBtn');
         if (callBtn) callBtn.href = 'tel:' + data.phone;
+      }
+            if (data.main_categories && Array.isArray(data.main_categories)) {
+        const pillsBar = document.getElementById('codCatPills');
+        if (pillsBar) {
+          data.main_categories.slice(0, 6).forEach(cat => {
+            const a = document.createElement('a');
+            a.className = 'cat-pill';
+            a.href = `/shop/category-products.html?id=${cat.id}&name=${encodeURIComponent(cat.name)}`;
+            a.innerHTML = `<i class="fa fa-tag"></i> <span>${cat.name}</span>`;
+            pillsBar.appendChild(a);
+          });
+        }
       }
       if (data.whatsapp) {
         const waBtn = document.getElementById('whatsappBtn');

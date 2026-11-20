@@ -37,6 +37,26 @@ class StoreCheckoutOrderRequest extends FormRequest
                 'customer_phone' => $phone,
             ]);
         }
+
+        // 🛡️ توحيد صيغ المنتجات لضمان التوافق التام (qty / quantity و size و color)
+        if ($this->has('items') && is_array($this->input('items'))) {
+            $items = $this->input('items');
+            foreach ($items as &$item) {
+                if (is_array($item)) {
+                    if (!isset($item['qty']) && isset($item['quantity'])) {
+                        $item['qty'] = (int) $item['quantity'];
+                    }
+                    if (!isset($item['selectedSize']) && isset($item['size'])) {
+                        $item['selectedSize'] = (string) $item['size'];
+                    }
+                    if (!isset($item['selectedColor']) && isset($item['color'])) {
+                        $item['selectedColor'] = (string) $item['color'];
+                    }
+                }
+            }
+            unset($item);
+            $this->merge(['items' => $items]);
+        }
     }
 
     /**
