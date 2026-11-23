@@ -576,7 +576,8 @@
       }
 
       const price = window.BirdCart.formatPrice ? window.BirdCart.formatPrice(p.price_after, p.price_before) : '';
-      const descList = (p.description || '').split(/\r?\n|\u2022|-/).map(s => s.trim()).filter(Boolean).map(s => `<li>${s}</li>`).join('');
+      const rawDesc = (p.description || '').replace(/\\r\\n|\\n/g, '\n');
+      const descList = rawDesc.split(/\r?\n|\u2022|-/).map(s => s.trim()).filter(Boolean).map(s => `<li>${s}</li>`).join('');
       root.innerHTML = `
         <div class="p-details-container">
           <div class="card p-gallery-card" style="padding:16px">
