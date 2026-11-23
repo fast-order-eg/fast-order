@@ -822,3 +822,37 @@ img {
     font-size: 1.15rem;
   }
 }
+
+/* ===================================================
+   HERO SLIDER RESPONSIVE ENHANCEMENTS FOR MOBILE & DESKTOP
+   =================================================== */
+.hero-slider .slider-container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.hero-slider .slide img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  max-height: 500px;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .hero-slider .slide img {
+    height: auto !important;
+    aspect-ratio: 16 / 9 !important;
+    object-fit: cover !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-slider .slide img {
+    height: auto !important;
+    aspect-ratio: 16 / 9 !important;
+    object-fit: cover !important;
+  }
+}

@@ -580,7 +580,8 @@
       }
 
       const price = window.BirdCart.formatPrice ? window.BirdCart.formatPrice(p.price_after, p.price_before) : '';
-      const descList = (p.description || '').split(/\r?\n|\u2022|-/).map(s => s.trim()).filter(Boolean).map(s => `<li>${s}</li>`).join('');
+      const rawDesc = (p.description || '').replace(/\\r\\n|\\n/g, '\n');
+      const descList = rawDesc.split(/\r?\n|\u2022|-/).map(s => s.trim()).filter(Boolean).map(s => `<li>${s}</li>`).join('');
       root.innerHTML = `
         <div class="p-details-container">
           <div class="card p-gallery-card" style="padding:16px">
@@ -663,7 +664,7 @@
               <i class="fa fa-chevron-down" style="font-size: 12px; color: #71717a; transition: transform 0.2s; transform: rotate(180deg);"></i>
             </div>
             <div class="lux-accordion-body" style="padding-top: 10px; font-size: 13px; color: #52525b; line-height: 1.7;">
-              ${p.description ? p.description.replace(/\r?\n/g, "<br>") : "منتج عالي الجودة مصمم ومصنوع بعناية فائقة ليلبي أعلى معايير الأناقة والراحة، مناسب للاستخدام اليومي والمناسبات الراقية."}
+              ${p.description ? p.description.replace(/\\r\\n|\\n/g, "\n").replace(/\r?\n/g, "<br>") : "منتج عالي الجودة مصمم ومصنوع بعناية فائقة ليلبي أعلى معايير الأناقة والراحة، مناسب للاستخدام اليومي والمناسبات الراقية."}
             </div>
           </div>
 
