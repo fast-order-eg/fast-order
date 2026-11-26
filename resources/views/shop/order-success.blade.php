@@ -498,7 +498,7 @@ function toggleItems(btn) {
     setTimeout(() => { wrap.remove(); }, 4000);
 })();
 </script>
-<script src="/shop/shared.js"></script>
+<script src="/shop/shared.js?v=20261126_1"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var totalVal = {{ (float) ($order->total ?? 0) }};

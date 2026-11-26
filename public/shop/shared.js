@@ -543,7 +543,10 @@ function productCard(p){
   const currentLang = getStorefrontLang();
   const addText = currentLang === 'en' ? 'Add to Cart' : 'أضف إلى السلة';
   addBtn.textContent = addText;
-  addBtn.dataset.id=p.id; addBtn.dataset.name=p.name||''; addBtn.dataset.price=p.price_after||0; addBtn.dataset.image=p.image_url||''; addBtn.dataset.shipping=p.shipping_type||'free'; addBtn.dataset.priceBefore=p.price_before||0; addBtn.dataset.hasSizes=p.sizes && p.sizes.length ? 'yes':'no'; addBtn.dataset.hasColors=p.colors && p.colors.length ? 'yes':'no';
+  const _pSizes = Array.isArray(p.sizes) ? p.sizes : (typeof p.sizes === 'string' ? (()=>{ try { return JSON.parse(p.sizes) || []; } catch(e) { return []; } })() : []);
+  const _pColors = Array.isArray(p.colors) ? p.colors : (typeof p.colors === 'string' ? (()=>{ try { return JSON.parse(p.colors) || []; } catch(e) { return []; } })() : []);
+  const _pCustomVariants = Array.isArray(p.custom_variants) ? p.custom_variants : (typeof p.custom_variants === 'string' ? (()=>{ try { return JSON.parse(p.custom_variants) || []; } catch(e) { return []; } })() : []);
+  addBtn.dataset.id=p.id; addBtn.dataset.name=p.name||''; addBtn.dataset.price=p.price_after||0; addBtn.dataset.image=p.image_url||''; addBtn.dataset.shipping=p.shipping_type||'free'; addBtn.dataset.priceBefore=p.price_before||0; addBtn.dataset.hasSizes=_pSizes.length ? 'yes':'no'; addBtn.dataset.hasColors=_pColors.length ? 'yes':'no'; addBtn.dataset.hasCustomVariants=_pCustomVariants.length ? 'yes':'no';
   
   body.append(titleLink, price, addBtn); card.appendChild(body);
   return card;
@@ -808,8 +811,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(btn){
       const hasSizes = btn.dataset.hasSizes === 'yes';
       const hasColors = btn.dataset.hasColors === 'yes';
+      const hasCustomVariants = btn.dataset.hasCustomVariants === 'yes';
 
-      if (hasSizes || hasColors) {
+      if (hasSizes || hasColors || hasCustomVariants) {
         if (typeof openQuickAddModal === 'function') {
           openQuickAddModal(btn.dataset.id);
         } else {
@@ -1208,6 +1212,64 @@ function renderCustomMenus() {
 // ==========================================
 // Amazon-like Quick Add (Variant Picker Modal)
 // ==========================================
+function qmResolveImg(url) {
+  if (!url || typeof url !== 'string') return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('/')) {
+    return trimmed;
+  }
+  return '/storage/' + trimmed;
+}
+
+function qmEscapeAttr(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function qmNormalizeSizes(rawSizes) {
+  let arr = rawSizes || [];
+  if (typeof arr === 'string') {
+    try { arr = JSON.parse(arr); } catch (e) { arr = []; }
+  }
+  if (!Array.isArray(arr)) return [];
+  return arr
+    .map(s => (typeof s === 'object' && s !== null ? String(s.name || s.value || s.label || '').trim() : String(s || '').trim()))
+    .filter(Boolean);
+}
+
+function qmNormalizeColors(rawColors) {
+  let arr = rawColors || [];
+  if (typeof arr === 'string') {
+    try { arr = JSON.parse(arr); } catch (e) { arr = []; }
+  }
+  if (!Array.isArray(arr)) return [];
+  return arr
+    .map(c => {
+      if (typeof c === 'object' && c !== null) {
+        return {
+          name: String(c.name || c.color || c.label || c.value || '').trim(),
+          image: qmResolveImg(c.image || c.image_url || '') || null,
+        };
+      }
+      return { name: String(c || '').trim(), image: null };
+    })
+    .filter(c => c.name !== '');
+}
+
+function qmNormalizeCustomVariants(rawCv) {
+  let arr = rawCv || [];
+  if (typeof arr === 'string') {
+    try { arr = JSON.parse(arr); } catch (e) { arr = []; }
+  }
+  if (!Array.isArray(arr)) return [];
+  return arr.filter(cv => cv && cv.name && Array.isArray(cv.values) && cv.values.length > 0);
+}
+
 window.openQuickAddModal = function(productId) {
   // Inject modal CSS if not exists
   if (!document.getElementById('quick-add-modal-styles')) {
@@ -1283,7 +1345,9 @@ window.openQuickAddModal = function(productId) {
         background: #e2e8f0;
       }
       .qm-variant-btn {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
         padding: 8px 16px;
         border: 1px solid #cbd5e1;
         border-radius: 8px;
@@ -1292,6 +1356,18 @@ window.openQuickAddModal = function(productId) {
         transition: all 0.2s;
         background: #fff;
         user-select: none;
+      }
+      .qm-variant-btn.qm-color-with-img {
+        padding: 5px 12px 5px 6px;
+      }
+      .qm-color-thumb {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        object-fit: cover;
+        border: 1px solid #e2e8f0;
+        flex-shrink: 0;
+        display: block;
       }
       .qm-variant-btn:hover {
         border-color: #94a3b8;
@@ -1344,18 +1420,25 @@ window.openQuickAddModal = function(productId) {
     .then(({ data }) => {
       window.currentQmProduct = data;
       const p = data;
-      const hasSizes = p.sizes && p.sizes.length > 0;
-      const hasColors = p.colors && p.colors.length > 0;
+      const normalizedSizes = qmNormalizeSizes(p.sizes);
+      const normalizedColors = qmNormalizeColors(p.colors);
+      const normalizedCv = qmNormalizeCustomVariants(p.custom_variants);
+
+      const hasSizes = normalizedSizes.length > 0;
+      const hasColors = normalizedColors.length > 0;
+      const hasCustomVariants = normalizedCv.length > 0;
 
       const fmt = (n) => {
         return new Intl.NumberFormat('en-EG', { maximumFractionDigits: 0 }).format(Math.round(parseFloat(n || 0))) + ' EGP';
       };
 
+      const mainImg = qmResolveImg(p.image_url) || (typeof window.getStoreFallbackImage === 'function' ? window.getStoreFallbackImage() : '/images/logo.png');
+
       let html = `
         <div class="quick-modal-product-info" style="display:flex; gap:16px; margin-bottom:20px; border-bottom:1px solid #f1f5f9; padding-bottom:16px; align-items: flex-start;">
-          <img id="qm-image" src="${p.image_url || window.getStoreFallbackImage()}" style="width:90px; height:90px; object-fit:cover; border-radius:12px; border:1px solid #e2e8f0;" onerror="window.handleImageError(this)">
+          <img id="qm-image" src="${qmEscapeAttr(mainImg)}" data-default-src="${qmEscapeAttr(mainImg)}" style="width:90px; height:90px; object-fit:cover; border-radius:12px; border:1px solid #e2e8f0;" onerror="window.handleImageError(this)">
           <div style="flex:1;">
-            <h3 id="qm-name" style="margin:0 0 8px 0; font-size:1.05rem; color:#1e293b; line-height:1.4; font-weight:700;">${p.name}</h3>
+            <h3 id="qm-name" style="margin:0 0 8px 0; font-size:1.05rem; color:#1e293b; line-height:1.4; font-weight:700;">${qmEscapeAttr(p.name)}</h3>
             <div style="display:flex; align-items:baseline; gap:8px;">
               <span id="qm-price" style="font-weight:800; color:#4f46e5; font-size:1.15rem;">${fmt(p.price_after)}</span>
               ${p.price_before && p.price_before > p.price_after ? `<span id="qm-price-before" style="text-decoration:line-through; color:#94a3b8; font-size:0.85rem;">${fmt(p.price_before)}</span>` : ''}
@@ -1363,16 +1446,16 @@ window.openQuickAddModal = function(productId) {
           </div>
         </div>
 
-        <div class="quick-modal-options" style="max-height: 250px; overflow-y: auto; padding-left: 4px;">
+        <div class="quick-modal-options" style="max-height: 260px; overflow-y: auto; padding-left: 4px;">
           <!-- Sizes -->
           ${hasSizes ? `
             <div style="margin-bottom:16px;">
               <label style="display:block; font-weight:700; margin-bottom:8px; font-size:0.9rem; color:#334155;">المقاس <span style="color:#ef4444;">*</span></label>
               <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                ${p.sizes.map((sz) => `
+                ${normalizedSizes.map((sz) => `
                   <label class="qm-option-label" style="cursor:pointer; position:relative;">
-                    <input type="radio" name="qm_size" value="${sz}" style="display:none;" onchange="updateQmVariantAvailability()">
-                    <span class="qm-variant-btn">${sz}</span>
+                    <input type="radio" name="qm_size" value="${qmEscapeAttr(sz)}" ${normalizedSizes.length === 1 ? 'checked' : ''} style="display:none;" onchange="updateQmVariantAvailability()">
+                    <span class="qm-variant-btn">${qmEscapeAttr(sz)}</span>
                   </label>
                 `).join('')}
               </div>
@@ -1385,16 +1468,44 @@ window.openQuickAddModal = function(productId) {
             <div style="margin-bottom:16px;">
               <label style="display:block; font-weight:700; margin-bottom:8px; font-size:0.9rem; color:#334155;">اللون <span style="color:#ef4444;">*</span></label>
               <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                ${p.colors.map((col) => `
-                  <label class="qm-option-label" style="cursor:pointer; position:relative;">
-                    <input type="radio" name="qm_color" value="${col}" style="display:none;" onchange="updateQmVariantAvailability()">
-                    <span class="qm-variant-btn">${col}</span>
-                  </label>
-                `).join('')}
+                ${normalizedColors.map((col) => {
+                  const colNameEsc = qmEscapeAttr(col.name);
+                  const colImgEsc = qmEscapeAttr(col.image || '');
+                  return `
+                    <label class="qm-option-label" style="cursor:pointer; position:relative;">
+                      <input type="radio" name="qm_color" value="${colNameEsc}" data-image="${colImgEsc}" ${normalizedColors.length === 1 ? 'checked' : ''} style="display:none;" onchange="updateQmVariantAvailability()">
+                      <span class="qm-variant-btn ${col.image ? 'qm-color-with-img' : ''}">
+                        ${col.image ? `<img class="qm-color-thumb" src="${colImgEsc}" alt="${colNameEsc}" onerror="this.style.display='none'">` : ''}
+                        <span>${colNameEsc}</span>
+                      </span>
+                    </label>
+                  `;
+                }).join('')}
               </div>
               <div id="qm-color-error" style="color:#ef4444; font-size:0.8rem; margin-top:4px; display:none;">يرجى اختيار اللون</div>
             </div>
           ` : ''}
+
+          <!-- Custom Variants -->
+          ${hasCustomVariants ? normalizedCv.map((cv, cvIdx) => `
+            <div style="margin-bottom:16px;">
+              <label style="display:block; font-weight:700; margin-bottom:8px; font-size:0.9rem; color:#334155;">${qmEscapeAttr(cv.name)} <span style="color:#ef4444;">*</span></label>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                ${cv.values.map((val) => {
+                  const valStr = typeof val === 'object' && val !== null ? String(val.name || val.value || '').trim() : String(val || '').trim();
+                  if (!valStr) return '';
+                  const valEsc = qmEscapeAttr(valStr);
+                  return `
+                    <label class="qm-option-label" style="cursor:pointer; position:relative;">
+                      <input type="radio" name="qm_cv_${cvIdx}" value="${valEsc}" data-cv-name="${qmEscapeAttr(cv.name)}" ${cv.values.length === 1 ? 'checked' : ''} style="display:none;" onchange="updateQmVariantAvailability()">
+                      <span class="qm-variant-btn">${valEsc}</span>
+                    </label>
+                  `;
+                }).join('')}
+              </div>
+              <div id="qm-cv-error-${cvIdx}" style="color:#ef4444; font-size:0.8rem; margin-top:4px; display:none;">يرجى اختيار ${qmEscapeAttr(cv.name)}</div>
+            </div>
+          `).join('') : ''}
         </div>
 
         <button id="qm-add-btn" onclick="submitQmAddToCart()" style="width:100%; padding:14px; background:#ffda00; color:#000; border:none; border-radius:12px; font-weight:bold; font-size:1.05rem; cursor:pointer; margin-top:16px; transition:opacity 0.2s;" onmouseenter="this.style.opacity='0.9'" onmouseleave="this.style.opacity='1'">
@@ -1424,13 +1535,48 @@ window.updateQmVariantAvailability = function() {
   if (typeof stock === 'string') {
     try { stock = JSON.parse(stock); } catch(e) { stock = []; }
   }
-  const hasSizes = p.sizes && p.sizes.length > 0;
-  const hasColors = p.colors && p.colors.length > 0;
+  if (!Array.isArray(stock)) stock = [];
+
+  const normalizedSizes = qmNormalizeSizes(p.sizes);
+  const normalizedColors = qmNormalizeColors(p.colors);
+  const normalizedCv = qmNormalizeCustomVariants(p.custom_variants);
+
+  const hasSizes = normalizedSizes.length > 0;
+  const hasColors = normalizedColors.length > 0;
 
   const sizeInput = document.querySelector('input[name="qm_size"]:checked');
   const colorInput = document.querySelector('input[name="qm_color"]:checked');
   const selectedSize = sizeInput ? sizeInput.value : null;
   const selectedColor = colorInput ? colorInput.value : null;
+
+  // Hide errors once user makes a selection
+  if (selectedSize) {
+    const sErr = document.getElementById('qm-size-error');
+    if (sErr) sErr.style.display = 'none';
+  }
+  if (selectedColor) {
+    const cErr = document.getElementById('qm-color-error');
+    if (cErr) cErr.style.display = 'none';
+  }
+  normalizedCv.forEach((cv, cvIdx) => {
+    const cvInp = document.querySelector(`input[name="qm_cv_${cvIdx}"]:checked`);
+    if (cvInp) {
+      const cvErr = document.getElementById(`qm-cv-error-${cvIdx}`);
+      if (cvErr) cvErr.style.display = 'none';
+    }
+  });
+
+  // Switch preview image if selected color has an image
+  const imgEl = document.getElementById('qm-image');
+  if (imgEl) {
+    const chosenImg = colorInput ? (colorInput.dataset.image || '') : '';
+    const defaultImg = imgEl.dataset.defaultSrc || qmResolveImg(p.image_url);
+    if (chosenImg) {
+      imgEl.src = chosenImg;
+    } else if (defaultImg && imgEl.src !== defaultImg) {
+      imgEl.src = defaultImg;
+    }
+  }
 
   const sizeInputs = document.querySelectorAll('input[name="qm_size"]');
   const colorInputs = document.querySelectorAll('input[name="qm_color"]');
@@ -1440,15 +1586,19 @@ window.updateQmVariantAvailability = function() {
     const isOut = (qty !== null && qty !== undefined && qty !== '' && Number(qty) <= 0);
     if (isOut) {
       inputEl.disabled = true;
-      btn.style.opacity = '0.45';
-      btn.style.textDecoration = 'line-through';
-      btn.style.cursor = 'not-allowed';
+      if (btn) {
+        btn.style.opacity = '0.45';
+        btn.style.textDecoration = 'line-through';
+        btn.style.cursor = 'not-allowed';
+      }
       if (inputEl.checked) inputEl.checked = false;
     } else {
       inputEl.disabled = false;
-      btn.style.opacity = '1';
-      btn.style.textDecoration = 'none';
-      btn.style.cursor = 'pointer';
+      if (btn) {
+        btn.style.opacity = '1';
+        btn.style.textDecoration = 'none';
+        btn.style.cursor = 'pointer';
+      }
     }
   };
 
@@ -1462,7 +1612,7 @@ window.updateQmVariantAvailability = function() {
   } else if (!selectedSize && hasColors) {
     colorInputs.forEach(inputEl => {
       if (hasSizes) {
-        const allOut = p.sizes.every(sz => {
+        const allOut = normalizedSizes.every(sz => {
           const found = stock.find(s => s.size === sz && s.color === inputEl.value);
           const qty = found ? found.qty : (p.stock !== undefined ? p.stock : 100);
           return qty !== null && qty !== undefined && qty !== '' && Number(qty) <= 0;
@@ -1486,8 +1636,8 @@ window.updateQmVariantAvailability = function() {
   } else if (!selectedColor && hasSizes) {
     sizeInputs.forEach(inputEl => {
       if (hasColors) {
-        const allOut = p.colors.every(col => {
-          const found = stock.find(s => s.size === inputEl.value && s.color === col);
+        const allOut = normalizedColors.every(col => {
+          const found = stock.find(s => s.size === inputEl.value && s.color === col.name);
           const qty = found ? found.qty : (p.stock !== undefined ? p.stock : 100);
           return qty !== null && qty !== undefined && qty !== '' && Number(qty) <= 0;
         });
@@ -1499,25 +1649,46 @@ window.updateQmVariantAvailability = function() {
       }
     });
   }
+
+  // Update displayed price if selected variant has custom price
+  const priceEl = document.getElementById('qm-price');
+  if (priceEl) {
+    let displayPrice = Number(p.price_after || p.price || 0);
+    if (stock.length > 0 && (!hasSizes || selectedSize) && (!hasColors || selectedColor)) {
+      const match = stock.find(v => (!hasSizes || v.size === selectedSize) && (!hasColors || v.color === selectedColor));
+      if (match && match.price && Number(match.price) > 0) {
+        displayPrice = Number(match.price);
+      }
+    }
+    priceEl.textContent = new Intl.NumberFormat('en-EG', { maximumFractionDigits: 0 }).format(Math.round(displayPrice)) + ' EGP';
+  }
 };
 
 window.submitQmAddToCart = function() {
   if (!window.currentQmProduct) return;
   const p = window.currentQmProduct;
-  const hasSizes = p.sizes && p.sizes.length > 0;
-  const hasColors = p.colors && p.colors.length > 0;
+  const normalizedSizes = qmNormalizeSizes(p.sizes);
+  const normalizedColors = qmNormalizeColors(p.colors);
+  const normalizedCv = qmNormalizeCustomVariants(p.custom_variants);
+
+  const hasSizes = normalizedSizes.length > 0;
+  const hasColors = normalizedColors.length > 0;
 
   let selectedSize = null;
   let selectedColor = null;
+  let selectedColorImage = null;
+  let selectedOptions = {};
   let isValid = true;
 
   if (hasSizes) {
     const sizeInput = document.querySelector('input[name="qm_size"]:checked');
     if (sizeInput) {
       selectedSize = sizeInput.value;
-      document.getElementById('qm-size-error').style.display = 'none';
+      const errEl = document.getElementById('qm-size-error');
+      if (errEl) errEl.style.display = 'none';
     } else {
-      document.getElementById('qm-size-error').style.display = 'block';
+      const errEl = document.getElementById('qm-size-error');
+      if (errEl) errEl.style.display = 'block';
       isValid = false;
     }
   }
@@ -1526,12 +1697,27 @@ window.submitQmAddToCart = function() {
     const colorInput = document.querySelector('input[name="qm_color"]:checked');
     if (colorInput) {
       selectedColor = colorInput.value;
-      document.getElementById('qm-color-error').style.display = 'none';
+      selectedColorImage = colorInput.dataset.image || null;
+      const errEl = document.getElementById('qm-color-error');
+      if (errEl) errEl.style.display = 'none';
     } else {
-      document.getElementById('qm-color-error').style.display = 'block';
+      const errEl = document.getElementById('qm-color-error');
+      if (errEl) errEl.style.display = 'block';
       isValid = false;
     }
   }
+
+  normalizedCv.forEach((cv, cvIdx) => {
+    const cvInput = document.querySelector(`input[name="qm_cv_${cvIdx}"]:checked`);
+    const errEl = document.getElementById(`qm-cv-error-${cvIdx}`);
+    if (cvInput) {
+      selectedOptions[cv.name] = cvInput.value;
+      if (errEl) errEl.style.display = 'none';
+    } else {
+      if (errEl) errEl.style.display = 'block';
+      isValid = false;
+    }
+  });
 
   if (!isValid) return;
 
@@ -1550,16 +1736,40 @@ window.submitQmAddToCart = function() {
       id: p.id,
       name: p.name,
       price: variantPrice,
-      image: p.image_url || null,
+      image: selectedColorImage || qmResolveImg(p.image_url) || null,
       shipping_type: p.shipping_type || 'free',
       price_before: p.price_before || 0,
       qty: 1,
       selectedSize: selectedSize,
       selectedColor: selectedColor,
+      options: Object.keys(selectedOptions).length > 0 ? selectedOptions : null,
     });
 
     if (typeof updateCartCount === 'function') updateCartCount();
     closeQuickAddModal();
+
+    if (typeof fbq !== 'undefined') {
+      fbq('track', 'AddToCart', {
+        content_name: p.name,
+        content_ids: [String(p.id)],
+        content_type: 'product',
+        value: variantPrice,
+        currency: 'EGP'
+      });
+    }
+    if (typeof ttq !== 'undefined') {
+      ttq.track('AddToCart', {
+        contents: [{
+          content_id: String(p.id),
+          content_name: p.name,
+          quantity: 1,
+          price: variantPrice
+        }],
+        content_type: 'product',
+        value: variantPrice,
+        currency: 'EGP'
+      });
+    }
 
     // Show toast message
     const box = document.getElementById('toastBox');
