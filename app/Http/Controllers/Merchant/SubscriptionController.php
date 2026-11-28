@@ -157,6 +157,7 @@ class SubscriptionController extends Controller
         SubscriptionReceipt::create([
             'tenant_id' => $tenant->id,
             'plan_id' => $request->plan_id,
+            'type' => 'subscription',
             'amount' => $request->amount,
             'payment_method' => $request->payment_method,
             'payment_reference' => $request->payment_reference,

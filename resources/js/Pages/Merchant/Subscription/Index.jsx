@@ -29,7 +29,10 @@ export default function SubscriptionIndex({ subscription, plans, receipts, usage
 
     const openSubscribeModal = (plan) => {
         setSelectedPlan(plan);
-        const price = plan.price_monthly > 0 ? plan.price_monthly : (plan.price_yearly > 0 ? plan.price_yearly : 0);
+        const isYearly = plan.slug === 'yearly' || plan.name?.includes('سنو');
+        const price = isYearly
+            ? (plan.price_yearly > 0 ? plan.price_yearly : (plan.price_monthly || 0))
+            : (plan.price_monthly > 0 ? plan.price_monthly : (plan.price_yearly || 0));
         setData({
             plan_id: plan.id,
             payment_method: 'vodafone_cash',
@@ -351,13 +354,23 @@ export default function SubscriptionIndex({ subscription, plans, receipts, usage
                                         </button>
                                     ) : isCommissionPlan ? (
                                         isCurrent ? (
-                                            <button
-                                                type="button"
-                                                disabled
-                                                className="w-full py-3 rounded-2xl font-bold text-center bg-emerald-50 text-emerald-700 cursor-not-allowed border border-emerald-200"
-                                            >
-                                                باقتك الحالية (نشطة)
-                                            </button>
+                                            <div className="grid grid-cols-2 gap-2.5">
+                                                <Link
+                                                    href={route('merchant.wallet.index')}
+                                                    className="py-3 px-2.5 rounded-2xl font-extrabold text-xs sm:text-sm text-center transition-all bg-emerald-600 text-white hover:bg-emerald-700 shadow-md hover:shadow-emerald-200 flex items-center justify-center gap-1.5"
+                                                >
+                                                    <span>إضافة رصيد</span>
+                                                    <span>💳</span>
+                                                </Link>
+                                                <button
+                                                    type="button"
+                                                    disabled
+                                                    className="py-3 px-2.5 rounded-2xl font-bold text-xs sm:text-sm text-center bg-emerald-50 text-emerald-700 cursor-not-allowed border border-emerald-200 flex items-center justify-center gap-1"
+                                                >
+                                                    <span>✓</span>
+                                                    <span>باقتك الحالية</span>
+                                                </button>
+                                            </div>
                                         ) : (
                                             <Link
                                                 href={route('merchant.wallet.index')}
@@ -366,18 +379,36 @@ export default function SubscriptionIndex({ subscription, plans, receipts, usage
                                                 اشحن المحفظة 💳
                                             </Link>
                                         )
+                                    ) : isCurrent ? (
+                                        <div className="grid grid-cols-2 gap-2.5">
+                                            <button
+                                                type="button"
+                                                onClick={() => openSubscribeModal(plan)}
+                                                className="py-3 px-2.5 rounded-2xl font-extrabold text-xs sm:text-sm text-center transition-all bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-indigo-200 cursor-pointer flex items-center justify-center gap-1.5"
+                                            >
+                                                <span>تجديد</span>
+                                                <span>🔄</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                disabled
+                                                className={`py-3 px-2.5 rounded-2xl font-bold text-xs sm:text-sm text-center cursor-not-allowed border flex items-center justify-center gap-1 ${
+                                                    isExpiredSub
+                                                        ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                                        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                }`}
+                                            >
+                                                <span>{isExpiredSub ? '!' : '✓'}</span>
+                                                <span>{isExpiredSub ? 'باقتك (منتهية)' : 'باقتك الحالية'}</span>
+                                            </button>
+                                        </div>
                                     ) : (
                                         <button
                                             type="button"
-                                            disabled={isCurrent}
                                             onClick={() => openSubscribeModal(plan)}
-                                            className={`w-full py-3 rounded-2xl font-bold text-center transition-all ${
-                                                isCurrent
-                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-                                                    : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-indigo-200 cursor-pointer'
-                                            }`}
+                                            className="w-full py-3 rounded-2xl font-bold text-center transition-all bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-indigo-200 cursor-pointer"
                                         >
-                                            {isCurrent ? 'باقتك الحالية' : 'اشترك الآن'}
+                                            اشترك الآن
                                         </button>
                                     )}
                                 </div>
@@ -471,7 +502,11 @@ export default function SubscriptionIndex({ subscription, plans, receipts, usage
                         {/* Sticky Header */}
                         <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-3 flex-shrink-0 bg-white z-10">
                             <div>
-                                <h3 className="text-base sm:text-lg font-bold text-gray-900">رفع إيصال الدفع للباقة</h3>
+                                <h3 className="text-base sm:text-lg font-bold text-gray-900">
+                                    {String(subscription?.plan?.id) === String(selectedPlan.id)
+                                        ? 'تجديد الباقة ورفع إيصال الدفع'
+                                        : 'رفع إيصال الدفع للباقة'}
+                                </h3>
                                 <p className="text-xs text-gray-500 mt-0.5">الباقة المطلوبة: <span className="font-bold text-indigo-600">{selectedPlan.name}</span></p>
                             </div>
                             <button
@@ -537,7 +572,7 @@ export default function SubscriptionIndex({ subscription, plans, receipts, usage
                                 </div>
 
                                 <p className="text-[11px] sm:text-xs text-indigo-700 leading-normal pt-1">
-                                    * يرجى تحويل القيمة الإجمالية للباقة <b>({formatCurrency(selectedPlan.price_monthly || selectedPlan.price_yearly)})</b> ثم كتابة رقم التحويل ورفع صورة الإيصال أدناه.
+                                    * يرجى تحويل القيمة الإجمالية للباقة <b>({formatCurrency((selectedPlan.slug === 'yearly' || selectedPlan.name?.includes('سنو')) ? (selectedPlan.price_yearly || selectedPlan.price_monthly) : (selectedPlan.price_monthly || selectedPlan.price_yearly))})</b> ثم كتابة رقم التحويل ورفع صورة الإيصال أدناه.
                                 </p>
                             </div>
 
