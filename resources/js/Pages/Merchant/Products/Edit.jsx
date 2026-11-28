@@ -128,6 +128,38 @@ export default function Edit({ product, categories, allProducts = [] }) {
         return `/storage/${img}`;
     };
 
+    const isPendingImageRef = (val) => {
+        if (!val || typeof val !== 'string') return false;
+        return val === '__main__' || /^__gallery_\d+__$/.test(val);
+    };
+
+    const normalizeStorageValue = (url) => {
+        if (!url || typeof url !== 'string') return null;
+        const trimmed = url.trim();
+        if (!trimmed) return null;
+        if (isPendingImageRef(trimmed)) return trimmed;
+        const storageMatch = trimmed.match(/^https?:\/\/[^/]+(\/storage\/.+)$/i);
+        if (storageMatch) return storageMatch[1];
+        if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:') || trimmed.startsWith('/')) {
+            return trimmed;
+        }
+        return `/storage/${trimmed}`;
+    };
+
+    const normalizeComparableUrl = (url) => {
+        if (!url || typeof url !== 'string') return '';
+        const trimmed = url.trim();
+        if (!trimmed) return '';
+        if (isPendingImageRef(trimmed)) return trimmed;
+        const storageMatch = trimmed.match(/^https?:\/\/[^/]+(\/storage\/.+)$/i);
+        if (storageMatch) return storageMatch[1].split('?')[0];
+        if (trimmed.startsWith('/storage/')) return trimmed.split('?')[0];
+        if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://') && !trimmed.startsWith('blob:') && !trimmed.startsWith('data:') && !trimmed.startsWith('/')) {
+            return `/storage/${trimmed}`.split('?')[0];
+        }
+        return trimmed.split('?')[0];
+    };
+
     const formatImageUrl = (url) => {
         if (!url || typeof url !== 'string') return null;
         const trimmed = url.trim();
@@ -179,6 +211,16 @@ export default function Edit({ product, categories, allProducts = [] }) {
     const [variantsStock, setVariantsStock] = useState(initialVariants);
     const [galleryPreviews, setGalleryPreviews] = useState([]);
     const [showVariantsStockSection, setShowVariantsStockSection] = useState(false);
+
+    const resolveColorImagePreview = (imgRef) => {
+        if (!imgRef || typeof imgRef !== 'string') return null;
+        const trimmed = imgRef.trim();
+        if (!trimmed) return null;
+        if (trimmed === '__main__') return mainImagePreview || null;
+        const m = trimmed.match(/^__gallery_(\d+)__$/);
+        if (m) return galleryPreviews[Number(m[1])] || null;
+        return formatImageUrl(trimmed);
+    };
     const [selectingColorIndex, setSelectingColorIndex] = useState(null);
     const [uploadingColorImage, setUploadingColorImage] = useState(false);
     const [isCompressing, setIsCompressing] = useState(false);
@@ -285,7 +327,16 @@ export default function Edit({ product, categories, allProducts = [] }) {
     const removeNewGalleryImage = (index) => {
         const newGallery = (data.gallery || []).filter((_, i) => i !== index);
         const newPreviews = galleryPreviews.filter((_, i) => i !== index);
-        setData('gallery', newGallery);
+        const updatedColors = (data.colors || []).map(col => {
+            if (!col || typeof col !== 'object' || typeof col.image !== 'string') return col;
+            const m = col.image.match(/^__gallery_(\d+)__$/);
+            if (!m) return col;
+            const refIdx = Number(m[1]);
+            if (refIdx === index) return { ...col, image: null };
+            if (refIdx > index) return { ...col, image: `__gallery_${refIdx - 1}__` };
+            return col;
+        });
+        setData(prev => ({ ...prev, gallery: newGallery, colors: updatedColors }));
         setGalleryPreviews(newPreviews);
     };
 
@@ -332,7 +383,7 @@ export default function Edit({ product, categories, allProducts = [] }) {
     };
 
     const updateColorImage = (index, imageUrl) => {
-        const formattedUrl = formatImageUrl(imageUrl);
+        const formattedUrl = imageUrl ? (isPendingImageRef(imageUrl) ? imageUrl : normalizeStorageValue(imageUrl)) : null;
         const newColors = (data.colors || []).map((col, i) => {
             if (i !== index) return col;
             const colName = typeof col === 'object' && col !== null ? col.name : col;
@@ -375,30 +426,10 @@ export default function Edit({ product, categories, allProducts = [] }) {
         }
     };
 
-    const handlePickExistingImageForColor = async (colorIdx, imgUrl) => {
-        if (!imgUrl) return;
-        // If it's already a server URL (starts with /storage, http://, https://)
-        if (!imgUrl.startsWith('blob:') && !imgUrl.startsWith('data:')) {
-            updateColorImage(colorIdx, imgUrl);
-            return;
-        }
-
-        // Check if it matches main_image or a newly added gallery file
-        let matchingFile = null;
-        if (mainImagePreview === imgUrl && data.main_image instanceof File) {
-            matchingFile = data.main_image;
-        } else {
-            const galleryIdx = galleryPreviews.indexOf(imgUrl);
-            if (galleryIdx > -1 && data.gallery && data.gallery[galleryIdx] instanceof File) {
-                matchingFile = data.gallery[galleryIdx];
-            }
-        }
-
-        if (matchingFile) {
-            await handleColorImageUpload(colorIdx, matchingFile);
-        } else {
-            updateColorImage(colorIdx, imgUrl);
-        }
+    const handlePickExistingImageForColor = (colorIdx, imgValue) => {
+        if (!imgValue) return;
+        // ربط اللون مباشرة بالمرجع (__main__ / __gallery_N__) أو بمسار الصورة المرفوعة دون إنشاء نسخة مكررة
+        updateColorImage(colorIdx, imgValue);
     };
 
     // Variant Combinations
@@ -1020,7 +1051,7 @@ export default function Edit({ product, categories, allProducts = [] }) {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 mt-3">
                                     {data.colors.map((col, idx) => {
                                         const colName = typeof col === 'object' && col !== null ? col.name : col;
-                                        const colImage = formatImageUrl(typeof col === 'object' && col !== null ? col.image : null);
+                                        const colImage = resolveColorImagePreview(typeof col === 'object' && col !== null ? col.image : null);
                                         return (
                                             <div key={idx} className="flex items-center justify-between gap-2.5 p-2.5 rounded-xl bg-white border border-gray-200/90 shadow-2xs hover:border-orange-300 hover:shadow-xs transition-all">
                                                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -1678,18 +1709,28 @@ export default function Edit({ product, categories, allProducts = [] }) {
                             <label className="block text-xs font-bold text-gray-700 mb-2">1. اختر من صور المنتج المرفوعة:</label>
                             {(() => {
                                 const allImages = [
-                                    ...(mainImagePreview ? [{ url: mainImagePreview, title: 'الصورة الرئيسية' }] : []),
+                                    ...(mainImagePreview ? [{
+                                        preview: mainImagePreview,
+                                        value: (data.main_image instanceof File) ? '__main__' : normalizeStorageValue(mainImagePreview),
+                                        title: 'الصورة الرئيسية'
+                                    }] : []),
                                     ...(product.images || []).map((img, i) => ({
-                                        url: img.image_path ? (img.image_path.startsWith('/') || img.image_path.startsWith('http') ? img.image_path : `/storage/${img.image_path}`) : '',
+                                        preview: formatImageUrl(img.image_path),
+                                        value: normalizeStorageValue(img.image_path),
                                         title: `صورة المعرض ${i + 1}`
-                                    })).filter(x => x.url),
-                                    ...galleryPreviews.map((url, i) => ({ url, title: `صورة جديدة ${i + 1}` }))
+                                    })).filter(x => x.preview && x.value),
+                                    ...galleryPreviews.map((url, i) => ({
+                                        preview: url,
+                                        value: `__gallery_${i}__`,
+                                        title: `صورة جديدة ${i + 1}`
+                                    }))
                                 ];
                                 const uniqueImages = [];
-                                const seenUrls = new Set();
+                                const seenKeys = new Set();
                                 allImages.forEach(img => {
-                                    if (img.url && !seenUrls.has(img.url)) {
-                                        seenUrls.add(img.url);
+                                    const key = normalizeComparableUrl(img.value);
+                                    if (key && !seenKeys.has(key)) {
+                                        seenKeys.add(key);
                                         uniqueImages.push(img);
                                     }
                                 });
@@ -1702,23 +1743,25 @@ export default function Edit({ product, categories, allProducts = [] }) {
                                     );
                                 }
 
+                                const currentColorRaw = typeof data.colors[selectingColorIndex] === 'object' ? data.colors[selectingColorIndex]?.image : null;
+                                const currentComparable = normalizeComparableUrl(currentColorRaw);
+
                                 return (
                                     <div className="grid grid-cols-4 gap-2.5 max-h-48 overflow-y-auto p-1">
                                         {uniqueImages.map((imgObj, i) => {
-                                            const currentColorImage = formatImageUrl(typeof data.colors[selectingColorIndex] === 'object' ? data.colors[selectingColorIndex]?.image : null);
-                                            const isSelected = currentColorImage && (currentColorImage === formatImageUrl(imgObj.url));
+                                            const isSelected = Boolean(currentComparable && currentComparable === normalizeComparableUrl(imgObj.value));
                                             return (
                                                 <button
                                                     key={i}
                                                     type="button"
                                                     title={imgObj.title}
                                                     disabled={uploadingColorImage}
-                                                    onClick={() => handlePickExistingImageForColor(selectingColorIndex, imgObj.url)}
+                                                    onClick={() => handlePickExistingImageForColor(selectingColorIndex, imgObj.value)}
                                                     className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all group ${
                                                         isSelected ? 'border-orange-500 ring-2 ring-orange-400/40 shadow-sm' : 'border-gray-200 hover:border-orange-300'
                                                     } ${uploadingColorImage ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 >
-                                                    <img src={imgObj.url} alt={imgObj.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                                                    <img src={imgObj.preview} alt={imgObj.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                                                     {isSelected && (
                                                         <div className="absolute inset-0 bg-orange-600/30 flex items-center justify-center text-white font-bold text-lg">
                                                             ✓

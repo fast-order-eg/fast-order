@@ -129,6 +129,38 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
         return `/storage/${img}`;
     };
 
+    const isPendingImageRef = (val) => {
+        if (!val || typeof val !== 'string') return false;
+        return val === '__main__' || /^__gallery_\d+__$/.test(val);
+    };
+
+    const normalizeStorageValue = (url) => {
+        if (!url || typeof url !== 'string') return null;
+        const trimmed = url.trim();
+        if (!trimmed) return null;
+        if (isPendingImageRef(trimmed)) return trimmed;
+        const storageMatch = trimmed.match(/^https?:\/\/[^/]+(\/storage\/.+)$/i);
+        if (storageMatch) return storageMatch[1];
+        if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:') || trimmed.startsWith('/')) {
+            return trimmed;
+        }
+        return `/storage/${trimmed}`;
+    };
+
+    const normalizeComparableUrl = (url) => {
+        if (!url || typeof url !== 'string') return '';
+        const trimmed = url.trim();
+        if (!trimmed) return '';
+        if (isPendingImageRef(trimmed)) return trimmed;
+        const storageMatch = trimmed.match(/^https?:\/\/[^/]+(\/storage\/.+)$/i);
+        if (storageMatch) return storageMatch[1].split('?')[0];
+        if (trimmed.startsWith('/storage/')) return trimmed.split('?')[0];
+        if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://') && !trimmed.startsWith('blob:') && !trimmed.startsWith('data:') && !trimmed.startsWith('/')) {
+            return `/storage/${trimmed}`.split('?')[0];
+        }
+        return trimmed.split('?')[0];
+    };
+
     const formatImageUrl = (url) => {
         if (!url || typeof url !== 'string') return null;
         const trimmed = url.trim();
@@ -153,13 +185,6 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
             return [];
         }
     };
-
-    const initialGalleryPreviews = duplicateFrom?.images
-        ? duplicateFrom.images.map(img => {
-            const p = img.image_path;
-            return (p.startsWith('http://') || p.startsWith('https://') || p.startsWith('/')) ? p : `/storage/${p}`;
-        })
-        : [];
 
     const [mainImagePreview, setMainImagePreview] = useState(getProductImage(duplicateFrom));
     const mainImageRef = useRef(null);
@@ -188,8 +213,18 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
         return [];
     };
     const [variantsStock, setVariantsStock] = useState(initialVariants);
-    const [galleryPreviews, setGalleryPreviews] = useState(initialGalleryPreviews);
+    const [galleryPreviews, setGalleryPreviews] = useState([]);
     const [showVariantsStockSection, setShowVariantsStockSection] = useState(false);
+
+    const resolveColorImagePreview = (imgRef) => {
+        if (!imgRef || typeof imgRef !== 'string') return null;
+        const trimmed = imgRef.trim();
+        if (!trimmed) return null;
+        if (trimmed === '__main__') return mainImagePreview || null;
+        const m = trimmed.match(/^__gallery_(\d+)__$/);
+        if (m) return galleryPreviews[Number(m[1])] || null;
+        return formatImageUrl(trimmed);
+    };
 
     const { data, setData, post, processing, errors, transform, progress } = useForm({
         name: duplicateFrom ? (duplicateFrom.name + ' (نسخة)') : '',
@@ -290,10 +325,24 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
         }
     };
 
+    const removeExistingGalleryImage = (index) => {
+        const newExisting = (data.existing_gallery || []).filter((_, i) => i !== index);
+        setData('existing_gallery', newExisting);
+    };
+
     const removeGalleryImage = (index) => {
         const newGallery = (data.gallery || []).filter((_, i) => i !== index);
         const newPreviews = galleryPreviews.filter((_, i) => i !== index);
-        setData('gallery', newGallery);
+        const updatedColors = (data.colors || []).map(col => {
+            if (!col || typeof col !== 'object' || typeof col.image !== 'string') return col;
+            const m = col.image.match(/^__gallery_(\d+)__$/);
+            if (!m) return col;
+            const refIdx = Number(m[1]);
+            if (refIdx === index) return { ...col, image: null };
+            if (refIdx > index) return { ...col, image: `__gallery_${refIdx - 1}__` };
+            return col;
+        });
+        setData(prev => ({ ...prev, gallery: newGallery, colors: updatedColors }));
         setGalleryPreviews(newPreviews);
     };
 
@@ -333,7 +382,7 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
     };
 
     const updateColorImage = (index, imageUrl) => {
-        const formattedUrl = formatImageUrl(imageUrl);
+        const formattedUrl = imageUrl ? (isPendingImageRef(imageUrl) ? imageUrl : normalizeStorageValue(imageUrl)) : null;
         const newColors = (data.colors || []).map((col, i) => {
             if (i !== index) return col;
             const colName = typeof col === 'object' && col !== null ? col.name : col;
@@ -376,29 +425,10 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
         }
     };
 
-    const handlePickExistingImageForColor = async (colorIdx, imgUrl, iIdx) => {
-        // If it's already a server URL (starts with /storage, http://, https://)
-        if (imgUrl && !imgUrl.startsWith('blob:') && !imgUrl.startsWith('data:')) {
-            updateColorImage(colorIdx, imgUrl);
-            return;
-        }
-
-        // It is a local file preview (blob: or data:) - find the underlying File object to upload cleanly
-        let matchingFile = null;
-        if (mainImagePreview && iIdx === 0 && data.main_image instanceof File) {
-            matchingFile = data.main_image;
-        } else {
-            const galleryIdx = mainImagePreview ? (iIdx - 1) : iIdx;
-            if (data.gallery && data.gallery[galleryIdx] instanceof File) {
-                matchingFile = data.gallery[galleryIdx];
-            }
-        }
-
-        if (matchingFile) {
-            await handleColorImageUpload(colorIdx, matchingFile);
-        } else {
-            updateColorImage(colorIdx, imgUrl);
-        }
+    const handlePickExistingImageForColor = (colorIdx, imgValue) => {
+        if (!imgValue) return;
+        // ربط اللون مباشرة بالمرجع (__main__ / __gallery_N__) أو بمسار الصورة الموجودة دون رفع نسخة مكررة
+        updateColorImage(colorIdx, imgValue);
     };
 
     // Variant Combinations
@@ -1019,7 +1049,7 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 mt-3">
                                     {data.colors.map((col, idx) => {
                                         const colName = typeof col === 'object' && col !== null ? col.name : col;
-                                        const colImage = formatImageUrl(typeof col === 'object' && col !== null ? col.image : null);
+                                        const colImage = resolveColorImagePreview(typeof col === 'object' && col !== null ? col.image : null);
                                         return (
                                             <div key={idx} className="flex items-center justify-between gap-2.5 p-2.5 rounded-xl bg-white border border-gray-200/90 shadow-2xs hover:border-orange-300 hover:shadow-xs transition-all">
                                                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -1333,6 +1363,29 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
                             </div>
                         </div>
 
+                        {/* Existing Cloned Gallery Images */}
+                        {data.existing_gallery && data.existing_gallery.length > 0 && (
+                            <div className="space-y-2 pt-2">
+                                <h4 className="text-xs font-semibold text-gray-600">الصور الفرعية المستنسخة ({data.existing_gallery.length})</h4>
+                                <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
+                                    {data.existing_gallery.map((gpath, idx) => (
+                                        <div key={`existing-${idx}`} className="relative group aspect-square rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
+                                            <img src={formatImageUrl(gpath)} alt="Cloned Gallery" className="w-full h-full object-cover" />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeExistingGalleryImage(idx)}
+                                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-90 hover:opacity-100 shadow-md transition-opacity"
+                                            >
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Selected Gallery Previews */}
                         {galleryPreviews.length > 0 && (
                             <div className="space-y-2 pt-2">
@@ -1525,36 +1578,63 @@ export default function ProductCreate({ categories, duplicateFrom, allProducts =
                         {/* Existing Product Images to Pick With 1 Click */}
                         <div>
                             <label className="block text-xs font-bold text-gray-700 mb-2">1. اختر من صور المنتج الحالية (بنقرة واحدة):</label>
-                            {[mainImagePreview, ...galleryPreviews].filter(Boolean).length > 0 ? (
-                                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2.5 max-h-48 overflow-y-auto p-1 border border-gray-100 rounded-xl bg-gray-50/50">
-                                    {[mainImagePreview, ...galleryPreviews].filter(Boolean).map((imgUrl, iIdx) => {
-                                        const currentColor = typeof data.colors[selectingColorIndex] === 'object' ? data.colors[selectingColorIndex]?.image : null;
-                                        const isCurrent = currentColor && formatImageUrl(currentColor) === formatImageUrl(imgUrl);
-                                        return (
-                                            <button
-                                                key={iIdx}
-                                                type="button"
-                                                disabled={uploadingColorImage}
-                                                onClick={() => handlePickExistingImageForColor(selectingColorIndex, imgUrl, iIdx)}
-                                                className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all group ${
-                                                    isCurrent ? 'border-orange-600 ring-2 ring-orange-200' : 'border-gray-200 hover:border-gray-400'
-                                                } ${uploadingColorImage ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                            >
-                                                <img src={imgUrl} alt="Product img" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                                                {isCurrent && (
-                                                    <div className="absolute inset-0 bg-orange-600/30 flex items-center justify-center text-white font-black text-sm">
-                                                        ✓
-                                                    </div>
-                                                )}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <p className="text-xs text-gray-400 bg-gray-50 p-3 rounded-lg border border-dashed border-gray-200 text-center">
-                                    لم تقم برفع صور للمنتج بعد. يمكنك رفع صورة خاصة باللون بالأسفل مباشرة.
-                                </p>
-                            )}
+                            {(() => {
+                                const availableImages = [
+                                    ...(mainImagePreview ? [{
+                                        preview: mainImagePreview,
+                                        value: (data.main_image instanceof File) ? '__main__' : normalizeStorageValue(mainImagePreview),
+                                        title: 'الصورة الرئيسية'
+                                    }] : []),
+                                    ...(data.existing_gallery || []).map((gpath, i) => ({
+                                        preview: formatImageUrl(gpath),
+                                        value: normalizeStorageValue(gpath),
+                                        title: `صورة المعرض ${i + 1}`
+                                    })).filter(x => x.preview && x.value),
+                                    ...galleryPreviews.map((preview, i) => ({
+                                        preview,
+                                        value: `__gallery_${i}__`,
+                                        title: `صورة جديدة ${i + 1}`
+                                    }))
+                                ];
+
+                                if (availableImages.length === 0) {
+                                    return (
+                                        <p className="text-xs text-gray-400 bg-gray-50 p-3 rounded-lg border border-dashed border-gray-200 text-center">
+                                            لم تقم برفع صور للمنتج بعد. يمكنك رفع صورة خاصة باللون بالأسفل مباشرة.
+                                        </p>
+                                    );
+                                }
+
+                                const currentColorRaw = typeof data.colors[selectingColorIndex] === 'object' ? data.colors[selectingColorIndex]?.image : null;
+                                const currentComparable = normalizeComparableUrl(currentColorRaw);
+
+                                return (
+                                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-2.5 max-h-48 overflow-y-auto p-1 border border-gray-100 rounded-xl bg-gray-50/50">
+                                        {availableImages.map((imgObj, iIdx) => {
+                                            const isCurrent = Boolean(currentComparable && currentComparable === normalizeComparableUrl(imgObj.value));
+                                            return (
+                                                <button
+                                                    key={iIdx}
+                                                    type="button"
+                                                    title={imgObj.title}
+                                                    disabled={uploadingColorImage}
+                                                    onClick={() => handlePickExistingImageForColor(selectingColorIndex, imgObj.value)}
+                                                    className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all group ${
+                                                        isCurrent ? 'border-orange-600 ring-2 ring-orange-200' : 'border-gray-200 hover:border-gray-400'
+                                                    } ${uploadingColorImage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                >
+                                                    <img src={imgObj.preview} alt={imgObj.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                                                    {isCurrent && (
+                                                        <div className="absolute inset-0 bg-orange-600/30 flex items-center justify-center text-white font-black text-sm">
+                                                            ✓
+                                                        </div>
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                );
+                            })()}
                         </div>
 
                         {/* Upload New Specific Image for this Color */}

@@ -95,14 +95,9 @@ class ProductController extends Controller
             'shipping_type'       => $validated['shipping_type'],
         ];
 
-        // حفظ المقاسات والألوان والمتغيرات المخصصة
+        // حفظ المقاسات والمتغيرات المخصصة (الألوان تُعالج بعد حفظ الصورة الرئيسية وصور المعرض لربط المراجع بنفس الملف دون تكرار)
         if ($request->has('sizes') && is_array($request->sizes)) {
             $data['sizes'] = array_values(array_filter($request->sizes));
-        }
-        if ($request->filled('colors_json')) {
-            $data['colors'] = $this->processColorsInput($request->colors_json);
-        } elseif ($request->has('colors')) {
-            $data['colors'] = $this->processColorsInput($request->colors);
         }
         if ($request->has('custom_variants')) {
             $cv = $request->custom_variants;
@@ -127,13 +122,56 @@ class ProductController extends Controller
             $data['variants_stock'] = is_string($request->variants_stock) ? json_decode($request->variants_stock, true) : $request->variants_stock;
         }
 
+        $mainImagePath = null;
         if ($request->hasFile('main_image')) {
-            $path = \App\Services\ImageCompressionService::compressAndStore($request->file('main_image'), 'products', 'public');
-            $data['main_image_path'] = $path;
-            $data['image_url'] = $path;
+            $mainImagePath = \App\Services\ImageCompressionService::compressAndStore($request->file('main_image'), 'products', 'public');
+            $data['main_image_path'] = $mainImagePath;
+            $data['image_url'] = $mainImagePath;
         } elseif ($request->filled('existing_main_image')) {
-            $data['main_image_path'] = $request->input('existing_main_image');
-            $data['image_url'] = $request->input('existing_main_image');
+            $mainImagePath = $request->input('existing_main_image');
+            $data['main_image_path'] = $mainImagePath;
+            $data['image_url'] = $mainImagePath;
+        }
+
+        // حفظ ملفات المعرض الجديدة على القرص أولاً لربط مراجع الألوان (__gallery_N__) بنفس المسار المحفوظ
+        $uploadedGalleryPaths = [];
+        if ($request->hasFile('gallery')) {
+            foreach ($request->file('gallery') as $idx => $imageFile) {
+                if ($imageFile && $imageFile->isValid()) {
+                    $uploadedGalleryPaths[$idx] = \App\Services\ImageCompressionService::compressAndStore($imageFile, 'products/gallery', 'public');
+                }
+            }
+        }
+
+        $existingGalleryPaths = [];
+        if ($request->has('existing_gallery') && is_array($request->existing_gallery)) {
+            foreach ($request->existing_gallery as $gpath) {
+                if ($gpath) {
+                    $existingGalleryPaths[] = $gpath;
+                }
+            }
+        }
+
+        $allProductImagePaths = array_values(array_filter(array_merge(
+            $mainImagePath ? [$mainImagePath] : [],
+            $existingGalleryPaths,
+            array_values($uploadedGalleryPaths)
+        )));
+
+        if ($request->filled('colors_json')) {
+            $data['colors'] = $this->processColorsInput(
+                $request->colors_json,
+                $mainImagePath,
+                $uploadedGalleryPaths,
+                $allProductImagePaths
+            );
+        } elseif ($request->has('colors')) {
+            $data['colors'] = $this->processColorsInput(
+                $request->colors,
+                $mainImagePath,
+                $uploadedGalleryPaths,
+                $allProductImagePaths
+            );
         }
 
         // tenant_id يُعبأ تلقائياً عبر BelongsToTenant trait
@@ -156,25 +194,18 @@ class ProductController extends Controller
             ]);
         }
 
-        if ($request->hasFile('gallery')) {
-            foreach ($request->file('gallery') as $imageFile) {
-                if ($imageFile && $imageFile->isValid()) {
-                    $gpath = \App\Services\ImageCompressionService::compressAndStore($imageFile, 'products/gallery', 'public');
-                    ProductImage::create([
-                        'product_id' => $product->id,
-                        'image_path' => $gpath,
-                    ]);
-                }
-            }
-        } elseif ($request->has('existing_gallery') && is_array($request->existing_gallery)) {
-            foreach ($request->existing_gallery as $gpath) {
-                if ($gpath) {
-                    ProductImage::create([
-                        'product_id' => $product->id,
-                        'image_path' => $gpath,
-                    ]);
-                }
-            }
+        foreach ($existingGalleryPaths as $gpath) {
+            ProductImage::create([
+                'product_id' => $product->id,
+                'image_path' => $gpath,
+            ]);
+        }
+
+        foreach ($uploadedGalleryPaths as $gpath) {
+            ProductImage::create([
+                'product_id' => $product->id,
+                'image_path' => $gpath,
+            ]);
         }
 
         if ($request->has('upsell_ids') && is_array($request->upsell_ids)) {
@@ -243,18 +274,11 @@ class ProductController extends Controller
             'shipping_type'       => $validated['shipping_type'],
         ];
 
-        // تحديث المقاسات والألوان والمتغيرات المخصصة
+        // تحديث المقاسات والمتغيرات المخصصة (الألوان تُعالج بعد حفظ الصورة الرئيسية وصور المعرض الجديدة)
         if ($request->has('sizes') && is_array($request->sizes)) {
             $data['sizes'] = array_values(array_filter($request->sizes));
         } else {
             $data['sizes'] = null;
-        }
-        if ($request->filled('colors_json')) {
-            $data['colors'] = $this->processColorsInput($request->colors_json);
-        } elseif ($request->has('colors')) {
-            $data['colors'] = $this->processColorsInput($request->colors);
-        } else {
-            $data['colors'] = null;
         }
         if ($request->has('custom_variants')) {
             $cv = $request->custom_variants;
@@ -290,13 +314,66 @@ class ProductController extends Controller
             $data['variants_stock'] = null;
         }
 
+        $oldMainImagePath = $product->main_image_path ?: $product->image_url;
+        $mainImagePath = $oldMainImagePath;
+
         if ($request->hasFile('main_image')) {
-            if ($product->main_image_path && Storage::disk('public')->exists($product->main_image_path)) {
-                Storage::disk('public')->delete($product->main_image_path);
-            }
             $path = \App\Services\ImageCompressionService::compressAndStore($request->file('main_image'), 'products', 'public');
             $data['main_image_path'] = $path;
             $data['image_url'] = $path;
+            $mainImagePath = $path;
+        }
+
+        // حفظ ملفات المعرض الجديدة أولاً لربط مراجع الألوان (__gallery_N__) بنفس المسار المحفوظ
+        $uploadedGalleryPaths = [];
+        if ($request->hasFile('gallery')) {
+            foreach ($request->file('gallery') as $idx => $imageFile) {
+                if ($imageFile && $imageFile->isValid()) {
+                    $uploadedGalleryPaths[$idx] = \App\Services\ImageCompressionService::compressAndStore($imageFile, 'products/gallery', 'public');
+                }
+            }
+        }
+
+        $existingGalleryPaths = $product->images()->pluck('image_path')->filter()->values()->all();
+        $allProductImagePaths = array_values(array_filter(array_merge(
+            $mainImagePath ? [$mainImagePath] : [],
+            $existingGalleryPaths,
+            array_values($uploadedGalleryPaths)
+        )));
+
+        if ($request->filled('colors_json')) {
+            $data['colors'] = $this->processColorsInput(
+                $request->colors_json,
+                $mainImagePath,
+                $uploadedGalleryPaths,
+                $allProductImagePaths,
+                $product->id
+            );
+        } elseif ($request->has('colors')) {
+            $data['colors'] = $this->processColorsInput(
+                $request->colors,
+                $mainImagePath,
+                $uploadedGalleryPaths,
+                $allProductImagePaths,
+                $product->id
+            );
+        } else {
+            $data['colors'] = null;
+        }
+
+        // حذف الصورة الرئيسية القديمة فقط إذا تغيرت ولم تعد مربوطة بأي لون
+        if ($request->hasFile('main_image') && $oldMainImagePath && $oldMainImagePath !== $mainImagePath && Storage::disk('public')->exists($oldMainImagePath)) {
+            $oldNormalized = $this->normalizeStorageRelativePath($oldMainImagePath);
+            $stillUsedByColor = false;
+            foreach ($data['colors'] ?? [] as $c) {
+                if (is_array($c) && !empty($c['image']) && $this->normalizeStorageRelativePath($c['image']) === $oldNormalized) {
+                    $stillUsedByColor = true;
+                    break;
+                }
+            }
+            if (!$stillUsedByColor) {
+                Storage::disk('public')->delete($oldMainImagePath);
+            }
         }
 
         $oldStock = $product->stock;
@@ -313,16 +390,11 @@ class ProductController extends Controller
             ]);
         }
 
-        if ($request->hasFile('gallery')) {
-            foreach ($request->file('gallery') as $imageFile) {
-                if ($imageFile && $imageFile->isValid()) {
-                    $gpath = \App\Services\ImageCompressionService::compressAndStore($imageFile, 'products/gallery', 'public');
-                    ProductImage::create([
-                        'product_id' => $product->id,
-                        'image_path' => $gpath,
-                    ]);
-                }
-            }
+        foreach ($uploadedGalleryPaths as $gpath) {
+            ProductImage::create([
+                'product_id' => $product->id,
+                'image_path' => $gpath,
+            ]);
         }
 
         // حفظ علاقات الـ Upsell والـ Cross-sell
@@ -419,10 +491,15 @@ class ProductController extends Controller
     }
 
     /**
-     * معالجة مصفوفة الألوان وتحويل أي صور Base64 إلى ملفات فعلية على القرص
+     * معالجة مصفوفة الألوان وربط مراجع الصور (__main__ / __gallery_N__) ومنع تكرار الصور المرفوعة
      */
-    protected function processColorsInput($colors)
-    {
+    protected function processColorsInput(
+        $colors,
+        ?string $mainImagePath = null,
+        array $uploadedGalleryPaths = [],
+        array $allProductImagePaths = [],
+        ?int $excludeProductId = null
+    ) {
         if (is_string($colors)) {
             $colors = json_decode($colors, true);
         }
@@ -430,6 +507,7 @@ class ProductController extends Controller
             return null;
         }
 
+        $productImageHashes = null;
         $filtered = [];
         foreach ($colors as $c) {
             if (is_string($c)) {
@@ -445,7 +523,14 @@ class ProductController extends Controller
                 if ($name === '' && !empty($rawImage) && count($filtered) > 0) {
                     $lastIdx = count($filtered) - 1;
                     if (empty($filtered[$lastIdx]['image'])) {
-                        $filtered[$lastIdx]['image'] = $this->sanitizeColorImagePath($rawImage);
+                        $filtered[$lastIdx]['image'] = $this->sanitizeColorImagePath(
+                            $rawImage,
+                            $mainImagePath,
+                            $uploadedGalleryPaths,
+                            $allProductImagePaths,
+                            $productImageHashes,
+                            $excludeProductId
+                        );
                         continue;
                     }
                 }
@@ -453,7 +538,14 @@ class ProductController extends Controller
                 if ($name !== '') {
                     $filtered[] = [
                         'name'  => $name,
-                        'image' => $this->sanitizeColorImagePath($rawImage),
+                        'image' => $this->sanitizeColorImagePath(
+                            $rawImage,
+                            $mainImagePath,
+                            $uploadedGalleryPaths,
+                            $allProductImagePaths,
+                            $productImageHashes,
+                            $excludeProductId
+                        ),
                     ];
                 }
             }
@@ -463,16 +555,91 @@ class ProductController extends Controller
     }
 
     /**
-     * تنظيف وحفظ مسار صورة اللون
+     * تحويل مسار صورة التخزين إلى المسار النسبي داخل القرص public
      */
-    protected function sanitizeColorImagePath($image)
+    protected function normalizeStorageRelativePath(?string $path): ?string
     {
+        if (!$path || !is_string($path)) {
+            return null;
+        }
+
+        $path = trim($path);
+        if ($path === '') {
+            return null;
+        }
+
+        if (preg_match('#^https?://[^/]+/storage/(.+)$#i', $path, $m)) {
+            return ltrim(explode('?', $m[1], 2)[0], '/');
+        }
+
+        if (str_starts_with($path, '/storage/')) {
+            return ltrim(explode('?', substr($path, strlen('/storage/')), 2)[0], '/');
+        }
+
+        if (str_starts_with($path, 'storage/')) {
+            return ltrim(explode('?', substr($path, strlen('storage/')), 2)[0], '/');
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://') || str_starts_with($path, 'data:') || str_starts_with($path, 'blob:')) {
+            return null;
+        }
+
+        return ltrim(explode('?', $path, 2)[0], '/');
+    }
+
+    /**
+     * تنسيق مسار صورة محفوظة ليُخزن بصيغة موحدة /storage/...
+     */
+    protected function formatSavedStoragePath(?string $path): ?string
+    {
+        if (!$path || !is_string($path)) {
+            return null;
+        }
+
+        $path = trim($path);
+        if ($path === '') {
+            return null;
+        }
+
+        $rel = $this->normalizeStorageRelativePath($path);
+        if ($rel !== null) {
+            return '/storage/' . $rel;
+        }
+
+        return $path;
+    }
+
+    /**
+     * تنظيف وحفظ مسار صورة اللون مع ربط المراجع وإزالة النسخ المتطابقة تلقائياً
+     */
+    protected function sanitizeColorImagePath(
+        $image,
+        ?string $mainImagePath = null,
+        array $uploadedGalleryPaths = [],
+        array $allProductImagePaths = [],
+        ?array &$productImageHashes = null,
+        ?int $excludeProductId = null
+    ) {
         if (!$image || !is_string($image)) {
             return null;
         }
 
         $image = trim($image);
-        if ($image === '') {
+        if ($image === '' || str_starts_with($image, 'blob:')) {
+            return null;
+        }
+
+        // مرجع مباشر للصورة الرئيسية المرفوعة في نفس الطلب
+        if ($image === '__main__') {
+            return $this->formatSavedStoragePath($mainImagePath);
+        }
+
+        // مرجع مباشر لصورة فرعية مرفوعة في نفس الطلب
+        if (preg_match('/^__gallery_(\d+)__$/', $image, $m)) {
+            $idx = (int) $m[1];
+            if (isset($uploadedGalleryPaths[$idx])) {
+                return $this->formatSavedStoragePath($uploadedGalleryPaths[$idx]);
+            }
             return null;
         }
 
@@ -487,14 +654,58 @@ class ProductController extends Controller
                     if ($ext === 'jpeg') $ext = 'jpg';
                     if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'])) $ext = 'jpg';
                     $filename = 'products/colors/color_' . uniqid('', true) . '.' . $ext;
-                    \Illuminate\Support\Facades\Storage::disk('public')->put($filename, $decoded);
-                    return '/storage/' . $filename;
+                    Storage::disk('public')->put($filename, $decoded);
+                    $image = '/storage/' . $filename;
                 }
             } catch (\Throwable $e) {
                 \Log::error("Failed to decode and save color base64 image: " . $e->getMessage());
             }
-        } elseif (!str_starts_with($image, 'http://') && !str_starts_with($image, 'https://') && !str_starts_with($image, '/') && !str_starts_with($image, 'blob:')) {
-            return '/storage/' . $image;
+        } elseif (preg_match('#^https?://[^/]+(/storage/.+)$#i', $image, $m)) {
+            // توحيد الروابط الكاملة التابعة لنفس السيرفر إلى مسار نسبي موحد /storage/...
+            $candidateRel = ltrim(explode('?', substr($m[1], strlen('/storage/')), 2)[0], '/');
+            if ($candidateRel !== '' && Storage::disk('public')->exists($candidateRel)) {
+                $image = '/storage/' . $candidateRel;
+            }
+        } elseif (!str_starts_with($image, 'http://') && !str_starts_with($image, 'https://') && !str_starts_with($image, '/')) {
+            $image = '/storage/' . ltrim($image, '/');
+        }
+
+        // إذا رُفعت صورة في مجلد الألوان مطابقة تماماً بالبايت لصورة رئيسية أو صورة معرض لنفس المنتج، نوحّد المسار ونحذف النسخة المكررة
+        $colorRel = $this->normalizeStorageRelativePath($image);
+        if ($colorRel && str_starts_with($colorRel, 'products/colors/') && !empty($allProductImagePaths) && Storage::disk('public')->exists($colorRel)) {
+            if ($productImageHashes === null) {
+                $productImageHashes = [];
+                foreach ($allProductImagePaths as $pPath) {
+                    $pRel = $this->normalizeStorageRelativePath($pPath);
+                    if ($pRel && !str_starts_with($pRel, 'products/colors/') && Storage::disk('public')->exists($pRel)) {
+                        $full = Storage::disk('public')->path($pRel);
+                        if (is_file($full)) {
+                            $hash = @md5_file($full);
+                            if ($hash && !isset($productImageHashes[$hash])) {
+                                $productImageHashes[$hash] = '/storage/' . $pRel;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!empty($productImageHashes)) {
+                $colorFull = Storage::disk('public')->path($colorRel);
+                $colorHash = is_file($colorFull) ? @md5_file($colorFull) : false;
+                if ($colorHash && isset($productImageHashes[$colorHash])) {
+                    $matchedUrl = $productImageHashes[$colorHash];
+                    // حذف الملف المكرر من products/colors فقط إذا لم يكن مستخدماً في أي منتج آخر
+                    $basename = basename($colorRel);
+                    $usedElsewhere = Product::withoutGlobalScopes()
+                        ->when($excludeProductId, fn($q) => $q->where('id', '!=', $excludeProductId))
+                        ->where('colors', 'like', '%' . $basename . '%')
+                        ->exists();
+                    if (!$usedElsewhere) {
+                        Storage::disk('public')->delete($colorRel);
+                    }
+                    return $matchedUrl;
+                }
+            }
         }
 
         return $image;
